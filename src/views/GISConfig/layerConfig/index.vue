@@ -76,178 +76,147 @@
       v-model:limit="query.params.pageSize"
       @pagination="query.getPagination"
     ></Pagination>
-
     <LayerEdit ref="layerEditRef" @success-add="query.onQuery"></LayerEdit>
-
     <DetailDialog ref="detailDialogRef" :constant="'GIS_LAYER_DETAIL'" :title="'图层详情'"> </DetailDialog>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
+<script setup lang="ts" name="LayerConfig">
+import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import { getLayerList, deleteLayerCheck, deleteLayer } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
 import { ElMessage, ElMessageBox } from "element-plus";
 import DetailDialog from "@/components/detailDialog/index.vue";
 import LayerEdit from "./component/layerEdit.vue";
-import { TableList } from "../type";
+import { TableList, SortChangeEvent } from "../type";
 
 interface OrderMap {
   [key: string]: string;
 }
+const layerEditRef = ref<InstanceType<typeof LayerEdit>>();
+const detailDialogRef = ref<InstanceType<typeof DetailDialog>>();
 
-export default defineComponent({
-  name: "LayerConfig",
-  components: {
-    DetailDialog,
-    LayerEdit
+// 查询条件
+const defaultParams = {
+  name: "",
+  orderByColumn: "",
+  isAsc: "",
+  pageNumber: 1,
+  pageSize: 10
+};
+
+const query = ref({
+  params: { ...defaultParams },
+  getPagination: (obj: { [key: string]: any }) => {
+    query.value.params.pageNumber = obj.page;
+    query.value.params.pageSize = obj.limit;
+    query.value.onQuery();
   },
-  props: {
-    info: {
-      type: Object,
-      default: () => ({})
-    }
-  },
-  setup() {
-    const layerEditRef = ref<InstanceType<typeof LayerEdit>>();
-    const detailDialogRef = ref<InstanceType<typeof DetailDialog>>();
+  onQuery: () => {
+    table.value.getTableData();
+  }
+});
 
-    // 查询条件
-    const defaultParams = {
-      name: "",
-      orderByColumn: "",
-      isAsc: "",
-      pageNumber: 1,
-      pageSize: 10
-    };
-
-    const query = ref({
-      params: { ...defaultParams },
-      getPagination: (obj: any) => {
-        query.value.params.pageNumber = obj.page;
-        query.value.params.pageSize = obj.limit;
-        query.value.onQuery();
-      },
-      onQuery: () => {
-        table.value.getTableData();
-      }
-    });
-
-    const table = ref<TableList>({
-      loading: false,
-      total: 0,
-      ids: [],
-      data: [],
-      getTableData: async () => {
-        table.value.loading = true;
-        const res: { [key: string]: any } = await getLayerList(...(handleParam(query.value.params) as [string, object]));
-        if (res?.data?.items) {
-          table.value.data = res.data.items;
-          table.value.total = res.data.totalNum;
-        } else {
-          ElMessage.error("接口异常");
-        }
-        table.value.loading = false;
-      },
-      onSelectionChange: (selection: any) => {
-        table.value.ids = selection.map((item: any) => item.id);
-      },
-      onEdit: (row: any, type: string) => {
-        if (type == "edit") {
-          layerEditRef.value?.openDialog(row);
-        } else if (type == "detail") {
-          detailDialogRef.value?.openDialog(row);
-        }
-      }
-    });
-
-    const onAdd = () => {
-      layerEditRef.value?.openDialog();
-    };
-
-    const sortChange = (val: any) => {
-      query.value.params.orderByColumn = val.prop;
-      const orderMap: OrderMap = {
-        descending: "desc",
-        ascending: "asc"
-      };
-      query.value.params.isAsc = orderMap[val.order];
-      table.value.getTableData();
-    };
-
-    const onDelete = async () => {
-      const res: { [key: string]: any } = await deleteLayerCheck(table.value.ids);
-      if (res.code == 200) {
-        if (res.data?.length == 0) {
-          ElMessageBox.confirm("删除该配置可能会导致GIS地图展示异常，请慎重！确定删除？", "提示", {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            type: "warning"
-          })
-            .then(async () => {
-              table.value.loading = true;
-              const res: { [key: string]: any } = await deleteLayer(table.value.ids);
-              if (res?.code == 200) {
-                ElMessage.success("删除成功");
-                table.value.getTableData();
-              } else {
-                ElMessage.error(res.msg);
-              }
-            })
-            .catch(() => {});
-        } else {
-          ElMessage({
-            dangerouslyUseHTMLString: true,
-            message: res.data.filter((item: any) => item.length).join("<br/>"),
-            type: "error"
-          });
-        }
-      } else {
-        ElMessage.error(res.msg);
-      }
-      table.value.loading = false;
-    };
-
-    const querySearch: (queryString: string, cb: (arg: any) => void) => void = async (
-      queryString: string,
-      cb: (arg: any) => void
-    ) => {
-      let oldPageSize = query.value.params.pageSize;
-      query.value.params.name = queryString;
-      query.value.params.pageSize = 10000;
-      query.value.params.pageNumber = 1;
-      const res: { [key: string]: any } = await getLayerList(...(handleParam(query.value.params) as [string, object]));
-      // 调用 callback 返回建议列表的数据
-      cb(res.data.items);
-      query.value.params.pageSize = oldPageSize;
-    };
-
-    const handleSelect = async () => {
-      table.value.loading = true;
-      const res: { [key: string]: any } = await getLayerList(...(handleParam(query.value.params) as [string, object]));
+const table = ref<TableList>({
+  loading: false,
+  total: 0,
+  ids: [],
+  data: [],
+  getTableData: async () => {
+    table.value.loading = true;
+    const res: { [key: string]: any } = await getLayerList(...(handleParam(query.value.params) as [string, object]));
+    if (res?.data?.items) {
       table.value.data = res.data.items;
       table.value.total = res.data.totalNum;
-      table.value.loading = false;
-    };
-
-    onMounted(() => {
-      table.value.getTableData();
-    });
-
-    return {
-      query,
-      table,
-      layerEditRef,
-      MENU_BTNS_AUTH,
-      onAdd,
-      sortChange,
-      detailDialogRef,
-      onDelete,
-      querySearch,
-      handleSelect
-    };
+    } else {
+      ElMessage.error("接口异常");
+    }
+    table.value.loading = false;
+  },
+  onSelectionChange: (selection: any[]) => {
+    table.value.ids = selection?.map((item: { [key: string]: any }) => item.id);
+  },
+  onEdit: (row: { [key: string]: any }, type: string) => {
+    if (type == "edit") {
+      layerEditRef.value?.openDialog(row);
+    } else if (type == "detail") {
+      detailDialogRef.value?.openDialog(row);
+    }
   }
+});
+
+const onAdd = () => {
+  layerEditRef.value?.openDialog();
+};
+
+const sortChange = (val: SortChangeEvent) => {
+  query.value.params.orderByColumn = val.prop;
+  const orderMap: OrderMap = {
+    descending: "desc",
+    ascending: "asc"
+  };
+  query.value.params.isAsc = orderMap[val.order];
+  table.value.getTableData();
+};
+
+const onDelete = async () => {
+  const res: { [key: string]: any } = await deleteLayerCheck(table.value.ids);
+  if (res.code == 200) {
+    if (res.data?.length == 0) {
+      ElMessageBox.confirm("删除该配置可能会导致GIS地图展示异常，请慎重！确定删除？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
+          table.value.loading = true;
+          const res: { [key: string]: any } = await deleteLayer(table.value.ids);
+          if (res?.code == 200) {
+            ElMessage.success("删除成功");
+            table.value.getTableData();
+          } else {
+            ElMessage.error(res.msg);
+          }
+        })
+        .catch(() => {});
+    } else {
+      ElMessage({
+        dangerouslyUseHTMLString: true,
+        message: res.data.filter((item: any) => item.length).join("<br/>"),
+        type: "error"
+      });
+    }
+  } else {
+    ElMessage.error(res.msg);
+  }
+  table.value.loading = false;
+};
+
+const querySearch: (queryString: string, cb: (arg: any) => void) => void = async (
+  queryString: string,
+  cb: (arg: any) => void
+) => {
+  let oldPageSize = query.value.params.pageSize;
+  query.value.params.name = queryString;
+  query.value.params.pageSize = 10000;
+  query.value.params.pageNumber = 1;
+  const res: { [key: string]: any } = await getLayerList(...(handleParam(query.value.params) as [string, object]));
+  // 调用 callback 返回建议列表的数据
+  cb(res.data.items);
+  query.value.params.pageSize = oldPageSize;
+};
+
+const handleSelect = async () => {
+  table.value.loading = true;
+  const res: { [key: string]: any } = await getLayerList(...(handleParam(query.value.params) as [string, object]));
+  table.value.data = res.data.items;
+  table.value.total = res.data.totalNum;
+  table.value.loading = false;
+};
+
+onMounted(() => {
+  table.value.getTableData();
 });
 </script>
 

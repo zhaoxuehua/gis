@@ -1,3 +1,4 @@
+import { TableColumn } from "element-plus/lib/el-table";
 export type TableList = {
   loading: boolean;
   total: number;
@@ -57,3 +58,11 @@ export type LabelInfoData = {
   refLayer: { [key: string]: any };
   refLayerId: number;
 };
+
+// 表格列排序
+export interface SortChangeEvent {
+  prop: string;
+  order: "ascending" | "descending";
+  columns: TableColumn[];
+  column: TableColumn;
+}

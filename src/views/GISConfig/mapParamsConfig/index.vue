@@ -1,4 +1,3 @@
-<!-- 框选 -->
 <template>
   <div class="layer-config">
     <div class="one-search">
@@ -113,177 +112,148 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted, ref } from "vue";
+<script lang="ts" setup name="LayerConfig">
+import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import { getMapParamsList, deleteMapParamsCheck, deleteMapParams, getMapParamsDetail } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
 import { ElMessage, ElMessageBox } from "element-plus";
 import DetailDialog from "@/components/detailDialog/index.vue";
 import MapParamsEdit from "./component/mapParamsEdit.vue";
-import { TableList } from "../type";
-export default defineComponent({
-  name: "LayerConfig",
-  components: {
-    DetailDialog,
-    MapParamsEdit
+import { TableList, SortChangeEvent } from "../type";
+
+const mapParamsEditRef = ref<InstanceType<typeof MapParamsEdit>>();
+const detailDialogRef = ref<InstanceType<typeof DetailDialog>>();
+
+// 查询条件
+const defaultParams = {
+  appName: "",
+  orderByColumn: "",
+  isAsc: "",
+  pageNumber: 1,
+  pageSize: 10
+};
+
+const query = ref({
+  params: { ...defaultParams },
+  getPagination: (obj: { [key: string]: any }) => {
+    query.value.params.pageNumber = obj.page;
+    query.value.params.pageSize = obj.limit;
+    query.value.onQuery();
   },
-  props: {
-    info: {
-      type: Object,
-      default: () => ({})
-    }
-  },
-  setup() {
-    const mapParamsEditRef = ref<InstanceType<typeof MapParamsEdit>>();
-    const detailDialogRef = ref<InstanceType<typeof DetailDialog>>();
-    const state = reactive({});
+  onQuery: () => {
+    table.value.getTableData();
+  }
+});
 
-    // 查询条件
-    const defaultParams = {
-      appName: "",
-      orderByColumn: "",
-      isAsc: "",
-      pageNumber: 1,
-      pageSize: 10
-    };
-
-    const query = ref({
-      params: { ...defaultParams },
-      getPagination: (obj: any) => {
-        query.value.params.pageNumber = obj.page;
-        query.value.params.pageSize = obj.limit;
-        query.value.onQuery();
-      },
-      onQuery: () => {
-        table.value.getTableData();
-      }
-    });
-
-    const table = ref<TableList>({
-      loading: false,
-      total: 0,
-      ids: [],
-      data: [],
-      getTableData: async () => {
-        table.value.loading = true;
-        const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
-        if (res.data.items) {
-          table.value.data = res.data.items;
-          table.value.total = res.data.totalNum;
-        } else {
-          ElMessage.error("接口异常");
-        }
-        table.value.loading = false;
-      },
-      onSelectionChange: (selection: any) => {
-        table.value.ids = selection.map((item: any) => item.id);
-      },
-      onEdit: async (row: any, type: string) => {
-        if (type == "edit") {
-          mapParamsEditRef.value?.openDialog(row);
-          console.log(row, 55555555);
-        } else if (type == "detail") {
-          const res: { [key: string]: any } = await getMapParamsDetail(row.id);
-          if (res.code === 200 && res.data) {
-            const data = JSON.parse(JSON.stringify(res.data));
-            detailDialogRef.value?.openDialog(data);
-          } else {
-            ElMessage.error("接口异常");
-          }
-        }
-      }
-    });
-
-    const onAdd = () => {
-      mapParamsEditRef.value?.openDialog();
-    };
-
-    const sortChange = (val: any) => {
-      query.value.params.orderByColumn = val.prop;
-      const orderMap: {
-        [key: string]: string;
-      } = {
-        descending: "desc",
-        ascending: "asc"
-      };
-      query.value.params.isAsc = orderMap[val.order];
-      table.value.getTableData();
-    };
-
-    const onDelete = async () => {
-      const res: { [key: string]: any } = await deleteMapParamsCheck(table.value.ids);
-      if (res.code == 200) {
-        if (res.data?.length == 0) {
-          ElMessageBox.confirm("删除该配置可能会导致GIS地图展示异常，请慎重！确定删除?", "提示", {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            type: "warning"
-          })
-            .then(async () => {
-              table.value.loading = true;
-              const res: { [key: string]: any } = await deleteMapParams(table.value.ids);
-              if (res.code == 200) {
-                ElMessage.success("删除成功");
-                table.value.getTableData();
-              } else {
-                ElMessage.error(res.msg);
-              }
-            })
-            .catch(() => {});
-        } else {
-          ElMessage({
-            dangerouslyUseHTMLString: true,
-            message: res.data.filter((item: any) => item.length).join("<br/>"),
-            type: "error"
-          });
-        }
-      } else {
-        ElMessage.error(res.msg);
-      }
-      table.value.loading = false;
-    };
-
-    const querySearch: (queryString: string, cb: (arg: any) => void) => void = async (
-      queryString: string,
-      cb: (arg: any) => void
-    ) => {
-      let oldPageSize = query.value.params.pageSize;
-      query.value.params.appName = queryString;
-      query.value.params.pageSize = 10000;
-      query.value.params.pageNumber = 1;
-      const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
-      // 调用 callback 返回建议列表的数据
-      cb(res.data.items);
-      query.value.params.pageSize = oldPageSize;
-    };
-
-    const handleSelect = async () => {
-      table.value.loading = true;
-      const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
+const table = ref<TableList>({
+  loading: false,
+  total: 0,
+  ids: [],
+  data: [],
+  getTableData: async () => {
+    table.value.loading = true;
+    const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
+    if (res.data.items) {
       table.value.data = res.data.items;
       table.value.total = res.data.totalNum;
-      table.value.loading = false;
-    };
-
-    onMounted(() => {
-      table.value.getTableData();
-    });
-
-    return {
-      ...toRefs(state),
-      query,
-      table,
-      mapParamsEditRef,
-      MENU_BTNS_AUTH,
-      onAdd,
-      sortChange,
-      detailDialogRef,
-      onDelete,
-      querySearch,
-      handleSelect
-    };
+    } else {
+      ElMessage.error("接口异常");
+    }
+    table.value.loading = false;
+  },
+  onSelectionChange: (selection: any[]) => {
+    table.value.ids = selection?.map((item: { [key: string]: any }) => item.id);
+  },
+  onEdit: async (row: { [key: string]: any }, type: string) => {
+    if (type == "edit") {
+      mapParamsEditRef.value?.openDialog(row);
+      console.log(row, 55555555);
+    } else if (type == "detail") {
+      const res: { [key: string]: any } = await getMapParamsDetail(row.id);
+      if (res.code === 200 && res.data) {
+        const data = JSON.parse(JSON.stringify(res.data));
+        detailDialogRef.value?.openDialog(data);
+      } else {
+        ElMessage.error("接口异常");
+      }
+    }
   }
+});
+
+const onAdd = () => {
+  mapParamsEditRef.value?.openDialog();
+};
+
+const sortChange = (val: SortChangeEvent) => {
+  query.value.params.orderByColumn = val.prop;
+  const orderMap: {
+    [key: string]: string;
+  } = {
+    descending: "desc",
+    ascending: "asc"
+  };
+  query.value.params.isAsc = orderMap[val.order];
+  table.value.getTableData();
+};
+
+const onDelete = async () => {
+  const res: { [key: string]: any } = await deleteMapParamsCheck(table.value.ids);
+  if (res.code == 200) {
+    if (res.data?.length == 0) {
+      ElMessageBox.confirm("删除该配置可能会导致GIS地图展示异常，请慎重！确定删除?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
+          table.value.loading = true;
+          const res: { [key: string]: any } = await deleteMapParams(table.value.ids);
+          if (res.code == 200) {
+            ElMessage.success("删除成功");
+            table.value.getTableData();
+          } else {
+            ElMessage.error(res.msg);
+          }
+        })
+        .catch(() => {});
+    } else {
+      ElMessage({
+        dangerouslyUseHTMLString: true,
+        message: res.data.filter((item: any) => item.length).join("<br/>"),
+        type: "error"
+      });
+    }
+  } else {
+    ElMessage.error(res.msg);
+  }
+  table.value.loading = false;
+};
+
+const querySearch: (queryString: string, cb: (arg: any) => void) => void = async (
+  queryString: string,
+  cb: (arg: any) => void
+) => {
+  let oldPageSize = query.value.params.pageSize;
+  query.value.params.appName = queryString;
+  query.value.params.pageSize = 10000;
+  query.value.params.pageNumber = 1;
+  const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
+  // 调用 callback 返回建议列表的数据
+  cb(res.data.items);
+  query.value.params.pageSize = oldPageSize;
+};
+
+const handleSelect = async () => {
+  table.value.loading = true;
+  const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
+  table.value.data = res.data.items;
+  table.value.total = res.data.totalNum;
+  table.value.loading = false;
+};
+
+onMounted(() => {
+  table.value.getTableData();
 });
 </script>
 
