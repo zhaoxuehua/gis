@@ -1,0 +1,61 @@
+import { createApp } from "vue";
+import App from "./App.vue";
+// reset style sheet
+import "@/styles/index.scss";
+// iconfont css
+import "@/assets/iconfont/iconfont.scss";
+// font css
+import "@/assets/fonts/font.scss";
+// element css
+import "element-plus/dist/index.css";
+// element dark css
+import "element-plus/theme-chalk/dark/css-vars.css";
+
+// svg icons
+import "virtual:svg-icons-register";
+// element plus
+import ElementPlus from "element-plus";
+// element icons
+import * as Icons from "@element-plus/icons-vue";
+// custom directives
+import directives from "@/directives/index";
+// vue Router
+import router from "@/routers";
+// vue i18n
+import I18n from "@/languages/index";
+// pinia store
+import pinia from "@/stores";
+// errorHandler
+import errorHandler from "@/utils/errorHandler";
+// Pagination
+import Pagination from "@/components/pagination/index.vue";
+// Icon
+import Icon from "@/components/svgView/Icon.vue";
+import auth from "@/components/auth/auth.vue";
+import auths from "@/components/auth/auths.vue";
+import authAll from "@/components/auth/authAll.vue";
+import mulAuth from "@/components/auth/mulAuth.vue";
+import Popover from "@/components/popover/index.vue";
+
+const app = createApp(App);
+app.config.errorHandler = errorHandler;
+
+// register the element Icons component
+Object.keys(Icons).forEach(key => {
+  app.component(key, Icons[key as keyof typeof Icons]);
+});
+
+app
+  .use(ElementPlus)
+  .use(directives)
+  .use(router)
+  .use(I18n)
+  .use(pinia)
+  .component("Pagination", Pagination)
+  .component("Icon", Icon)
+  .component("Auth", auth)
+  .component("Auths", auths)
+  .component("AuthAll", authAll)
+  .component("MulAuth", mulAuth)
+  .component("Popover", Popover)
+  .mount("#app");

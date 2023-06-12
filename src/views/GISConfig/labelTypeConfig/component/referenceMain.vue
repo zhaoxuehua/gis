@@ -1,0 +1,223 @@
+<template>
+  <div class="reference-main">
+    <el-dialog
+      :title="'关联设备类型'"
+      v-model="open"
+      width="900px"
+      :close-on-click-modal="false"
+      append-to-body
+      @close="onClose"
+      :destroy-on-close="true"
+    >
+      <el-container>
+        <el-aside class="reference-side-tab">
+          <div class="reference-side-tab-item" :class="{ active: isLogical === 1 }" @click="logicalChange(1)">物理设备类型</div>
+          <div class="reference-side-tab-item" :class="{ active: isLogical === 2 }" @click="logicalChange(2)">逻辑设备类型</div>
+        </el-aside>
+        <el-main class="reference-main-content">
+          <el-button class="confirm-button" type="primary" @click="onConfirm">确定关联</el-button>
+          <el-tabs v-model="currentTab" @tab-click="onTabClick">
+            <el-tab-pane label="设备类型" name="equipType">
+              <el-table
+                :data="equipTypeList.data"
+                v-loading="equipTypeList.loading"
+                highlight-current-row
+                empty-text="暂无数据"
+                :row-style="{ height: 32 + 'px' }"
+                :cell-style="{ padding: '0px' }"
+                @selection-change="equipTypeList.onSelectionChange"
+                max-height="355"
+                ref="equipTypeTableRef"
+              >
+                <el-table-column type="selection"></el-table-column>
+                <el-table-column label="序号" type="index" width="50"></el-table-column>
+                <el-table-column label="设备类型编码" prop="code"></el-table-column>
+                <el-table-column label="设备类型名称" prop="name"></el-table-column>
+                <el-table-column label="创建时间" prop="createdOn"></el-table-column>
+              </el-table>
+            </el-tab-pane>
+            <el-tab-pane label="设备属性" name="equipAttribute">
+              <ReferenceAttribute
+                ref="referenceAttributeRef"
+                :equip-type-list="equipTypeList.data"
+                @attribute-change="onAttributeChange"
+              ></ReferenceAttribute>
+            </el-tab-pane>
+          </el-tabs>
+        </el-main>
+      </el-container>
+    </el-dialog>
+  </div>
+</template>
+
+<script lang="ts">
+import { onMounted, ref, defineComponent, watch } from "vue";
+import { ElMessage, ElTable } from "element-plus";
+import { handleParam } from "@/utils/common.js";
+import { deviceTypeList } from "@/api/device.js";
+import ReferenceAttribute from "./referenceAttribute.vue";
+
+export default defineComponent({
+  name: "ReferenceMain",
+  components: {
+    ReferenceAttribute
+  },
+  emits: ["referenceChange"],
+  setup(props, { emit }) {
+    // 物理设备 or 逻辑设备
+    const isLogical = ref<number>(1);
+
+    const logicalChange = (value: number) => {
+      isLogical.value = value;
+    };
+
+    // 弹窗
+    const open = ref<boolean>(false);
+
+    const openDialog = () => {
+      open.value = true;
+    };
+
+    const onClose = () => {
+      open.value = false;
+    };
+
+    // 设备类型 or 设备属性 Tab
+    const currentTab = ref<string>("equipType");
+
+    const onTabClick = (tab: any) => {
+      currentTab.value = tab.paneName;
+      equipTypeTableRef.value?.clearSelection();
+    };
+
+    // 设备类型表格
+    const equipTypeTableRef = ref<InstanceType<typeof ElTable>>();
+
+    // 设备类型数据
+    const equipTypeList = ref({
+      loading: false,
+      data: [],
+      ids: [],
+      fetchData: async () => {
+        equipTypeList.value.loading = true;
+        const res: { [key: string]: any } = await deviceTypeList(
+          ...(handleParam({ pageNumber: 1, pageSize: 1000, isLogical: isLogical.value, orderByColumn: "", isAsc: "" }) as [
+            string,
+            object
+          ])
+        );
+        if (res.items) {
+          equipTypeList.value.data = res.items;
+        } else {
+          ElMessage.error("接口异常");
+        }
+        equipTypeList.value.loading = false;
+      },
+      onSelectionChange: (selection: any) => {
+        if (selection.length > 1) {
+          let del_row = selection.shift();
+          equipTypeTableRef.value?.toggleRowSelection(del_row, false); // 用于多选表格，切换某一行的选中状态，如果使用了第二个参数，则是设置这一行选中与否（selected 为 true 则选中）
+        }
+        equipTypeList.value.ids = selection.map((item: any) => item.id);
+      }
+    });
+
+    // 设备属性变化
+    const onAttributeChange = (param: any) => {
+      console.log(param);
+    };
+
+    // 关联设备属性组件
+    const referenceAttributeRef = ref<InstanceType<typeof ReferenceAttribute>>();
+
+    // 确认关联按钮
+    const onConfirm = () => {
+      // 关联设备类型
+      if (currentTab.value === "equipType") {
+        if (equipTypeList.value.ids.length === 0) {
+          ElMessage.warning("请选择设备类型");
+          return;
+        }
+
+        const selectionRow = equipTypeList.value.data.find((item: any) => item.id === equipTypeList.value.ids[0]);
+        emit("referenceChange", selectionRow);
+      }
+
+      // 关联设备属性
+      if (currentTab.value === "equipAttribute") {
+        const selectionRow = referenceAttributeRef.value?.getSelectAttribute();
+
+        if (!selectionRow) {
+          ElMessage.warning("请选择设备属性及属性值");
+          return;
+        }
+
+        const { equipType, equipAttribute } = selectionRow;
+        emit("referenceChange", equipType, equipAttribute);
+      }
+
+      open.value = false;
+    };
+
+    onMounted(() => {
+      equipTypeList.value.fetchData();
+    });
+
+    watch(isLogical, () => {
+      equipTypeList.value.fetchData();
+    });
+
+    return {
+      isLogical,
+      logicalChange,
+      open,
+      openDialog,
+      onClose,
+      onConfirm,
+      currentTab,
+      onTabClick,
+      equipTypeList,
+      equipTypeTableRef,
+      onAttributeChange,
+      referenceAttributeRef
+    };
+  }
+});
+</script>
+
+<style lang="scss" scoped>
+.reference-main {
+  ::v-deep(.el-overlay .el-dialog .el-dialog__body) {
+    padding: 0 !important;
+  }
+}
+.reference-main-content {
+  position: relative;
+  padding: 0;
+  ::v-deep(.el-tabs .el-tabs__header .el-tabs__nav-wrap) {
+    padding-left: 20px;
+  }
+  .confirm-button {
+    position: absolute;
+    right: 20px;
+    z-index: 1;
+  }
+}
+.reference-side-tab {
+  width: 180px;
+  border-right: var(--border-color) solid 1px;
+  .reference-side-tab-item {
+    height: 40px;
+    font-size: 14px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #f0f5f5;
+    &.active {
+      font-weight: bold;
+      color: var(--color-primary);
+      background-color: var(--color-primary-tran-1);
+    }
+  }
+}
+</style>
