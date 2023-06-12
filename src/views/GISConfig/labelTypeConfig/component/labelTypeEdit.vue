@@ -1,37 +1,42 @@
 <template>
   <div>
     <el-dialog
-      :title="['创建标签类型', '编辑标签类型', '标签类型详情'][dialogType]"
-      v-model="open"
+      :title="['创建标签类型', '编辑标签类型', '标签类型详情'][state.dialogType]"
+      v-model="state.open"
       width="800px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
       :destroy-on-close="true"
     >
-      <el-form :inline="true" :model="form" label-width="150px" :rules="rulesForm" ref="refForm">
+      <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="标签类型编码" prop="code">
-          <el-input placeholder="请输入..." v-model="form.code" :disabled="dialogType == 1 || dialogType == 2" clearable />
+          <el-input
+            placeholder="请输入..."
+            v-model="form.code"
+            :disabled="state.dialogType == 1 || state.dialogType == 2"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="标签类型名称" prop="name">
-          <el-input placeholder="请输入..." v-model="form.name" :disabled="dialogType == 2" clearable />
+          <el-input placeholder="请输入..." v-model="form.name" :disabled="state.dialogType == 2" clearable />
         </el-form-item>
         <el-form-item label="所属图层" prop="layerConfigId">
-          <el-select v-model="form.layerConfigId" clearable placeholder="请选择..." :disabled="dialogType == 2">
+          <el-select v-model="form.layerConfigId" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
             <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="关联设备类型">
-          <el-input readonly v-model="reference" :disabled="dialogType == 2" />
-          <el-button class="reference-button" circle @click="onRefrenceClick" v-if="dialogType != 2">
+          <el-input readonly v-model="reference" :disabled="state.dialogType == 2" />
+          <el-button class="reference-button" circle @click="onRefrenceClick" v-if="state.dialogType != 2">
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
         <el-form-item label="对应要素" prop="factor">
-          <el-input placeholder="请输入..." v-model="form.factor" clearable :disabled="dialogType == 2" />
+          <el-input placeholder="请输入..." v-model="form.factor" clearable :disabled="state.dialogType == 2" />
         </el-form-item>
         <el-form-item label="默认显示标签名称" prop="isDefaultDisplayLabelName">
-          <el-checkbox v-model="form.isDefaultDisplayLabelName" :disabled="dialogType == 2"></el-checkbox>
+          <el-checkbox v-model="form.isDefaultDisplayLabelName" :disabled="state.dialogType == 2"></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
           <el-upload
@@ -40,7 +45,7 @@
             :before-upload="beforeUpload"
             :http-request="uploadLegendImage"
             class="avatar-uploader"
-            :disabled="dialogType == 2"
+            :disabled="state.dialogType == 2"
           >
             <div v-if="form.labelLegendImagePath">
               <img
@@ -48,7 +53,7 @@
                 :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${form.labelLegendImagePath}`"
                 alt=""
               />
-              <div class="upload-image-btn" v-if="dialogType != 2">
+              <div class="upload-image-btn" v-if="state.dialogType != 2">
                 <span>
                   <Icon src="Upload" :size="16"></Icon>
                 </span>
@@ -61,7 +66,7 @@
           </el-upload>
         </el-form-item>
         <el-form-item label="数据类型" prop="dataType">
-          <el-select v-model="form.dataType" clearable placeholder="请选择..." :disabled="dialogType == 2">
+          <el-select v-model="form.dataType" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
             <el-option
               v-for="(item, index) in dataTypeList.data"
               :key="index"
@@ -73,7 +78,7 @@
         <!-- 点 -->
         <template v-if="form.dataType === '1'">
           <el-form-item label="显示比例" prop="displayScale">
-            <el-input type="number" v-model="form.displayScale" :disabled="dialogType == 2" />
+            <el-input type="number" v-model="form.displayScale" :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="标签类型图片" prop="labelTypeImagePath">
             <el-upload
@@ -82,7 +87,7 @@
               :before-upload="beforeUpload"
               :http-request="uploadLabelTypeImage"
               class="avatar-uploader"
-              :disabled="dialogType == 2"
+              :disabled="state.dialogType == 2"
             >
               <div v-if="form.labelTypeImagePath">
                 <img
@@ -90,7 +95,7 @@
                   :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${form.labelTypeImagePath}`"
                   alt=""
                 />
-                <div class="upload-image-btn" v-if="dialogType != 2">
+                <div class="upload-image-btn" v-if="state.dialogType != 2">
                   <span>
                     <Icon src="Upload" :size="16"></Icon>
                   </span>
@@ -106,13 +111,13 @@
         <!-- 线 面 圆 矩形 -->
         <template v-if="['2', '3', '4', '5'].includes(form.dataType)">
           <el-form-item label="线宽" prop="lineWidth">
-            <el-input type="number" v-model="form.lineWidth" :disabled="dialogType == 2" />
+            <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="线色" prop="lineColor" style="width: 350px">
-            <el-color-picker v-model="form.lineColor" show-alpha :disabled="dialogType == 2" />
+            <el-color-picker v-model="form.lineColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="线型" prop="lineType">
-            <el-select v-model="form.lineType" placeholder="请选择..." clearable :disabled="dialogType == 2">
+            <el-select v-model="form.lineType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
             </el-select>
@@ -121,56 +126,56 @@
         <!-- 面 圆 矩形 -->
         <template v-if="['3', '4', '5'].includes(form.dataType)">
           <el-form-item label="面填充色" prop="polygonColor">
-            <el-color-picker v-model="form.polygonColor" show-alpha :disabled="dialogType == 2" />
+            <el-color-picker v-model="form.polygonColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
         </template>
         <!-- 线 -->
         <template v-if="form.dataType === '2'">
           <el-form-item label="矢量路径" prop="lineVectorPath">
-            <el-input placeholder="请输入..." v-model="form.lineVectorPath" clearable :disabled="dialogType == 2" />
+            <el-input placeholder="请输入..." v-model="form.lineVectorPath" clearable :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="矢量宽度" prop="lineVectorWidth">
-            <el-input type="number" v-model="form.lineVectorWidth" :disabled="dialogType == 2" />
+            <el-input type="number" v-model="form.lineVectorWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="矢量高度" prop="lineVectorHeight">
-            <el-input type="number" v-model="form.lineVectorHeight" :disabled="dialogType == 2" />
+            <el-input type="number" v-model="form.lineVectorHeight" :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="矢量显示比例" prop="lineVectorProportion">
-            <el-input type="number" v-model="form.lineVectorProportion" :disabled="dialogType == 2" />
+            <el-input type="number" v-model="form.lineVectorProportion" :disabled="state.dialogType == 2" />
           </el-form-item>
         </template>
         <!-- 文本 -->
         <template v-if="form.dataType === '6'">
           <el-form-item label="文本内容" prop="content">
-            <el-input placeholder="请输入..." v-model="form.content" clearable :disabled="dialogType == 2" />
+            <el-input placeholder="请输入..." v-model="form.content" clearable :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="是否加粗" prop="isBold">
-            <el-checkbox v-model="form.isBold" :disabled="dialogType == 2"></el-checkbox>
+            <el-checkbox v-model="form.isBold" :disabled="state.dialogType == 2"></el-checkbox>
           </el-form-item>
           <el-form-item label="字体" prop="fontType">
-            <el-select v-model="form.fontType" placeholder="请选择..." clearable :disabled="dialogType == 2">
+            <el-select v-model="form.fontType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
               <el-option label="微软雅黑" value="MicrosoftYaHei"></el-option>
               <el-option label="宋体" value="SimSun"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="字体颜色" prop="fontColor">
-            <el-color-picker v-model="form.fontColor" show-alpha :disabled="dialogType == 2" />
+            <el-color-picker v-model="form.fontColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="字体大小" prop="fontSize">
-            <el-input type="number" v-model="form.fontSize" :disabled="dialogType == 2" />
+            <el-input type="number" v-model="form.fontSize" :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="边框线宽" prop="borderWidth">
-            <el-input type="number" v-model="form.borderWidth" :disabled="dialogType == 2" />
+            <el-input type="number" v-model="form.borderWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="边框颜色" prop="borderColor" style="width: 350px">
-            <el-color-picker v-model="form.borderColor" show-alpha :disabled="dialogType == 2" />
+            <el-color-picker v-model="form.borderColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="背景颜色" prop="backGroundColor">
-            <el-color-picker v-model="form.backGroundColor" show-alpha :disabled="dialogType == 2" />
+            <el-color-picker v-model="form.backGroundColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
         </template>
       </el-form>
-      <template #footer v-if="dialogType != 2">
+      <template #footer v-if="state.dialogType != 2">
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
           <el-button type="primary" @click="onConfirm">确认</el-button>
@@ -182,8 +187,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { reactive, toRefs, onMounted, ref, defineComponent, computed } from "vue";
+<script lang="ts" setup name="LabelTypeEdit">
+import { reactive, onMounted, ref, computed } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
@@ -191,355 +196,331 @@ import { getLabelTypeDetail, getLabelDataType, getLayerList, addLabelType, editL
 import ReferenceMain from "./referenceMain.vue";
 import { LabelType } from "../../type";
 
-export default defineComponent({
-  name: "LabelTypeEdit",
-  components: {
-    ReferenceMain
-  },
-  emits: ["successAdd"],
-  setup(props, { emit }) {
-    const codeVerification = (rule: any, value: any, callback: Function) => {
-      if (!Regular.verifyNumCode.test(value)) {
-        return callback(new Error("标签类型编码只能出现字母,数字,下划线"));
-      }
-      callback();
-    };
-    const displayScaleVerification = (rule: any, value: any, callback: Function) => {
-      if (!Regular.verifyNumberFloat.test(value)) {
-        return callback(new Error("只能为大于0的数字"));
-      }
-      callback();
-    };
-    const fontSizeVerification = (rule: any, value: any, callback: Function) => {
-      if (!Regular.verifyPositiveInteger.test(value)) {
-        return callback(new Error("只能为大于0的整数"));
-      }
-      callback();
-    };
-    const state = reactive({
-      dialogType: 0,
-      open: false,
-      // 弹窗表单验证
-      rulesForm: {
-        code: [
-          { required: true, message: "标签类型编码不能为空", trigger: ["blur", "change"] },
-          { validator: codeVerification, trigger: ["blur", "change"] },
-          { max: 50, message: "标签类型编码长度不能大于50", trigger: ["blur", "change"] }
-        ],
-        name: [
-          { required: true, message: "标签类型名称不能为空", trigger: ["blur", "change"] },
-          { max: 50, message: "标签类型名称长度不能大于50", trigger: ["blur", "change"] }
-        ],
-        layerConfigId: [{ required: true, message: "请选择所属图层", trigger: ["blur", "change"] }],
-        dataType: [{ required: true, message: "请选择数据类型", trigger: ["blur", "change"] }],
-        displayScale: [
-          { required: true, message: "显示比例不能为空", trigger: ["blur", "change"] },
-          { validator: displayScaleVerification, trigger: ["blur", "change"] }
-        ],
-        labelTypeImagePath: [{ required: true, message: "标签类型图片不能为空", trigger: ["blur", "change"] }],
-        lineWidth: [
-          { required: true, message: "线宽不能为空", trigger: ["blur", "change"] },
-          { validator: displayScaleVerification, trigger: ["blur", "change"] }
-        ],
-        lineType: [{ required: true, message: "请选择线型", trigger: ["blur", "change"] }],
-        lineColor: [{ required: true, message: "请选择线色", trigger: ["blur", "change"] }],
-        polygonColor: [{ required: true, message: "请选择面填充色", trigger: ["blur", "change"] }],
-        content: [
-          { required: true, message: "文本内容不能为空", trigger: ["blur", "change"] },
-          { max: 500, message: "文本内容长度不能大于500", trigger: ["blur", "change"] }
-        ],
-        fontType: [{ required: true, message: "请选择字体", trigger: ["blur", "change"] }],
-        fontColor: [{ required: true, message: "请选择字体颜色", trigger: ["blur", "change"] }],
-        fontSize: [
-          { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
-          { validator: fontSizeVerification, trigger: ["blur", "change"] }
-        ]
-      }
-    });
-
-    const referenceMainRef = ref<InstanceType<typeof ReferenceMain>>();
-    const refForm = ref<InstanceType<typeof ElForm>>();
-
-    const defaultParam = {
-      code: "",
-      name: "",
-      layerConfigId: "",
-      attribute: null,
-      attributeId: 0,
-      equipType: null,
-      equipTypeId: 0,
-      isDefaultDisplayLabelName: false,
-      factor: "",
-      labelLegendImagePath: "",
-      labelLegendImageAllPath: "",
-      dataType: "1",
-      displayScale: 1,
-      pellucidity: 1,
-      labelTypeImagePath: "",
-      labelTypeImageAllPath: "",
-      lineWidth: 1,
-      lineType: "solid",
-      lineColor: "rgba(0,0,0,1)",
-      polygonColor: "rgba(0,0,0,1)",
-      lineVectorPath: "",
-      lineVectorWidth: 10,
-      lineVectorHeight: 10,
-      lineVectorProportion: 1,
-      content: "",
-      fontType: "MicrosoftYaHei",
-      isBold: false,
-      fontColor: "rgba(0,0,0,1)",
-      fontSize: 12,
-      borderWidth: 1,
-      borderColor: "rgba(0,0,0,1)",
-      backGroundColor: "rgba(0,0,0,0.3)",
-      referenceValue: "",
-      referenceValueReal: ""
-    };
-
-    // 表单字段
-    let form = ref<LabelType & { referenceValue: string; referenceValueReal: any }>(defaultParam);
-
-    // 关联设备信息
-    const reference = computed(() => {
-      if (form.value.equipType && form.value.equipTypeId) {
-        if (form.value.attribute && form.value.attributeId) {
-          const referenceValue = JSON.parse(form.value.referenceValue);
-          const { type, selectedValue } = referenceValue;
-          let attributeValue = selectedValue;
-
-          if (type === "select") {
-            attributeValue = selectedValue.label;
-          }
-
-          return `${form.value.equipType.name} - ${form.value.attribute.label || form.value.attribute.name} - ${attributeValue}`;
-        } else {
-          return `${form.value.equipType.name}`;
-        }
-      } else {
-        return "";
-      }
-    });
-
-    const openDialog = async (row?: any, type?: string) => {
-      if (row) {
-        if (type === "edit") {
-          state.dialogType = 1;
-        } else {
-          state.dialogType = 2;
-        }
-        const res: { [key: string]: any } = await getLabelTypeDetail(row.id);
-        if (res.code === 200 && res.data) {
-          form.value = JSON.parse(JSON.stringify(res.data));
-        }
-        form.value.id = row.id;
-      } else {
-        state.dialogType = 0;
-        form.value = { ...defaultParam };
-      }
-      state.open = true;
-    };
-
-    const onClose = () => {
-      state.open = false;
-    };
-
-    const onConfirm = () => {
-      refForm.value?.validate(async (valid: any) => {
-        if (valid) {
-          let param = { ...form.value };
-          // 分别字段值类型转换
-          const { isBold, isDefaultDisplayLabelName, lineVectorPath } = param;
-          param.isBold = Boolean(isBold);
-          param.isDefaultDisplayLabelName = Boolean(isDefaultDisplayLabelName);
-          param.lineVectorPath = lineVectorPath || "";
-
-          if (state.dialogType == 0) {
-            // 添加
-            const res: { [key: string]: any } = await addLabelType(param);
-            if (res.code == 200) {
-              ElMessage.success("创建成功");
-              emit("successAdd");
-              state.open = false;
-            } else {
-              ElMessage({
-                type: "error",
-                message: res.msg
-              });
-            }
-          } else if (state.dialogType == 1) {
-            // 编辑
-            const res: { [key: string]: any } = await editLabelType(param);
-            if (res.code == 200) {
-              ElMessage.success("编辑成功");
-              emit("successAdd");
-              state.open = false;
-            } else {
-              ElMessage({
-                type: "error",
-                message: res.msg
-              });
-            }
-          }
-        }
-      });
-    };
-
-    // 点击关联设备信息
-    const onRefrenceClick = () => {
-      referenceMainRef.value?.openDialog();
-    };
-
-    // 确认关联回调
-    const onReferenceChange = (equipType: any, equipAttribute: any) => {
-      form.value.equipType = { ...equipType };
-      form.value.equipTypeId = equipType.id;
-
-      // 如果有设备属性
-      if (equipAttribute) {
-        const { type, bindValue, option, extendAttribute } = equipAttribute;
-        let selectedValue = bindValue;
-
-        if (type === "select") {
-          selectedValue = option.find((item: any) => item.value === bindValue);
-        }
-
-        form.value.attributeId = extendAttribute;
-        form.value.attribute = equipAttribute;
-        form.value.referenceValue = JSON.stringify({
-          type,
-          selectedValue
-        });
-        form.value.referenceValueReal = bindValue;
-      }
-    };
-
-    // 上传前验证
-    const beforeUpload = (rawFile: any) => {
-      if (!["image/jpeg", "image/png"].includes(rawFile.type)) {
-        ElMessage.error("只能上传图片格式!");
-        return false;
-      } else if (rawFile.size / 1024 / 1024 > 2) {
-        ElMessage.error("图片大小不能超过 2MB!");
-        return false;
-      }
-      return true;
-    };
-
-    // 图例图片上传
-    const uploadLegendImage = async (content: any) => {
-      let formData = new FormData();
-      formData.append("uploadFile", content.file);
-      const res: { [key: string]: any } = await upLoadImage(formData);
-      if (res.code == 200) {
-        ElMessage({
-          type: "success",
-          message: "上传成功"
-        });
-        const { fileName, fileUrl } = res.data;
-        form.value.labelLegendImagePath = fileName;
-        form.value.labelLegendImageAllPath = fileUrl;
-      } else {
-        ElMessage.error(res.msg);
-      }
-    };
-
-    // 图例图片删除
-    const handleLegendImageRemove = () => {
-      form.value.labelLegendImagePath = "";
-      form.value.labelLegendImageAllPath = "";
-    };
-
-    // 点类型图片上传
-    const uploadLabelTypeImage = async (content: any) => {
-      let formData = new FormData();
-      formData.append("uploadFile", content.file);
-      const res: { [key: string]: any } = await upLoadImage(formData);
-      if (res.code == 200) {
-        ElMessage({
-          type: "success",
-          message: "上传成功"
-        });
-        const { fileName, fileUrl } = res.data;
-        form.value.labelTypeImagePath = fileName;
-        form.value.labelTypeImageAllPath = fileUrl;
-      } else {
-        ElMessage.error(res.msg);
-      }
-    };
-
-    // 点类型图片删除
-    const handleLabelTypeImageRemove = () => {
-      form.value.labelTypeImagePath = "";
-      form.value.labelTypeImageAllPath = "";
-    };
-
-    // 数据类型列表
-    const dataTypeList = ref<{
-      data: Array<{
-        label: string;
-        value: string;
-      }>;
-      fetchData: Function;
-    }>({
-      data: [],
-      fetchData: async () => {
-        const res: { [key: string]: any } = await getLabelDataType();
-        if (res.data.dataType) {
-          dataTypeList.value.data = res.data.dataType;
-        } else {
-          ElMessage.error("接口异常");
-        }
-      }
-    });
-
-    // 图层列表
-    const layerList = ref<{
-      data: Array<{
-        id: number;
-        code: string;
-        name: string;
-      }>;
-      fetchData: Function;
-    }>({
-      data: [],
-      fetchData: async () => {
-        const res: { [key: string]: any } = await getLayerList(
-          ...(handleParam({ pageNumber: 1, pageSize: 1000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
-        );
-        if (res.data.items) {
-          layerList.value.data = res.data.items;
-        } else {
-          ElMessage.error("接口异常");
-        }
-      }
-    });
-
-    onMounted(() => {
-      dataTypeList.value.fetchData();
-      layerList.value.fetchData();
-    });
-
-    return {
-      ...toRefs(state),
-      referenceMainRef,
-      refForm,
-      form,
-      reference,
-      openDialog,
-      onClose,
-      onConfirm,
-      dataTypeList,
-      layerList,
-      onRefrenceClick,
-      onReferenceChange,
-      beforeUpload,
-      uploadLegendImage,
-      handleLegendImageRemove,
-      uploadLabelTypeImage,
-      handleLabelTypeImageRemove
-    };
+const emit = defineEmits(["successAdd"]);
+const codeVerification = (rule: any, value: any, callback: Function) => {
+  if (!Regular.verifyNumCode.test(value)) {
+    return callback(new Error("标签类型编码只能出现字母,数字,下划线"));
   }
+  callback();
+};
+const displayScaleVerification = (rule: any, value: any, callback: Function) => {
+  if (!Regular.verifyNumberFloat.test(value)) {
+    return callback(new Error("只能为大于0的数字"));
+  }
+  callback();
+};
+const fontSizeVerification = (rule: any, value: any, callback: Function) => {
+  if (!Regular.verifyPositiveInteger.test(value)) {
+    return callback(new Error("只能为大于0的整数"));
+  }
+  callback();
+};
+const state = reactive({
+  dialogType: 0,
+  open: false,
+  // 弹窗表单验证
+  rulesForm: {
+    code: [
+      { required: true, message: "标签类型编码不能为空", trigger: ["blur", "change"] },
+      { validator: codeVerification, trigger: ["blur", "change"] },
+      { max: 50, message: "标签类型编码长度不能大于50", trigger: ["blur", "change"] }
+    ],
+    name: [
+      { required: true, message: "标签类型名称不能为空", trigger: ["blur", "change"] },
+      { max: 50, message: "标签类型名称长度不能大于50", trigger: ["blur", "change"] }
+    ],
+    layerConfigId: [{ required: true, message: "请选择所属图层", trigger: ["blur", "change"] }],
+    dataType: [{ required: true, message: "请选择数据类型", trigger: ["blur", "change"] }],
+    displayScale: [
+      { required: true, message: "显示比例不能为空", trigger: ["blur", "change"] },
+      { validator: displayScaleVerification, trigger: ["blur", "change"] }
+    ],
+    labelTypeImagePath: [{ required: true, message: "标签类型图片不能为空", trigger: ["blur", "change"] }],
+    lineWidth: [
+      { required: true, message: "线宽不能为空", trigger: ["blur", "change"] },
+      { validator: displayScaleVerification, trigger: ["blur", "change"] }
+    ],
+    lineType: [{ required: true, message: "请选择线型", trigger: ["blur", "change"] }],
+    lineColor: [{ required: true, message: "请选择线色", trigger: ["blur", "change"] }],
+    polygonColor: [{ required: true, message: "请选择面填充色", trigger: ["blur", "change"] }],
+    content: [
+      { required: true, message: "文本内容不能为空", trigger: ["blur", "change"] },
+      { max: 500, message: "文本内容长度不能大于500", trigger: ["blur", "change"] }
+    ],
+    fontType: [{ required: true, message: "请选择字体", trigger: ["blur", "change"] }],
+    fontColor: [{ required: true, message: "请选择字体颜色", trigger: ["blur", "change"] }],
+    fontSize: [
+      { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
+      { validator: fontSizeVerification, trigger: ["blur", "change"] }
+    ]
+  }
+});
+
+const referenceMainRef = ref<InstanceType<typeof ReferenceMain>>();
+const refForm = ref<InstanceType<typeof ElForm>>();
+
+const defaultParam = {
+  code: "",
+  name: "",
+  layerConfigId: "",
+  attribute: null,
+  attributeId: 0,
+  equipType: null,
+  equipTypeId: 0,
+  isDefaultDisplayLabelName: false,
+  factor: "",
+  labelLegendImagePath: "",
+  labelLegendImageAllPath: "",
+  dataType: "1",
+  displayScale: 1,
+  pellucidity: 1,
+  labelTypeImagePath: "",
+  labelTypeImageAllPath: "",
+  lineWidth: 1,
+  lineType: "solid",
+  lineColor: "rgba(0,0,0,1)",
+  polygonColor: "rgba(0,0,0,1)",
+  lineVectorPath: "",
+  lineVectorWidth: 10,
+  lineVectorHeight: 10,
+  lineVectorProportion: 1,
+  content: "",
+  fontType: "MicrosoftYaHei",
+  isBold: false,
+  fontColor: "rgba(0,0,0,1)",
+  fontSize: 12,
+  borderWidth: 1,
+  borderColor: "rgba(0,0,0,1)",
+  backGroundColor: "rgba(0,0,0,0.3)",
+  referenceValue: "",
+  referenceValueReal: ""
+};
+
+// 表单字段
+let form = ref<LabelType & { referenceValue: string; referenceValueReal: any }>(defaultParam);
+
+// 关联设备信息
+const reference = computed(() => {
+  if (form.value.equipType && form.value.equipTypeId) {
+    if (form.value.attribute && form.value.attributeId) {
+      const referenceValue = JSON.parse(form.value.referenceValue);
+      const { type, selectedValue } = referenceValue;
+      let attributeValue = selectedValue;
+
+      if (type === "select") {
+        attributeValue = selectedValue.label;
+      }
+
+      return `${form.value.equipType.name} - ${form.value.attribute.label || form.value.attribute.name} - ${attributeValue}`;
+    } else {
+      return `${form.value.equipType.name}`;
+    }
+  } else {
+    return "";
+  }
+});
+
+const openDialog = async (row?: { [key: string]: any }, type?: string) => {
+  if (row) {
+    if (type === "edit") {
+      state.dialogType = 1;
+    } else {
+      state.dialogType = 2;
+    }
+    const res: { [key: string]: any } = await getLabelTypeDetail(row.id);
+    if (res.code === 200 && res.data) {
+      form.value = JSON.parse(JSON.stringify(res.data));
+    }
+    form.value.id = row.id;
+  } else {
+    state.dialogType = 0;
+    form.value = { ...defaultParam };
+  }
+  state.open = true;
+};
+
+const onClose = () => {
+  state.open = false;
+};
+
+const onConfirm = () => {
+  refForm.value?.validate(async (valid: any) => {
+    if (valid) {
+      let param = { ...form.value };
+      // 分别字段值类型转换
+      const { isBold, isDefaultDisplayLabelName, lineVectorPath } = param;
+      param.isBold = Boolean(isBold);
+      param.isDefaultDisplayLabelName = Boolean(isDefaultDisplayLabelName);
+      param.lineVectorPath = lineVectorPath || "";
+
+      if (state.dialogType == 0) {
+        // 添加
+        const res: { [key: string]: any } = await addLabelType(param);
+        if (res.code == 200) {
+          ElMessage.success("创建成功");
+          emit("successAdd");
+          state.open = false;
+        } else {
+          ElMessage({
+            type: "error",
+            message: res.msg
+          });
+        }
+      } else if (state.dialogType == 1) {
+        // 编辑
+        const res: { [key: string]: any } = await editLabelType(param);
+        if (res.code == 200) {
+          ElMessage.success("编辑成功");
+          emit("successAdd");
+          state.open = false;
+        } else {
+          ElMessage({
+            type: "error",
+            message: res.msg
+          });
+        }
+      }
+    }
+  });
+};
+
+// 点击关联设备信息
+const onRefrenceClick = () => {
+  referenceMainRef.value?.openDialog();
+};
+
+// 确认关联回调
+const onReferenceChange = (equipType: any, equipAttribute: any) => {
+  form.value.equipType = { ...equipType };
+  form.value.equipTypeId = equipType.id;
+
+  // 如果有设备属性
+  if (equipAttribute) {
+    const { type, bindValue, option, extendAttribute } = equipAttribute;
+    let selectedValue = bindValue;
+
+    if (type === "select") {
+      selectedValue = option.find((item: any) => item.value === bindValue);
+    }
+
+    form.value.attributeId = extendAttribute;
+    form.value.attribute = equipAttribute;
+    form.value.referenceValue = JSON.stringify({
+      type,
+      selectedValue
+    });
+    form.value.referenceValueReal = bindValue;
+  }
+};
+
+// 上传前验证
+const beforeUpload = (rawFile: any) => {
+  if (!["image/jpeg", "image/png"].includes(rawFile.type)) {
+    ElMessage.error("只能上传图片格式!");
+    return false;
+  } else if (rawFile.size / 1024 / 1024 > 2) {
+    ElMessage.error("图片大小不能超过 2MB!");
+    return false;
+  }
+  return true;
+};
+
+// 图例图片上传
+const uploadLegendImage = async (content: any) => {
+  let formData = new FormData();
+  formData.append("uploadFile", content.file);
+  const res: { [key: string]: any } = await upLoadImage(formData);
+  if (res.code == 200) {
+    ElMessage({
+      type: "success",
+      message: "上传成功"
+    });
+    const { fileName, fileUrl } = res.data;
+    form.value.labelLegendImagePath = fileName;
+    form.value.labelLegendImageAllPath = fileUrl;
+  } else {
+    ElMessage.error(res.msg);
+  }
+};
+
+// 图例图片删除
+const handleLegendImageRemove = () => {
+  form.value.labelLegendImagePath = "";
+  form.value.labelLegendImageAllPath = "";
+};
+
+// 点类型图片上传
+const uploadLabelTypeImage = async (content: any) => {
+  let formData = new FormData();
+  formData.append("uploadFile", content.file);
+  const res: { [key: string]: any } = await upLoadImage(formData);
+  if (res.code == 200) {
+    ElMessage({
+      type: "success",
+      message: "上传成功"
+    });
+    const { fileName, fileUrl } = res.data;
+    form.value.labelTypeImagePath = fileName;
+    form.value.labelTypeImageAllPath = fileUrl;
+  } else {
+    ElMessage.error(res.msg);
+  }
+};
+
+// 点类型图片删除
+const handleLabelTypeImageRemove = () => {
+  form.value.labelTypeImagePath = "";
+  form.value.labelTypeImageAllPath = "";
+};
+
+// 数据类型列表
+const dataTypeList = ref<{
+  data: Array<{
+    label: string;
+    value: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getLabelDataType();
+    if (res.data.dataType) {
+      dataTypeList.value.data = res.data.dataType;
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
+// 图层列表
+const layerList = ref<{
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getLayerList(
+      ...(handleParam({ pageNumber: 1, pageSize: 1000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+    );
+    if (res.data.items) {
+      layerList.value.data = res.data.items;
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
+onMounted(() => {
+  dataTypeList.value.fetchData();
+  layerList.value.fetchData();
+});
+
+defineExpose({
+  openDialog
 });
 </script>
 

@@ -220,7 +220,7 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .layer-config {
   width: calc(100vw - 260px);
   height: calc(100vh - 109px);

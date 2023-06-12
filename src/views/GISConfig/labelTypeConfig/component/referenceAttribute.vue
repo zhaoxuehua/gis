@@ -47,7 +47,6 @@
                 style="width: 200px"
               >
               </el-input>
-              <!-- oninput="value=value.replace(/[^0-9]/g,'')" -->
               <el-select
                 v-model="scope.row.bindValue"
                 v-else-if="['select'].includes(scope.row.type)"
@@ -111,84 +110,69 @@
   </div>
 </template>
 
-<script lang="ts">
-import { onMounted, ref, defineComponent, watch } from "vue";
+<script lang="ts" setup name="ReferenceAttribute">
+import { onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { getBindAttributeByEquipType } from "@/api/visconfig.js";
 
-export default defineComponent({
-  name: "ReferenceAttribute",
-  components: {},
-  props: {
-    equipTypeList: Array<any>
+const props = defineProps({
+  equipTypeList: Array<any>
+});
+
+const currentEquipTypeId = ref();
+const onEquipTypeChange = (equipType: any) => {
+  currentEquipTypeId.value = equipType.id;
+};
+
+const attributeTableRef = ref();
+const attributeList = ref({
+  loading: false,
+  data: [],
+  ids: [],
+  fetchData: async () => {
+    attributeList.value.loading = true;
+    const res: { [key: string]: any } = await getBindAttributeByEquipType(currentEquipTypeId.value);
+    if (res.code === 200 && res.data) {
+      attributeList.value.data = res.data;
+    } else {
+      ElMessage.error("接口异常");
+    }
+    attributeList.value.loading = false;
   },
-  setup(props) {
-    const currentEquipTypeId = ref();
-    const onEquipTypeChange = (equipType: any) => {
-      currentEquipTypeId.value = equipType.id;
-    };
-
-    const currentAttribute = ref({
-      attribute: {},
-      attributeValue: ""
-    });
-
-    const attributeTableRef = ref();
-    const attributeList = ref({
-      loading: false,
-      data: [],
-      ids: [],
-      fetchData: async () => {
-        attributeList.value.loading = true;
-        const res: { [key: string]: any } = await getBindAttributeByEquipType(currentEquipTypeId.value);
-        if (res.code === 200 && res.data) {
-          attributeList.value.data = res.data;
-        } else {
-          ElMessage.error("接口异常");
-        }
-        attributeList.value.loading = false;
-      },
-      onSelectionChange: (selection: any) => {
-        if (selection.length > 1) {
-          let del_row = selection.shift();
-          attributeTableRef.value.toggleRowSelection(del_row, false); // 用于多选表格，切换某一行的选中状态，如果使用了第二个参数，则是设置这一行选中与否（selected 为 true 则选中）
-        }
-        attributeList.value.ids = selection.map((item: any) => item.id);
-      }
-    });
-
-    const getSelectAttribute = () => {
-      if (attributeList.value.ids.length > 0) {
-        const selectionRow: any = attributeList.value.data.find((item: any) => item.id === attributeList.value.ids[0]);
-
-        if (selectionRow?.bindValue) {
-          const equipType = props.equipTypeList?.find((item: any) => item.id === currentEquipTypeId.value);
-          return { equipType, equipAttribute: selectionRow };
-        } else {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    };
-
-    onMounted(() => {});
-
-    watch(currentEquipTypeId, newVal => {
-      if (newVal) {
-        attributeList.value.fetchData();
-      }
-    });
-
-    return {
-      currentEquipTypeId,
-      currentAttribute,
-      attributeTableRef,
-      attributeList,
-      onEquipTypeChange,
-      getSelectAttribute
-    };
+  onSelectionChange: (selection: any) => {
+    if (selection.length > 1) {
+      let del_row = selection.shift();
+      attributeTableRef.value.toggleRowSelection(del_row, false); // 用于多选表格，切换某一行的选中状态，如果使用了第二个参数，则是设置这一行选中与否（selected 为 true 则选中）
+    }
+    attributeList.value.ids = selection.map((item: any) => item.id);
   }
+});
+
+const getSelectAttribute = () => {
+  if (attributeList.value.ids.length > 0) {
+    const selectionRow: any = attributeList.value.data.find((item: any) => item.id === attributeList.value.ids[0]);
+
+    if (selectionRow?.bindValue) {
+      const equipType = props.equipTypeList?.find((item: any) => item.id === currentEquipTypeId.value);
+      return { equipType, equipAttribute: selectionRow };
+    } else {
+      return null;
+    }
+  } else {
+    return null;
+  }
+};
+
+onMounted(() => {});
+
+watch(currentEquipTypeId, newVal => {
+  if (newVal) {
+    attributeList.value.fetchData();
+  }
+});
+
+defineExpose({
+  getSelectAttribute
 });
 </script>
 

@@ -50,138 +50,118 @@
   </div>
 </template>
 
-<script lang="ts">
-import { onMounted, ref, defineComponent, watch } from "vue";
+<script lang="ts" setup name="ReferenceMain">
+import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElTable } from "element-plus";
 import { handleParam } from "@/utils/common.js";
 import { deviceTypeList } from "@/api/device.js";
 import ReferenceAttribute from "./referenceAttribute.vue";
 
-export default defineComponent({
-  name: "ReferenceMain",
-  components: {
-    ReferenceAttribute
+const emit = defineEmits(["referenceChange"]);
+// 物理设备 or 逻辑设备
+const isLogical = ref<number>(1);
+
+const logicalChange = (value: number) => {
+  isLogical.value = value;
+};
+
+// 弹窗
+const open = ref<boolean>(false);
+
+const openDialog = () => {
+  open.value = true;
+};
+
+const onClose = () => {
+  open.value = false;
+};
+
+// 设备类型 or 设备属性 Tab
+const currentTab = ref<string>("equipType");
+
+const onTabClick = (tab: { [key: string]: any }) => {
+  currentTab.value = tab.paneName;
+  equipTypeTableRef.value?.clearSelection();
+};
+
+// 设备类型表格
+const equipTypeTableRef = ref<InstanceType<typeof ElTable>>();
+
+// 设备类型数据
+const equipTypeList = ref({
+  loading: false,
+  data: [],
+  ids: [],
+  fetchData: async () => {
+    equipTypeList.value.loading = true;
+    const res: { [key: string]: any } = await deviceTypeList(
+      ...(handleParam({ pageNumber: 1, pageSize: 1000, isLogical: isLogical.value, orderByColumn: "", isAsc: "" }) as [
+        string,
+        object
+      ])
+    );
+    if (res.items) {
+      equipTypeList.value.data = res.items;
+    } else {
+      ElMessage.error("接口异常");
+    }
+    equipTypeList.value.loading = false;
   },
-  emits: ["referenceChange"],
-  setup(props, { emit }) {
-    // 物理设备 or 逻辑设备
-    const isLogical = ref<number>(1);
-
-    const logicalChange = (value: number) => {
-      isLogical.value = value;
-    };
-
-    // 弹窗
-    const open = ref<boolean>(false);
-
-    const openDialog = () => {
-      open.value = true;
-    };
-
-    const onClose = () => {
-      open.value = false;
-    };
-
-    // 设备类型 or 设备属性 Tab
-    const currentTab = ref<string>("equipType");
-
-    const onTabClick = (tab: any) => {
-      currentTab.value = tab.paneName;
-      equipTypeTableRef.value?.clearSelection();
-    };
-
-    // 设备类型表格
-    const equipTypeTableRef = ref<InstanceType<typeof ElTable>>();
-
-    // 设备类型数据
-    const equipTypeList = ref({
-      loading: false,
-      data: [],
-      ids: [],
-      fetchData: async () => {
-        equipTypeList.value.loading = true;
-        const res: { [key: string]: any } = await deviceTypeList(
-          ...(handleParam({ pageNumber: 1, pageSize: 1000, isLogical: isLogical.value, orderByColumn: "", isAsc: "" }) as [
-            string,
-            object
-          ])
-        );
-        if (res.items) {
-          equipTypeList.value.data = res.items;
-        } else {
-          ElMessage.error("接口异常");
-        }
-        equipTypeList.value.loading = false;
-      },
-      onSelectionChange: (selection: any) => {
-        if (selection.length > 1) {
-          let del_row = selection.shift();
-          equipTypeTableRef.value?.toggleRowSelection(del_row, false); // 用于多选表格，切换某一行的选中状态，如果使用了第二个参数，则是设置这一行选中与否（selected 为 true 则选中）
-        }
-        equipTypeList.value.ids = selection.map((item: any) => item.id);
-      }
-    });
-
-    // 设备属性变化
-    const onAttributeChange = (param: any) => {
-      console.log(param);
-    };
-
-    // 关联设备属性组件
-    const referenceAttributeRef = ref<InstanceType<typeof ReferenceAttribute>>();
-
-    // 确认关联按钮
-    const onConfirm = () => {
-      // 关联设备类型
-      if (currentTab.value === "equipType") {
-        if (equipTypeList.value.ids.length === 0) {
-          ElMessage.warning("请选择设备类型");
-          return;
-        }
-
-        const selectionRow = equipTypeList.value.data.find((item: any) => item.id === equipTypeList.value.ids[0]);
-        emit("referenceChange", selectionRow);
-      }
-
-      // 关联设备属性
-      if (currentTab.value === "equipAttribute") {
-        const selectionRow = referenceAttributeRef.value?.getSelectAttribute();
-
-        if (!selectionRow) {
-          ElMessage.warning("请选择设备属性及属性值");
-          return;
-        }
-
-        const { equipType, equipAttribute } = selectionRow;
-        emit("referenceChange", equipType, equipAttribute);
-      }
-
-      open.value = false;
-    };
-
-    onMounted(() => {
-      equipTypeList.value.fetchData();
-    });
-
-    watch(isLogical, () => {
-      equipTypeList.value.fetchData();
-    });
-
-    return {
-      isLogical,
-      logicalChange,
-      open,
-      openDialog,
-      onClose,
-      onConfirm,
-      currentTab,
-      onTabClick,
-      equipTypeList,
-      equipTypeTableRef,
-      onAttributeChange,
-      referenceAttributeRef
-    };
+  onSelectionChange: (selection: any) => {
+    if (selection.length > 1) {
+      let del_row = selection.shift();
+      equipTypeTableRef.value?.toggleRowSelection(del_row, false); // 用于多选表格，切换某一行的选中状态，如果使用了第二个参数，则是设置这一行选中与否（selected 为 true 则选中）
+    }
+    equipTypeList.value.ids = selection.map((item: { [key: string]: any }) => item.id);
   }
+});
+
+// 设备属性变化
+const onAttributeChange = (param: any) => {
+  console.log(param);
+};
+
+// 关联设备属性组件
+const referenceAttributeRef = ref<InstanceType<typeof ReferenceAttribute>>();
+
+// 确认关联按钮
+const onConfirm = () => {
+  // 关联设备类型
+  if (currentTab.value === "equipType") {
+    if (equipTypeList.value.ids.length === 0) {
+      ElMessage.warning("请选择设备类型");
+      return;
+    }
+
+    const selectionRow = equipTypeList.value.data.find((item: any) => item.id === equipTypeList.value.ids[0]);
+    emit("referenceChange", selectionRow);
+  }
+
+  // 关联设备属性
+  if (currentTab.value === "equipAttribute") {
+    const selectionRow = referenceAttributeRef.value?.getSelectAttribute();
+
+    if (!selectionRow) {
+      ElMessage.warning("请选择设备属性及属性值");
+      return;
+    }
+
+    const { equipType, equipAttribute } = selectionRow;
+    emit("referenceChange", equipType, equipAttribute);
+  }
+
+  open.value = false;
+};
+
+onMounted(() => {
+  equipTypeList.value.fetchData();
+});
+
+watch(isLogical, () => {
+  equipTypeList.value.fetchData();
+});
+defineExpose({
+  openDialog
 });
 </script>
 
