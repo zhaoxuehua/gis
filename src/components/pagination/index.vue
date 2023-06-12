@@ -2,8 +2,8 @@
   <div :class="{ hidden: hidden }" class="pagination-container">
     <el-pagination
       :background="background"
-      v-model:current-page="currentPage"
-      v-model:page-size="pageSize"
+      v-model:current-page="state.currentPage"
+      v-model:page-size="state.pageSize"
       :layout="layout"
       :page-sizes="pageSizes"
       :style="style"
@@ -16,77 +16,67 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup name="Pagination">
 import { scrollTo } from "@/utils/scroll-to";
-import { defineComponent, toRefs, reactive } from "vue";
-export default defineComponent({
-  name: "Pagination",
-  props: {
-    total: {
-      required: true,
-      type: Number
-    },
-    page: {
-      type: Number,
-      default: 1
-    },
-    limit: {
-      type: Number,
-      default: 20
-    },
-    pageSizes: {
-      type: Array as () => number[],
-      default() {
-        return [10, 20, 30, 50, 100];
-      }
-    },
-    layout: {
-      type: String,
-      default: "total, sizes, prev, pager, next, jumper"
-    },
-    background: {
-      type: Boolean,
-      default: true
-    },
-    autoScroll: {
-      type: Boolean,
-      default: true
-    },
-    hidden: {
-      type: Boolean,
-      default: false
-    },
-    style: {
-      type: [String, Object],
-      default: ""
-    }
+import { toRefs, reactive } from "vue";
+
+const props = defineProps({
+  total: {
+    type: Number,
+    required: true
   },
-  emits: ["pagination"],
-  setup(props, { emit }) {
-    const { autoScroll } = toRefs(props);
-    const state = reactive({
-      currentPage: props.page,
-      pageSize: props.limit
-    });
-    const handleSizeChange = (val: any) => {
-      emit("pagination", { page: state.currentPage, limit: val });
-      if (autoScroll.value) {
-        scrollTo(0, 800);
-      }
-    };
-    const handleCurrentChange = (val: any) => {
-      emit("pagination", { page: val, limit: state.pageSize });
-      if (autoScroll.value) {
-        scrollTo(0, 800);
-      }
-    };
-    return {
-      handleSizeChange,
-      handleCurrentChange,
-      ...toRefs(state)
-    };
+  page: {
+    type: Number,
+    default: 1
+  },
+  limit: {
+    type: Number,
+    default: 20
+  },
+  pageSizes: {
+    type: Array as () => number[],
+    default: () => [10, 20, 30, 50] // 设置默认值
+  },
+  layout: {
+    type: String,
+    default: "total, sizes, prev, pager, next, jumper"
+  },
+  background: {
+    type: Boolean,
+    default: true
+  },
+  autoScroll: {
+    type: Boolean,
+    default: true
+  },
+  hidden: {
+    type: Boolean,
+    default: false
+  },
+  style: {
+    type: [String, Object],
+    default: ""
   }
 });
+const emit = defineEmits(["pagination"]);
+
+const { autoScroll } = toRefs(props);
+const state = reactive({
+  currentPage: props.page,
+  pageSize: props.limit
+});
+const handleSizeChange = (val: any) => {
+  emit("pagination", { page: state.currentPage, limit: val });
+  if (autoScroll.value) {
+    scrollTo(0, 800);
+  }
+};
+const handleCurrentChange = (val: any) => {
+  emit("pagination", { page: val, limit: state.pageSize });
+  if (autoScroll.value) {
+    scrollTo(0, 800);
+  }
+};
 </script>
 
 <style scoped lang="scss">
