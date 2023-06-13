@@ -17,8 +17,17 @@ export const GIS_LAYER_DETAIL = [
     name: "layerMinLevel"
   },
   {
-    label: "图层显示最高等级",
-    name: "layerMaxLevel"
+    label: "标签聚合",
+    name: "layerCluster",
+    slot: true
+  },
+  {
+    label: "标签聚合距离",
+    name: "layerTrackDistance"
+  },
+  {
+    label: "轨迹聚合距离",
+    name: "layerTrackDistance"
   }
 ];
 
@@ -48,7 +57,7 @@ export const GIS_LABEL_DETAIL = [
   }
 ];
 
-//地图参数配置
+//地图参数配置详情
 export const GIS_MAPPARAMS_DETAIL = [
   {
     label: "应用名称",
@@ -89,29 +98,34 @@ export const GIS_MAPPARAMS_DETAIL = [
     name: "displayLayerIds",
     slot: true
   },
+  // {
+  //   label: "是否显示缩放控件",
+  //   name: "zoom",
+  //   slot: true
+  // },
+  // {
+  //   label: "是否显示全屏控件",
+  //   name: "fullScreen",
+  //   slot: true
+  // },
+  // {
+  //   label: "是否显示比例尺控件",
+  //   name: "scaleLine",
+  //   slot: true
+  // },
+  // {
+  //   label: "是否显示路网叠加层",
+  //   name: "showOverlay",
+  //   slot: true
+  // },
+  // {
+  //   label: "是否显示地图类型切换控件",
+  //   name: "mapTypeSwitch",
+  //   slot: true
+  // },
   {
-    label: "是否显示缩放控件",
-    name: "zoom",
-    slot: true
-  },
-  {
-    label: "是否显示全屏控件",
-    name: "fullScreen",
-    slot: true
-  },
-  {
-    label: "是否显示比例尺控件",
-    name: "scaleLine",
-    slot: true
-  },
-  {
-    label: "是否显示路网叠加层",
-    name: "showOverlay",
-    slot: true
-  },
-  {
-    label: "是否显示地图类型切换控件",
-    name: "mapTypeSwitch",
+    label: "显示控件",
+    name: "displayControlIds",
     slot: true
   },
   {

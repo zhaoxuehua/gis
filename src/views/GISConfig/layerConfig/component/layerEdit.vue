@@ -3,7 +3,7 @@
     <el-dialog
       :title="['创建图层', '编辑图层'][state.dialogType]"
       v-model="state.open"
-      width="760px"
+      width="820px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
@@ -24,6 +24,23 @@
         </el-form-item>
         <el-form-item label="图层显示最高等级" prop="layerMaxLevel">
           <el-input type="number" v-model="form.layerMaxLevel" />
+        </el-form-item>
+        <div></div>
+        <el-form-item prop="layerCluster">
+          <template #label>
+            <span>标签聚合</span>
+            <el-tooltip effect="dark" content="目前只针对点类型标签生效" placement="top">
+              <Icon src="WarningFilled" :size="16" color="#e6a23c" class="iconItem"></Icon>
+            </el-tooltip>
+          </template>
+          <el-checkbox v-model="form.layerCluster" />
+        </el-form-item>
+        <div></div>
+        <el-form-item v-if="form.layerCluster" label="标签聚合距离" prop="layerLabelDistance">
+          <el-input type="number" v-model="form.layerLabelDistance" />
+        </el-form-item>
+        <el-form-item v-if="form.layerCluster" label="轨迹聚合距离" prop="layerTrackDistance">
+          <el-input type="number" v-model="form.layerTrackDistance" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -90,7 +107,10 @@ const defaultParam = {
   name: "",
   layerLevel: null,
   layerMinLevel: null,
-  layerMaxLevel: null
+  layerMaxLevel: null,
+  layerCluster: false,
+  layerLabelDistance: null,
+  layerTrackDistance: null
 };
 
 let form = ref<{
@@ -100,6 +120,9 @@ let form = ref<{
   layerLevel: number | null;
   layerMinLevel: number | null;
   layerMaxLevel: number | null;
+  layerCluster?: boolean | undefined;
+  layerLabelDistance: number | null;
+  layerTrackDistance: number | null;
 }>(defaultParam);
 
 const openDialog = (row?: { [key: string]: any }) => {
@@ -158,4 +181,8 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.iconItem {
+  margin: auto 0;
+}
+</style>

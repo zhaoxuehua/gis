@@ -3,7 +3,7 @@
     <el-dialog
       :title="['创建标签类型', '编辑标签类型', '标签类型详情'][state.dialogType]"
       v-model="state.open"
-      width="800px"
+      width="850px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
@@ -26,7 +26,9 @@
             <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="关联设备类型">
+
+        <!-- 对象关联配置 -->
+        <el-form-item label="对象关联配置">
           <el-input readonly v-model="reference" :disabled="state.dialogType == 2" />
           <el-button class="reference-button" circle @click="onRefrenceClick" v-if="state.dialogType != 2">
             <Icon src="EditPen"></Icon>
@@ -39,32 +41,16 @@
           <el-checkbox v-model="form.isDefaultDisplayLabelName" :disabled="state.dialogType == 2"></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
-          <el-upload
-            action="#"
-            :show-file-list="false"
-            :before-upload="beforeUpload"
-            :http-request="uploadLegendImage"
-            class="avatar-uploader"
-            :disabled="state.dialogType == 2"
-          >
-            <div v-if="form.labelLegendImagePath">
-              <img
-                class="avatar"
-                :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${form.labelLegendImagePath}`"
-                alt=""
-              />
-              <div class="upload-image-btn" v-if="state.dialogType != 2">
-                <span>
-                  <Icon src="Upload" :size="16"></Icon>
-                </span>
-                <span @click.stop.prevent="handleLegendImageRemove">
-                  <Icon src="Delete" :size="16"></Icon>
-                </span>
-              </div>
-            </div>
-            <Icon v-else src="Plus" class="avatar-uploader-icon" :size="28"></Icon>
-          </el-upload>
+          <el-select v-model="form.labelLegendImagePath" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+            <el-option
+              v-for="(item, index) in labelLegendImageList.data"
+              :key="index"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
         </el-form-item>
+
         <el-form-item label="数据类型" prop="dataType">
           <el-select v-model="form.dataType" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
             <el-option
@@ -75,6 +61,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
+
         <!-- 点 -->
         <template v-if="form.dataType === '1'">
           <el-form-item label="显示比例" prop="displayScale">
@@ -107,9 +94,31 @@
               <Icon v-else src="Plus" class="avatar-uploader-icon" :size="28"></Icon>
             </el-upload>
           </el-form-item>
+          <!-- 点类型下轨迹的设置（绘制轨迹时可以找到所属类型拿轨迹设置及图层信息） -->
+          <el-form-item label="轨迹设置" prop="layerCluster" :disabled="state.dialogType == 2">
+            <el-checkbox v-model="form.trackSet" />
+          </el-form-item>
+          <div></div>
+          <el-form-item label="轨迹模式" prop="trackMode" v-if="form.trackSet">
+            <el-select v-model="form.trackMode" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+              <el-option
+                v-for="(item, index) in trackModeList.data"
+                :key="index"
+                :label="item.name"
+                :value="item.code"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <div></div>
+          <el-form-item v-if="form.trackSet">
+            <template #label>
+              <div style="font-weight: bold">轨迹线样式</div>
+            </template>
+          </el-form-item>
+          <div></div>
         </template>
-        <!-- 线 面 圆 矩形 -->
-        <template v-if="['2', '3', '4', '5'].includes(form.dataType)">
+        <!-- 线 面 圆 矩形 轨迹配置时   要不要icon -->
+        <template v-if="['2', '3', '4', '5'].includes(form.dataType) || form.trackSet">
           <el-form-item label="线宽" prop="lineWidth">
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
@@ -252,13 +261,15 @@ const state = reactive({
     fontSize: [
       { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
       { validator: fontSizeVerification, trigger: ["blur", "change"] }
-    ]
+    ],
+    trackMode: [{ required: true, message: "请选择轨迹模式", trigger: ["blur", "change"] }]
   }
 });
 
 const referenceMainRef = ref<InstanceType<typeof ReferenceMain>>();
 const refForm = ref<InstanceType<typeof ElForm>>();
 
+// 创建时form表单字段及默认值
 const defaultParam = {
   code: "",
   name: "",
@@ -269,7 +280,7 @@ const defaultParam = {
   equipTypeId: 0,
   isDefaultDisplayLabelName: false,
   factor: "",
-  labelLegendImagePath: "",
+  labelLegendImagePath: "", // 标签图例
   labelLegendImageAllPath: "",
   dataType: "1",
   displayScale: 1,
@@ -293,11 +304,15 @@ const defaultParam = {
   borderColor: "rgba(0,0,0,1)",
   backGroundColor: "rgba(0,0,0,0.3)",
   referenceValue: "",
-  referenceValueReal: ""
+  referenceValueReal: "",
+  trackSet: false, // 轨迹设置
+  trackMode: "" // 轨迹模式
 };
 
 // 表单字段
-let form = ref<LabelType & { referenceValue: string; referenceValueReal: any }>(defaultParam);
+let form = ref<
+  LabelType & { referenceValue: string; referenceValueReal: any; trackSet: any; trackMode: any; labelLegendImagePath: any }
+>(defaultParam);
 
 // 关联设备信息
 const reference = computed(() => {
@@ -425,30 +440,6 @@ const beforeUpload = (rawFile: any) => {
   return true;
 };
 
-// 图例图片上传
-const uploadLegendImage = async (content: any) => {
-  let formData = new FormData();
-  formData.append("uploadFile", content.file);
-  const res: { [key: string]: any } = await upLoadImage(formData);
-  if (res.code == 200) {
-    ElMessage({
-      type: "success",
-      message: "上传成功"
-    });
-    const { fileName, fileUrl } = res.data;
-    form.value.labelLegendImagePath = fileName;
-    form.value.labelLegendImageAllPath = fileUrl;
-  } else {
-    ElMessage.error(res.msg);
-  }
-};
-
-// 图例图片删除
-const handleLegendImageRemove = () => {
-  form.value.labelLegendImagePath = "";
-  form.value.labelLegendImageAllPath = "";
-};
-
 // 点类型图片上传
 const uploadLabelTypeImage = async (content: any) => {
   let formData = new FormData();
@@ -492,6 +483,25 @@ const dataTypeList = ref<{
   }
 });
 
+// 标签图例
+const labelLegendImageList = ref<{
+  data: Array<{
+    label: string;
+    value: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getLabelDataType();
+    if (res.data.dataType) {
+      labelLegendImageList.value.data = res.data.dataType;
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
 // 图层列表
 const layerList = ref<{
   data: Array<{
@@ -514,9 +524,28 @@ const layerList = ref<{
   }
 });
 
+const trackModeList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "1",
+      name: "动态延展轨迹线"
+    },
+    {
+      code: "2",
+      name: "固定轨迹线"
+    }
+  ]
+});
+
 onMounted(() => {
   dataTypeList.value.fetchData();
   layerList.value.fetchData();
+  labelLegendImageList.value.fetchData();
 });
 
 defineExpose({

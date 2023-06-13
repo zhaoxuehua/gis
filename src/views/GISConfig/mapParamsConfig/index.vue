@@ -55,7 +55,11 @@
       <el-table-column type="selection"></el-table-column>
       <el-table-column label="序号" type="index" width="50"></el-table-column>
       <el-table-column label="应用名称" prop="appName" sortable="custom"></el-table-column>
-      <el-table-column label="显示模式" prop="displayMode" sortable="custom"></el-table-column>
+      <el-table-column label="显示模式" prop="displayMode" sortable="custom">
+        <template #default="scope">
+          {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
+        </template>
+      </el-table-column>
       <el-table-column label="默认展示层级" prop="defaultDisplayLevel" sortable="custom"></el-table-column>
       <el-table-column label="最低层级" prop="minLevel" sortable="custom"></el-table-column>
       <el-table-column label="最高层级" prop="maxLevel" sortable="custom"></el-table-column>
@@ -87,26 +91,29 @@
       <template #displayMode="scope">
         {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
       </template>
-      <template #zoom="scope">
+      <!-- <template #zoom="scope">
         {{ scope.row.zoom ? "是" : "否" }}
-      </template>
-      <template #fullScreen="scope">
+      </template> -->
+      <!-- <template #fullScreen="scope">
         {{ scope.row.fullScreen ? "是" : "否" }}
-      </template>
-      <template #scaleLine="scope">
+      </template> -->
+      <!-- <template #scaleLine="scope">
         {{ scope.row.scaleLine ? "是" : "否" }}
-      </template>
-      <template #showOverlay="scope">
+      </template> -->
+      <!-- <template #showOverlay="scope">
         {{ scope.row.showOverlay ? "是" : "否" }}
-      </template>
-      <template #mapTypeSwitch="scope">
+      </template> -->
+      <!-- <template #mapTypeSwitch="scope">
         {{ scope.row.mapTypeSwitch ? "是" : "否" }}
-      </template>
+      </template> -->
       <template #displayLabelInfoIds="scope">
         {{ scope.row.displayLabelInfo?.map((item: any) => item.name).join(",") }}
       </template>
       <template #displayLayerIds="scope">
         {{ scope.row.displayLayer?.map((item: any) => item?.name).join(",") }}
+      </template>
+      <template #displayControlIds="scope">
+        {{ scope.row.displayControlIds?.map((item: any) => item?.name).join(",") }}
       </template>
     </DetailDialog>
   </div>

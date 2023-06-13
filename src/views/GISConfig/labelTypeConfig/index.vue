@@ -82,10 +82,7 @@
       v-model:limit="query.params.pageSize"
       @pagination="query.getPagination"
     ></Pagination>
-
     <LabelTypeEdit ref="labelTypeEditRef" @success-add="query.onQuery"></LabelTypeEdit>
-
-    <DetailDialog ref="detailDialogRef" :constant="'GIS_LABEL_TYPE_DETAIL'" :title="'标签类型详情'"> </DetailDialog>
   </div>
 </template>
 
@@ -95,12 +92,10 @@ import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import { getLabelTypeList, deleteLabelTypeCheck, deleteLabelType } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
 import { ElMessage, ElMessageBox } from "element-plus";
-import DetailDialog from "@/components/detailDialog/index.vue";
 import LabelTypeEdit from "./component/labelTypeEdit.vue";
 import { TableList, SortChangeEvent } from "../type";
 
 const labelTypeEditRef = ref<InstanceType<typeof LabelTypeEdit>>();
-const detailDialogRef = ref<InstanceType<typeof DetailDialog>>();
 
 // 查询条件
 const defaultParams = {

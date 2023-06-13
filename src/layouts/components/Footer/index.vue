@@ -1,6 +1,6 @@
 <template>
   <div class="footer flx-center">
-    <a href="javascript:void(0);"> 2023 © Front-Vue-Template. </a>
+    <a href="javascript:void(0);"> © ADM-GIS-UI. </a>
   </div>
 </template>
 

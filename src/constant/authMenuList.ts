@@ -18,7 +18,7 @@ export const authMenuList = [
     name: "GISConfig",
     redirect: "/GISConfig/layerConfig",
     meta: {
-      icon: "MessageBox",
+      icon: "Menu",
       title: "GIS配置",
       isLink: "",
       isHide: false,
@@ -34,20 +34,6 @@ export const authMenuList = [
         meta: {
           icon: "Menu",
           title: "图层配置",
-          isLink: "",
-          isHide: false,
-          isFull: false,
-          isAffix: false,
-          isKeepAlive: true
-        }
-      },
-      {
-        path: "/GISConfig/mapParamsConfig",
-        name: "mapParamsConfig",
-        component: "/GISConfig/mapParamsConfig/index",
-        meta: {
-          icon: "Menu",
-          title: "地图参数配置",
           isLink: "",
           isHide: false,
           isFull: false,
@@ -76,6 +62,20 @@ export const authMenuList = [
         meta: {
           icon: "Menu",
           title: "标签信息",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true
+        }
+      },
+      {
+        path: "/GISConfig/mapParamsConfig",
+        name: "mapParamsConfig",
+        component: "/GISConfig/mapParamsConfig/index",
+        meta: {
+          icon: "Menu",
+          title: "地图参数配置",
           isLink: "",
           isHide: false,
           isFull: false,

@@ -77,7 +77,11 @@
       @pagination="query.getPagination"
     ></Pagination>
     <LayerEdit ref="layerEditRef" @success-add="query.onQuery"></LayerEdit>
-    <DetailDialog ref="detailDialogRef" :constant="'GIS_LAYER_DETAIL'" :title="'图层详情'"> </DetailDialog>
+    <DetailDialog ref="detailDialogRef" :constant="'GIS_LAYER_DETAIL'" :title="'图层详情'">
+      <template #layerCluster="scope">
+        {{ scope.row?.layerCluster ? "是" : "否" }}
+      </template>
+    </DetailDialog>
   </div>
 </template>
 

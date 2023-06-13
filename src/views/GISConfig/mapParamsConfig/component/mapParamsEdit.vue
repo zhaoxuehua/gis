@@ -3,7 +3,7 @@
     <el-dialog
       :title="['创建地图参数', '编辑地图参数'][state.dialogType]"
       v-model="state.open"
-      width="760px"
+      width="900px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
@@ -50,7 +50,24 @@
             <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="显示缩放控件" prop="zoom">
+        <el-form-item label="显示控件" prop="displayControlIds">
+          <el-select
+            v-model="form.displayControlIds"
+            multiple
+            clearable
+            placeholder="请选择..."
+            :disabled="state.dialogType == 2"
+          >
+            <el-option v-for="(item, index) in controlList.data" :key="index" :label="item.name" :value="item.code"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="显示图例" prop="legendIds">
+          <el-select v-model="form.legendIds" multiple clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+            <el-option v-for="(item, index) in legendIdsList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <!-- <el-form-item label="显示缩放控件" prop="zoom">
           <el-switch v-model="form.zoom" style="width: 200px" />
         </el-form-item>
         <el-form-item label="显示全屏控件" prop="fullScreen">
@@ -64,14 +81,22 @@
         </el-form-item>
         <el-form-item label="显示地图类型控件" prop="mapTypeSwitch">
           <el-switch v-model="form.mapTypeSwitch" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="电子地图URL" prop="normalUrl">
+        </el-form-item> -->
+        <el-form-item
+          label="电子地图URL"
+          prop="normalUrl"
+          v-if="form.displayMode == 1 || form.displayControlIds.includes('mapTypeSwitch')"
+        >
           <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
         </el-form-item>
-        <el-form-item label="卫星影像URL" prop="sateUrl">
+        <el-form-item
+          label="卫星影像URL"
+          prop="sateUrl"
+          v-if="form.displayMode == 2 || form.displayControlIds.includes('mapTypeSwitch')"
+        >
           <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
         </el-form-item>
-        <el-form-item label="路网叠加层URL" prop="overlayUrl">
+        <el-form-item label="路网叠加层URL" prop="overlayUrl" v-if="form.displayControlIds.includes('showOverlay')">
           <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
         </el-form-item>
       </el-form>
@@ -103,11 +128,13 @@ interface MapParamsForm {
   defaultCenterPointLongitude: number | null;
   displayLabelInfoIds: number[] | string;
   displayLayerIds: number[] | string;
-  zoom: boolean;
-  fullScreen: boolean;
-  scaleLine: boolean;
-  showOverlay: boolean;
-  mapTypeSwitch: boolean;
+  displayControlIds: any;
+  legendIds: string[] | string;
+  // zoom: boolean;
+  // fullScreen: boolean;
+  // scaleLine: boolean;
+  // showOverlay: boolean;
+  // mapTypeSwitch: boolean;
   normalUrl: string;
   sateUrl: string;
   overlayUrl: string;
@@ -187,13 +214,16 @@ const defaultParam = {
   maxLevel: null,
   defaultCenterPointLatitude: null,
   defaultCenterPointLongitude: null,
+
   displayLabelInfoIds: [],
   displayLayerIds: [],
-  zoom: true,
-  fullScreen: true,
-  scaleLine: true,
-  showOverlay: true,
-  mapTypeSwitch: true,
+  displayControlIds: [], // 控件列表
+  legendIds: [], // 图例列表
+  // zoom: true,
+  // fullScreen: true,
+  // scaleLine: true,
+  // showOverlay: true,
+  // mapTypeSwitch: true,
   normalUrl: "",
   sateUrl: "",
   overlayUrl: ""
@@ -206,10 +236,16 @@ const openDialog = (row?: { [key: string]: any }) => {
     state.dialogType = 1;
     form.value = JSON.parse(JSON.stringify(row));
     form.value.id = row.id;
+    // 标签类型
     form.value.displayLabelInfoIds = row.displayLabelInfoIds
       ? row.displayLabelInfoIds.split(",").map((id: string) => Number(id))
       : [];
+    // 图层
     form.value.displayLayerIds = row.displayLayerIds ? row.displayLayerIds.split(",").map((id: string) => Number(id)) : [];
+    // 控件
+    form.value.displayControlIds = row.displayControlIds ? row.displayControlIds.split(",") : [];
+    // 图例
+    form.value.legendIds = row.legendIds ? row.legendIds.split(",") : [];
   } else {
     state.dialogType = 0;
     form.value = { ...defaultParam };
@@ -225,12 +261,23 @@ const onConfirm = () => {
   refForm.value?.validate(async (valid: any) => {
     if (valid) {
       let param = unref(form);
+      // 标签类型参数处理
       if (Array.isArray(param.displayLabelInfoIds)) {
         param.displayLabelInfoIds = param.displayLabelInfoIds.join(",");
       }
+      // 图层参数处理
       if (Array.isArray(param.displayLayerIds)) {
         param.displayLayerIds = param.displayLayerIds.join(",");
       }
+      // 控件参数处理
+      if (Array.isArray(param.displayLayerIds)) {
+        param.displayControlIds = param.displayControlIds.join(",");
+      }
+      // 图例参数处理
+      if (Array.isArray(param.legendIds)) {
+        param.legendIds = param.legendIds.join(",");
+      }
+
       if (state.dialogType == 0) {
         // 添加
         const res: { [key: string]: any } = await addMapParams(param);
@@ -262,6 +309,87 @@ const onConfirm = () => {
   });
 };
 
+// 控件列表
+const controlList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "zoom",
+      name: "显示缩放控件"
+    },
+    {
+      code: "fullScreen",
+      name: "显示全屏控件"
+    },
+
+    {
+      code: "scaleLine",
+      name: "显示比例尺控件"
+    },
+    {
+      code: "showOverlay",
+      name: "显示路网叠加层"
+    },
+    {
+      code: "mapTypeSwitch",
+      name: "显示地图类型控件"
+    },
+    {
+      code: "navTree",
+      name: "显示导航树控件"
+    },
+    {
+      code: "labelTree",
+      name: "显示标签树控件"
+    },
+    {
+      code: "search",
+      name: "显示搜索控件"
+    },
+    {
+      code: "quickDraw",
+      name: "显示快速绘制控件"
+    },
+    {
+      code: "tool",
+      name: "显示工具箱控件"
+    },
+    {
+      code: "tagSelect",
+      name: "显示标签筛选控件"
+    },
+    {
+      code: "img",
+      name: "显示图例控件"
+    }
+  ]
+});
+
+// 图例列表
+const legendIdsList = ref<{
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getLayerList(
+      ...(handleParam({ pageNumber: 1, pageSize: 1000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+    );
+    if (res.data.items) {
+      legendIdsList.value.data = res.data.items;
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
 // 图层列表
 const layerList = ref<{
   data: Array<{
@@ -308,6 +436,7 @@ const labelTypeList = ref<{
 onMounted(() => {
   labelTypeList.value.fetchData();
   layerList.value.fetchData();
+  legendIdsList.value.fetchData();
 });
 
 defineExpose({
