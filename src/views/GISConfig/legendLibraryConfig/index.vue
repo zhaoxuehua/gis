@@ -90,7 +90,7 @@ const table = ref<TableList>({
     table.value.loading = true;
     const res: { [key: string]: any } = await getLabelTypeList(...(handleParam(query.value.params) as [string, object]));
     if (res?.data?.items) {
-      table.value.data = res.data.items;
+      table.value.data = res.data.items.filter((item: any) => item.labelTypeImagePath);
       table.value.total = res.data.totalNum;
     } else {
       ElMessage.error("接口异常");

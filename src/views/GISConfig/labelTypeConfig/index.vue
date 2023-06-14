@@ -69,7 +69,7 @@
             {{ "详情" }}
           </el-button>
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_EDIT">
-            <el-button link @click="table.onEdit(scope.row, 'edit')">
+            <el-button type="primary" link @click="table.onEdit(scope.row, 'edit')">
               {{ "编辑" }}
             </el-button>
           </Auth>

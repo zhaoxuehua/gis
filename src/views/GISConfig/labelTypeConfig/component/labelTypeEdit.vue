@@ -74,31 +74,21 @@
             <el-input type="number" v-model="form.displayScale" :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="标签类型图片" prop="labelTypeImagePath">
-            <el-upload
-              action="#"
-              :show-file-list="false"
-              :before-upload="beforeUpload"
-              :http-request="uploadLabelTypeImage"
-              class="avatar-uploader"
+            <el-select
+              v-model="form.labelTypeImagePath"
+              :multiple="true"
+              clearable
+              placeholder="请选择..."
               :disabled="state.dialogType == 2"
+              filterable
             >
-              <div v-if="form.labelTypeImagePath">
-                <img
-                  class="avatar"
-                  :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${form.labelTypeImagePath}`"
-                  alt=""
-                />
-                <div class="upload-image-btn" v-if="state.dialogType != 2">
-                  <span>
-                    <Icon src="Upload" :size="16"></Icon>
-                  </span>
-                  <span @click.stop.prevent="handleLabelTypeImageRemove">
-                    <Icon src="Delete" :size="16"></Icon>
-                  </span>
-                </div>
-              </div>
-              <Icon v-else src="Plus" class="avatar-uploader-icon" :size="28"></Icon>
-            </el-upload>
+              <el-option
+                v-for="(item, index) in labelLegendImageList.data"
+                :key="index"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
           </el-form-item>
           <!-- 点类型下轨迹的设置（绘制轨迹时可以找到所属类型拿轨迹设置及图层信息） -->
           <el-form-item label="轨迹设置" prop="layerCluster" :disabled="state.dialogType == 2">
@@ -136,6 +126,9 @@
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
             </el-select>
+          </el-form-item>
+          <el-form-item prop="flash" label="是否闪烁" v-if="form.lineType == 'dash'">
+            <el-checkbox v-model="form.flash" />
           </el-form-item>
         </template>
         <!-- 面 圆 矩形 -->
@@ -207,7 +200,7 @@ import { reactive, onMounted, ref, computed } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
-import { getLabelTypeDetail, getLabelDataType, getLayerList, addLabelType, editLabelType, upLoadImage } from "@/api/visconfig.js";
+import { getLabelTypeDetail, getLabelDataType, getLayerList, addLabelType, editLabelType } from "@/api/visconfig.js";
 import ReferenceMain from "./referenceMain.vue";
 import { LabelType } from "../../type";
 
@@ -291,8 +284,7 @@ const defaultParam = {
   dataType: "1",
   displayScale: 1,
   pellucidity: 1,
-  labelTypeImagePath: "",
-  labelTypeImageAllPath: "",
+  labelTypeImagePath: [],
   lineWidth: 1,
   lineType: "solid",
   lineColor: "rgba(0,0,0,1)",
@@ -312,12 +304,20 @@ const defaultParam = {
   referenceValue: "",
   referenceValueReal: "",
   trackSet: false, // 轨迹设置
-  trackMode: "" // 轨迹模式
+  trackMode: "", // 轨迹模式
+  flash: false // 是否闪烁
 };
 
 // 表单字段
 let form = ref<
-  LabelType & { referenceValue: string; referenceValueReal: any; trackSet: any; trackMode: any; labelLegendImagePath: any }
+  LabelType & {
+    referenceValue: string;
+    referenceValueReal: any;
+    trackSet: any;
+    trackMode: any;
+    labelLegendImagePath: any;
+    flash: boolean;
+  }
 >(defaultParam);
 
 // 关联设备信息
@@ -434,42 +434,6 @@ const onReferenceChange = (equipType: any, equipAttribute: any) => {
   }
 };
 
-// 上传前验证
-const beforeUpload = (rawFile: any) => {
-  if (!["image/jpeg", "image/png"].includes(rawFile.type)) {
-    ElMessage.error("只能上传图片格式!");
-    return false;
-  } else if (rawFile.size / 1024 / 1024 > 2) {
-    ElMessage.error("图片大小不能超过 2MB!");
-    return false;
-  }
-  return true;
-};
-
-// 点类型图片上传
-const uploadLabelTypeImage = async (content: any) => {
-  let formData = new FormData();
-  formData.append("uploadFile", content.file);
-  const res: { [key: string]: any } = await upLoadImage(formData);
-  if (res.code == 200) {
-    ElMessage({
-      type: "success",
-      message: "上传成功"
-    });
-    const { fileName, fileUrl } = res.data;
-    form.value.labelTypeImagePath = fileName;
-    form.value.labelTypeImageAllPath = fileUrl;
-  } else {
-    ElMessage.error(res.msg);
-  }
-};
-
-// 点类型图片删除
-const handleLabelTypeImageRemove = () => {
-  form.value.labelTypeImagePath = "";
-  form.value.labelTypeImageAllPath = "";
-};
-
 // 数据类型列表
 const dataTypeList = ref<{
   data: Array<{
@@ -489,7 +453,7 @@ const dataTypeList = ref<{
   }
 });
 
-// 标签图例
+// 标签图例列表
 const labelLegendImageList = ref<{
   data: Array<{
     label: string;
