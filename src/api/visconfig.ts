@@ -73,10 +73,7 @@ export function editLabelType(params: object) {
 export function getLabelDataType() {
   return request.get(`/backend1/equip/gisLabel/type/selects`);
 }
-// 上传图片接口
-export function upLoadImage(params: any) {
-  return request.post(`/backend1/system/udf/uploadNew`, params);
-}
+
 // 获取标签类型详情
 export function getLabelTypeDetail(params: string | number) {
   return request.get(`/backend1/equip/gisLabel/type/getById/${params}`);
@@ -106,4 +103,22 @@ export function addLabel(params: object) {
 // 修改标签
 export function editLabel(params: object) {
   return request.put(`/backend1/equip/gisLabelInfo`, params);
+}
+
+// 图例
+// 删除图例
+export function deleteLegendConfig(params: any) {
+  return request.delete(`/backend1/equip/gisLabelInfo/${params}`);
+}
+// 添加图例
+export function addLegend(params: object) {
+  return request.post(`/backend1/equip/layerConfig`, params);
+}
+// 编辑图例
+export function editLegend(params: object) {
+  return request.put(`/backend1/equip/layerConfig`, params);
+}
+// 上传图片接口
+export function upLoadImage(params: any) {
+  return request.post(`/backend1/system/udf/uploadNew`, params);
 }

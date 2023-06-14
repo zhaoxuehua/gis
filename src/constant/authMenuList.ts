@@ -70,6 +70,20 @@ export const authMenuList = [
         }
       },
       {
+        path: "/GISConfig/legendLibraryConfig",
+        name: "legendLibraryConfig",
+        component: "/GISConfig/legendLibraryConfig/index",
+        meta: {
+          icon: "Menu",
+          title: "图例库",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true
+        }
+      },
+      {
         path: "/GISConfig/mapParamsConfig",
         name: "mapParamsConfig",
         component: "/GISConfig/mapParamsConfig/index",

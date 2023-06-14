@@ -36,6 +36,7 @@
         </el-form-item>
         <el-form-item label="显示标签类型" prop="displayLabelInfoIds">
           <el-select
+            filterable
             v-model="form.displayLabelInfoIds"
             multiple
             clearable
@@ -46,12 +47,20 @@
           </el-select>
         </el-form-item>
         <el-form-item label="显示图层" prop="displayLayerIds">
-          <el-select v-model="form.displayLayerIds" multiple clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+          <el-select
+            v-model="form.displayLayerIds"
+            multiple
+            clearable
+            placeholder="请选择..."
+            :disabled="state.dialogType == 2"
+            filterable
+          >
             <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="显示控件" prop="displayControlIds">
           <el-select
+            filterable
             v-model="form.displayControlIds"
             multiple
             clearable
@@ -62,7 +71,14 @@
           </el-select>
         </el-form-item>
         <el-form-item label="显示图例" prop="legendIds">
-          <el-select v-model="form.legendIds" multiple clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+          <el-select
+            v-model="form.legendIds"
+            multiple
+            clearable
+            placeholder="请选择..."
+            :disabled="state.dialogType == 2"
+            filterable
+          >
             <el-option v-for="(item, index) in legendIdsList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>

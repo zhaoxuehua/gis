@@ -147,8 +147,8 @@ const onConfirm = () => {
       let param = { ...form.value };
       if (state.dialogType == 0) {
         // 添加
-        const res = await addLayer(param);
-        if (Number(res.code) == 200) {
+        const res: { [key: string]: any } = await addLayer(param);
+        if (res.code == 200) {
           ElMessage.success("创建成功");
           emit("successAdd");
           state.open = false;
@@ -160,8 +160,8 @@ const onConfirm = () => {
         }
       } else if (state.dialogType == 1) {
         // 编辑
-        const res = await editLayer(param);
-        if (Number(res.code) == 200) {
+        const res: { [key: string]: any } = await editLayer(param);
+        if (res.code == 200) {
           ElMessage.success("编辑成功");
           emit("successAdd");
           state.open = false;

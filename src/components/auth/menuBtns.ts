@@ -16,5 +16,8 @@ export const MENU_BTNS_AUTH = {
   // GIS配置-地图参数配置
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_ADD: "visconfig:gisconfig:mapparamsconfig:add", //创建
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_EDIT: "visconfig:gisconfig:mapparamsconfig:edit", //编辑
-  VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_DELETE: "visconfig:gisconfig:mapparamsconfig:delete" //删除
+  VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_DELETE: "visconfig:gisconfig:mapparamsconfig:delete", //删除
+
+  // 图例
+  VISCONFIG_GISCONFIG_MAPLegendCONFIG_ADD: "visconfig:gisconfig:maplegendconfig:add" //添加图例
 };

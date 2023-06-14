@@ -175,7 +175,6 @@ const table = ref<TableList>({
   onEdit: async (row: { [key: string]: any }, type: string) => {
     if (type == "edit") {
       mapParamsEditRef.value?.openDialog(row);
-      console.log(row, 55555555);
     } else if (type == "detail") {
       const res: { [key: string]: any } = await getMapParamsDetail(row.id);
       if (res.code === 200 && res.data) {

@@ -41,7 +41,13 @@
           <el-checkbox v-model="form.isDefaultDisplayLabelName" :disabled="state.dialogType == 2"></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
-          <el-select v-model="form.labelLegendImagePath" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+          <el-select
+            v-model="form.labelLegendImagePath"
+            clearable
+            placeholder="请选择..."
+            :disabled="state.dialogType == 2"
+            filterable
+          >
             <el-option
               v-for="(item, index) in labelLegendImageList.data"
               :key="index"

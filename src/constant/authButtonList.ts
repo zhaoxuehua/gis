@@ -107,5 +107,6 @@ export const USER_BTNS_AUTH = [
   "device:logic:config",
   "device:category:delete",
   "device:category:add",
-  "device:category:edit"
+  "device:category:edit",
+  "visconfig:gisconfig:maplegendconfig:add"
 ];
