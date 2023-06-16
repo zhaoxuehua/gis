@@ -355,11 +355,11 @@ const controlList = ref<{
       name: "显示地图类型控件"
     },
     {
-      code: "navTree",
+      code: "navigationTree",
       name: "显示导航树控件"
     },
     {
-      code: "labelTree",
+      code: "tagTree",
       name: "显示标签树控件"
     },
     {
@@ -367,19 +367,19 @@ const controlList = ref<{
       name: "显示搜索控件"
     },
     {
-      code: "quickDraw",
+      code: "quickCreate",
       name: "显示快速绘制控件"
     },
     {
-      code: "tool",
+      code: "toolBox",
       name: "显示工具箱控件"
     },
     {
-      code: "tagSelect",
+      code: "tagSelection",
       name: "显示标签筛选控件"
     },
     {
-      code: "img",
+      code: "imgLegend",
       name: "显示图例控件"
     }
   ]

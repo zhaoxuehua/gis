@@ -1,5 +1,5 @@
 <template>
-  <div class="layer-config">
+  <div class="map-config">
     <div class="one-search">
       <el-form :model="query.params">
         <el-row :gutter="20">
@@ -42,7 +42,7 @@
     </div>
     <el-table
       :data="table.data"
-      class="layer-config-table"
+      class="map-config-table"
       v-loading="table.loading"
       highlight-current-row
       empty-text="暂无数据"
@@ -264,16 +264,16 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.layer-config {
+.map-config {
   width: calc(100vw - 260px);
   height: calc(100vh - 109px);
   padding: 20px;
   background: var(--background-color);
 }
-.layer-config-table {
+.map-config-table {
   margin-bottom: 20px;
 }
-.layer-config .inline-input {
+.map-config .inline-input {
   width: 100%;
 }
 </style>

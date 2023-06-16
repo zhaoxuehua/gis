@@ -127,7 +127,7 @@
               <el-option label="虚线" value="dash"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item prop="flash" label="是否闪烁" v-if="form.lineType == 'dash'">
+          <el-form-item prop="flash" label="是否闪烁" v-if="form.lineType == 'dash'" style="width: 350px">
             <el-checkbox v-model="form.flash" />
           </el-form-item>
         </template>
