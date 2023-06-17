@@ -147,7 +147,7 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 20px;
   width: 100%;
-  max-height: calc(100% - 140px);
+  height: calc(100% - 153px);
   margin-bottom: 20px;
   overflow: auto;
 }

@@ -50,7 +50,6 @@
       :cell-style="{ padding: '0px' }"
       @sort-change="sortChange"
       @selection-change="table.onSelectionChange"
-      height="calc(100% - 153px)"
     >
       <el-table-column type="selection"></el-table-column>
       <el-table-column label="序号" type="index" width="50"></el-table-column>
@@ -271,6 +270,7 @@ onMounted(() => {
   background: var(--background-color);
 }
 .map-config-table {
+  height: calc(100% - 153px);
   margin-bottom: 20px;
 }
 .map-config .inline-input {
