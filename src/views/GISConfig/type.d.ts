@@ -7,6 +7,7 @@ export type TableList = {
   getTableData: Function;
   onSelectionChange: Function;
   onEdit: Function;
+  columns?: Array<{ [key: string]: any }>;
 };
 
 // 标签类型

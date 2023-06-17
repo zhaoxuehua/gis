@@ -30,7 +30,7 @@
         <!-- 对象关联配置 -->
         <el-form-item label="对象关联配置">
           <el-input readonly v-model="reference" :disabled="state.dialogType == 2" />
-          <el-button class="reference-button" circle @click="onRefrenceClick" v-if="state.dialogType != 2">
+          <el-button class="reference-button" circle @click="onRefrenceClick('other')" v-if="state.dialogType != 2">
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
@@ -190,8 +190,10 @@
         </span>
       </template>
     </el-dialog>
-
+    <!-- 默认关联设备信息 -->
     <ReferenceMain ref="referenceMainRef" @reference-change="onReferenceChange"></ReferenceMain>
+    <!-- 关联自定义对象信息 -->
+    <ReferenceObject ref="referenceObjectRef" @reference-objecct-change="onReferenceObjectChange"></ReferenceObject>
   </div>
 </template>
 
@@ -202,6 +204,7 @@ import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
 import { getLabelTypeDetail, getLabelDataType, getLayerList, addLabelType, editLabelType } from "@/api/visconfig.js";
 import ReferenceMain from "./referenceMain.vue";
+import ReferenceObject from "./referenceObject.vue";
 import { LabelType } from "../../type";
 
 const emit = defineEmits(["successAdd"]);
@@ -266,6 +269,7 @@ const state = reactive({
 });
 
 const referenceMainRef = ref<InstanceType<typeof ReferenceMain>>();
+const referenceObjectRef = ref<InstanceType<typeof ReferenceObject>>();
 const refForm = ref<InstanceType<typeof ElForm>>();
 
 // 创建时form表单字段及默认值
@@ -405,13 +409,18 @@ const onConfirm = () => {
   });
 };
 
-// 点击关联设备信息
-const onRefrenceClick = () => {
-  referenceMainRef.value?.openDialog();
+// 点击对象信息
+const onRefrenceClick = (type: string) => {
+  if (type == "other") {
+    // 关联其他对象动态弹框
+    referenceObjectRef.value?.openDialog();
+  } else {
+    referenceMainRef.value?.openDialog(); // 关联设备弹框
+  }
 };
 
 // 确认关联回调
-const onReferenceChange = (equipType: any, equipAttribute: any) => {
+const onReferenceChange = (equipType: { [key: string]: any }, equipAttribute: { [key: string]: any }) => {
   form.value.equipType = { ...equipType };
   form.value.equipTypeId = equipType.id;
 
@@ -421,7 +430,7 @@ const onReferenceChange = (equipType: any, equipAttribute: any) => {
     let selectedValue = bindValue;
 
     if (type === "select") {
-      selectedValue = option.find((item: any) => item.value === bindValue);
+      selectedValue = option.find((item: { [key: string]: any }) => item.value === bindValue);
     }
 
     form.value.attributeId = extendAttribute;
@@ -432,6 +441,11 @@ const onReferenceChange = (equipType: any, equipAttribute: any) => {
     });
     form.value.referenceValueReal = bindValue;
   }
+};
+
+// 动态关联配置对象回调
+const onReferenceObjectChange = (object: { [key: string]: any }) => {
+  console.log(object, 111);
 };
 
 // 数据类型列表
