@@ -91,11 +91,11 @@
             </el-select>
           </el-form-item>
           <!-- 点类型下轨迹的设置（绘制轨迹时可以找到所属类型拿轨迹设置及图层信息） -->
-          <el-form-item label="轨迹设置" prop="layerCluster" :disabled="state.dialogType == 2">
-            <el-checkbox v-model="form.trackSet" />
+          <el-form-item label="轨迹设置" prop="isTrackSetting" :disabled="state.dialogType == 2">
+            <el-checkbox v-model="form.isTrackSetting" />
           </el-form-item>
           <div></div>
-          <el-form-item label="轨迹模式" prop="trackMode" v-if="form.trackSet">
+          <el-form-item label="轨迹模式" prop="trackMode" v-if="form.isTrackSetting">
             <el-select v-model="form.trackMode" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
               <el-option
                 v-for="(item, index) in trackModeList.data"
@@ -106,7 +106,7 @@
             </el-select>
           </el-form-item>
           <div></div>
-          <el-form-item v-if="form.trackSet">
+          <el-form-item v-if="form.isTrackSetting">
             <template #label>
               <div style="font-weight: bold">轨迹线样式</div>
             </template>
@@ -114,7 +114,7 @@
           <div></div>
         </template>
         <!-- 线 面 圆 矩形 轨迹配置时   要不要icon -->
-        <template v-if="['2', '3', '4', '5'].includes(form.dataType) || form.trackSet">
+        <template v-if="['2', '3', '4', '5'].includes(form.dataType) || form.isTrackSetting">
           <el-form-item label="线宽" prop="lineWidth">
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
@@ -127,8 +127,21 @@
               <el-option label="虚线" value="dash"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item prop="flash" label="是否闪烁" v-if="form.lineType == 'dash'" style="width: 350px">
-            <el-checkbox v-model="form.flash" />
+          <!-- 数据类型是线、环且是虚线时 -->
+          <el-form-item
+            prop="animationSetting"
+            label="动画设置"
+            v-if="form.lineType == 'dash' && form.dataType == '2'"
+            style="width: 350px"
+          >
+            <el-select v-model="form.animationSetting" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
+              <el-option
+                v-for="(item, index) in animationList.data"
+                :key="index"
+                :label="item.name"
+                :value="item.code"
+              ></el-option>
+            </el-select>
           </el-form-item>
         </template>
         <!-- 面 圆 矩形 -->
@@ -313,9 +326,10 @@ const defaultParam = {
   borderWidth: 1,
   borderColor: "rgba(0,0,0,1)",
   backGroundColor: "rgba(0,0,0,0.3)",
-  trackSet: false, // 轨迹设置
+  isTrackSetting: false, // 轨迹设置
   trackMode: "", // 轨迹模式
-  flash: false // 是否闪烁
+  animationSetting: "", // 动画设置
+  trackLineStyle: null // 轨迹线样式
 };
 
 // 表单字段
@@ -323,11 +337,12 @@ let form = ref<
   LabelType & {
     referenceValue: string;
     referenceValueReal: any;
-    trackSet: any;
+    isTrackSetting: any;
     trackMode: any;
     labelLegendImagePath: any;
-    flash: boolean;
+    animationSetting: string;
     referenceObject: any;
+    trackLineStyle: any;
   }
 >(defaultParam);
 
@@ -397,6 +412,15 @@ const onConfirm = () => {
       param.isBold = Boolean(isBold);
       param.isDefaultDisplayLabelName = Boolean(isDefaultDisplayLabelName);
       param.lineVectorPath = lineVectorPath || "";
+
+      // 数据类型点且轨迹设置时 拼接trackLineStyle
+      if (param.dataType == "1" && param?.isTrackSetting) {
+        param.trackLineStyle = {
+          lineWidth: param?.lineWidth,
+          lineColor: param?.lineColor,
+          lineType: param?.lineType
+        };
+      }
 
       if (state.dialogType == 0) {
         // 添加
@@ -536,12 +560,39 @@ const trackModeList = ref<{
 }>({
   data: [
     {
-      code: "1",
+      code: "dynamic",
       name: "动态延展轨迹线"
     },
     {
-      code: "2",
+      code: "fixed",
       name: "固定轨迹线"
+    }
+  ]
+});
+
+// 动画配置
+const animationList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "high",
+      name: "快"
+    },
+    {
+      code: "medium",
+      name: "中"
+    },
+    {
+      code: "low",
+      name: "慢"
+    },
+    {
+      code: "no",
+      name: "无"
     }
   ]
 });
