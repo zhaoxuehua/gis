@@ -13,7 +13,7 @@
       :key="item.name"
       :prop="item.name ? item.name : ''"
       :label="!item.attributeMonitorUnitName ? item.label : item.label + '(' + item.attributeMonitorUnitName + ')'"
-      :rules="rulesForm[item.name]"
+      :rules="state.rulesForm[item.name]"
     >
       <el-input
         v-model="form[item.name]"
@@ -92,8 +92,8 @@
   </el-form>
 </template>
 
-<script lang="ts">
-import { reactive, toRefs, ref, defineComponent, watch } from "vue";
+<script lang="ts" setup name="DynamicForm">
+import { reactive, ref, watch } from "vue";
 import * as Regular from "@/plugins/verification.js";
 
 interface Option {
@@ -120,223 +120,199 @@ interface State {
   [key: string]: any;
 }
 
-export default defineComponent({
-  name: "DynamicForm",
-  props: {
-    formData: {
-      type: Array as () => FormItem[],
-      default: () => [],
-      required: false
-    },
-    labelWidth: {
-      type: Number,
-      default: 188,
-      required: false
-    }
+const props = defineProps({
+  formData: {
+    type: Array as () => FormItem[],
+    default: () => [],
+    required: false
   },
-  emits: ["dynamicChange"],
-  setup(props, { emit }) {
-    // 验证是否是浮点型
-    const doubleScaleVerification = (rule: any, value: any, callback: any, label: any) => {
-      if (value && !Regular.verifyDouble.test(String(value))) {
-        return callback(new Error(`${label}必须是数字!`));
-      }
-      callback();
-    };
-
-    // 限制最小值
-    const minValueVerification = (rule: any, value: any, callback: any, label: any, minValue: any, maxValue: any) => {
-      if (minValue && maxValue) {
-        if (value && !(Number(value) >= Number(minValue) && Number(value) <= Number(maxValue))) {
-          return callback(new Error(`${label}在${minValue}与${maxValue}之间!`));
-        }
-      } else if (minValue && !maxValue) {
-        if (value && !(Number(value) >= Number(minValue))) {
-          return callback(new Error(`${label}不能小于${minValue}!`));
-        }
-      } else if (!minValue && maxValue) {
-        if (value && !(Number(value) <= Number(maxValue))) {
-          return callback(new Error(`${label}不能大于${maxValue}!`));
-        }
-      }
-      callback();
-    };
-
-    // 限制精度
-    const percisionVerification = (rule: any, value: any, callback: any, label: any, percision: any) => {
-      if (value) {
-        if (("" + value).includes(".")) {
-          let arr = ("" + value).split(".");
-          if (arr[arr.length - 1].length !== Number(percision)) {
-            return callback(new Error(`${label}的精度是${percision}!`));
-          }
-          callback();
-        } else {
-          return callback(new Error(`${label}的精度是${percision}!`));
-        }
-      }
-      callback();
-    };
-
-    const state: State = reactive({
-      // 弹窗表单验证
-      rulesForm: {},
-      ruleDoubleArr: [], //double类型验证
-      optionMap: {},
-      formData: []
-    });
-
-    const refForm = ref<Form>({ value: {} });
-    let form: Form = ref({});
-
-    const initForm = () => {
-      state.optionMap = {};
-      state.formData.forEach((item: FormItem) => {
-        if (item.type == "select") {
-          if (state?.optionMap) {
-            state.optionMap[item.name] = JSON.parse(JSON.stringify(item.option));
-          }
-          item.option = [];
-        }
-        if (!item.extendAttributeValue) {
-          if (item.type == "checkbox") {
-            form.value[item.name] = false;
-          } else if (item.type == "numberinput") {
-            form.value[item.name] = 0;
-          } else {
-            form.value[item.name] = "";
-          }
-        } else {
-          if (item.type == "numberinput") {
-            if (item.extendAttributeValue) {
-              form.value[item.name] = Number(item.extendAttributeValue);
-            }
-          } else {
-            form.value[item.name] = item.extendAttributeValue;
-          }
-        }
-      });
-      setTimeout(() => {
-        state.formData.forEach((item: any) => {
-          if (item.type == "select") {
-            if (state.optionMap[item.name]) {
-              item.option = state.optionMap[item.name];
-            }
-          }
-        });
-      }, 0);
-    };
-
-    const initRulesForm = () => {
-      state.rulesForm = {};
-      let rulesForm: { [key: string]: any[] } = {};
-      state.formData.forEach(item => {
-        rulesForm[item.name] = [];
-        if (item["required"]) {
-          // 必填
-          let obj = { required: true, message: `${item.label}不能为空`, trigger: ["blur", "change"] };
-          rulesForm[item.name].push(obj);
-        } else {
-          // 选填
-          let obj = { required: false, message: `${item.label}不能为空`, trigger: ["blur", "change"] };
-          rulesForm[item.name].push(obj);
-        }
-
-        // 长度验证只有字符串的时候有，其他时候没有
-        if (item.type == "stringinput") {
-          if (item.max) {
-            // 长度不能超过
-            let obj = { max: item.max, message: `${item.label}长度不能大于${item.max}`, trigger: ["blur", "change"] };
-            rulesForm[item.name].push(obj);
-          }
-        }
-
-        // 浮点验证
-        if (item.type == "doubleinput") {
-          let obj = {
-            validator: (rule: any, value: any, callback: any) => {
-              doubleScaleVerification(rule, value, callback, item.label);
-            },
-            trigger: ["blur", "change"]
-          };
-          rulesForm[item.name].push(obj);
-          state.ruleDoubleArr.push(item.name);
-        }
-
-        if (item.type == "doubleinput") {
-          if (item.minValue || item.maxValue) {
-            let obj = {
-              validator: (rule: any, value: any, callback: any) => {
-                minValueVerification(rule, value, callback, item.label, item.minValue, item.maxValue);
-              },
-              trigger: ["blur", "change"]
-            };
-            rulesForm[item.name].push(obj);
-            state.ruleDoubleArr.push(item.name);
-          }
-        }
-
-        // 精度验证  精度只有浮点的时候有
-        if (item.type == "doubleinput") {
-          if (item.monitorPercision) {
-            let obj = {
-              validator: (rule: any, value: any, callback: any) => {
-                percisionVerification(rule, value, callback, item.label, item.monitorPercision);
-              },
-              trigger: ["blur", "change"]
-            };
-            rulesForm[item.name].push(obj);
-            state.ruleDoubleArr.push(item.name);
-          }
-        }
-      });
-      state.rulesForm = rulesForm;
-    };
-
-    watch(
-      () => props.formData,
-      async newVal => {
-        state.formData = JSON.parse(JSON.stringify(newVal));
-        initRulesForm();
-        initForm();
-      },
-      {
-        deep: true
-      }
-    );
-
-    // 判断验证是否通过
-    const formValidate = () => {
-      return new Promise((resolve: any) => {
-        refForm.value.validate((valid: any) => {
-          if (valid) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        });
-      });
-    };
-
-    watch(
-      () => form.value,
-      async newVal => {
-        emit("dynamicChange", newVal);
-      },
-      {
-        deep: true
-      }
-    );
-    return {
-      ...toRefs(state),
-      refForm,
-      form,
-      formValidate,
-      initForm,
-      initRulesForm
-    };
+  labelWidth: {
+    type: Number,
+    default: 188,
+    required: false
   }
 });
+
+const emit = defineEmits(["dynamicChange"]);
+
+// 验证是否是浮点型
+const doubleScaleVerification = (rule: any, value: any, callback: any, label: any) => {
+  if (value && !Regular.verifyDouble.test(String(value))) {
+    return callback(new Error(`${label}必须是数字!`));
+  }
+  callback();
+};
+
+// 限制最小值
+const minValueVerification = (rule: any, value: any, callback: any, label: any, minValue: any, maxValue: any) => {
+  if (minValue && maxValue) {
+    if (value && !(Number(value) >= Number(minValue) && Number(value) <= Number(maxValue))) {
+      return callback(new Error(`${label}在${minValue}与${maxValue}之间!`));
+    }
+  } else if (minValue && !maxValue) {
+    if (value && !(Number(value) >= Number(minValue))) {
+      return callback(new Error(`${label}不能小于${minValue}!`));
+    }
+  } else if (!minValue && maxValue) {
+    if (value && !(Number(value) <= Number(maxValue))) {
+      return callback(new Error(`${label}不能大于${maxValue}!`));
+    }
+  }
+  callback();
+};
+
+// 限制精度
+const percisionVerification = (rule: any, value: any, callback: any, label: any, percision: any) => {
+  if (value) {
+    if (("" + value).includes(".")) {
+      let arr = ("" + value).split(".");
+      if (arr[arr.length - 1].length !== Number(percision)) {
+        return callback(new Error(`${label}的精度是${percision}!`));
+      }
+      callback();
+    } else {
+      return callback(new Error(`${label}的精度是${percision}!`));
+    }
+  }
+  callback();
+};
+
+const state: State = reactive({
+  // 弹窗表单验证
+  rulesForm: {},
+  ruleDoubleArr: [], //double类型验证
+  optionMap: {},
+  formData: []
+});
+
+const refForm = ref<Form>({ value: {} });
+let form: Form = ref({});
+
+const initForm = () => {
+  state.optionMap = {};
+  state.formData.forEach((item: FormItem) => {
+    if (item.type == "select") {
+      if (state?.optionMap) {
+        state.optionMap[item.name] = JSON.parse(JSON.stringify(item.option));
+      }
+      item.option = [];
+    }
+    if (!item.extendAttributeValue) {
+      if (item.type == "checkbox") {
+        form.value[item.name] = false;
+      } else if (item.type == "numberinput") {
+        form.value[item.name] = 0;
+      } else {
+        form.value[item.name] = "";
+      }
+    } else {
+      if (item.type == "numberinput") {
+        if (item.extendAttributeValue) {
+          form.value[item.name] = Number(item.extendAttributeValue);
+        }
+      } else {
+        form.value[item.name] = item.extendAttributeValue;
+      }
+    }
+  });
+  setTimeout(() => {
+    state.formData.forEach((item: any) => {
+      if (item.type == "select") {
+        if (state.optionMap[item.name]) {
+          item.option = state.optionMap[item.name];
+        }
+      }
+    });
+  }, 0);
+};
+
+const initRulesForm = () => {
+  state.rulesForm = {};
+  let rulesForm: { [key: string]: any[] } = {};
+  state.formData.forEach(item => {
+    rulesForm[item.name] = [];
+    if (item["required"]) {
+      // 必填
+      let obj = { required: true, message: `${item.label}不能为空`, trigger: ["blur", "change"] };
+      rulesForm[item.name].push(obj);
+    } else {
+      // 选填
+      let obj = { required: false, message: `${item.label}不能为空`, trigger: ["blur", "change"] };
+      rulesForm[item.name].push(obj);
+    }
+
+    // 长度验证只有字符串的时候有，其他时候没有
+    if (item.type == "stringinput") {
+      if (item.max) {
+        // 长度不能超过
+        let obj = { max: item.max, message: `${item.label}长度不能大于${item.max}`, trigger: ["blur", "change"] };
+        rulesForm[item.name].push(obj);
+      }
+    }
+
+    // 浮点验证
+    if (item.type == "doubleinput") {
+      let obj = {
+        validator: (rule: any, value: any, callback: any) => {
+          doubleScaleVerification(rule, value, callback, item.label);
+        },
+        trigger: ["blur", "change"]
+      };
+      rulesForm[item.name].push(obj);
+      state.ruleDoubleArr.push(item.name);
+    }
+
+    if (item.type == "doubleinput") {
+      if (item.minValue || item.maxValue) {
+        let obj = {
+          validator: (rule: any, value: any, callback: any) => {
+            minValueVerification(rule, value, callback, item.label, item.minValue, item.maxValue);
+          },
+          trigger: ["blur", "change"]
+        };
+        rulesForm[item.name].push(obj);
+        state.ruleDoubleArr.push(item.name);
+      }
+    }
+
+    // 精度验证  精度只有浮点的时候有
+    if (item.type == "doubleinput") {
+      if (item.monitorPercision) {
+        let obj = {
+          validator: (rule: any, value: any, callback: any) => {
+            percisionVerification(rule, value, callback, item.label, item.monitorPercision);
+          },
+          trigger: ["blur", "change"]
+        };
+        rulesForm[item.name].push(obj);
+        state.ruleDoubleArr.push(item.name);
+      }
+    }
+  });
+  state.rulesForm = rulesForm;
+};
+
+watch(
+  () => props.formData,
+  async newVal => {
+    state.formData = JSON.parse(JSON.stringify(newVal));
+    initRulesForm();
+    initForm();
+  },
+  {
+    deep: true
+  }
+);
+
+watch(
+  () => form.value,
+  async newVal => {
+    emit("dynamicChange", newVal);
+  },
+  {
+    deep: true
+  }
+);
 </script>
 
 <style lang="scss">
