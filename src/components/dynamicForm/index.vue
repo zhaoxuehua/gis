@@ -1,6 +1,5 @@
 <!-- 动态表单 -->
 <template>
-  <!-- :rules="rulesForm" -->
   <el-form
     :inline="true"
     :model="form"
@@ -10,7 +9,7 @@
     v-if="formData?.length"
   >
     <el-form-item
-      v-for="(item, index) in formData"
+      v-for="item in formData"
       :key="item.name"
       :prop="item.name ? item.name : ''"
       :label="!item.attributeMonitorUnitName ? item.label : item.label + '(' + item.attributeMonitorUnitName + ')'"
@@ -98,17 +97,11 @@ import { reactive, toRefs, ref, defineComponent, watch } from "vue";
 import * as Regular from "@/plugins/verification.js";
 
 export default defineComponent({
-  name: "UserEdit",
-  components: {},
+  name: "DynamicForm",
   props: {
     formData: {
       type: Array,
       default: () => [],
-      required: false
-    },
-    dialogType: {
-      type: Number,
-      default: 0,
       required: false
     },
     labelWidth: {
@@ -119,15 +112,15 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     // 验证是否是浮点型
-    const doubleScaleVerification = (rule, value, callback, label) => {
-      if (value && !Regular.verifyDouble.test(Number(value))) {
+    const doubleScaleVerification = (rule: any, value: any, callback: any, label: any) => {
+      if (value && !Regular.verifyDouble.test(String(value))) {
         return callback(new Error(`${label}必须是数字!`));
       }
       callback();
     };
 
     // 限制最小值
-    const minValueVerification = (rule, value, callback, label, minValue, maxValue) => {
+    const minValueVerification = (rule: any, value: any, callback: any, label: any, minValue: any, maxValue: any) => {
       if (minValue && maxValue) {
         if (value && !(Number(value) >= Number(minValue) && Number(value) <= Number(maxValue))) {
           return callback(new Error(`${label}在${minValue}与${maxValue}之间!`));
@@ -145,7 +138,7 @@ export default defineComponent({
     };
 
     // 限制精度
-    const percisionVerification = (rule, value, callback, label, percision) => {
+    const percisionVerification = (rule: any, value: any, callback: any, label: any, percision: any) => {
       if (value) {
         if (("" + value).includes(".")) {
           let arr = ("" + value).split(".");
@@ -160,24 +153,47 @@ export default defineComponent({
       callback();
     };
 
-    const state = reactive({
+    interface Option {
+      label: string;
+      value: string | number;
+      [key: string]: any;
+    }
+    interface FormItem {
+      type: string;
+      name: string;
+      option?: Option[];
+      extendAttributeValue?: string | number;
+      [key: string]: any;
+    }
+
+    interface Form {
+      value: { [key: string]: any };
+    }
+    interface State {
+      optionMap: { [key: string]: any };
+      formData: FormItem[];
+
+      [key: string]: any;
+    }
+
+    const state: State = reactive({
       // 弹窗表单验证
       rulesForm: {},
       ruleDoubleArr: [], //double类型验证
       optionMap: {},
       formData: []
     });
-    const refForm = ref(null);
+    const refForm = ref();
 
-    let defaultParam = {};
-    let form = ref({});
+    let form: Form = ref({});
 
     const initForm = () => {
       state.optionMap = {};
-      state.formData.forEach(item => {
+      state.formData.forEach((item: FormItem) => {
         if (item.type == "select") {
-          // 为了提升动态表单加载速度
-          state.optionMap[item.name] = JSON.parse(JSON.stringify(item.option));
+          if (state?.optionMap) {
+            state.optionMap[item.name] = JSON.parse(JSON.stringify(item.option));
+          }
           item.option = [];
         }
         if (!item.extendAttributeValue) {
@@ -211,7 +227,7 @@ export default defineComponent({
 
     const initRulesForm = () => {
       state.rulesForm = {};
-      let rulesForm = {};
+      let rulesForm: { [key: string]: any[] } = {};
       state.formData.forEach(item => {
         rulesForm[item.name] = [];
         if (item["required"]) {
@@ -236,7 +252,7 @@ export default defineComponent({
         // 浮点验证
         if (item.type == "doubleinput") {
           let obj = {
-            validator: (rule, value, callback) => {
+            validator: (rule: any, value: any, callback: any) => {
               doubleScaleVerification(rule, value, callback, item.label);
             },
             trigger: ["blur", "change"]
@@ -248,7 +264,7 @@ export default defineComponent({
         if (item.type == "doubleinput") {
           if (item.minValue || item.maxValue) {
             let obj = {
-              validator: (rule, value, callback) => {
+              validator: (rule: any, value: any, callback: any) => {
                 minValueVerification(rule, value, callback, item.label, item.minValue, item.maxValue);
               },
               trigger: ["blur", "change"]
@@ -262,7 +278,7 @@ export default defineComponent({
         if (item.type == "doubleinput") {
           if (item.monitorPercision) {
             let obj = {
-              validator: (rule, value, callback) => {
+              validator: (rule: any, value: any, callback: any) => {
                 percisionVerification(rule, value, callback, item.label, item.monitorPercision);
               },
               trigger: ["blur", "change"]
@@ -289,8 +305,8 @@ export default defineComponent({
 
     // 判断验证是否通过
     const formValidate = () => {
-      return new Promise((resolve, reject) => {
-        refForm.value.validate(valid => {
+      return new Promise((resolve: any) => {
+        refForm.value.validate((valid: any) => {
           if (valid) {
             resolve(true);
           } else {
