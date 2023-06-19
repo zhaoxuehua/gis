@@ -13,12 +13,17 @@
               <div>
                 <img :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${info?.labelTypeImagePath}`" alt="" />
                 <div class="upload-image-btn">
-                  <span @click="editLegend">
-                    <Icon src="EditPen" :size="16"></Icon>
-                  </span>
-                  <span @click="deleteLegend">
-                    <Icon src="Delete" :size="16"></Icon>
-                  </span>
+                  <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_EDIT">
+                    <span @click="editLegend">
+                      <Icon src="EditPen" :size="16"></Icon>
+                    </span>
+                  </Auth>
+
+                  <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_DELETE">
+                    <span @click="deleteLegend">
+                      <Icon src="Delete" :size="16"></Icon>
+                    </span>
+                  </Auth>
                 </div>
               </div>
             </el-upload>
@@ -35,6 +40,7 @@ import { ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteLegendConfig } from "@/api/visconfig.js";
 import CreateEditLegend from "./createEditLegend.vue";
+import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 
 const props = defineProps({
   info: {

@@ -108,5 +108,7 @@ export const USER_BTNS_AUTH = [
   "device:category:delete",
   "device:category:add",
   "device:category:edit",
-  "visconfig:gisconfig:maplegendconfig:add"
+  "visconfig:gisconfig:maplegendconfig:add", // 添加图例
+  "visconfig:gisconfig:maplegendconfig:edit", // 编辑图例
+  "visconfig:gisconfig:maplegendconfig:delete" // 删除图例
 ];

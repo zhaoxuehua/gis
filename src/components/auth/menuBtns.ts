@@ -19,5 +19,7 @@ export const MENU_BTNS_AUTH = {
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_DELETE: "visconfig:gisconfig:mapparamsconfig:delete", //删除
 
   // 图例
-  VISCONFIG_GISCONFIG_MAPLegendCONFIG_ADD: "visconfig:gisconfig:maplegendconfig:add" //添加图例
+  VISCONFIG_GISCONFIG_MAPLegendCONFIG_ADD: "visconfig:gisconfig:maplegendconfig:add", //添加图例
+  VISCONFIG_GISCONFIG_MAPLegendCONFIG_EDIT: "visconfig:gisconfig:maplegendconfig:edit", // 编辑图例
+  VISCONFIG_GISCONFIG_MAPLegendCONFIG_DELETE: "visconfig:gisconfig:maplegendconfig:delete"
 };
