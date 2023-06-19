@@ -98,34 +98,14 @@ export const GIS_MAPPARAMS_DETAIL = [
     name: "displayLayerIds",
     slot: true
   },
-  // {
-  //   label: "是否显示缩放控件",
-  //   name: "zoom",
-  //   slot: true
-  // },
-  // {
-  //   label: "是否显示全屏控件",
-  //   name: "fullScreen",
-  //   slot: true
-  // },
-  // {
-  //   label: "是否显示比例尺控件",
-  //   name: "scaleLine",
-  //   slot: true
-  // },
-  // {
-  //   label: "是否显示路网叠加层",
-  //   name: "showOverlay",
-  //   slot: true
-  // },
-  // {
-  //   label: "是否显示地图类型切换控件",
-  //   name: "mapTypeSwitch",
-  //   slot: true
-  // },
   {
     label: "显示控件",
     name: "displayControlIds",
+    slot: true
+  },
+  {
+    label: "显示图例",
+    name: "displayLegendIds",
     slot: true
   },
   {

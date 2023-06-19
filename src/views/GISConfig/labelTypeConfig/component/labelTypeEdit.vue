@@ -91,8 +91,8 @@
             </el-select>
           </el-form-item>
           <!-- 点类型下轨迹的设置（绘制轨迹时可以找到所属类型拿轨迹设置及图层信息） -->
-          <el-form-item label="轨迹设置" prop="isTrackSetting" :disabled="state.dialogType == 2">
-            <el-checkbox v-model="form.isTrackSetting" />
+          <el-form-item label="轨迹设置" prop="isTrackSetting">
+            <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" />
           </el-form-item>
           <div></div>
           <el-form-item label="轨迹模式" prop="trackMode" v-if="form.isTrackSetting">
@@ -114,7 +114,7 @@
           <div></div>
         </template>
         <!-- 线 面 圆 矩形 轨迹配置时   要不要icon -->
-        <template v-if="['2', '3', '4', '5'].includes(form.dataType) || form.isTrackSetting">
+        <template v-if="['2', '3', '4', '5', '7'].includes(form.dataType) || form.isTrackSetting">
           <el-form-item label="线宽" prop="lineWidth">
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
