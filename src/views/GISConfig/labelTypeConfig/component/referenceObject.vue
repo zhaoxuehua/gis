@@ -17,6 +17,9 @@
         style="margin-top: 0"
       >
       </DynamicForm>
+      <div class="option">
+        <div class="title">关联对象信息列表</div>
+      </div>
       <el-table
         ref="referenceObjectTableRef"
         :data="table.data"
@@ -32,6 +35,7 @@
         </el-table-column>
       </el-table>
       <Pagination
+        v-if="table.data?.length"
         :total="table.total"
         v-model:page="query.params.pageNumber"
         v-model:limit="query.params.pageSize"
@@ -41,7 +45,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">确认</el-button>
+          <el-button type="primary" @click="onConfirm">确认关联</el-button>
         </span>
       </template>
     </el-dialog>
@@ -51,18 +55,17 @@
 <script lang="ts" setup name="ReferenceMain">
 import { ref, reactive, watch } from "vue";
 import { ElMessage, ElTable } from "element-plus";
-import { bindStaticAttributes } from "@/api/device.js";
-import { dynamicTableList } from "@/api/visconfig.js";
+import { queryDynamicForm, dynamicTableList } from "@/api/device.js";
 import DynamicForm from "@/components/dynamicForm/index.vue";
 import { TableList } from "../../type";
 import { handleParam } from "@/utils/common.js";
 
-const emit = defineEmits(["onReferenceObjectChange"]);
+const emit = defineEmits(["referenceObjectChange"]);
 const referenceObjectTableRef = ref<InstanceType<typeof ElTable>>();
 const open = ref<boolean>(false);
-const formData: any = ref();
+const formData: any = ref(); // 接口获取的表单信息
 const state = reactive({
-  dynamicForm: {}
+  dynamicForm: {} // 动态表单绑定值
 });
 
 const defaultParams = {
@@ -89,7 +92,7 @@ const table = ref<TableList>({
   total: 0,
   ids: [],
   data: [], // 表格数据源
-  columns: [], // 表格动态渲染列
+  columns: [], // 表格动态header渲染列
   getTableData: async () => {
     table.value.loading = true;
     const params = {
@@ -97,9 +100,21 @@ const table = ref<TableList>({
       ...state.dynamicForm
     };
     const res: { [key: string]: any } = await dynamicTableList(...(handleParam(params) as [string, object]));
-    if (res?.data?.items) {
-      table.value.data = res.data.items;
-      table.value.total = res.data.totalNum;
+    if (res?.items) {
+      table.value.data = res.items;
+      table.value.total = res.totalNum;
+
+      // mock列表头数据
+      // table.value.columns = [
+      //   {
+      //     prop: "name",
+      //     label: "Name"
+      //   },
+      //   {
+      //     prop: "id",
+      //     label: "1234"
+      //   }
+      // ];
     } else {
       ElMessage.error("接口异常");
     }
@@ -115,11 +130,11 @@ const table = ref<TableList>({
   onEdit: () => {}
 });
 
-const openDialog = () => {
+const openDialog = async () => {
   open.value = true;
-  getFormData(); // 获取动态表单数据
+  await getFormData(); // 获取动态表单数据
   // 获取表格列表数据
-  table.value.getTableData();
+  await table.value.getTableData();
 };
 
 const onClose = () => {
@@ -129,19 +144,20 @@ const onClose = () => {
 // 确认关联(将选择的行信息关联)
 const onConfirm = () => {
   if (table.value.ids.length === 0) {
-    ElMessage.warning("请选择关联列表数据");
+    ElMessage.warning("请选择关联对象列表数据");
     return;
   }
   const selectionRow = table.value.data.find((item: any) => item.id === table.value.ids[0]);
-  emit("onReferenceObjectChange", selectionRow);
+  emit("referenceObjectChange", selectionRow);
+  open.value = false;
 };
 
 // 根据动态表单选择的数据查询表单
 const getFormData = async () => {
-  const res: { [key: string]: any } = await bindStaticAttributes([52275, true]);
+  const res: { [key: string]: any } = await queryDynamicForm([52275, true]);
   if (res.code == 200) {
     formData.value = res.data;
-    formData.value.forEach((item: any) => {
+    formData.value.forEach((item: { [key: string]: any }) => {
       if (item.type == "checkbox") {
         if (item.extendAttributeValue == "true" || item.extendAttributeValue == true) {
           item.extendAttributeValue = true;
@@ -163,7 +179,6 @@ const getFormData = async () => {
 const dynamicChange = (val: { [key: string]: any }) => {
   // 获取动态表单选项数据，用于查询表格数据
   state.dynamicForm = val;
-  console.log(state.dynamicForm, 77);
 };
 
 watch(

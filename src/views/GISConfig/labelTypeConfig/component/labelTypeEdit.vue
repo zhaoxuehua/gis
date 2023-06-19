@@ -30,7 +30,7 @@
         <!-- 对象关联配置 -->
         <el-form-item label="对象关联配置">
           <el-input readonly v-model="reference" :disabled="state.dialogType == 2" />
-          <el-button class="reference-button" circle @click="onRefrenceClick('other')" v-if="state.dialogType != 2">
+          <el-button class="reference-button" circle @click="onRefrenceClick" v-if="state.dialogType != 2">
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
@@ -193,7 +193,7 @@
     <!-- 默认关联设备信息 -->
     <ReferenceMain ref="referenceMainRef" @reference-change="onReferenceChange"></ReferenceMain>
     <!-- 关联自定义对象信息 -->
-    <ReferenceObject ref="referenceObjectRef" @reference-objecct-change="onReferenceObjectChange"></ReferenceObject>
+    <ReferenceObject ref="referenceObjectRef" @reference-object-change="onReferenceObjectChange"></ReferenceObject>
   </div>
 </template>
 
@@ -226,6 +226,8 @@ const fontSizeVerification = (rule: any, value: any, callback: Function) => {
   }
   callback();
 };
+// 是设备关联对象还是其他
+const referenceType = ref("other");
 const state = reactive({
   dialogType: 0,
   open: false,
@@ -277,10 +279,16 @@ const defaultParam = {
   code: "",
   name: "",
   layerConfigId: "",
-  attribute: null,
-  attributeId: 0,
-  equipType: null,
-  equipTypeId: 0,
+
+  attribute: null, // 关联属性
+  attributeId: 0, // 关联属性id
+  equipType: null, // 设备类型 {}
+  equipTypeId: 0, // 设备类型id 1441
+  referenceValue: "", //  json string  属性类型及选择值
+  referenceValueReal: "", // 属性值
+
+  referenceObject: null, // 配置的关联对象
+
   isDefaultDisplayLabelName: false,
   factor: "",
   labelLegendImagePath: "", // 标签图例
@@ -305,8 +313,6 @@ const defaultParam = {
   borderWidth: 1,
   borderColor: "rgba(0,0,0,1)",
   backGroundColor: "rgba(0,0,0,0.3)",
-  referenceValue: "",
-  referenceValueReal: "",
   trackSet: false, // 轨迹设置
   trackMode: "", // 轨迹模式
   flash: false // 是否闪烁
@@ -321,27 +327,41 @@ let form = ref<
     trackMode: any;
     labelLegendImagePath: any;
     flash: boolean;
+    referenceObject: any;
   }
 >(defaultParam);
 
 // 关联设备信息
+// 没绑定展示空
+// 光设备类型 展示 设备类型名
+// 设备类型及属性都存在展示  设备类型名 属性名及值
 const reference = computed(() => {
-  if (form.value.equipType && form.value.equipTypeId) {
-    if (form.value.attribute && form.value.attributeId) {
-      const referenceValue = JSON.parse(form.value.referenceValue);
-      const { type, selectedValue } = referenceValue;
-      let attributeValue = selectedValue;
-
-      if (type === "select") {
-        attributeValue = selectedValue.label;
-      }
-
-      return `${form.value.equipType.name} - ${form.value.attribute.label || form.value.attribute.name} - ${attributeValue}`;
+  // 关联信息的v-model字段
+  if (referenceType.value == "other") {
+    if (form.value.referenceObject) {
+      let { name } = form.value?.referenceObject;
+      return `${name}`;
     } else {
-      return `${form.value.equipType.name}`;
+      return "";
     }
   } else {
-    return "";
+    if (form.value.equipType && form.value.equipTypeId) {
+      if (form.value.attribute && form.value.attributeId) {
+        const referenceValue = JSON.parse(form.value.referenceValue);
+        const { type, selectedValue } = referenceValue;
+        let attributeValue = selectedValue;
+
+        if (type === "select") {
+          attributeValue = selectedValue.label;
+        }
+
+        return `${form.value.equipType.name} - ${form.value.attribute.label || form.value.attribute.name} - ${attributeValue}`;
+      } else {
+        return `${form.value.equipType.name}`;
+      }
+    } else {
+      return "";
+    }
   }
 });
 
@@ -410,8 +430,8 @@ const onConfirm = () => {
 };
 
 // 点击对象信息
-const onRefrenceClick = (type: string) => {
-  if (type == "other") {
+const onRefrenceClick = () => {
+  if (referenceType.value == "other") {
     // 关联其他对象动态弹框
     referenceObjectRef.value?.openDialog();
   } else {
@@ -443,9 +463,9 @@ const onReferenceChange = (equipType: { [key: string]: any }, equipAttribute: { 
   }
 };
 
-// 动态关联配置对象回调
+// 动态关联配置对象回调（关联列表行数据）
 const onReferenceObjectChange = (object: { [key: string]: any }) => {
-  console.log(object, 111);
+  form.value.referenceObject = { ...object };
 };
 
 // 数据类型列表

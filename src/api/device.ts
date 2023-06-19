@@ -7,7 +7,11 @@ export function deviceTypeList(queryString: string, params: object) {
 }
 
 // 关联对象配置查询接口
-// 设备管理-静态属性列表(绑定的静态属性)
-export function bindStaticAttributes(params: any) {
+// 查询动态表单数据
+export function queryDynamicForm(params: any) {
   return request.get(`/api/equipment-service/equip/equip/description/${params.join("/")}`);
+}
+// 关联对象（动态表格列表数据的获取）
+export function dynamicTableList(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
 }

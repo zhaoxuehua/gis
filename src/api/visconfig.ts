@@ -122,8 +122,3 @@ export function editLegend(params: object) {
 export function upLoadImage(params: any) {
   return request.post(`/backend1/system/udf/uploadNew`, params);
 }
-
-// 关联对象（动态表格数据的获取）
-export function dynamicTableList(queryString: string, params: object) {
-  return request.post(`/backend1/equip/gisLabelInfo/list${queryString}`, params);
-}
