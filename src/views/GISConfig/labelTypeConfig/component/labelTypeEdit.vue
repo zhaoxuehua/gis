@@ -131,7 +131,7 @@
           <el-form-item
             prop="animationSetting"
             label="动画设置"
-            v-if="form.lineType == 'dash' && form.dataType == '2'"
+            v-if="form.lineType == 'dash' && (form.dataType == '2' || form.dataType == '7')"
             style="width: 350px"
           >
             <el-select v-model="form.animationSetting" placeholder="请选择..." clearable :disabled="state.dialogType == 2">

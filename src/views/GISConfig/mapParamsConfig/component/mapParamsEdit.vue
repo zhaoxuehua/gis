@@ -70,9 +70,9 @@
             <el-option v-for="(item, index) in controlList.data" :key="index" :label="item.name" :value="item.code"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="显示图例" prop="legendIds">
+        <el-form-item label="显示图例" prop="displayLegendIds">
           <el-select
-            v-model="form.legendIds"
+            v-model="form.displayLegendIds"
             multiple
             clearable
             placeholder="请选择..."
@@ -82,22 +82,6 @@
             <el-option v-for="(item, index) in legendIdsList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-
-        <!-- <el-form-item label="显示缩放控件" prop="zoom">
-          <el-switch v-model="form.zoom" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="显示全屏控件" prop="fullScreen">
-          <el-switch v-model="form.fullScreen" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="显示比例尺控件" prop="scaleLine">
-          <el-switch v-model="form.scaleLine" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="显示路网叠加层" prop="showOverlay">
-          <el-switch v-model="form.showOverlay" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="显示地图类型控件" prop="mapTypeSwitch">
-          <el-switch v-model="form.mapTypeSwitch" style="width: 200px" />
-        </el-form-item> -->
         <el-form-item
           label="电子地图URL"
           prop="normalUrl"
@@ -145,12 +129,7 @@ interface MapParamsForm {
   displayLabelInfoIds: number[] | string;
   displayLayerIds: number[] | string;
   displayControlIds: any;
-  legendIds: string[] | string;
-  // zoom: boolean;
-  // fullScreen: boolean;
-  // scaleLine: boolean;
-  // showOverlay: boolean;
-  // mapTypeSwitch: boolean;
+  displayLegendIds: string[] | string;
   normalUrl: string;
   sateUrl: string;
   overlayUrl: string;
@@ -234,12 +213,7 @@ const defaultParam = {
   displayLabelInfoIds: [],
   displayLayerIds: [],
   displayControlIds: [], // 控件列表
-  legendIds: [], // 图例列表
-  // zoom: true,
-  // fullScreen: true,
-  // scaleLine: true,
-  // showOverlay: true,
-  // mapTypeSwitch: true,
+  displayLegendIds: [], // 图例列表
   normalUrl: "",
   sateUrl: "",
   overlayUrl: ""
@@ -261,7 +235,7 @@ const openDialog = (row?: { [key: string]: any }) => {
     // 控件
     form.value.displayControlIds = row.displayControlIds ? row.displayControlIds.split(",") : [];
     // 图例
-    form.value.legendIds = row.legendIds ? row.legendIds.split(",") : [];
+    form.value.displayLegendIds = row.displayLegendIds ? row.displayLegendIds.split(",") : [];
   } else {
     state.dialogType = 0;
     form.value = { ...defaultParam };
@@ -290,8 +264,8 @@ const onConfirm = () => {
         param.displayControlIds = param.displayControlIds.join(",");
       }
       // 图例参数处理
-      if (Array.isArray(param.legendIds)) {
-        param.legendIds = param.legendIds.join(",");
+      if (Array.isArray(param.displayLegendIds)) {
+        param.displayLegendIds = param.displayLegendIds.join(",");
       }
 
       if (state.dialogType == 0) {
