@@ -77,8 +77,8 @@
     ></Pagination>
     <LayerEdit ref="layerEditRef" @success-add="query.onQuery"></LayerEdit>
     <DetailDialog ref="detailDialogRef" :constant="'GIS_LAYER_DETAIL'" :title="'图层详情'">
-      <template #layerCluster="scope">
-        {{ scope.row?.layerCluster ? "是" : "否" }}
+      <template #isTagAgg="scope">
+        {{ scope.row?.isTagAgg ? "是" : "否" }}
       </template>
     </DetailDialog>
   </div>

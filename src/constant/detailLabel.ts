@@ -1,4 +1,4 @@
-// GIS图层配置
+// GIS图层配置（详情）
 export const GIS_LAYER_DETAIL = [
   {
     label: "图层编码",
@@ -18,16 +18,16 @@ export const GIS_LAYER_DETAIL = [
   },
   {
     label: "标签聚合",
-    name: "layerCluster",
+    name: "isTagAgg",
     slot: true
   },
   {
     label: "标签聚合距离",
-    name: "layerTrackDistance"
+    name: "tagAggDistance"
   },
   {
     label: "轨迹聚合距离",
-    name: "layerTrackDistance"
+    name: "trackAggDistance"
   }
 ];
 

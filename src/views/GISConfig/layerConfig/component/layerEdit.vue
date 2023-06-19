@@ -26,21 +26,21 @@
           <el-input type="number" v-model="form.layerMaxLevel" />
         </el-form-item>
         <div></div>
-        <el-form-item prop="layerCluster">
+        <el-form-item prop="isTagAgg">
           <template #label>
             <span>标签聚合</span>
             <el-tooltip effect="dark" content="目前只针对点类型标签生效" placement="top">
               <Icon src="WarningFilled" :size="16" color="#e6a23c" class="iconItem"></Icon>
             </el-tooltip>
           </template>
-          <el-checkbox v-model="form.layerCluster" />
+          <el-checkbox v-model="form.isTagAgg" />
         </el-form-item>
         <div></div>
-        <el-form-item v-if="form.layerCluster" label="标签聚合距离" prop="layerLabelDistance">
-          <el-input type="number" v-model="form.layerLabelDistance" />
+        <el-form-item v-if="form.isTagAgg" label="标签聚合距离" prop="tagAggDistance">
+          <el-input type="number" v-model="form.tagAggDistance" />
         </el-form-item>
-        <el-form-item v-if="form.layerCluster" label="轨迹聚合距离" prop="layerTrackDistance">
-          <el-input type="number" v-model="form.layerTrackDistance" />
+        <el-form-item v-if="form.isTagAgg" label="轨迹聚合距离" prop="trackAggDistance">
+          <el-input type="number" v-model="form.trackAggDistance" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -108,9 +108,9 @@ const defaultParam = {
   layerLevel: null,
   layerMinLevel: null,
   layerMaxLevel: null,
-  layerCluster: false,
-  layerLabelDistance: null,
-  layerTrackDistance: null
+  isTagAgg: false,
+  tagAggDistance: null,
+  trackAggDistance: null
 };
 
 let form = ref<{
@@ -120,9 +120,9 @@ let form = ref<{
   layerLevel: number | null;
   layerMinLevel: number | null;
   layerMaxLevel: number | null;
-  layerCluster?: boolean | undefined;
-  layerLabelDistance: number | null;
-  layerTrackDistance: number | null;
+  isTagAgg?: boolean | undefined;
+  tagAggDistance: number | null;
+  trackAggDistance: number | null;
 }>(defaultParam);
 
 const openDialog = (row?: { [key: string]: any }) => {
