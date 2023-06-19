@@ -138,7 +138,7 @@ const onConfirm = () => {
 
 // 根据动态表单选择的数据查询表单
 const getFormData = async () => {
-  const res: { [key: string]: any } = await bindStaticAttributes([53150, true]);
+  const res: { [key: string]: any } = await bindStaticAttributes([52275, true]);
   if (res.code == 200) {
     formData.value = res.data;
     formData.value.forEach((item: any) => {

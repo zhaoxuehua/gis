@@ -83,8 +83,8 @@
         style="width: 200px"
         :prop="item.name ? item.name : ''"
         :step="item.step ? item.step : 1"
-        :min="item.minValue ? item.minValue : '-Infinity'"
-        :max="item.maxValue ? item.maxValue : 'Infinity'"
+        :min="item.minValue ? item.minValue : -Infinity"
+        :max="item.maxValue ? item.maxValue : Infinity"
       >
       </el-input-number>
       <div class="placeholder-form" v-else></div>
@@ -96,11 +96,35 @@
 import { reactive, toRefs, ref, defineComponent, watch } from "vue";
 import * as Regular from "@/plugins/verification.js";
 
+interface Option {
+  label?: string;
+  value?: string | number | boolean | any;
+  [key: string]: any;
+}
+interface FormItem {
+  type?: string;
+  name: string;
+  option?: Option[];
+  extendAttributeValue?: string | number;
+  [key: string]: any;
+}
+
+interface Form {
+  value: { [key: string]: any };
+  [key: string]: any;
+}
+interface State {
+  optionMap: { [key: string]: any };
+  formData: FormItem[];
+  rulesForm: { [key: string]: any };
+  [key: string]: any;
+}
+
 export default defineComponent({
   name: "DynamicForm",
   props: {
     formData: {
-      type: Array,
+      type: Array as () => FormItem[],
       default: () => [],
       required: false
     },
@@ -110,6 +134,7 @@ export default defineComponent({
       required: false
     }
   },
+  emits: ["dynamicChange"],
   setup(props, { emit }) {
     // 验证是否是浮点型
     const doubleScaleVerification = (rule: any, value: any, callback: any, label: any) => {
@@ -153,29 +178,6 @@ export default defineComponent({
       callback();
     };
 
-    interface Option {
-      label: string;
-      value: string | number;
-      [key: string]: any;
-    }
-    interface FormItem {
-      type: string;
-      name: string;
-      option?: Option[];
-      extendAttributeValue?: string | number;
-      [key: string]: any;
-    }
-
-    interface Form {
-      value: { [key: string]: any };
-    }
-    interface State {
-      optionMap: { [key: string]: any };
-      formData: FormItem[];
-
-      [key: string]: any;
-    }
-
     const state: State = reactive({
       // 弹窗表单验证
       rulesForm: {},
@@ -183,8 +185,8 @@ export default defineComponent({
       optionMap: {},
       formData: []
     });
-    const refForm = ref();
 
+    const refForm = ref<Form>({ value: {} });
     let form: Form = ref({});
 
     const initForm = () => {
