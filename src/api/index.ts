@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse } from "axios";
-import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
+// import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
 import { LOGIN_URL } from "@/config";
 import { ElMessage } from "element-plus";
 import { ResultData } from "@/api/interface";
@@ -36,9 +36,9 @@ class RequestHttp {
       (config: CustomAxiosRequestConfig) => {
         // const userStore = useUserStore();
         // 当前请求不需要显示 loading，在 api 服务中通过指定的第三个参数: { noLoading: true } 来控制
-        config.noLoading || showFullScreenLoading();
+        // config.noLoading || showFullScreenLoading();
         if (config.headers && typeof config.headers.set === "function") {
-          config.headers.set("agioe_sso_sessionid", "314_1fae94491c89401c987a23fd750b5de6");
+          config.headers.set("agioe_sso_sessionid", "26_db8e3b51735847dc817715978117903f");
         }
         return config;
       },
@@ -55,7 +55,7 @@ class RequestHttp {
       (response: AxiosResponse) => {
         const { data } = response;
         const userStore = useUserStore();
-        tryHideFullScreenLoading();
+        // tryHideFullScreenLoading();
         // 登陆失效
         if (data.code == ResultEnum.OVERDUE) {
           userStore.setToken("");
@@ -73,7 +73,7 @@ class RequestHttp {
       },
       async (error: AxiosError) => {
         const { response } = error;
-        tryHideFullScreenLoading();
+        // tryHideFullScreenLoading();
         // 请求超时 && 网络错误单独判断，没有 response
         if (error.message.indexOf("timeout") !== -1) ElMessage.error("请求超时！请您稍后重试");
         if (error.message.indexOf("Network Error") !== -1) ElMessage.error("网络错误！请您稍后重试");

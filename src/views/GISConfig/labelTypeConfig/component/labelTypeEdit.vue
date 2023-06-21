@@ -396,6 +396,7 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
     state.dialogType = 0;
     form.value = { ...defaultParam };
   }
+  form.value.labelTypeImagePath = form.value.labelTypeImagePath ? form.value.labelTypeImagePath.split(",") : [];
   state.open = true;
 };
 
@@ -420,8 +421,19 @@ const onConfirm = () => {
           lineColor: param?.lineColor,
           lineType: param?.lineType
         };
+      } else {
+        // 清除轨迹模式及轨迹线样式
+        if (param.trackLineStyle) {
+          delete param.trackLineStyle;
+        }
+        if (param.trackMode) {
+          delete param.trackMode;
+        }
       }
-
+      // 点数据时标签类型图片
+      if (Array.isArray(param.labelTypeImagePath)) {
+        param.labelTypeImagePath = param.labelTypeImagePath.join(",");
+      }
       if (state.dialogType == 0) {
         // 添加
         const res: { [key: string]: any } = await addLabelType(param);

@@ -106,19 +106,23 @@ export function editLabel(params: object) {
 }
 
 // 图例
+// 查询图例列表
+export function getLegendConfigList(queryString: string, params: object) {
+  return request.post(`/api/adm-service/equip/legend/config/list${queryString}`, params);
+}
 // 删除图例
 export function deleteLegendConfig(params: any) {
-  return request.delete(`/backend1/equip/gisLabelInfo/${params}`);
+  return request.delete(`/api/adm-service/equip/legend/config/${params}`);
 }
 // 添加图例
 export function addLegend(params: object) {
-  return request.post(`/backend1/equip/layerConfig`, params);
+  return request.post(`/api/adm-service/equip/legend/config`, params);
 }
 // 编辑图例
 export function editLegend(params: object) {
-  return request.put(`/backend1/equip/layerConfig`, params);
+  return request.put(`/api/adm-service/equip/legend/config`, params);
 }
 // 上传图片接口
 export function upLoadImage(params: any) {
-  return request.post(`/backend1/system/udf/uploadNew`, params);
+  return request.post(`/api/adm-service/system/udf/uploadNew`, params);
 }

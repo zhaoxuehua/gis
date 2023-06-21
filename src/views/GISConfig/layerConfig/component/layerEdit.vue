@@ -121,8 +121,8 @@ let form = ref<{
   layerMinLevel: number | null;
   layerMaxLevel: number | null;
   isTagAgg?: boolean | undefined;
-  tagAggDistance: number | null;
-  trackAggDistance: number | null;
+  tagAggDistance?: number | null;
+  trackAggDistance?: number | null;
 }>(defaultParam);
 
 const openDialog = (row?: { [key: string]: any }) => {
@@ -144,7 +144,12 @@ const onClose = () => {
 const onConfirm = () => {
   refForm.value?.validate(async valid => {
     if (valid) {
-      let param = { ...form.value };
+      let param: { [key: string]: any } = { ...form.value };
+      // 标签非聚合时清除聚合距离
+      if (!param?.isTagAgg) {
+        delete param.tagAggDistance;
+        delete param.trackAggDistance;
+      }
       if (state.dialogType == 0) {
         // 添加
         const res: { [key: string]: any } = await addLayer(param);

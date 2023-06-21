@@ -4,21 +4,22 @@
       <el-container>
         <el-header class="header-card">
           <div class="title">
-            {{ info.name }}
+            <el-tooltip effect="light" :content="info.legendName" placement="top-start">
+              {{ info.legendName }}
+            </el-tooltip>
           </div>
         </el-header>
         <el-main class="main-card">
           <div class="image-container">
             <el-upload action="#" :show-file-list="false" disabled>
               <div>
-                <img :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${info?.labelTypeImagePath}`" alt="" />
+                <img :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${info?.legendPath}`" alt="" />
                 <div class="upload-image-btn">
                   <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_EDIT">
                     <span @click="editLegend">
                       <Icon src="EditPen" :size="16"></Icon>
                     </span>
                   </Auth>
-
                   <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_DELETE">
                     <span @click="deleteLegend">
                       <Icon src="Delete" :size="16"></Icon>
@@ -85,8 +86,7 @@ const onReSearch = () => {
 
 <style lang="scss" scoped>
 .rule-instance-card {
-  width: calc(20% - 20px);
-  min-width: 200px;
+  width: 200px;
   height: 200px;
   .header-card {
     display: flex;
@@ -94,7 +94,12 @@ const onReSearch = () => {
     justify-content: center;
     height: 30px;
     .title {
+      width: 200px;
+      margin: auto;
+      overflow: hidden;
       font-weight: bold;
+      text-overflow: ellipsis; /* 设置省略号 */
+      white-space: nowrap; /* 防止文字换行 */
     }
   }
   .main-card {
@@ -113,7 +118,10 @@ const onReSearch = () => {
       margin: auto;
     }
     .image-container img {
+      width: 100px;
+      height: 100px;
       margin: auto;
+      object-fit: scale-down;
     }
     .upload-image-btn {
       position: absolute;

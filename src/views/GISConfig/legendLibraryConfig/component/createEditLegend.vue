@@ -10,10 +10,10 @@
       :destroy-on-close="true"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
-        <el-form-item label="图例名称" prop="name">
-          <el-input placeholder="请输入..." v-model="form.name" clearable />
+        <el-form-item label="图例名称" prop="legendName">
+          <el-input placeholder="请输入..." v-model="form.legendName" clearable />
         </el-form-item>
-        <el-form-item label="图例图片" prop="labelTypeImagePath" v-if="state.dialogType == 0">
+        <el-form-item label="图例图片" prop="legendPath" v-if="state.dialogType == 0">
           <el-upload
             action="#"
             :show-file-list="false"
@@ -21,8 +21,8 @@
             :http-request="uploadLabelTypeImage"
             class="avatar-uploader"
           >
-            <div v-if="form.labelTypeImagePath">
-              <img class="avatar" :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${form.labelTypeImagePath}`" alt="" />
+            <div v-if="form.legendPath">
+              <img class="avatar" :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${form.legendPath}`" alt="" />
             </div>
             <Icon v-else src="Plus" class="avatar-uploader-icon" :size="28"></Icon>
           </el-upload>
@@ -49,25 +49,25 @@ const state = reactive({
   dialogType: 0,
   open: false,
   rulesForm: {
-    name: [
+    legendName: [
       { required: true, message: "图例名称不能为空", trigger: ["blur", "change"] },
       { max: 50, message: "图例名称长度不能大于50", trigger: ["blur", "change"] }
     ],
-    labelTypeImagePath: [{ required: true, message: "图例图片不能为空", trigger: ["blur", "change"] }]
+    legendPath: [{ required: true, message: "图例图片不能为空", trigger: ["blur", "change"] }]
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
 
 const defaultParam = {
-  name: "",
-  labelTypeImagePath: "",
+  legendName: "",
+  legendPath: "",
   labelTypeImageAllPath: ""
 };
 
 let form = ref<{
   id?: number;
-  name: string;
-  labelTypeImagePath: string;
+  legendName: string;
+  legendPath: string;
   labelTypeImageAllPath: string;
 }>(defaultParam);
 
@@ -145,8 +145,9 @@ const uploadLabelTypeImage = async (content: any) => {
       message: "上传成功"
     });
     const { fileName, fileUrl } = res.data;
-    form.value.labelTypeImagePath = fileName;
+    form.value.legendPath = fileName;
     form.value.labelTypeImageAllPath = fileUrl;
+    refForm.value?.validateField("legendPath");
   } else {
     ElMessage.error(res.msg);
   }

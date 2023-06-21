@@ -7,12 +7,12 @@
             <el-form-item label="图例名称：">
               <el-autocomplete
                 class="inline-input"
-                v-model="query.params.name"
+                v-model="query.params.legendName"
                 :fetch-suggestions="querySearch"
                 placeholder="请输入..."
                 :trigger-on-focus="false"
                 @select="handleSelect"
-                value-key="name"
+                value-key="legendName"
                 clearable
                 @clear="query.onQuery"
               >
@@ -53,7 +53,7 @@
 <script setup lang="ts" name="LayerConfig">
 import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
-import { getLabelTypeList } from "@/api/visconfig.js";
+import { getLegendConfigList } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
 import { ElMessage } from "element-plus";
 import Card from "./component/card.vue";
@@ -63,7 +63,7 @@ import { TableList } from "../type";
 const createEditLegend = ref();
 // 查询条件
 const defaultParams = {
-  name: "",
+  legendName: "", // 图例名称
   orderByColumn: "",
   isAsc: "",
   pageNumber: 1,
@@ -88,9 +88,9 @@ const table = ref<TableList>({
   data: [],
   getTableData: async () => {
     table.value.loading = true;
-    const res: { [key: string]: any } = await getLabelTypeList(...(handleParam(query.value.params) as [string, object]));
+    const res: { [key: string]: any } = await getLegendConfigList(...(handleParam(query.value.params) as [string, object]));
     if (res?.data?.items) {
-      table.value.data = res.data.items.filter((item: any) => item.labelTypeImagePath);
+      table.value.data = res.data.items;
       table.value.total = res.data.totalNum;
     } else {
       ElMessage.error("接口异常");
@@ -110,10 +110,10 @@ const querySearch: (queryString: string, cb: (arg: any) => void) => void = async
   cb: (arg: any) => void
 ) => {
   let oldPageSize = query.value.params.pageSize;
-  query.value.params.name = queryString;
+  query.value.params.legendName = queryString;
   query.value.params.pageSize = 10000;
   query.value.params.pageNumber = 1;
-  const res: { [key: string]: any } = await getLabelTypeList(...(handleParam(query.value.params) as [string, object]));
+  const res: { [key: string]: any } = await getLegendConfigList(...(handleParam(query.value.params) as [string, object]));
   // 调用 callback 返回建议列表的数据
   cb(res.data.items);
   query.value.params.pageSize = oldPageSize;
@@ -121,7 +121,7 @@ const querySearch: (queryString: string, cb: (arg: any) => void) => void = async
 
 const handleSelect = async () => {
   table.value.loading = true;
-  const res: { [key: string]: any } = await getLabelTypeList(...(handleParam(query.value.params) as [string, object]));
+  const res: { [key: string]: any } = await getLegendConfigList(...(handleParam(query.value.params) as [string, object]));
   table.value.data = res.data.items;
   table.value.total = res.data.totalNum;
   table.value.loading = false;
