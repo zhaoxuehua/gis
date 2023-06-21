@@ -90,21 +90,6 @@
       <template #displayMode="scope">
         {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
       </template>
-      <!-- <template #zoom="scope">
-        {{ scope.row.zoom ? "是" : "否" }}
-      </template> -->
-      <!-- <template #fullScreen="scope">
-        {{ scope.row.fullScreen ? "是" : "否" }}
-      </template> -->
-      <!-- <template #scaleLine="scope">
-        {{ scope.row.scaleLine ? "是" : "否" }}
-      </template> -->
-      <!-- <template #showOverlay="scope">
-        {{ scope.row.showOverlay ? "是" : "否" }}
-      </template> -->
-      <!-- <template #mapTypeSwitch="scope">
-        {{ scope.row.mapTypeSwitch ? "是" : "否" }}
-      </template> -->
       <template #displayLabelInfoIds="scope">
         {{ scope.row.displayLabelInfo?.map((item: any) => item.name).join(",") }}
       </template>

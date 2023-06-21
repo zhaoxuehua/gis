@@ -1,4 +1,4 @@
-# front-vue3-template
+# ADM-GIS-UI
 
 ### 介绍 📖
 
@@ -6,7 +6,7 @@
 
 ### 代码仓库 ⭐
 
-- http://192.168.15.91/FRONT-COMPONENT/front-vue3-template
+- http://192.168.15.91/MONITOR/adm-gis-ui
 
 ### 项目文档 📚
 
@@ -31,7 +31,7 @@
 - **Clone：**
 
 ```text
-git clone http://192.168.15.91/FRONT-COMPONENT/front-vue3-template.git
+git clone http://192.168.15.91/MONITOR/adm-gis-ui.git
 ```
 
 - **Install：**

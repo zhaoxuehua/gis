@@ -79,7 +79,12 @@
             :disabled="state.dialogType == 2"
             filterable
           >
-            <el-option v-for="(item, index) in legendIdsList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+            <el-option
+              v-for="(item, index) in legendIdsList.data"
+              :key="index"
+              :label="item.legendName"
+              :value="item.legendPath"
+            ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item
@@ -115,7 +120,7 @@ import { reactive, onMounted, ref, unref } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
-import { addMapParams, editMapParams, getLayerList, getLabelTypeList } from "@/api/visconfig.js";
+import { addMapParams, editMapParams, getLayerList, getLabelTypeList, getLegendConfigList } from "@/api/visconfig.js";
 
 interface MapParamsForm {
   id?: number;
@@ -362,18 +367,15 @@ const controlList = ref<{
 // 图例列表
 const legendIdsList = ref<{
   data: Array<{
-    id: number;
-    code: string;
-    name: string;
+    legendName: string;
+    legendPath: string;
   }>;
   fetchData: Function;
 }>({
   data: [],
   fetchData: async () => {
-    const res: { [key: string]: any } = await getLayerList(
-      ...(handleParam({ pageNumber: 1, pageSize: 1000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
-    );
-    if (res.data.items) {
+    const res: { [key: string]: any } = await getLegendConfigList("?pageSize=10000&pageNumber=1", {});
+    if (res?.data?.items) {
       legendIdsList.value.data = res.data.items;
     } else {
       ElMessage.error("接口异常");

@@ -51,8 +51,8 @@
             <el-option
               v-for="(item, index) in labelLegendImageList.data"
               :key="index"
-              :label="item.label"
-              :value="item.value"
+              :label="item.legendName"
+              :value="item.legendPath"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -85,8 +85,8 @@
               <el-option
                 v-for="(item, index) in labelLegendImageList.data"
                 :key="index"
-                :label="item.label"
-                :value="item.value"
+                :label="item.legendName"
+                :value="item.legendPath"
               ></el-option>
             </el-select>
           </el-form-item>
@@ -215,7 +215,14 @@ import { reactive, onMounted, ref, computed } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
-import { getLabelTypeDetail, getLabelDataType, getLayerList, addLabelType, editLabelType } from "@/api/visconfig.js";
+import {
+  getLabelTypeDetail,
+  getLabelDataType,
+  getLayerList,
+  addLabelType,
+  editLabelType,
+  getLegendConfigList
+} from "@/api/visconfig.js";
 import ReferenceMain from "./referenceMain.vue";
 import ReferenceObject from "./referenceObject.vue";
 import { LabelType } from "../../type";
@@ -396,7 +403,12 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
     state.dialogType = 0;
     form.value = { ...defaultParam };
   }
-  form.value.labelTypeImagePath = form.value.labelTypeImagePath ? form.value.labelTypeImagePath.split(",") : [];
+  if (typeof form.value.labelTypeImagePath == "string") {
+    form.value.labelTypeImagePath = form.value.labelTypeImagePath?.split(",");
+  } else {
+    form.value.labelTypeImagePath = [];
+  }
+
   state.open = true;
 };
 
@@ -526,16 +538,16 @@ const dataTypeList = ref<{
 // 标签图例列表
 const labelLegendImageList = ref<{
   data: Array<{
-    label: string;
-    value: string;
+    legendName: string;
+    legendPath: string;
   }>;
   fetchData: Function;
 }>({
   data: [],
   fetchData: async () => {
-    const res: { [key: string]: any } = await getLabelDataType();
-    if (res.data.dataType) {
-      labelLegendImageList.value.data = res.data.dataType;
+    const res: { [key: string]: any } = await getLegendConfigList("?pageSize=10000&pageNumber=1", {});
+    if (res?.data?.items) {
+      labelLegendImageList.value.data = res.data.items;
     } else {
       ElMessage.error("接口异常");
     }

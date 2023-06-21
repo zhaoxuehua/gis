@@ -103,18 +103,6 @@ const table = ref<TableList>({
     if (res?.items) {
       table.value.data = res.items;
       table.value.total = res.totalNum;
-
-      // mock列表头数据
-      // table.value.columns = [
-      //   {
-      //     prop: "name",
-      //     label: "Name"
-      //   },
-      //   {
-      //     prop: "id",
-      //     label: "1234"
-      //   }
-      // ];
     } else {
       ElMessage.error("接口异常");
     }

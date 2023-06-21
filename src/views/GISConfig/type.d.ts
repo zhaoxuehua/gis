@@ -27,7 +27,7 @@ export type LabelType = {
   dataType: string;
   displayScale: number;
   pellucidity: number;
-  labelTypeImagePath: any;
+  labelTypeImagePath: string[] | string;
   // labelTypeImageAllPath: string | null;
   lineWidth: number;
   lineType: string;
