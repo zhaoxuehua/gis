@@ -64,6 +64,10 @@ export const GIS_MAPPARAMS_DETAIL = [
     name: "appName"
   },
   {
+    label: "应用编码",
+    name: "appCode"
+  },
+  {
     label: "默认显示模式",
     name: "displayMode",
     slot: true

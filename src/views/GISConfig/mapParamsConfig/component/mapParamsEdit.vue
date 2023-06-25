@@ -13,6 +13,9 @@
         <el-form-item label="应用名称" prop="appName">
           <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
+        <el-form-item label="应用编码" prop="appCode">
+          <el-input placeholder="请输入..." v-model="form.appCode" clearable />
+        </el-form-item>
         <el-form-item label="默认显示模式" prop="displayMode">
           <el-radio-group v-model="form.displayMode">
             <el-radio :label="1" size="large">电子地图</el-radio>
@@ -124,6 +127,7 @@ import { addMapParams, editMapParams, getLayerList, getLabelTypeList, getLegendC
 
 interface MapParamsForm {
   id?: number;
+  appCode: string;
   appName: string;
   displayMode: number;
   defaultDisplayLevel: number | null;
@@ -158,6 +162,12 @@ const latVerification = (rule: any, value: any, callback: Function) => {
   }
   callback();
 };
+const codeVerification = (rule: any, value: any, callback: Function) => {
+  if (!Regular.verifyNumCode.test(value)) {
+    return callback(new Error("应用编码只能出现字母,数字,下划线"));
+  }
+  callback();
+};
 const state = reactive({
   dialogType: 0,
   open: false,
@@ -166,6 +176,11 @@ const state = reactive({
     appName: [
       { required: true, message: "应用名称不能为空", trigger: ["blur", "change"] },
       { max: 50, message: "应用名称长度不能大于50", trigger: ["blur", "change"] }
+    ],
+    appCode: [
+      { required: true, message: "应用编码不能为空", trigger: ["blur", "change"] },
+      { validator: codeVerification, trigger: ["blur", "change"] },
+      { max: 50, message: "应用编码长度不能大于50", trigger: ["blur", "change"] }
     ],
     displayMode: [{ required: true, message: "请选择默认显示模式", trigger: ["blur", "change"] }],
     defaultDisplayLevel: [
@@ -208,6 +223,7 @@ const refForm = ref<InstanceType<typeof ElForm>>();
 
 const defaultParam = {
   appName: "",
+  appCode: "",
   displayMode: 1,
   defaultDisplayLevel: null,
   minLevel: null,

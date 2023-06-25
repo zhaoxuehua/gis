@@ -54,6 +54,7 @@
       <el-table-column type="selection"></el-table-column>
       <el-table-column label="序号" type="index" width="50"></el-table-column>
       <el-table-column label="应用名称" prop="appName" sortable="custom"></el-table-column>
+      <el-table-column label="应用编码" prop="appCode" sortable="custom"></el-table-column>
       <el-table-column label="显示模式" prop="displayMode" sortable="custom">
         <template #default="scope">
           {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
