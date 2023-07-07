@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "pnpm -C packages/platform dev",
-    "map:build": "pnpm -C packages/components build",
+    "build": "pnpm -r run build",
     "lint:eslint": "eslint --fix --ext .js,.ts,.vue ./packages",
     "lint:prettier": "prettier --write \"packages/**/src/**/*.{js,ts,json,tsx,css,less,scss,vue,html,md}\"",
     "lint:stylelint": "stylelint --cache --fix \"packages/**/*.{vue,less,postcss,css,scss}\" --cache --cache-location node_modules/.cache/stylelint/",

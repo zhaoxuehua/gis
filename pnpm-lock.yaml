@@ -143,6 +143,8 @@ importers:
         specifier: ^1.6.4
         version: 1.8.4(typescript@5.1.6)
 
+  packages/agmap: {}
+
   packages/components:
     dependencies:
       pinia:
@@ -177,7 +179,7 @@ importers:
   packages/platform:
     dependencies:
       '@adm-gis-ui/components':
-        specifier: workspace:^1.0.0
+        specifier: workspace:^1.1.1
         version: link:../components
       '@element-plus/icons-vue':
         specifier: ^2.1.0
@@ -191,6 +193,9 @@ importers:
       '@types/lodash':
         specifier: ^4.14.195
         version: 4.14.195
+      '@types/rbush':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@vueuse/core':
         specifier: ^10.1.0
         version: 10.1.0(vue@3.3.4)
@@ -2490,6 +2495,10 @@ packages:
 
   /@types/raf@3.4.0:
     resolution: {integrity: sha512-taW5/WYqo36N7V39oYyHP9Ipfd5pNFvGTIQsNGj86xV88YQ7GnI30/yMfKDF7Zgin0m3e+ikX88FvImnK4RjGw==}
+    dev: false
+
+  /@types/rbush@3.0.0:
+    resolution: {integrity: sha512-W3ue/GYWXBOpkRm0VSoifrP3HV0Ni47aVJWvXyWMcbtpBy/l/K/smBRiJ+fI8f7shXRjZBiux+iJzYbh7VmcZg==}
     dev: false
 
   /@types/semver@7.5.0:

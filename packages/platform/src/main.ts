@@ -17,8 +17,6 @@ import "virtual:svg-icons-register";
 import ElementPlus from "element-plus";
 // element icons
 import * as Icons from "@element-plus/icons-vue";
-// custom directives
-import directives from "@/directives/index";
 // vue Router
 import router from "@/routers";
 // vue i18n
@@ -47,7 +45,6 @@ Object.keys(Icons).forEach(key => {
 
 app
   .use(ElementPlus)
-  .use(directives)
   .use(router)
   .use(I18n)
   .use(pinia)

@@ -1,112 +1,22 @@
 # ADM-GIS-UI
 
-### 介绍 📖
+### 介绍
 
-基于 Vue3.2、TypeScript、Vite4、Pinia、Element-Plus 的后台管理框架，使用目前最新技术栈开发。另外本项目还封装了一些常用组件、Hooks、指令、动态路由、按钮级别权限控制等功能。
+本项目是 GIS 基础引擎平台，包括 GIS 配置服务平台和地图组件库两个子项目，更多信息请移步： [GIS 基础引擎概要设计](https://ones.cn/wiki/#/team/EfNEn1EW/space/UbE5YW9t/page/WMZ6Fcdw)
 
-### 代码仓库 ⭐
+### 目录
 
-- http://192.168.15.91/MONITOR/adm-gis-ui
-
-### 项目文档 📚
-
-- 项目文档地址：https://ones.cn/wiki/#/team/EfNEn1EW/space/9AE7PmHo/page/5w3KdxMU
-
-### 项目功能 🔨
-
-- 使用 Vue3.2 + TypeScript 开发，单文件组件**＜ script setup ＞**
-- 采用 Vite4 作为项目开发、打包工具（配置 Gzip 打包、TSX 语法、跨域代理…）
-- 使用 Pinia 替代 Vuex，轻量、简单、易用，集成 Pinia 持久化插件
-- 使用 TypeScript 对 Axios 整个二次封装（请求拦截、取消、常用请求封装…）
-- 基于 Element 二次封装 [ProTable](https://juejin.cn/post/7166068828202336263) 组件，表格页面全部为配置项 columns
-- 支持 Element 组件大小切换、暗黑模式、i18n 国际化
-- 使用 VueRouter 进行路由权限拦截、页面按钮权限配置、路由懒加载
-- 使用 KeepAlive 对页面进行缓存，支持多级嵌套页面缓存
-- 常用自定义指令开发（权限、复制、水印、拖拽、节流、防抖、长按…）
-- 使用 Prettier 统一格式化代码，集成 ESLint、Stylelint 代码校验规范
-- 使用 husky、lint-staged 进行提交前自动校验和格式化
-
-### 安装使用步骤 📔
-
-- **Clone：**
+本项目是基于`pnpm + changesets`的`Monorepo`项目，`packages`中包含 2 个子项目，分别是 GIS 配置平台`platform`和地图组件库`components`。
 
 ```text
-git clone http://192.168.15.91/MONITOR/adm-gis-ui.git
-```
-
-- **Install：**
-
-```text
-pnpm install
-```
-
-- **Run：**
-
-```text
-pnpm dev
-pnpm serve
-```
-
-- **Build：**
-
-```text
-# 开发环境
-pnpm build:dev
-
-# 测试环境
-pnpm build:test
-
-# 生产环境
-pnpm build:pro
-```
-
-- **Lint：**
-
-```text
-# eslint 检测代码
-pnpm lint:eslint
-
-# eslint 检测代码并生成报告
-pnpm lint:report
-
-# prettier 格式化代码
-pnpm lint:prettier
-
-# stylelint 格式化样式
-pnpm lint:stylelint
-```
-
-### 文件资源目录 📚
-
-```text
-Front-Vue3-Template
-├─ .husky                 # husky 配置文件
-├─ .vscode                # VSCode 推荐配置
-├─ build                  # Vite 配置项
-├─ public                 # 静态资源文件（该文件夹不会被打包）
-├─ src
-│  ├─ api                 # API 接口管理
-│  ├─ assets              # 静态资源文件
-│  ├─ components          # 全局组件
-│  ├─ config              # 全局配置项
-│  ├─ directives          # 全局指令文件
-│  ├─ enums               # 项目常用枚举
-│  ├─ hooks               # 常用 Hooks 封装
-│  ├─ languages           # 语言国际化 i18n
-│  ├─ layouts             # 框架布局模块
-│  ├─ routers             # 路由管理
-│  ├─ stores              # pinia store
-│  ├─ styles              # 全局样式文件
-│  ├─ typings             # 全局 ts 声明
-│  ├─ utils               # 常用工具库
-│  ├─ views               # 项目所有页面
-│  ├─ App.vue             # 项目主组件
-│  ├─ main.ts             # 项目入口文件
-│  └─ vite-env.d.ts       # 指定 ts 识别 vue
-├─ .env                   # vite 常用配置
-├─ .env.development       # 开发环境配置
-├─ .env.production        # 生产环境配置
-├─ .env.test              # 测试环境配置
+├─.changeset
+├─.husky
+├─.vscode
+├─packages
+│  ├─agmap                # 用于发布的组件包
+│  ├─components           # 地图组件源代码
+│  └─platform             # GIS平台源代码
+├─ scripts
 ├─ .eslintignore          # 忽略 Eslint 校验
 ├─ .eslintrc.cjs          # Eslint 校验配置文件
 ├─ .gitignore             # 忽略 git 提交
@@ -114,13 +24,52 @@ Front-Vue3-Template
 ├─ .prettierrc.cjs        # Prettier 格式化配置
 ├─ .stylelintignore       # 忽略 stylelint 格式化
 ├─ .stylelintrc.cjs       # stylelint 样式格式化配置
-├─ index.html             # 入口 html
 ├─ LICENSE                # 开源协议文件
 ├─ lint-staged.config.cjs # lint-staged 配置文件
-├─ package-lock.json      # 依赖包包版本锁
 ├─ package.json           # 依赖包管理
+├─ pnpm-workspace.yaml    # workspace配置文件
 ├─ postcss.config.cjs     # postcss 配置
 ├─ README.md              # README 介绍
-├─ tsconfig.json          # typescript 全局配置
-└─ vite.config.ts         # vite 全局配置文件
+└─ sconfig.json          # typescript 全局配置
+
 ```
+
+### 开发
+
+1. 安装依赖，根目录执行
+
+```bash
+pnpm install
+```
+
+2. 运行开发环境，根目录执行
+
+```bash
+pnpm run dev
+```
+
+实际是执行`platform`中`pnpm run dev`，
+
+3. 构建打包，根目录执行`pnpm run build`，会依次打包`components`和`platform`2 个子项目
+
+```bash
+pnpm run build
+```
+
+### 发布版本
+
+1. 生成 changeset 文件
+
+- 根目录执行 `pnpm changeset`，选择本版类型（`patch`、`minor`、`major`，严格遵循 [semver](https://semver.org/) 规范），填写 `changelog` 后，会生成 `changeset` 文件
+- 执行 `pnpm changeset version` 修改包的版本
+- 执行 `pnpm install` 更新 lock 文件
+- 执行 `git commit -a` 提交代码
+
+2. 将地图组件发布到私有仓库步骤如下（发包详细步骤可参考：[​ 私有 npm 组件发布流程 ​](https://ones.cn/wiki/#/team/EfNEn1EW/page/AoaScqZU)）：
+
+- 切换 npm 镜像地址为发布专用的 `releases` 地址
+- 用户登录
+- 命令行进入 `packages/agmap` 中，执行 `npm publish`
+- 发布成功再将 npm 镜像地址切换为 `public`
+
+3. 发布成功后，可在仓库中查找到刚发布的版本：http://192.168.15.94:8081/#browse/search/npm
