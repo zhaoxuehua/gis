@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "Node",
-    "types": ["vite/client", "element-plus/global"],
+    "types": ["vite/client"],
 
     /* Strict Type-Checking Options */
     "strict": true /* Enable all strict type-checking options. */,
@@ -23,21 +23,17 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": "./",
-    "paths": {
-      "@": ["src"],
-      "@/*": ["src/*"]
-    }
+    "baseUrl": "."
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "build/**/*.ts",
-    "build/**/*.d.ts",
-    "vite.config.ts",
-    "src/plugins/verification.js"
+    "packages/**/src/**/*.ts",
+    "packages/**/src/**/*.d.ts",
+    "packages/**/src/**/*.tsx",
+    "packages/**/src/**/*.vue",
+    "packages/**/build/**/*.ts",
+    "packages/**/build/**/*.d.ts",
+    "packages/**/vite.config.ts",
+    "packages/**/src/plugins/verification.js"
   ],
   "exclude": ["node_modules", "dist", "**/*.js"]
 }

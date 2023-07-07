@@ -25,3 +25,5 @@ stats.html
 *.sln
 *.sw?
 report.json
+es
+lib

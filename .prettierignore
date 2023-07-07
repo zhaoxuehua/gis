@@ -1,10 +1,10 @@
-/dist/*
+dist/*
 .local
-/node_modules/**
+node_modules/**
 
 **/*.svg
 **/*.sh
 
-/public/*
+public/*
 stats.html
 .npmrc

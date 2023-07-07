@@ -1,0 +1,654 @@
+<!-- 地图组件 map -->
+<template>
+  <div class="component-box">
+    <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
+
+    <!-- 左侧控件 -->
+    <LeftActionBox
+      :map="exportMap"
+      :leftBoxData="getLeftData"
+      @left-box-data-change="leftBoxDataChange"
+      @on-edit-label="onEditLabel"
+    >
+    </LeftActionBox>
+    <!-- 标签树、导航树的编辑弹框 -->
+    <EditLabel ref="editLabelRef" :map="exportMap"></EditLabel>
+    <!-- 右侧控件 -->
+    <RightActionBox :map="exportMap" :rightBoxData="getRightData" @right-box-data-change="rightBoxDataChange"> </RightActionBox>
+  </div>
+</template>
+<script lang="ts" setup name="Map">
+import { onMounted, ref, defineAsyncComponent, reactive, computed } from "vue";
+import { ElMessage } from "element-plus";
+import { Map, View, Feature } from "ol";
+import MapBrowserEvent from "ol/MapBrowserEvent";
+import { FullScreen, ScaleLine, defaults } from "ol/control";
+import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
+import { XYZ, Vector as VectorSource, Cluster } from "ol/source";
+import { FeatureLike } from "ol/Feature";
+import { fromLonLat } from "ol/proj";
+import { Select } from "ol/interaction";
+import type { VisualMap, LabelType, LabelInfoData } from "./type";
+import { getMapParamsDetail, getLabelList } from "@/api/visconfig.js";
+import { handleParam } from "@/utils/common.js";
+import { useGisStore } from "@/stores/modules/gis";
+import { layerStyle, clusterLayerStyle } from "./hooks/styleFunction.js";
+import { createGeometry } from "./hooks/createGeometry.js";
+import { clearSelectedFeature } from "./hooks/index";
+import LeftActionBox from "./components/LeftActionBox.vue";
+import RightActionBox from "./components/rightActionBox.vue";
+import EditLabel from "./components/editLabel.vue";
+
+const gisStore = useGisStore();
+const props = withDefaults(defineProps<{ config: any }>(), {
+  config: () => {}
+});
+
+const exportMap = ref<VisualMap>();
+
+// 控件区域数据维护
+const state = reactive({
+  leftBoxData: [
+    {
+      icon: "iconfont icon-GIS_huaban1",
+      label: "导航树",
+      isShow: false, // 控制显示隐藏
+      visible: false, // 控制是否展示tab(有无该项)
+      component: defineAsyncComponent(() => import("./components/navigationTree.vue"))
+    },
+    {
+      icon: "iconfont icon-GIS_huaban1fuben",
+      label: "标签树",
+      isShow: false,
+      visible: false,
+      component: defineAsyncComponent(() => import("./components/tagTree.vue"))
+    },
+    {
+      icon: "iconfont icon-GIS-09",
+      label: "快速创建",
+      isShow: false,
+      visible: false,
+      component: defineAsyncComponent(() => import("./components/quickCreate.vue"))
+    }
+  ],
+  rightBoxData: [
+    {
+      icon: "iconfont icon-GIS-04",
+      label: "标签筛选",
+      isShow: false,
+      visible: false,
+      component: defineAsyncComponent(() => import("./components/tagSelection.vue"))
+    },
+    {
+      icon: "iconfont icon-GIS-05",
+      label: "工具箱",
+      isShow: false,
+      visible: false,
+      component: defineAsyncComponent(() => import("./components/toolBox.vue"))
+    },
+    {
+      icon: "iconfont icon-GIS-06",
+      label: "地图类型",
+      isShow: false,
+      visible: false,
+      component: defineAsyncComponent(() => import("./components/mapType.vue"))
+    },
+    {
+      icon: "iconfont icon-img",
+      label: "图例",
+      isShow: false,
+      visible: false,
+      component: defineAsyncComponent(() => import("./components/imgLegend.vue"))
+    }
+  ]
+});
+
+const getLeftData = computed(() => {
+  state.leftBoxData.forEach((item: any) => {
+    switch (item.label) {
+      case "导航树":
+        item.visible = !!controlList.value.includes("navigationTree");
+        break;
+      case "标签树":
+        item.visible = !!controlList.value.includes("tagTree");
+        break;
+      case "快速创建":
+        item.visible = !!controlList.value.includes("quickCreate");
+        break;
+
+      default:
+        break;
+    }
+  });
+  // 如果有应用传的左侧控件拼接在此处
+  return state.leftBoxData;
+});
+
+const leftBoxDataChange = (index: number) => {
+  state.leftBoxData.forEach((item: { [key: string]: any }, innerIndex: number) => {
+    if (innerIndex == index) {
+      item.isShow = !item.isShow;
+    } else {
+      item.isShow = false;
+    }
+  });
+};
+const controlList: string[] | any = ref([]);
+
+const getRightData = computed(() => {
+  state.rightBoxData.forEach((item: any) => {
+    switch (item.label) {
+      case "标签筛选":
+        item.visible = !!controlList.value.includes("tagSelection");
+        break;
+      case "地图类型":
+        item.visible = !!controlList.value.includes("mapTypeSwitch");
+        break;
+      case "工具箱":
+        item.visible = !!controlList.value.includes("toolBox");
+        break;
+      case "图例":
+        item.visible = !!controlList.value.includes("imgLegend");
+        break;
+      default:
+        break;
+    }
+  });
+  return state.rightBoxData;
+});
+
+const rightBoxDataChange = (index: number) => {
+  state.rightBoxData.forEach((item: { [key: string]: any }, innerIndex: number) => {
+    if (innerIndex == index) {
+      item.isShow = !item.isShow;
+    } else {
+      item.isShow = false;
+    }
+  });
+};
+
+// 编辑标签(标签树、导航树)
+const editLabelRef = ref<InstanceType<typeof EditLabel>>();
+const onEditLabel = (labelCode: string) => {
+  editLabelRef.value?.onOpen(labelCode);
+};
+
+let isDynamicLine = computed(() => gisStore.isDynamicLine);
+let imgIndex = computed(() => gisStore.imgIndex);
+
+const initMap = async (mapId: string | number) => {
+  // 获取地图配置（初始化地图参数详情）
+  const res: { [key: string]: any } = await getMapParamsDetail(mapId);
+  if (res.code === 200 && res.data) {
+    const originalData = JSON.parse(JSON.stringify(res.data));
+    const controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
+    controlList.value = controls;
+    const defaultOptions = {
+      target: "map",
+      center: {
+        lon: originalData.defaultCenterPointLongitude, // 经度
+        lat: originalData.defaultCenterPointLatitude // 纬度
+      },
+      defaultZoom: originalData.defaultDisplayLevel, // 视图当前层级
+      minZoom: originalData.minLevel, // 视图最小层级
+      maxZoom: originalData.maxLevel, // 视图最大层级
+
+      defaultMapType: originalData.displayMode, // 当前地图类型
+      normalUrl: originalData.normalUrl, // 电子底图url
+      sateUrl: originalData.sateUrl, // 卫星底图url
+      overlayUrl: originalData.overlayUrl, // 路网叠加层url
+
+      labelType: originalData.displayLabelInfo, // 标签类型 object[]
+      labelTypeIds: originalData.displayLabelInfoIds, // 标签类型id  string
+      layers: originalData.displayLayer, // 显示图层  object[]
+      layersIds: originalData.displayLayerIds, // 图层id string
+
+      zoom: controls.includes("zoom"), // 缩放控件
+      fullScreen: controls.includes("fullScreen"), // 全屏控件
+      scaleLine: controls.includes("scaleLine"), // 比例尺控件  scaleLine
+      showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
+      controlIds: originalData.displayControlIds, // 控件 string
+      legendIds: originalData.displayLegendIds // 图例 string
+    };
+
+    // 全屏控件
+    const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
+    // 比例尺控件
+    const scaleLine = new ScaleLine({ className: "control-scaleLine" });
+    // 控件列表(是否显示全屏缩放控件)
+    const controlsList = [];
+    if (defaultOptions.fullScreen) {
+      controlsList.push(fullScreen);
+    }
+    if (defaultOptions.scaleLine) {
+      controlsList.push(scaleLine);
+    }
+
+    // 电子底图图层
+    const normalMap = new TileLayer({
+      visible: defaultOptions.defaultMapType === 1,
+      source: new XYZ({
+        url: defaultOptions.normalUrl
+      })
+    });
+    // 卫星影像图层
+    const sateMap = new TileLayer({
+      visible: defaultOptions.defaultMapType === 2,
+      source: new XYZ({
+        url: defaultOptions.sateUrl
+      })
+    });
+
+    // 路网叠加层（是卫星影像且显示路网叠加层）
+    const overlayMap = new TileLayer({
+      visible: defaultOptions.defaultMapType === 2 && defaultOptions.showOverlay,
+      source: new XYZ({
+        url: defaultOptions.overlayUrl
+      })
+    });
+
+    // 实例化地图，类型为扩展后的VisualMap
+    const map = new Map({
+      target: defaultOptions.target || "",
+      controls: defaults({
+        attribution: false,
+        rotate: false,
+        zoom: defaultOptions.zoom,
+        zoomOptions: {
+          className: "ol-zoom",
+          zoomInTipLabel: "放大",
+          zoomOutTipLabel: "缩小"
+        }
+      }).extend(controlsList),
+      layers: [normalMap, sateMap, overlayMap],
+      view: new View({
+        center: fromLonLat([defaultOptions.center.lon, defaultOptions.center.lat]),
+        zoom: defaultOptions.defaultZoom,
+        minZoom: defaultOptions.minZoom,
+        maxZoom: defaultOptions.maxZoom,
+        constrainResolution: true
+      })
+    }) as VisualMap;
+    // 缓存配置
+    map.defaultOptions = defaultOptions;
+
+    // 根据图层配置信息创建图层
+    const layerMap: { [key: string]: any } = {};
+    let clusterLayerCodes: any = [];
+    defaultOptions.layers.forEach((item: { [key: string]: any }) => {
+      let options: { [key: string]: any };
+      // 分为聚合图层还是非聚合图层(聚合图层针对点)
+      if (item?.isTagAgg) {
+        let sourceVector = new VectorSource();
+        let clusterSource = new Cluster({
+          distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 20, // 图层上标签聚合距离
+          source: sourceVector
+        });
+        options = {
+          source: clusterSource,
+          zIndex: item?.layerLevel,
+          minZoom: item?.layerMinLevel - 0.000000000000005,
+          maxZoom: item?.layerMaxLevel,
+          trackAggDistance: item.trackAggDistance ? Number(item?.trackAggDistance) : 120, // 聚合图层上轨迹聚合距离
+          name: item?.name,
+          code: item?.code,
+          isTagAgg: item?.isTagAgg,
+          style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
+        };
+      } else {
+        options = {
+          source: new VectorSource({ wrapX: false }),
+          zIndex: item?.layerLevel,
+          minZoom: item?.layerMinLevel - 0.000000000000005,
+          maxZoom: item?.layerMaxLevel,
+          name: item.name,
+          code: item?.code,
+          isTagAgg: item?.isTagAgg,
+          style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
+        };
+      }
+      layerMap[item.code] = new VectorLayer(options);
+      if (item?.isTagAgg) {
+        clusterLayerCodes.push(item.code);
+      }
+      map.addLayer(layerMap[item.code]);
+    });
+
+    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
+    map.set("clusterLayerCodes", clusterLayerCodes); // 存储所有的图层信息
+
+    // 存储标签类型信息及根据标签类型分组 code => labelType
+    const labelTypeMap: { [key: string]: LabelType } = {};
+    let featureTypeGroup: { [key: string]: Feature[] } = {};
+    const { labelType, layersIds } = defaultOptions;
+    labelType.forEach((item: LabelType) => {
+      if (layersIds.split(",").includes(String(item.layerConfigId))) {
+        if (item.labelTypeImagePath) {
+          // 标签类型筛选时直接使用拼接的icon(点的肯定有，其他配置了图例labelLegendImagePath有icon)
+          if (item?.labelLegendImagePath) {
+            item.iconUrl = `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${item.labelLegendImagePath}`;
+          } else {
+            if (item?.dataType == "1") {
+              let imgSrc = item.labelTypeImagePath ? item.labelTypeImagePath.split(",") : [];
+              if (imgSrc?.length) {
+                item.iconUrl = `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${imgSrc[0]}`;
+              }
+            }
+          }
+        }
+        labelTypeMap[item.code] = { ...item };
+        featureTypeGroup[item.code] = []; // 标签类型下的标签数组
+      }
+    });
+    map.set("labelTypeMap", labelTypeMap);
+    // 初始化渲染所有已绘制的标签
+    let resData: { [key: string]: any } = await getLabelList(
+      ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+    );
+    let dynamicLayerCodes: string[] = []; // 不能添加重复图层(只添加code)
+    const labelInfoMap: { [key: string]: LabelInfoData } = {};
+    if (resData.data?.items) {
+      resData.data.items.forEach((item: LabelInfoData) => {
+        // 标签有对应的图层及标签类型才进行绘制
+        let labelTypeCodeArray = Object.keys(labelTypeMap) || [];
+        if (layerMap.hasOwnProperty(item.refLayer?.code) && labelTypeCodeArray.includes(item?.labelType?.code)) {
+          let labelData = null;
+          if (typeof item.labelData == "string") {
+            try {
+              labelData = JSON.parse(item.labelData);
+            } catch (error) {
+              console.warn(error, item);
+            }
+          }
+          if (typeof labelData != "object") {
+            console.warn(`解析标签数据出错, 标签id:${item.id}`);
+            return;
+          }
+          item.labelData = labelData; // 标签绘制信息数据
+
+          const labelFeature = new Feature({
+            name: item.name, // 标签名字
+            geometry: createGeometry(item.labelData)
+          });
+
+          labelFeature.set("layerCode", item.refLayer.code); // 所属图层编码
+          labelFeature.set("labelTypeCode", item.labelType.code); // 所属标签类型编码
+          labelFeature.setId(item.code); // 是否显示标签
+          labelFeature.set("code", item.code); // 是否显示标签
+          labelFeature.set("type", item.labelData?.style?.type); // 旧数据Point  新数据 1
+          labelFeature.set("isShow", true); // 是否显示标签
+          labelFeature.set("labelData", item?.labelData); // 标签绘制数据
+
+          // 点(根据图片源数量)
+          if (item?.labelType?.dataType == "1") {
+            let imgSrc = item?.labelType?.labelTypeImagePath ? item?.labelType?.labelTypeImagePath.split(",") : [];
+            if (imgSrc?.length > 1) {
+              dynamicLayerCodes.push(item.refLayer.code);
+              labelFeature.set("typeStats", "dynamicPoint");
+            } else {
+              labelFeature.set("typeStats", "staticPoint");
+            }
+          }
+
+          // 线
+          if (item?.labelType?.dataType == "2") {
+            if (
+              item?.labelType?.lineType == "dash" &&
+              item?.labelType?.animationSetting &&
+              item?.labelType?.animationSetting === "animations" &&
+              !item.labelType?.lineVectorPath
+            ) {
+              dynamicLayerCodes.push(item.refLayer.code);
+              labelFeature.set("typeStats", "dynamicLine");
+            } else {
+              labelFeature.set("typeStats", "staticLine");
+            }
+          }
+          // 若是环
+          if (item?.labelType?.dataType == "7") {
+            if (
+              item?.labelType?.lineType == "dash" &&
+              item?.labelType?.animationSetting &&
+              item?.labelType?.animationSetting === "animations"
+            ) {
+              dynamicLayerCodes.push(item.refLayer.code);
+              labelFeature.set("typeStats", "dynamicRing");
+            } else {
+              labelFeature.set("typeStats", "staticRing");
+            }
+          }
+
+          // 取出该标签元素所在图层、数据源
+          const layer = layerMap[item.refLayer.code]; // 标签所在图层
+          let isTagAgg = layer.get("isTagAgg");
+          let source: any;
+          if (isTagAgg) {
+            // 聚合图层
+            const clusterDataSource = layer.getSource();
+            source = clusterDataSource.getSource();
+          } else {
+            // 非聚合图层
+            source = layer.getSource();
+          }
+          source.addFeature(labelFeature);
+          labelInfoMap[item.code] = item;
+          featureTypeGroup[item.labelType.code].push(labelFeature);
+          map.set("featureTypeGroup", featureTypeGroup);
+        }
+      });
+
+      // 动态样式
+      let dynamicLayers = Array.from(new Set(dynamicLayerCodes));
+      map.set("dynamicLayerCodes", dynamicLayers);
+      if (map.get("dynamicLayerCodes")?.length) {
+        setInterval(() => {
+          // 风机转动及虚线闪动
+          gisStore.setImgIndex(imgIndex.value + 1);
+          gisStore.setIsDynamicLine(!isDynamicLine.value);
+          dynamicLayers.forEach((code: string) => {
+            // 判断是聚合图层还是非聚合图层
+            if (clusterLayerCodes.includes(code)) {
+              layerMap[code].setStyle((feature: FeatureLike) =>
+                clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false)
+              );
+            } else {
+              layerMap[code].setStyle((feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value));
+            }
+          });
+        }, 200);
+      }
+      map.set("labelInfoMap", labelInfoMap);
+    } else {
+      ElMessage.error("接口异常");
+    }
+
+    // 鼠标移动事件
+    map.on("pointermove", function (e: MapBrowserEvent<any>) {
+      const pixel = map.getEventPixel(e.originalEvent);
+      const hit = map.hasFeatureAtPixel(pixel, { hitTolerance: 5 });
+      map.getTargetElement().style.cursor = hit ? "pointer" : "";
+    });
+
+    // 鼠标点击事件
+    map.on("click", (evt: MapBrowserEvent<any>) => {
+      let featureSelect = map.get("featureSelect");
+      clearSelectedFeature(map);
+      const feature = map.forEachFeatureAtPixel(
+        evt.pixel,
+        function (feature: FeatureLike) {
+          return feature;
+        },
+        { hitTolerance: 5 } // 设置捏合度为 5 像素
+      );
+      if (feature) {
+        // 点击地图上的要素
+        const featureCode = feature.get("code");
+        if (featureCode) {
+          featureSelect = feature; // 更新当前选中要素
+
+          if (featureSelect) {
+            featureSelect.set("selected", true); // 将当前选中要素的 selected 属性设置为 true
+            featureSelect.changed(); // 触发要素样式的变化
+            map.set("featureSelect", feature);
+          }
+
+          // 写选中地图要素的逻辑（是否需要定位，还有弹框逻辑）
+        }
+      }
+    });
+
+    // 聚合图层选中事件（通过交互控件实现）
+    if (clusterLayerCodes?.length) {
+      let selectInteraction = new Select({
+        condition: function (event) {
+          return event.type == "click" || event.type == "singleclick";
+        },
+        layers: clusterLayerCodes.map((code: string) => layerMap[code])
+      });
+      map.addInteraction(selectInteraction);
+      selectInteraction.on("select", function (e) {
+        if (e.selected?.length > 0) {
+          let id: any = [];
+          e.selected.forEach(function (clusterFeature) {
+            // 根据选中状态切换要素的样式
+            clusterFeature.setStyle(feature => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, true));
+            clusterFeature.get("features").forEach(function (originalFeature: FeatureLike) {
+              id.push(originalFeature.getProperties()); // 原始要素的属性
+            });
+          });
+          // 实现业务是获取到选中要素的唯一标识进行以后的逻辑
+          console.log(id, 88777);
+        }
+        if (e.deselected?.length > 0) {
+          e.deselected.forEach(function (clusterFeature) {
+            // 取消选中
+            clusterFeature.setStyle(feature => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false));
+          });
+        }
+      });
+      map.set("selectInteraction", selectInteraction);
+    }
+
+    exportMap.value = map;
+  } else {
+    ElMessage.error("接口异常");
+  }
+};
+
+onMounted(() => {
+  // 存储导航树应用id
+  const sourceCode = props?.config?.navSourceCode;
+  gisStore.setSourceCode(sourceCode);
+  const mapParams = props?.config?.id;
+  if (!mapParams) return;
+  initMap(mapParams);
+});
+</script>
+<style lang="scss" scoped>
+.component-box {
+  position: relative;
+}
+</style>
+
+<style lang="scss">
+.component-box {
+  .visual-map {
+    width: 100%;
+    height: 100%;
+
+    /* Full Screen 控件的容器样式 */
+    .ol-full-screen {
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      z-index: 10000;
+      transform: scale(0.8);
+    }
+
+    /* Full Screen 按钮的样式 */
+    .ol-full-screen button {
+      padding: 5px 10px;
+      font-size: 14px;
+      color: #333333;
+      cursor: pointer;
+      background-color: #ffffff;
+      border: 1px solid #cccccc;
+    }
+
+    /* Full Screen 按钮悬停时的样式 */
+    .ol-full-screen button:hover {
+      background-color: #f5f5f5;
+      border: 1px solid #aaaaaa;
+    }
+
+    /* Full Screen 按钮按下时的样式 */
+    .ol-full-screen button:active {
+      background-color: #ebebeb;
+      border-color: #adadad;
+      box-shadow: inset 0 1px 2px rgb(0 0 0 / 20%);
+    }
+
+    /* Zoom 控件的容器样式 */
+    .ol-zoom {
+      position: absolute;
+      right: 36px;
+      bottom: 6px;
+      z-index: 10000;
+      transform: scale(0.8);
+    }
+
+    /* Zoom 按钮的样式 */
+    .ol-zoom button {
+      padding: 5px 10px;
+
+      // margin-bottom: 1px;
+      font-size: 14px;
+      color: #333333;
+      cursor: pointer;
+      background-color: #ffffff;
+      border: 1px solid #cccccc;
+    }
+
+    /* Zoom 按钮悬停时的样式 */
+    .ol-zoom button:hover {
+      background-color: #f5f5f5;
+      border: 1px solid #aaaaaa;
+    }
+
+    /* Zoom 按钮按下时的样式 */
+    .ol-zoom button:active {
+      background-color: #ebebeb;
+      border-color: #adadad;
+      box-shadow: inset 0 1px 2px rgb(0 0 0 / 20%);
+    }
+
+    /* Zoom 按钮禁用时的样式 */
+    .ol-zoom button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    /* ScaleLine 控件的容器样式 */
+    .control-scaleLine {
+      position: absolute;
+      bottom: 6px;
+      left: 10px;
+      padding: 2px 6px;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #333333;
+      text-align: center;
+      background-color: rgb(255 255 255 / 80%);
+      border-right: 1px solid #333333;
+      border-bottom: 1px solid #333333;
+      border-left: 1px solid #333333;
+    }
+
+    /* ScaleLine 控件的单位样式 */
+    .control-scaleLine span {
+      white-space: nowrap;
+    }
+  }
+}
+</style>

@@ -13,7 +13,7 @@ module.exports = {
   overrides: [
     // 扫描 .vue/html 文件中的 <style> 标签内的样式
     {
-      files: ["**/*.{vue,html}"],
+      files: ["packages/**/*.{vue,html}"],
       customSyntax: "postcss-html"
     }
   ],

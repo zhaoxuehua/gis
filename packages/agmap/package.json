@@ -1,0 +1,22 @@
+{
+  "name": "@adm-gis-ui/agmap",
+  "version": "1.1.0",
+  "main": "lib/index.js",
+  "module": "es/index.mjs",
+  "files": [
+    "es",
+    "lib"
+  ],
+  "keywords": [
+    "agmap"
+  ],
+  "author": "agioe",
+  "license": "MIT",
+  "description": "",
+  "typings": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "http://192.168.15.91/MONITOR/adm-gis-ui.git"
+  },
+  "dependencies": {}
+}

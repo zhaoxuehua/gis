@@ -1,5 +1,20 @@
-/dist/*
-/public/*
-public/*
-stats.html
+*.min.css
+
+# 其他类型文件
+*.js
+*.ts
+*.md
+*.jpg
+*.json
+*.woff
+*.local
+.yalc
 .npmrc
+stats.html
+
+# 测试和打包目录
+/test/
+
+# Build files
+dist/*
+public/*
