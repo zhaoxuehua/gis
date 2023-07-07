@@ -10,7 +10,8 @@
     "lint:lint-staged": "lint-staged",
     "lint:report": "eslint ./packages -f json -o report.json --ext .js,.ts,.vue || exit 0",
     "prepare": "husky install",
-    "pack-version": "changeset version",
+    "pack-change": "pnpm changeset",
+    "pack-version": "pnpm changeset version",
     "release": "esno ./scripts/release.ts && changeset tag"
   },
   "devDependencies": {

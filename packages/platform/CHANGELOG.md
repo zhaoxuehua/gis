@@ -1,5 +1,11 @@
 # adm-gis-platform
 
+## 1.1.2
+
+### Patch Changes
+
+- build: 更新 tsconfig
+
 ## 1.1.1
 
 ### Patch Changes
