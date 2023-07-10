@@ -1,9 +1,9 @@
 import { addLabel, deleteLabel } from "@/api/visconfig.js";
 import { ElMessage } from "element-plus";
 import Draw, { DrawEvent, createBox } from "ol/interaction/Draw";
-import { Type } from "ol/geom/Geometry";
+import type { Type } from "ol/geom/Geometry";
 import { toLonLat } from "ol/proj";
-import { Coordinate } from "ol/coordinate";
+import type { Coordinate } from "ol/coordinate";
 import { Circle } from "ol/geom";
 import { isObject, find } from "lodash";
 import { useGisStore } from "@/stores/modules/gis";
