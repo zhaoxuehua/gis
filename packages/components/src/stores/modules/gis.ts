@@ -6,7 +6,7 @@ import { getGisCustomTree } from "@/api/gis.js";
 import { getLegendConfigList } from "@/api/visconfig.js";
 
 export const useGisStore = defineStore({
-  id: "geeker-gis",
+  id: "gis",
   state: (): any => ({
     navigationTree: [], // 导航树
     relationMap: {}, // 关联关系
@@ -59,7 +59,7 @@ export const useGisStore = defineStore({
       this.imgIndex = imgIndex;
     }
   },
-  persist: piniaPersistConfig("geeker-gis")
+  persist: piniaPersistConfig("gis")
 });
 
 // 格式化树数据，按order进行排序

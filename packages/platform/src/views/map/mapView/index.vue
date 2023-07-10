@@ -1,17 +1,17 @@
 <template>
   <div class="map-view">
-    <!-- <Map :config="config" v-if="config.id" class="map">
+    <ag-map :config="config" v-if="config.id">
       <template #customContent>
         <div style="height: 50px">111111111111自定义</div>
       </template>
-    </Map> -->
-    <ag-map :config="config" v-if="config.id"></ag-map>
+    </ag-map>
   </div>
 </template>
 <script lang="ts" setup name="mapView">
 import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
 // import Map from "../index.vue";
+import AgMap from "@adm-gis-ui/components/src/map/index";
 const route = useRoute();
 let config: { [key: string]: any } = reactive({
   id: null,
