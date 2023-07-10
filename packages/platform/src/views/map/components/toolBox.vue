@@ -104,6 +104,12 @@
           </el-tabs>
         </div>
       </div>
+      <!-- 轨迹动画设置 -->
+      <div class="measuring-tools" v-show="state.activeIndex == '3'"></div>
+      <!-- 控件 -->
+      <div class="measuring-tools" v-show="state.activeIndex == '4'">
+        <div class="controls-box"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -253,7 +259,6 @@ const measureAddInteraction = (value: string) => {
       type: "类型：" + (value == "area" ? "面" : "线"),
       value: (value == "area" ? "面积：" : "长度：") + measureTooltipElement.innerHTML
     });
-    measureTooltipElement.className = "ol-tooltip ol-tooltip-static";
     measureTooltip.setOffset([0, -7]);
     sketch = null;
     measureTooltipElement = null;
@@ -370,6 +375,7 @@ onMounted(() => {});
 }
 .title-box span {
   font-size: 16px;
+  font-weight: bold;
 }
 .content-box {
   .measuring-tools {
@@ -425,5 +431,13 @@ onMounted(() => {});
       height: 50px;
     }
   }
+}
+</style>
+
+<style>
+.ol-tooltip.ol-tooltip-measure {
+  padding: 5px;
+  color: #ffffff;
+  background-color: #ff3333;
 }
 </style>

@@ -1,12 +1,17 @@
 <template>
   <div class="map-view">
-    <Map :config="config" v-if="config.id" class="map"></Map>
+    <!-- <Map :config="config" v-if="config.id" class="map">
+      <template #customContent>
+        <div style="height: 50px">111111111111自定义</div>
+      </template>
+    </Map> -->
+    <ag-map :config="config" v-if="config.id"></ag-map>
   </div>
 </template>
 <script lang="ts" setup name="mapView">
 import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
-import Map from "../index.vue";
+// import Map from "../index.vue";
 const route = useRoute();
 let config: { [key: string]: any } = reactive({
   id: null,

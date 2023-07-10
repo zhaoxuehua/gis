@@ -62,6 +62,7 @@ onMounted(() => {});
       }
       .el-tabs__item {
         font-size: 16px;
+        font-weight: bold;
       }
     }
   }

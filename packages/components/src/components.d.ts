@@ -1,7 +1,6 @@
 import * as components from "./index";
 declare module "@vue/runtime-core" {
   export interface GlobalComponents {
-    AgButton: typeof components.Button;
     AgMap: typeof components.AgMap;
   }
 }

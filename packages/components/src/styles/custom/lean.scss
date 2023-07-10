@@ -1,0 +1,326 @@
+@import "../mixins/function.scss";
+@import "../mixins/element-mixins.scss";
+@import "../mixins/mixins.scss";
+
+@font-face {
+  font-family: sourcehansans; /* 这个名字可以自己定义 */
+  font-style: normal;
+  font-weight: bold;
+  src: url("../fonts/sourcehansans.eot"); /* IE9 Compat Modes */ /* 这里以及下面的src后面的地址填的都是自己本地的相对地址 */
+  src: url("../fonts/sourcehansans.eot?#iefix") format("embedded-opentype"),
+    /* IE6-IE8 */ url("../fonts/sourcehansans.woff") format("woff"),
+    /* Modern Browsers */ url("../fonts/sourcehansans.ttf") format("truetype"),
+    /* Safari, Android, iOS */ url("../fonts/sourcehansans.svg#YourWebFontName") format("svg"); /* Legacy iOS */
+}
+* {
+  font-family: sourcehansans;
+
+  // PingFang SC
+  font-family: "PingFang SC";
+}
+.one-search {
+  margin-bottom: 2px;
+  .el-form {
+    .el-input,
+    .el-select {
+      width: 100%;
+    }
+  }
+  .el-input,
+  .el-select,
+  .el-form-item {
+    width: 100%;
+  }
+  .el-autocomplete {
+    width: 100%;
+  }
+}
+.config-form {
+  display: flex;
+  align-items: center;
+  .el-input {
+    width: 126px !important;
+  }
+  .el-select {
+    width: 126px !important;
+  }
+}
+.dialog-footer {
+  display: flex;
+  justify-content: center;
+}
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  margin-bottom: 20px;
+}
+
+// $--color-primary
+// 树的样式
+.el-tree {
+  height: 100%;
+  overflow: auto;
+  > .el-tree-node {
+    display: inline-block;
+    min-width: 100%;
+  }
+  .el-tree-node__content {
+    height: 32px;
+    line-height: 32px;
+  }
+
+  --el-tree-node-hover-bg-color: var(--el-color-primary-light-9);
+  .el-tree-node:focus > .el-tree-node__content {
+    color: var(--color-primary);
+    border: 1px solid var(--el-color-primary-light-8);
+  }
+  &.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
+    color: var(--color-primary);
+    background-color: var(--el-color-primary-light-9);
+    border: 1px solid var(--el-color-primary-light-8);
+  }
+}
+
+// dialog
+.el-dialog {
+  border-radius: 0;
+  .el-dialog__header {
+    padding: 20px;
+    margin-right: 0;
+    background-color: var(--el-color-primary-light-9);
+    .el-dialog__title {
+      font-size: 16px;
+      color: #303133;
+    }
+  }
+  .el-form {
+    .el-input,
+    .el-select,
+    .el-cascader {
+      width: 200px;
+    }
+    .el-input-number {
+      width: 200px;
+    }
+    .el-textarea {
+      height: 50px;
+      .el-textarea__inner {
+        height: 50px !important;
+      }
+    }
+  }
+}
+.el-form {
+  .el-form-item {
+    padding-right: 0;
+    .el-form-item__label {
+      padding-right: 10px;
+    }
+  }
+}
+
+// checkbox样式
+.status .el-checkbox__inner {
+  border-radius: 0;
+}
+
+// el-tab样式
+
+// .el-tabs{
+//     .el-tabs__header{
+//         height: 32px;
+//         margin: 0px;
+//     }
+//     .el-tabs__nav-scroll{
+//         height: 32px;
+//         .el-tabs__nav{
+//             height: 32px;
+//             display: flex;
+//             .el-tabs__item{
+//                 height: 32px;
+//                 display: flex;
+//                 align-items: center;
+//                 justify-content: center;
+//             }
+//         }
+//     }
+// }
+.el-tabs {
+  .el-tabs__header {
+    margin: 0;
+  }
+}
+.el-checkbox__inner {
+  border-radius: 0;
+}
+
+// popover的样式
+.el-popover.el-popper {
+  background-color: var(--color-whites);
+}
+.el-popper {
+  // background-color: var(--color-whites) !important;
+}
+.editor-content-cfg {
+  .el-tabs {
+    .el-tabs__item {
+      color: var(--color-whites);
+    }
+
+    // .is-active{
+    //     color: var(--color-primary);
+    // }
+  }
+}
+
+// 可视化部分tab样式
+.tabs {
+  width: 100%;
+  height: 100%;
+  .el-tabs__header {
+    height: 100%;
+    .el-tabs__nav-wrap {
+      height: 100%;
+      .el-tabs__nav-scroll {
+        height: 100%;
+        .el-tabs__nav {
+          display: flex;
+          height: 100%;
+          .el-tabs__item {
+            display: flex;
+            align-items: center;
+            height: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 全局详情标题样式
+.menu-detail-common {
+  margin-bottom: 20px;
+}
+.menu-detail-common .el-descriptions__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-text-color-regular);
+}
+.dialog-title {
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-text-color-regular);
+}
+div.jsoneditor-outer {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+// global-delete-message
+
+// primary
+.global-delete-message .el-button--primary {
+  @include Button(whites, primary, primary);
+  &:hover,
+  &:focus {
+    @include Button(whites, primary-light-3, primary-light-3);
+  }
+}
+.global-delete-message .el-button--primary.is-plain {
+  @include Button(primary, primary-light-8, primary-light-6);
+  &:hover,
+  &:focus {
+    @include Button(whites, primary, primary);
+  }
+}
+.global-delete-message .el-button--primary.is-disabled,
+.global-delete-message .el-button--primary.is-disabled:active,
+.global-delete-message .el-button--primary.is-disabled:focus,
+.global-delete-message .el-button--primary.is-disabled:hover {
+  @include Button(whites, primary-light-7, primary-light-7);
+}
+.global-delete-message .el-button--primary.is-active,
+.global-delete-message .el-button--primary:active {
+  @include Button(whites, primary, primary);
+}
+
+/* Radio 单选框
+------------------------------- */
+.global-delete-message .el-radio__input.is-checked + .el-radio__label,
+.global-delete-message .el-radio-button__inner:hover {
+  color: set-color(primary);
+}
+.global-delete-message .el-radio__input.is-checked .el-radio__inner {
+  @include RadioCheckbox(primary);
+}
+.global-delete-message .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+  color: set-color(whites);
+
+  @include RadioCheckbox(primary);
+
+  box-shadow: -1px 0 0 0 set-color(primary);
+}
+.global-delete-message .el-radio.is-bordered.is-checked,
+.global-delete-message .el-radio__inner:hover {
+  border-color: set-color(primary);
+}
+
+// 普通搜索
+.normal-search-filter-form {
+  display: flex;
+}
+.normal-search-filter-form .btn-search {
+  height: 32px;
+}
+.normal-search-filter-form .el-form-item {
+  margin-right: 20px;
+}
+/* stylelint-disable-next-line no-duplicate-selectors */
+.el-form {
+  border-radius: 0;
+  .el-input,
+  .el-select,
+  .el-cascader,
+  .el-date-picker,
+  .el-date-editor,
+  el-date-editor--datetime {
+    /* width: 310px; */
+    .el-input__inner {
+      /* width: 310px; */
+    }
+  }
+}
+.footer-item-icon-only {
+  height: 20px;
+}
+.footer-item-icon-only:hover {
+  cursor: pointer;
+  transition: 0s;
+}
+.form-label-icon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.form-label-icon i {
+  margin-right: 4px;
+  color: var(--color-warning);
+}
+.form-label-icon .span {
+  /* width: 92px; */
+}
+
+// 设置时间选择器popover的定位
+.dialog-date-popover {
+  left: 460px !important;
+}
+.canvas-bg-upload {
+  width: 100%;
+  .el-upload {
+    width: 80px;
+    height: 100px;
+  }
+}

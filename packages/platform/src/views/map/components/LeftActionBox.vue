@@ -30,9 +30,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { VisualMap } from "../type";
+import type { VisualMap, leftBoxData } from "../type";
 
-const props = withDefaults(defineProps<{ config?: any; map: VisualMap | null; leftBoxData: any[] }>(), {
+const props = withDefaults(defineProps<{ config?: any; map: VisualMap | null; leftBoxData: leftBoxData[] }>(), {
   config: () => [],
   map: () => null,
   leftBoxData: () => []

@@ -1,0 +1,114 @@
+import { Draw } from "ol/interaction";
+import { Geometry } from "ol/geom";
+export type VisualMap = Map & { defaultOptions: { [key: string]: any }; popupInfo: function; closePopup: function };
+// 标签类型
+export type LabelType = {
+  id?: number | null;
+  code: string;
+  name: string;
+  layerConfigId: number | string;
+  attribute: { [key: string]: any } | null;
+  attributeId: number;
+  equipType: { [key: string]: any } | null;
+  equipTypeId: number;
+  isDefaultDisplayLabelName: boolean | any;
+  factor: string | null;
+  labelLegendImagePath: string | null;
+  labelLegendImageAllPath: string | null;
+  dataType: string;
+  displayScale: number;
+  pellucidity: number;
+  labelTypeImagePath: string | null;
+  labelTypeImageAllPath: string | null;
+  lineWidth: number;
+  lineType: string;
+  lineColor: string;
+  polygonColor: string;
+  lineVectorPath: string;
+  lineVectorWidth: number;
+  lineVectorHeight: number;
+  lineVectorProportion: number;
+  content: string;
+  fontType: string;
+  isBold: boolean;
+  fontColor: string;
+  fontSize: number;
+  borderWidth: number;
+  borderColor: string;
+  backGroundColor: string;
+  iconUrl?: string;
+  animationSetting?: any;
+};
+
+// 标签信息
+export type LabelInfoData = {
+  id?: number;
+  code: string;
+  name: string;
+  labelData: LabelData;
+  labelType: { [key: string]: any };
+  labelTypeId: number;
+  refLayer: { [key: string]: any };
+  refLayerId: number;
+};
+
+// 标签信息中的labelData字段
+export type LabelData = {
+  isDefaultDisplayLabelName: boolean | null | any;
+  radius?: number;
+  coordinates: Coordinate | Coordinate[] | Coordinate[][];
+  style: { [key: string]: any };
+};
+
+export type leftBoxData = {
+  icon?: string;
+  label?: string;
+  isShow?: boolean;
+  visible?: boolean;
+  component?: any;
+};
+
+// 标签绘制
+export type VisualDraw = Draw & { name: string | number };
+
+export type VisualGeometry = Geometry & {
+  getCoordinates: Function;
+  getCenter: Function;
+  getRadius: Function;
+  getCoordinateAt: Function;
+  getInteriorPoint: Function;
+};
+
+// 标签编辑表单
+export type LabelForm = {
+  id?: number | string | null;
+  code: string;
+  name: string;
+  refLayer: { [key: string]: any };
+  refLayerId: number | null;
+  labelType: { [key: string]: any };
+  labelTypeId: number | null;
+  labelData: LabelData;
+  font: { [key: string]: any };
+};
+
+// 导航树节点数据
+export type NavigationTreeNodeData = {
+  associationInfo: { [key: string]: any } | null;
+  id: number;
+  code: string;
+  name: string;
+  equipType: any;
+  nodeType: any;
+  nodeRelatedModel: string;
+};
+
+export type TableList = {
+  loading: boolean;
+  total: number;
+  ids: Array<number>;
+  data: Array<any>;
+  getTableData: Function;
+  onSelectionChange: Function;
+  onEdit: Function;
+};

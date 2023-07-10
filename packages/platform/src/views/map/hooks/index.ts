@@ -360,9 +360,8 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       console.log("未找到匹配的要素");
     }
   }
-
   // 需要考虑是否编辑状态（不是编辑状态下才会有弹框）
-  // map.popupInfo({ featureCode, center });
+  map.popupInfo({ featureCode, center });
 }
 
 // 根据labelData数据更新要素
@@ -426,7 +425,6 @@ export function getFeature(labelData: any, map: VisualMap) {
 export function getTypeStatsByLabelType(labelType: any, dataType: any) {
   let typeStats = "";
   // 点(根据图片源数量)
-  console.log(dataType, 88887777);
   if (dataType == "1") {
     let imgSrc = labelType?.labelTypeImagePath ? labelType?.labelTypeImagePath.split(",") : [];
     if (imgSrc?.length > 1) {

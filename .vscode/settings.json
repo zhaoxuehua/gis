@@ -83,5 +83,6 @@
     "xiaoxi",
     "zhongyingwen",
     "zhuti"
-  ]
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

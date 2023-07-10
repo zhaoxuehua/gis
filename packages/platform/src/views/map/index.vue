@@ -15,12 +15,18 @@
     <EditLabel ref="editLabelRef" :map="exportMap"></EditLabel>
     <!-- 右侧控件 -->
     <RightActionBox :map="exportMap" :rightBoxData="getRightData" @right-box-data-change="rightBoxDataChange"> </RightActionBox>
+    <!-- 地图点击弹框 -->
+    <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
+      <template #customContent>
+        <component :is="customContent"></component>
+      </template>
+    </Popup>
   </div>
 </template>
 <script lang="ts" setup name="Map">
-import { onMounted, ref, defineAsyncComponent, reactive, computed } from "vue";
+import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots } from "vue";
 import { ElMessage } from "element-plus";
-import { Map, View, Feature } from "ol";
+import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
 import { FullScreen, ScaleLine, defaults } from "ol/control";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
@@ -28,6 +34,8 @@ import { XYZ, Vector as VectorSource, Cluster } from "ol/source";
 import { FeatureLike } from "ol/Feature";
 import { fromLonLat } from "ol/proj";
 import { Select } from "ol/interaction";
+import { Coordinate } from "ol/coordinate";
+import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
 import { getMapParamsDetail, getLabelList } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
@@ -38,14 +46,15 @@ import { clearSelectedFeature } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
+import Popup from "./components/popup.vue";
+
+const customContent = useSlots()?.customContent;
 
 const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ config: any }>(), {
   config: () => {}
 });
-
 const exportMap = ref<VisualMap>();
-
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -54,21 +63,21 @@ const state = reactive({
       label: "导航树",
       isShow: false, // 控制显示隐藏
       visible: false, // 控制是否展示tab(有无该项)
-      component: defineAsyncComponent(() => import("./components/navigationTree.vue"))
+      component: shallowRef(defineAsyncComponent(() => import("./components/navigationTree.vue")))
     },
     {
       icon: "iconfont icon-GIS_huaban1fuben",
       label: "标签树",
       isShow: false,
       visible: false,
-      component: defineAsyncComponent(() => import("./components/tagTree.vue"))
+      component: shallowRef(defineAsyncComponent(() => import("./components/tagTree.vue")))
     },
     {
       icon: "iconfont icon-GIS-09",
       label: "快速创建",
       isShow: false,
       visible: false,
-      component: defineAsyncComponent(() => import("./components/quickCreate.vue"))
+      component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
     }
   ],
   rightBoxData: [
@@ -77,28 +86,28 @@ const state = reactive({
       label: "标签筛选",
       isShow: false,
       visible: false,
-      component: defineAsyncComponent(() => import("./components/tagSelection.vue"))
+      component: shallowRef(defineAsyncComponent(() => import("./components/tagSelection.vue")))
     },
     {
       icon: "iconfont icon-GIS-05",
       label: "工具箱",
       isShow: false,
       visible: false,
-      component: defineAsyncComponent(() => import("./components/toolBox.vue"))
+      component: shallowRef(defineAsyncComponent(() => import("./components/toolBox.vue")))
     },
     {
       icon: "iconfont icon-GIS-06",
       label: "地图类型",
       isShow: false,
       visible: false,
-      component: defineAsyncComponent(() => import("./components/mapType.vue"))
+      component: shallowRef(defineAsyncComponent(() => import("./components/mapType.vue")))
     },
     {
       icon: "iconfont icon-img",
       label: "图例",
       isShow: false,
       visible: false,
-      component: defineAsyncComponent(() => import("./components/imgLegend.vue"))
+      component: shallowRef(defineAsyncComponent(() => import("./components/imgLegend.vue")))
     }
   ]
 });
@@ -166,6 +175,14 @@ const rightBoxDataChange = (index: number) => {
     }
   });
 };
+
+// 地图点击弹框
+const popupRef = ref<InstanceType<typeof Popup>>();
+const popupData = ref<{
+  data: any;
+}>({
+  data: {}
+});
 
 // 编辑标签(标签树、导航树)
 const editLabelRef = ref<InstanceType<typeof EditLabel>>();
@@ -469,8 +486,30 @@ const initMap = async (mapId: string | number) => {
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
     });
 
+    // 地图点击弹框
+    // 弹窗图层
+    const overlay = new Overlay({
+      element: popupRef.value?.getDOMElement(), // 弹框组件
+      autoPan: true
+    });
+    map.addOverlay(overlay);
+    map.closePopup = () => {
+      overlay && overlay.setPosition(undefined);
+    };
+    // 地图标签元素默认浮窗
+    map.popupInfo = async (options: { featureCode: string; center: Coordinate }) => {
+      const { featureCode, center } = options;
+      popupData.value = {
+        data: {
+          featureCode: featureCode
+        }
+      };
+      overlay.setPosition(center);
+    };
+
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
+      map.closePopup();
       let featureSelect = map.get("featureSelect");
       clearSelectedFeature(map);
       const feature = map.forEachFeatureAtPixel(
@@ -491,8 +530,9 @@ const initMap = async (mapId: string | number) => {
             featureSelect.changed(); // 触发要素样式的变化
             map.set("featureSelect", feature);
           }
-
-          // 写选中地图要素的逻辑（是否需要定位，还有弹框逻辑）
+          // 弹框逻辑
+          let center = getCenter(feature.getGeometry().getExtent());
+          map.popupInfo({ featureCode, center });
         }
       }
     });
@@ -518,6 +558,8 @@ const initMap = async (mapId: string | number) => {
           });
           // 实现业务是获取到选中要素的唯一标识进行以后的逻辑
           console.log(id, 88777);
+          // let center = getCenter(feature.getGeometry().getExtent());
+          // map.popupInfo({ featureCode, center });
         }
         if (e.deselected?.length > 0) {
           e.deselected.forEach(function (clusterFeature) {
@@ -533,6 +575,9 @@ const initMap = async (mapId: string | number) => {
   } else {
     ElMessage.error("接口异常");
   }
+};
+const onScadaClose = () => {
+  exportMap.value?.closePopup();
 };
 
 onMounted(() => {

@@ -575,6 +575,7 @@ export default defineComponent({
 }
 .title span {
   font-size: 16px;
+  font-weight: bold;
 }
 .tag-edit-draw .title {
   padding: 0 10px;

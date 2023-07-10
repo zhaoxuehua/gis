@@ -138,6 +138,7 @@ watch(
 }
 .title-box span {
   font-size: 16px;
+  font-weight: bold;
 }
 .content-box {
   display: flex;

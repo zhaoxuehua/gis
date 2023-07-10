@@ -1,0 +1,223 @@
+<!-- 标签树部分（点击、编辑、新增、删除） -->
+<template>
+  <div class="tag-tree">
+    <div class="title">
+      <span>标签树</span>
+      <Icon src="Close" :size="14" @click.stop="onClose"></Icon>
+    </div>
+    <div class="tag-tree-content">
+      <el-input
+        placeholder="输入关键字进行过滤"
+        v-model="state.filterText"
+        clearable
+        @keyup.enter="treeSearch"
+        class="tag-tree-content-filter"
+      >
+      </el-input>
+      <div class="tree-content">
+        <el-tree
+          :data="tagTreeData"
+          :props="state.defaultProps"
+          @node-click="handleNodeClick"
+          :filter-node-method="filterNode"
+          ref="treeRef"
+        >
+          <template #default="{ data }">
+            <span class="custom-tree-node">
+              <span>{{ data.name }}</span>
+              <!-- 父节点可以新增即只有标签类型可以新增（子节点可以修改删除） -->
+              <Icon src="Plus" :size="14" @click="onAdd(data)" v-if="data.isParent"></Icon>
+              <Icon src="EditPen" :size="14" v-if="!data.isParent" @click.stop="onEdit(data)"></Icon>
+              <Icon src="Delete" :size="14" v-if="!data.isParent" @click.stop="onDelete(data)"></Icon>
+            </span>
+          </template>
+        </el-tree>
+      </div>
+    </div>
+  </div>
+</template>
+<script lang="ts" setup>
+import { computed, reactive, watch, onMounted, ref } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import type { VisualMap } from "../type";
+import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
+
+const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
+  map: () => null
+});
+const emits = defineEmits(["onEditLabel", "onClose"]);
+const treeRef = ref();
+const state = reactive({
+  defaultProps: {
+    children: "children",
+    label: "name"
+  },
+  filterText: "" // 树搜索字段
+});
+
+// 关闭标签树
+const onClose = () => {
+  emits("onClose", 1);
+};
+// 标签树数据源（需要的数据labelTypeMap   labelInfoMap  拼接节点与子节点 ）
+const tagTreeData = computed(() => {
+  if (!props.map) {
+    return;
+  }
+  const labelTypeMap = props.map?.get("labelTypeMap") || {};
+  const labelInfoMap = props.map?.get("labelInfoMap") || {};
+  let tree: any = [];
+  Object.entries(labelTypeMap)?.forEach(([key, object]: any) => {
+    const node = {
+      ...object,
+      pId: 0,
+      isParent: true,
+      children: []
+    };
+    Object.entries(labelInfoMap)?.forEach((labelInfo: any) => {
+      let item = labelInfo[1];
+      if (item?.labelType?.code == key) {
+        node.children.push(item);
+      }
+    });
+    tree.push(node);
+  });
+  return tree;
+});
+
+const treeSearch = () => {
+  treeRef.value.filter(state.filterText);
+};
+const filterNode = (value: any, data: any) => {
+  if (!value) return true;
+  return data.name.indexOf(value) !== -1;
+};
+
+// 树节点点击
+const handleNodeClick = (node: any) => {
+  labelOnSelect(props.map, node.code, false);
+};
+
+// 编辑
+const onEdit = (node: any) => {
+  emits("onEditLabel", node.code);
+};
+
+// 删除
+const onDelete = (node: any) => {
+  const labelInfoMap = props.map?.get("labelInfoMap") || {};
+  const label = labelInfoMap[node.code];
+  if (!label) {
+    ElMessage.warning("标签不存在");
+    return;
+  }
+  ElMessageBox.confirm("确定删除该标签吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  })
+    .then(async () => {
+      removeLabel(label, props.map);
+    })
+    .catch(() => {});
+};
+
+// 新增标签
+const onAdd = (node: any) => {
+  if (!node.id) return;
+  const labelTypeMap = props.map?.get("labelTypeMap") || {};
+  let featureType: any;
+  Object.values(labelTypeMap).forEach((labelInfo: any) => {
+    if (labelInfo.id == node.id) {
+      featureType = labelInfo;
+      return;
+    }
+  });
+  createLabel(props.map, featureType, function (result: any, feature: any, drawFeature: any) {
+    if (!result) {
+      ElMessage.error("创建标签失败");
+      return;
+    }
+    // 创建成功后的回调逻辑
+    if (props.map && drawFeature) {
+      props.map.removeInteraction(drawFeature);
+    }
+    let labelInfoMap = props.map?.get("labelInfoMap") || {};
+    labelInfoMap[result.code] = result; // 存储绘制的标签信息
+    props.map.set("labelInfoMap", labelInfoMap);
+    let featureTypeGroup = props?.map.get("featureTypeGroup");
+    featureTypeGroup[result.labelType.code].push(feature);
+    props.map?.set("featureTypeGroup", featureTypeGroup);
+    ElMessage.success("创建标签成功");
+  });
+};
+
+// 监听键盘ESC
+document.addEventListener("keyup", (event: KeyboardEvent) => {
+  if (event.key === "Escape" && props.map) {
+    let drawFeature = props.map?.get("drawFeature");
+    if (drawFeature) {
+      props.map?.removeInteraction(drawFeature);
+      drawFeature = null;
+      props.map.set("drawFeature", null);
+    }
+  }
+});
+
+watch(
+  () => state.filterText,
+  val => {
+    treeRef.value.filter(val);
+  }
+);
+
+onMounted(() => {});
+</script>
+
+<style lang="scss" scoped>
+.tag-tree {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  height: 500px;
+  overflow: auto;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+}
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 50px;
+  background-color: var(--el-color-primary-light-8);
+}
+.title span {
+  font-size: 16px;
+  font-weight: bold;
+}
+.tag-tree .title {
+  padding: 0 10px;
+}
+.tag-tree-content {
+  height: calc(100% - 50px);
+  padding: 0 20px;
+}
+.tag-tree-content-filter {
+  width: 100%;
+  margin: 20px 0;
+}
+.tree-content {
+  height: calc(100% - 92px);
+}
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+}
+.custom-tree-node i {
+  margin-left: 8px;
+  visibility: hidden;
+}
+.el-tree-node__content:hover i {
+  visibility: visible;
+}
+</style>

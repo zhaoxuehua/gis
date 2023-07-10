@@ -193,6 +193,7 @@ onMounted(() => {});
 }
 .title span {
   font-size: 16px;
+  font-weight: bold;
 }
 .tag-tree .title {
   padding: 0 10px;

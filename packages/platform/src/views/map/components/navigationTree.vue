@@ -218,6 +218,7 @@ onMounted(() => {
 }
 .title span {
   font-size: 16px;
+  font-weight: bold;
 }
 .nav-tree .title {
   padding: 0 10px;
