@@ -1,9 +1,15 @@
 import { defineConfig } from "vite";
+import { resolve } from "path";
 import vue from "@vitejs/plugin-vue";
 import dts from "vite-plugin-dts";
 // @ts-expect-error
 import DefineOptions from "unplugin-vue-define-options/vite";
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src")
+    }
+  },
   build: {
     //压缩
     //minify: false,

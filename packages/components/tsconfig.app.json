@@ -29,7 +29,6 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vite/client", "element-plus/global"],
-    "suppressImplicitAnyIndexErrors": true
+    "types": ["vite/client", "element-plus/global"]
   }
 }

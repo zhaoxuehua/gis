@@ -10,7 +10,7 @@
 <script lang="ts" setup name="mapView">
 import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
-import AgMap from "@adm-gis-ui/components/src/map/index";
+import { AgMap } from "@adm-gis-ui/components";
 const route = useRoute();
 let config: { [key: string]: any } = reactive({
   id: null,

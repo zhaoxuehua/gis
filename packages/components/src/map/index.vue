@@ -23,7 +23,7 @@
     </Popup>
   </div>
 </template>
-<script lang="ts" setup name="Map">
+<script lang="ts" setup>
 import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
@@ -47,6 +47,8 @@ import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
 import Popup from "./components/popup.vue";
+
+defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
 
