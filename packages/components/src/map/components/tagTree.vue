@@ -3,7 +3,7 @@
   <div class="tag-tree">
     <div class="title">
       <span>标签树</span>
-      <Icon src="Close" :size="14" @click.stop="onClose"></Icon>
+      <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="tag-tree-content">
       <el-input
@@ -194,6 +194,9 @@ onMounted(() => {});
 .title span {
   font-size: 16px;
   font-weight: bold;
+}
+.title .icon {
+  cursor: pointer;
 }
 .tag-tree .title {
   padding: 0 10px;

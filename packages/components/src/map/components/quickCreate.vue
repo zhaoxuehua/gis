@@ -9,7 +9,7 @@
           <el-tab-pane label="按资产创建点" name="3"></el-tab-pane>
         </el-tabs>
       </div>
-      <Icon src="Close" :size="14" @click="onClose"></Icon>
+      <Icon src="Close" :size="14" @click="onClose" class="icon"></Icon>
     </div>
     <div class="quick-create-content">
       <CreatePointByPolygon v-if="state.activeName === '1'"></CreatePointByPolygon>
@@ -64,6 +64,9 @@ onMounted(() => {});
         font-size: 16px;
         font-weight: bold;
       }
+    }
+    .icon {
+      cursor: pointer;
     }
   }
   .quick-create-content {

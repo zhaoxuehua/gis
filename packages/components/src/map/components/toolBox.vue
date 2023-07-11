@@ -3,7 +3,7 @@
     <!-- title模块 -->
     <div class="title-box">
       <span>工具箱</span>
-      <Icon src="Close" :size="14" @click.stop="onClose"></Icon>
+      <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
 
     <div class="content-box">
@@ -372,10 +372,13 @@ onMounted(() => {});
   height: 50px;
   padding: 0 10px;
   background-color: var(--el-color-primary-light-8);
-}
-.title-box span {
-  font-size: 16px;
-  font-weight: bold;
+  span {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .icon {
+    cursor: pointer;
+  }
 }
 .content-box {
   .measuring-tools {

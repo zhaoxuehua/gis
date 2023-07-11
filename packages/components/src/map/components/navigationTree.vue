@@ -3,7 +3,7 @@
   <div class="nav-tree">
     <div class="title">
       <span>导航树</span>
-      <Icon src="Close" :size="14" @click.stop="onClose"></Icon>
+      <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="nav-tree-content">
       <el-input
@@ -222,6 +222,9 @@ onMounted(() => {
 }
 .nav-tree .title {
   padding: 0 10px;
+}
+.title .icon {
+  cursor: pointer;
 }
 .nav-tree-content {
   height: calc(100% - 50px);

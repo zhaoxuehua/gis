@@ -6,14 +6,14 @@ import { toLonLat } from "ol/proj";
 import type { Coordinate } from "ol/coordinate";
 import { Circle } from "ol/geom";
 import { isObject, find } from "lodash";
-import { mapStores } from "pinia";
+// import { mapStores } from "pinia";
 import { useGisStore } from "@/stores/modules/gis";
 import { deleteAssociation } from "@/api/gis.js";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, multiArray, getGeometryCenter } from "./createGeometry.js";
 import { createStyle, clusterLayerStyle } from "./styleFunction.js";
-
-const { gisStore }: { gisStore: ReturnType<typeof useGisStore> } = mapStores(useGisStore);
+// const { gisStore }: { gisStore: ReturnType<typeof useGisStore> } = mapStores(useGisStore);
+const gisStore = useGisStore();
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
 export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: Function) {
@@ -362,7 +362,8 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     }
   }
   // 需要考虑是否编辑状态（不是编辑状态下才会有弹框）
-  map.popupInfo({ featureCode, center });
+  let featureName = labelInfo?.name;
+  map.popupInfo({ featureCode, featureName, center });
 }
 
 // 根据labelData数据更新要素
