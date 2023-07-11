@@ -50,9 +50,6 @@ const featureTypeGroup = computed(() => {
 
 // 标签类型
 const labelTypeList: any = computed(() => {
-  if (!props?.map) {
-    return [];
-  }
   let labelTypeMap = props?.map?.get("labelTypeMap") || {};
   return Object.values(labelTypeMap);
 });

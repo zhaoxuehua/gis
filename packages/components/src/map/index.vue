@@ -129,7 +129,6 @@ const getLeftData = computed(() => {
         break;
     }
   });
-  // 如果有应用传的左侧控件拼接在此处
   return state.leftBoxData;
 });
 
@@ -590,6 +589,13 @@ onMounted(() => {
   // 存储导航树应用id
   const sourceCode = props?.config?.navSourceCode;
   gisStore.setSourceCode(sourceCode);
+  // 拼接控件扩展
+  if (props?.config?.leftControl) {
+    state.leftBoxData = state.leftBoxData.concat(props.config?.leftControl);
+  }
+  if (props?.config?.rightControl) {
+    state.rightBoxData = state.rightBoxData.concat(props.config?.rightControl);
+  }
   const mapParams = props?.config?.id;
   if (!mapParams) return;
   initMap(mapParams);
