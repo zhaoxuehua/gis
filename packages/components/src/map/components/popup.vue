@@ -1,13 +1,15 @@
 <template>
   <div class="map-popup" ref="popupRef">
     <div style="width: 450px" v-if="!customContent">
-      <div class="map-popup-header">
-        <span>标签信息 </span>
-        <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
-      </div>
-      <div class="map-popup-body">
-        <span>名称：{{ props?.data?.featureName || "" }}</span>
-        <span>编码：{{ props?.data?.featureCode || "" }}</span>
+      <div v-if="props?.data?.featureCode">
+        <div class="map-popup-header">
+          <span>标签信息 </span>
+          <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
+        </div>
+        <div class="map-popup-body">
+          <span>名称：{{ props?.data?.featureName || "" }}</span>
+          <span>编码：{{ props?.data?.featureCode || "" }}</span>
+        </div>
       </div>
     </div>
     <!-- 自定义内容插槽 -->
@@ -94,11 +96,12 @@ defineExpose({
     }
   }
   .map-popup-body {
-    // display: flex;
-    // flex-flow: row nowrap;
     flex: 1;
-    padding: 15px;
+    padding: 15px 0;
     overflow: hidden;
+    span {
+      padding: 15px;
+    }
   }
 }
 </style>

@@ -340,7 +340,6 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     const clusterDataSource = layer.getSource();
     clusterDataSource.getFeatures().forEach(function (clusterFeature: any) {
       clusterFeature.get("features").forEach(function (originalFeature: any) {
-        console.log(originalFeature.get("code"), featureCode, 9988888);
         if (originalFeature.get("code") === featureCode) {
           // 设置原始要素的样式以示选中
           clusterFeature.setStyle((feature: any) => clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, true));
