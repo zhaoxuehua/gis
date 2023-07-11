@@ -1,4 +1,4 @@
-import { Coordinate } from "ol/coordinate";
+import type { Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
 import { Circle as CircleGeom, LineString, Point, Polygon } from "ol/geom";
 import { boundingExtent, getCenter } from "ol/extent";

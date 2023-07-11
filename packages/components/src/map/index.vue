@@ -17,7 +17,7 @@
     <RightActionBox :map="exportMap" :rightBoxData="getRightData" @right-box-data-change="rightBoxDataChange"> </RightActionBox>
     <!-- 地图点击弹框 -->
     <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
-      <template #customContent>
+      <template #customContent v-if="customContent">
         <component :is="customContent"></component>
       </template>
     </Popup>
@@ -180,10 +180,9 @@ const rightBoxDataChange = (index: number) => {
 
 // 地图点击弹框
 const popupRef = ref<InstanceType<typeof Popup>>();
-const popupData = ref<{
-  data: any;
-}>({
-  data: {}
+let popupData: { [key: string]: any } = reactive({
+  featureCode: "",
+  featureName: ""
 });
 
 // 编辑标签(标签树、导航树)
@@ -499,13 +498,10 @@ const initMap = async (mapId: string | number) => {
       overlay && overlay.setPosition(undefined);
     };
     // 地图标签元素默认浮窗
-    map.popupInfo = async (options: { featureCode: string; center: Coordinate }) => {
-      const { featureCode, center } = options;
-      popupData.value = {
-        data: {
-          featureCode: featureCode
-        }
-      };
+    map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }) => {
+      const { featureCode, center, featureName } = options;
+      popupData.featureCode = featureCode;
+      popupData.featureName = featureName;
       overlay.setPosition(center);
     };
 
@@ -524,6 +520,8 @@ const initMap = async (mapId: string | number) => {
       if (feature) {
         // 点击地图上的要素
         const featureCode = feature.get("code");
+        const featureName = feature.get("name");
+
         if (featureCode) {
           featureSelect = feature; // 更新当前选中要素
 
@@ -534,7 +532,7 @@ const initMap = async (mapId: string | number) => {
           }
           // 弹框逻辑
           let center = getCenter(feature.getGeometry().getExtent());
-          map.popupInfo({ featureCode, center });
+          map.popupInfo({ featureCode, featureName, center });
         }
       }
     });
