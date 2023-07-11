@@ -13,7 +13,7 @@ import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, L
 import { MAP_DATA_TYPE, multiArray, getGeometryCenter } from "./createGeometry.js";
 import { createStyle, clusterLayerStyle } from "./styleFunction.js";
 
-const { gisStore } = mapStores(useGisStore);
+const { gisStore }: { gisStore: ReturnType<typeof useGisStore> } = mapStores(useGisStore);
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
 export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: Function) {
