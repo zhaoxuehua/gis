@@ -19,6 +19,7 @@
     "build:dev": "vue-tsc && vite build --mode development",
     "build:test": "vue-tsc && vite build --mode test",
     "build": "vue-tsc && vite build --mode production",
+    "build2": "vite build --mode production",
     "type:check": "vue-tsc --noEmit --skipLibCheck",
     "preview": "npm run build:dev && vite preview"
   },
