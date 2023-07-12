@@ -89,7 +89,6 @@ defineExpose({
     border-bottom: #e0e0e0 solid 1px;
     span {
       font-size: 16px;
-      font-weight: bold;
     }
     .icon {
       cursor: pointer;

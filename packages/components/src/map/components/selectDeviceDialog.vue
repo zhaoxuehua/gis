@@ -102,23 +102,23 @@ const table = ref<TableList & { chooseList: any[] }>({
     if (res && res.items) {
       const equipList = cloneDeep(res.items);
       const chooseList = equipList.map((item: { [key: string]: any }) => item.id);
-
-      // 获取该设备已绘制的标签信息（根据id查是否已绘制）
-      const response: { [key: string]: any } = await getLabelInfoByEquipId(chooseList);
-
-      if (response?.data) {
-        response.data?.forEach((item: any) => {
-          equipList.some((equip: any) => {
-            if (equip.id === item.id) {
-              if (item.gisLabelConfig) {
-                equip.gisLabelConfig = item.gisLabelConfig;
+      if (chooseList && chooseList.length) {
+        // 获取该设备已绘制的标签信息（根据id查是否已绘制）
+        const response: { [key: string]: any } = await getLabelInfoByEquipId(chooseList);
+        if (response?.data) {
+          response.data?.forEach((item: any) => {
+            equipList.some((equip: any) => {
+              if (equip.id === item.id) {
+                if (item.gisLabelConfig) {
+                  equip.gisLabelConfig = item.gisLabelConfig;
+                }
+                equip.gisLabelInfo = item.gisLabelInfo;
+                return true;
               }
-              equip.gisLabelInfo = item.gisLabelInfo;
-              return true;
-            }
-            return false;
+              return false;
+            });
           });
-        });
+        }
       }
       table.value.data = equipList;
       table.value.total = res.totalNum;

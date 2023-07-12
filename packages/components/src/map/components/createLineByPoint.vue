@@ -1,4 +1,4 @@
-<!-- 选择线节点（根据选择已绘制设备的点生成） -->
+<!-- 选择树节点是线类型节点（根据选择已绘制设备的点生成） -->
 <template>
   <div class="quick-create-main">
     <div class="side-tree">
@@ -177,14 +177,7 @@ const fetchLineInfo = async (id: number) => {
     }
 
     // 获取生成线路的设备点信息
-    const response: { [key: string]: any } = await getEquipListByLine(id);
-    if (response.data) {
-      table.value.data = response.data?.parts.sort(function (a: any, b: any) {
-        return a.sequence - b.sequence;
-      });
-    } else {
-      table.value.data = [];
-    }
+    table.value.getTableData();
   }
 };
 
@@ -208,11 +201,7 @@ onMounted(() => {
 // 查询条件
 const query = ref<{ [key: string]: any }>({
   lineId: 0,
-  equipName: "",
-  getPagination: () => {},
-  onQuery: () => {
-    table.value.getTableData();
-  }
+  equipName: ""
 });
 
 const currentTarget = ref<{ [key: string]: any }>({});
@@ -226,8 +215,14 @@ const table = ref<TableList>({
   getTableData: async () => {
     table.value.loading = true;
     const res: { [key: string]: any } = await getEquipListByLine(query.value.lineId);
-    if (res.data.items) {
-      table.value.data = res.data.items;
+    if (res.code == 200) {
+      if (res.data?.parts) {
+        table.value.data = res.data.parts?.sort(function (a: any, b: any) {
+          return a.sequence - b.sequence;
+        });
+      } else {
+        table.value.data = [];
+      }
     } else {
       ElMessage.error("接口异常");
     }
@@ -318,7 +313,6 @@ const drawHandler = () => {
   if (id) {
     result.labelData = JSON.stringify(labelData);
   } else {
-    gisLabelConfig.dataType = MAP_DATA_TYPE[gisLabelConfig.dataType].value;
     let type = gisLabelConfig.dataType;
     if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
       type = MAP_DATA_TYPE[type]?.value;
