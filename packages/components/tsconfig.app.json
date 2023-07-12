@@ -10,7 +10,7 @@
     "build/**/*.d.ts",
     "vite.config.ts"
   ],
-  "exclude": ["src/**/__tests__/*", "node_modules", "**/*.js"],
+  "exclude": ["node_modules", "**/*.js"],
   "compilerOptions": {
     "composite": true,
     "target": "ESNext",
@@ -29,6 +29,6 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vite/client", "element-plus/global"]
+    "types": ["vite/client", "element-plus/global", "unplugin-vue-define-options/macros-global"]
   }
 }
