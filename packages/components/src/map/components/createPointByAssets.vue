@@ -111,25 +111,25 @@ const table = ref<TableList & { chooseList: any[] }>({
     if (res && res.items) {
       const equipList = cloneDeep(res.items); // 当前页的数据
       const chooseList = equipList.map((item: { [key: string]: any }) => item.id);
+      if (chooseList && chooseList.length) {
+        // 获取该设备已绘制的标签信息
+        const response: { [key: string]: any } = await getLabelInfoByEquipId(chooseList);
+        if (response?.data) {
+          response.data.forEach((item: any) => {
+            equipList.some((equip: { [key: string]: any }) => {
+              if (equip.id === item.id) {
+                if (item.gisLabelConfig) {
+                  equip.gisLabelConfig = item.gisLabelConfig;
+                }
+                equip.gisLabelInfo = item.gisLabelInfo;
 
-      // 获取该设备已绘制的标签信息
-      const response: { [key: string]: any } = await getLabelInfoByEquipId(chooseList);
-
-      if (response?.data) {
-        response.data.forEach((item: any) => {
-          equipList.some((equip: { [key: string]: any }) => {
-            if (equip.id === item.id) {
-              if (item.gisLabelConfig) {
-                equip.gisLabelConfig = item.gisLabelConfig;
+                return true;
               }
-              equip.gisLabelInfo = item.gisLabelInfo;
-              return true;
-            }
-            return false;
+              return false;
+            });
           });
-        });
+        }
       }
-
       table.value.data = equipList;
       table.value.total = res.totalNum;
     } else {
@@ -176,7 +176,7 @@ const onDelete = () => {
     .catch(() => {});
 };
 
-// 批量绘制
+// 批量绘制点
 const drawHandler = () => {
   // 生成接口所需的数据结构
   const result = table.value.chooseList.map((item, index) => {
@@ -218,7 +218,7 @@ const deleteHandler = () => {
   // 过滤出选择列表已绘制的标签进行删除
   const labelIds = table.value.chooseList
     .filter(item => {
-      return item.gisLabelInfo;
+      return item.gisLabelInfo; // 删除时过滤出有标签信息的进行删除
     })
     .map(item => item.gisLabelInfo.id);
 
@@ -253,11 +253,11 @@ const createLabelData = (featureType: any, featureCoordinates: any) => {
   };
 
   // 根据图形类型组装需要的style样式
-  if (featureType.dataType === "Point") {
+  if (featureType.dataType === "Point" || featureType.dataType === "1") {
     Object.assign(labelData.style, {
       icon: styleData.icon
     });
-  } else if (featureType.dataType === "Text") {
+  } else if (featureType.dataType === "Text" || featureType.dataType === "6") {
     Object.assign(labelData.style, {
       text: styleData.text
     });
@@ -270,16 +270,15 @@ const createLabelData = (featureType: any, featureCoordinates: any) => {
   }
 
   // 如果需要显示标注
-  if (featureType.isDefaultDisplayLabelName && featureType.dataType !== "Text") {
+  if (featureType.isDefaultDisplayLabelName && featureType.dataType !== "Text" && featureType.dataType !== "6") {
     labelData.style.text = styleData.text;
   }
-
   return labelData;
 };
 
 const selectable = (row: any) => {
   return (
-    row.gisLabelConfig && (row.gisLabelConfig.dataType === "Point" || row.gisLabelConfig.dataType === "1") && row.gisCoordinates
+    row.gisLabelConfig && (row.gisLabelConfig.dataType === "Point" || row.gisLabelConfig.dataType == "1") && row.gisCoordinates
   );
 };
 

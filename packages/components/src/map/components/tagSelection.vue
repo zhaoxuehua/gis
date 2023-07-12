@@ -134,7 +134,6 @@ watch(
   background-color: var(--el-color-primary-light-8);
   span {
     font-size: 16px;
-    font-weight: bold;
   }
   .icon {
     cursor: pointer;

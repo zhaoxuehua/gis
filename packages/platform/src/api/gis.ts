@@ -48,10 +48,10 @@ export function getEquipListByLine(id: number) {
 }
 // 创建单个标签（快速创建——按点创建线）
 export function addLabelSingle(params: object) {
-  return request.post(`/backend1/equip/2DGis/label/save`, params);
+  return request.post(`/api/gis-service/equip/2DGis/label/save`, params);
 }
 
 // 删除单个标签（快速创建——按点创建线）
 export function deleteLabelSingle(id: number) {
-  return request.get(`/backend1/equip/2DGis/label/delete/${id}`);
+  return request.get(`/api/gis-service/equip/2DGis/label/delete/${id}`);
 }

@@ -105,7 +105,6 @@ const treeRef = ref();
 const treeData = ref<Array<any>>([]);
 // 树节点点击事件(只能是设备节点点击获取列表)
 const handleNodeClick = (data: any) => {
-  console.log(data, 8777666);
   query.value.pageNo = 1;
   table.value.data = [];
   table.value.total = 0;

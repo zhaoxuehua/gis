@@ -193,7 +193,6 @@ onMounted(() => {});
 }
 .title span {
   font-size: 16px;
-  font-weight: bold;
 }
 .title .icon {
   cursor: pointer;
