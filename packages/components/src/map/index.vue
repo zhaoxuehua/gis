@@ -131,7 +131,6 @@ const getLeftData = computed(() => {
         break;
     }
   });
-  // 如果有应用传的左侧控件拼接在此处
   return state.leftBoxData;
 });
 
@@ -496,6 +495,8 @@ const initMap = async (mapId: string | number) => {
     map.addOverlay(overlay);
     map.closePopup = () => {
       overlay && overlay.setPosition(undefined);
+      popupData.featureCode = "";
+      popupData.featureName = "";
     };
     // 地图标签元素默认浮窗
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }) => {
@@ -521,7 +522,6 @@ const initMap = async (mapId: string | number) => {
         // 点击地图上的要素
         const featureCode = feature.get("code");
         const featureName = feature.get("name");
-
         if (featureCode) {
           featureSelect = feature; // 更新当前选中要素
 
@@ -548,18 +548,25 @@ const initMap = async (mapId: string | number) => {
       map.addInteraction(selectInteraction);
       selectInteraction.on("select", function (e) {
         if (e.selected?.length > 0) {
-          let id: any = [];
+          let originalFeatureList: any = [];
+          // let propertiesList=[]
           e.selected.forEach(function (clusterFeature) {
             // 根据选中状态切换要素的样式
             clusterFeature.setStyle(feature => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, true));
             clusterFeature.get("features").forEach(function (originalFeature: FeatureLike) {
-              id.push(originalFeature.getProperties()); // 原始要素的属性
+              // propertiesList.push(originalFeature.getProperties()); // 原始要素的属性
+              originalFeatureList.push(originalFeature);
             });
           });
           // 实现业务是获取到选中要素的唯一标识进行以后的逻辑
-          console.log(id, 88777);
-          // let center = getCenter(feature.getGeometry().getExtent());
-          // map.popupInfo({ featureCode, center });
+          let orgFeature;
+          if (originalFeatureList && originalFeatureList?.length) {
+            orgFeature = originalFeatureList[0];
+            const featureCode = orgFeature.get("code");
+            const featureName = orgFeature.get("name");
+            let center = getCenter(orgFeature?.getGeometry()?.getExtent());
+            map.popupInfo({ featureCode, featureName, center });
+          }
         }
         if (e.deselected?.length > 0) {
           e.deselected.forEach(function (clusterFeature) {
@@ -584,6 +591,13 @@ onMounted(() => {
   // 存储导航树应用id
   const sourceCode = props?.config?.navSourceCode;
   gisStore.setSourceCode(sourceCode);
+  // 拼接控件扩展
+  if (props?.config?.leftControl) {
+    state.leftBoxData = state.leftBoxData.concat(props.config?.leftControl);
+  }
+  if (props?.config?.rightControl) {
+    state.rightBoxData = state.rightBoxData.concat(props.config?.rightControl);
+  }
   const mapParams = props?.config?.id;
   if (!mapParams) return;
   initMap(mapParams);
