@@ -406,12 +406,13 @@ const selectable = (row: any) => {
   height: 100%;
   .side-tree {
     width: 250px;
+    height: 100%;
     border-right: #dadee5 solid 1px;
     .search-bar {
       padding: 20px;
     }
     .tree-content {
-      height: calc(100% - 70px);
+      height: calc(100% - 72px);
       overflow: auto;
     }
   }

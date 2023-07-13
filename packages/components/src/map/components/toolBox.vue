@@ -33,21 +33,21 @@
             <el-tab-pane label="度分秒" name="first">
               <div class="lon-box">
                 <label> 经度 </label>
-                <el-input v-model="state.lonDegree" type="text" class="short_l" />
+                <el-input v-model="state.lonDegree" class="short_l" />
                 <em>°</em>
-                <el-input v-model="state.lonMin" type="text" class="short_l" />
+                <el-input v-model="state.lonMin" class="short_l" />
                 <em>'</em>
-                <el-input v-model="state.lonSeconds" type="text" class="short_l" />
+                <el-input v-model="state.lonSeconds" class="short_l" />
                 <em>''</em>
                 <span class="tip-unit">E</span>
               </div>
               <div class="lon-box">
                 <label> 纬度 </label>
-                <el-input v-model="state.latDegree" type="text" class="short_l" />
+                <el-input v-model="state.latDegree" class="short_l" />
                 <em>°</em>
-                <el-input v-model="state.latMin" type="text" class="short_l" />
+                <el-input v-model="state.latMin" class="short_l" />
                 <em>'</em>
-                <el-input v-model="state.latSeconds" type="text" class="short_l" />
+                <el-input v-model="state.latSeconds" class="short_l" />
                 <em>''</em>
                 <span class="tip-unit">N</span>
               </div>
@@ -60,18 +60,18 @@
             <el-tab-pane label="度分" name="second">
               <div class="lon-box">
                 <label> 经度 </label>
-                <el-input v-model="state.lonDegree" type="text" class="short_2" />
+                <el-input v-model="state.lonDegree" class="short_2" />
                 <em>°</em>
-                <el-input v-model="state.lonMin" type="text" class="short_2" />
+                <el-input v-model="state.lonMin" class="short_2" />
                 <em>'</em>
                 <span class="tip-unit">E</span>
               </div>
 
               <div class="lon-box">
                 <label> 纬度 </label>
-                <el-input v-model="state.latDegree" type="text" class="short_2" />
+                <el-input v-model="state.latDegree" class="short_2" />
                 <em>°</em>
-                <el-input v-model="state.latMin" type="text" class="short_2" />
+                <el-input v-model="state.latMin" class="short_2" />
                 <em>'</em>
                 <span class="tip-unit">N</span>
               </div>
@@ -85,14 +85,14 @@
             <el-tab-pane label="度" name="third">
               <div class="lon-box">
                 <label> 经度 </label>
-                <el-input v-model="state.lonDegree" type="text" class="short_3" />
+                <el-input v-model="state.lonDegree" class="short_3" />
                 <em>°</em>
                 <span class="tip-unit">E</span>
               </div>
 
               <div class="lon-box">
                 <label> 纬度 </label>
-                <el-input v-model="state.latDegree" type="text" class="short_3" />
+                <el-input v-model="state.latDegree" class="short_3" />
                 <em>°</em>
                 <span class="tip-unit">N</span>
               </div>

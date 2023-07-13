@@ -66,9 +66,9 @@
           </el-table-column>
           <el-table-column label="操作" width="150">
             <template #default="scope">
-              <el-button type="text" @click="onUp(scope.row)">上移</el-button>
-              <el-button type="text" @click="onDown(scope.row)">下移</el-button>
-              <el-button type="text" @click="onRemove(scope.row)">删除</el-button>
+              <el-button type="primary" link @click="onUp(scope.row)">上移</el-button>
+              <el-button type="primary" link @click="onDown(scope.row)">下移</el-button>
+              <el-button type="primary" link @click="onRemove(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -447,7 +447,7 @@ const calcSequence = function () {
       padding: 20px;
     }
     .tree-content {
-      height: calc(100% - 70px);
+      height: calc(100% - 72px);
       overflow: auto;
     }
   }
@@ -480,7 +480,7 @@ const calcSequence = function () {
     }
   }
   .layer-config-table {
-    height: calc(100% - 50px);
+    height: calc(100% - 60px);
   }
 }
 </style>

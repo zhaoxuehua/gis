@@ -4,25 +4,25 @@
     <div class="quick-create-title">
       <div class="quick-create-title-tab">
         <el-tabs v-model="state.activeName">
-          <el-tab-pane label="按面创建点" name="1"></el-tab-pane>
-          <el-tab-pane label="按点创建线" name="2"></el-tab-pane>
-          <el-tab-pane label="按资产创建点" name="3"></el-tab-pane>
+          <el-tab-pane label="创建点" name="1"></el-tab-pane>
+          <el-tab-pane label="创建线" name="2"></el-tab-pane>
+          <el-tab-pane label="创建面" name="3"></el-tab-pane>
         </el-tabs>
       </div>
       <Icon src="Close" :size="14" @click="onClose" class="icon"></Icon>
     </div>
     <div class="quick-create-content">
-      <CreatePointByPolygon v-if="state.activeName === '1'"></CreatePointByPolygon>
-      <CreateLineByPoint v-if="state.activeName === '2'"></CreateLineByPoint>
-      <CreatePointByAssets v-if="state.activeName === '3'"></CreatePointByAssets>
+      <CreatePointBox v-if="state.activeName === '1'"></CreatePointBox>
+      <CreateLineBox v-if="state.activeName === '2'"></CreateLineBox>
+      <CreatePolygon v-if="state.activeName === '3'"></CreatePolygon>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import { reactive, onMounted } from "vue";
-import CreatePointByPolygon from "./createPointByPolygon.vue";
-import CreateLineByPoint from "./createLineByPoint.vue";
-import CreatePointByAssets from "./createPointByAssets.vue";
+import CreatePointBox from "./createPointBox.vue";
+import CreateLineBox from "./createLineBox.vue";
+import CreatePolygon from "./createPolygon.vue";
 
 const emits = defineEmits(["onClose"]);
 

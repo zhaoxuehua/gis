@@ -25,6 +25,7 @@
 
       <div class="main-content-list">
         <el-table
+          class="table"
           :data="table.data"
           v-loading="table.loading"
           highlight-current-row
@@ -293,17 +294,6 @@ onMounted(() => {
   align-items: stretch;
   justify-content: space-between;
   height: 100%;
-  .side-tree {
-    width: 250px;
-    border-right: #dadee5 solid 1px;
-    .search-bar {
-      padding: 20px;
-    }
-    .tree-content {
-      height: calc(100% - 70px);
-      overflow: auto;
-    }
-  }
   .main-content {
     display: flex;
     flex: 1;
@@ -330,6 +320,9 @@ onMounted(() => {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
+      .table {
+        height: calc(100% - 50px);
+      }
     }
   }
 }
