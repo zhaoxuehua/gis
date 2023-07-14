@@ -1,3 +1,4 @@
+<!-- 根据提前录入的坐标信息gisCoordinates 可以为点类型的设备批量绘制 -->
 <template>
   <div class="quick-create-main">
     <div class="main-content">

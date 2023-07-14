@@ -7,12 +7,12 @@
     </div>
 
     <div class="content-box">
-      <el-menu :default-active="state.activeIndex" mode="horizontal" @select="handleSelect">
-        <el-menu-item index="1">测量工具 </el-menu-item>
-        <el-menu-item index="2">坐标定位</el-menu-item>
-        <el-menu-item index="3">轨迹回放动画</el-menu-item>
-        <el-menu-item index="4">控件</el-menu-item>
-      </el-menu>
+      <el-tabs v-model="state.activeIndex">
+        <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
+        <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
+        <el-tab-pane name="3" label="轨迹回放动画"></el-tab-pane>
+        <el-tab-pane name="4" label="控件"></el-tab-pane>
+      </el-tabs>
 
       <!-- 展示内容区 -->
       <!-- 测量工具 -->
@@ -105,7 +105,9 @@
         </div>
       </div>
       <!-- 轨迹动画设置 -->
-      <div class="measuring-tools" v-show="state.activeIndex == '3'"></div>
+      <div class="measuring-tools" v-show="state.activeIndex == '3'">
+        <div class="track-box"></div>
+      </div>
       <!-- 控件 -->
       <div class="measuring-tools" v-show="state.activeIndex == '4'">
         <div class="controls-box"></div>
@@ -288,10 +290,6 @@ const onClose = () => {
   emits("onClose", 1);
 };
 
-const handleSelect = (value: string) => {
-  state.activeIndex = value;
-};
-
 // 切换时清空度分秒绑定值
 const handleTabClick = () => {
   state.lonDegree = ""; // 经度-度
@@ -380,6 +378,7 @@ onMounted(() => {});
   }
 }
 .content-box {
+  margin-left: 10px;
   .measuring-tools {
     padding: 20px;
   }

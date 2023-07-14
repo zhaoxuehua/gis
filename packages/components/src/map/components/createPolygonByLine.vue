@@ -1,16 +1,9 @@
-<!-- 选择树节点是面类型节点 -->
+<!-- 选择树节点是面类型节点：根据已绘制线的坐标信息及缓冲距离生成一个缓冲面 -->
 <template>
   <div class="quick-create-main">
     <div class="side-tree">
       <div class="search-bar">
-        <el-input
-          placeholder="输入关键字进行过滤"
-          v-model="state.filterText"
-          clearable
-          @keyup.enter="treeSearch"
-          class="navigation-tree-content-filter"
-        >
-        </el-input>
+        <el-input placeholder="输入关键字进行过滤" v-model="state.filterText" clearable @keyup.enter="treeSearch"> </el-input>
       </div>
       <div class="tree-content">
         <el-tree
@@ -36,11 +29,11 @@
           </span>
         </el-col>
         <el-col :span="6">
-          <!-- 选中标签配置存在且选择了列表点数据 -->
+          <!-- 选中树节点有标签配置存在  且选择了列表点数据 -->
           <el-button type="primary" @click="onDraw" :disabled="!currentTarget.gisLabelConfig || table.data.length === 0"
             >生成标签</el-button
           >
-          <!-- 删除的是左侧选中目标节点数据 -->
+          <!-- 删除的是左侧选中目标节点数据（针对绘制的面删除） -->
           <el-button type="primary" @click="onDelete" :disabled="!currentTarget.coordinates">删除标签</el-button>
         </el-col>
       </el-row>
@@ -73,7 +66,7 @@
         </el-table>
       </div>
     </div>
-    <!-- 选择设备弹框给列表增加选项（重新实现） -->
+    <!-- 选择设备弹框给列表增加线选项 -->
     <el-dialog
       title="选择设备"
       v-model="dialogVisible"
@@ -258,7 +251,7 @@ const onDelete = () => {
     .catch(() => {});
 };
 
-// 生成标签(重点看如何根据选中的线和距离生成面的坐标点数据结构)
+// 生成标签：根据线坐标及缓冲距离生成缓冲面
 const drawHandler = () => {
   const { id, assetId, code, name, assetModel, associationType, layer, type, gisLabelConfig } = currentTarget.value;
   // 面（线数组组合） [[[],[]]]
@@ -289,31 +282,29 @@ const drawHandler = () => {
   });
 
   // 缓冲单面的坐标数据处理
-
   let bufferDistance = Number(props.distance);
   if (!bufferDistance) {
     ElMessage.warning("请设置缓冲距离");
     return;
   }
 
-  // 创建一个空的要素集合
-  let features: any = [];
+  // 创建一个空的缓冲要素集合
+  let bufferFeatures: any = [];
   // 遍历每条线并执行缓冲操作
   coordinates.forEach(function (coords) {
     let line = turf.lineString(coords);
-    let bufferedLine = turf.buffer(line, bufferDistance, { units: "meters" }); // 根据需要设置单位
-    features.push(bufferedLine);
+    let bufferedLine = turf.buffer(line, bufferDistance, { units: "meters" });
+    bufferFeatures.push(bufferedLine);
   });
 
   let mergedPolygon: any;
-
-  if (features.length === 1) {
-    mergedPolygon = turf.getCoords(features[0]); // 将单条线转换为多边形
-  } else if (features.length > 1) {
-    let unionedFeature: any = turf.union(features[0], features[1]); // 合并前两个要素
+  if (bufferFeatures.length === 1) {
+    mergedPolygon = turf.getCoords(bufferFeatures[0]); // 将单条线转换为多边形
+  } else if (bufferFeatures.length > 1) {
+    let unionedFeature: any = turf.union(bufferFeatures[0], bufferFeatures[1]); // 合并前两个要素
     // 循环合并剩余的要素
-    for (let i = 2; i < features.length; i++) {
-      let mergedResult = turf.union(unionedFeature, features[i]);
+    for (let i = 2; i < bufferFeatures.length; i++) {
+      let mergedResult = turf.union(unionedFeature, bufferFeatures[i]);
       unionedFeature = mergedResult;
     }
     mergedPolygon = unionedFeature;

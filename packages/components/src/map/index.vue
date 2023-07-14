@@ -110,6 +110,13 @@ const state = reactive({
       isShow: false,
       visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/imgLegend.vue")))
+    },
+    {
+      icon: "iconfont icon-complex-device",
+      label: "白名单",
+      isShow: false,
+      visible: true,
+      component: shallowRef(defineAsyncComponent(() => import("./components/whiteList.vue")))
     }
   ]
 });

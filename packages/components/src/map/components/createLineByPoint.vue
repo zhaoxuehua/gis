@@ -3,14 +3,7 @@
   <div class="quick-create-main">
     <div class="side-tree">
       <div class="search-bar">
-        <el-input
-          placeholder="输入关键字进行过滤"
-          v-model="state.filterText"
-          clearable
-          @keyup.enter="treeSearch"
-          class="navigation-tree-content-filter"
-        >
-        </el-input>
+        <el-input placeholder="输入关键字进行过滤" v-model="state.filterText" clearable @keyup.enter="treeSearch"> </el-input>
       </div>
       <div class="tree-content">
         <el-tree

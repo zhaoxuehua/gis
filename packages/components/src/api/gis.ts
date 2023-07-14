@@ -61,3 +61,8 @@ export function getEquipListByLine(id: number) {
 export function getEquipListByPolygon(id: number) {
   return request.get(`/api/gis-service/equip/2DGis/label/line/getByAssert/${id}`);
 }
+
+// 获取白名单列表
+// 编辑白名单
+
+// 新增白名单

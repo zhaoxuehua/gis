@@ -1,3 +1,4 @@
+<!-- 线、点缓冲生成面（后端做过滤逻辑） -->
 <template>
   <div>
     <el-form :model="query.params">
