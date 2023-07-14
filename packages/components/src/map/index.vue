@@ -225,7 +225,7 @@ const initMap = async (mapId: string | number) => {
       scaleLine: controls.includes("scaleLine"), // 比例尺控件  scaleLine
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
-      legendIds: originalData.displayLegendIds // 图例 string
+      displayLegend: originalData.displayLegend // 图例[]
     };
 
     // 全屏控件

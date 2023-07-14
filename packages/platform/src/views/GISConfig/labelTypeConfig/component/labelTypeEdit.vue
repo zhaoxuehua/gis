@@ -508,6 +508,9 @@ const onReferenceChange = (equipType: { [key: string]: any }, equipAttribute: { 
       selectedValue
     });
     form.value.referenceValueReal = bindValue;
+  } else {
+    form.value.attributeId = null;
+    form.value.attribute = null;
   }
 };
 

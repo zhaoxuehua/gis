@@ -22,24 +22,19 @@
 </template>
 <script lang="ts" setup>
 import { computed, onMounted } from "vue";
-import { useGisStore } from "@/stores/modules/gis";
 import type { VisualMap } from "../type";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null
 });
 const emits = defineEmits(["onClose"]);
-const gisStore = useGisStore();
 const infoList = computed(() => {
-  let { legendIds } = props?.map?.defaultOptions || {};
-  if (legendIds) {
-    let legendIdArray = legendIds.split(",") || [];
-    let imgList = legendIdArray.map((item: string) => {
-      let legendList = gisStore.imgLegendList || [];
-      let legendObj = legendList.find((obj: { [key: string]: any }) => obj?.legendPath == item);
+  let { displayLegend } = props?.map?.defaultOptions || {};
+  if (displayLegend && displayLegend?.length) {
+    let imgList = displayLegend.map((item: { [key: string]: any }) => {
       return {
-        name: legendObj?.legendName,
-        src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${item}`
+        name: item?.legendName,
+        src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${item.legendPath}`
       };
     });
     return imgList;
@@ -53,9 +48,7 @@ const onClose = () => {
   emits("onClose", 3);
 };
 
-onMounted(() => {
-  gisStore.getLegendList();
-});
+onMounted(() => {});
 </script>
 
 <style lang="scss" scoped>

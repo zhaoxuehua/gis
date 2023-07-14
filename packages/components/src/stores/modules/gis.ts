@@ -3,7 +3,6 @@ import { cloneDeep } from "lodash";
 import { ElMessage } from "element-plus";
 import piniaPersistConfig from "@/config/piniaPersist";
 import { getGisCustomTree } from "@/api/gis.js";
-import { getLegendConfigList } from "@/api/visconfig.js";
 
 export const useGisStore = defineStore({
   id: "gis",
@@ -12,8 +11,7 @@ export const useGisStore = defineStore({
     relationMap: {}, // 关联关系
     sourceCode: "",
     isDynamicLine: false, // 线环闪烁维护字段
-    imgIndex: 0, // 动画点图片索引
-    imgLegendList: [] // 图例列表数据的存储（用于获取地图图例名称）
+    imgIndex: 0 // 动画点图片索引
   }),
   actions: {
     // 导航树及关联关系
@@ -28,18 +26,6 @@ export const useGisStore = defineStore({
             this.relationMap = relationMap;
           } else {
             ElMessage.error("接口异常");
-          }
-        },
-        (err: any) => {
-          console.warn(err);
-        }
-      );
-    },
-    getLegendList() {
-      getLegendConfigList("?pageSize=10000&pageNumber=1", { legendName: "" }).then(
-        (res: any) => {
-          if (res?.data?.items) {
-            this.imgLegendList = res.data.items;
           }
         },
         (err: any) => {

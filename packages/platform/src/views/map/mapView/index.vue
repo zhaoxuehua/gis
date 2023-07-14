@@ -1,9 +1,9 @@
 <template>
   <div class="map-view">
     <ag-map :config="config" v-if="config.id">
-      <template #customContent>
+      <!-- <template #customContent>
         <div style="height: 50px">111111111111自定义</div>
-      </template>
+      </template> -->
     </ag-map>
   </div>
 </template>

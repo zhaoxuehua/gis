@@ -86,7 +86,7 @@
               v-for="(item, index) in legendIdsList.data"
               :key="index"
               :label="item.legendName"
-              :value="item.legendPath"
+              :value="item.id"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -124,6 +124,7 @@ import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
 import { addMapParams, editMapParams, getLayerList, getLabelTypeList, getLegendConfigList } from "@/api/visconfig.js";
+import { GIS_CONTROLS } from "@/constant/gisConstant";
 
 interface MapParamsForm {
   id?: number;
@@ -138,7 +139,7 @@ interface MapParamsForm {
   displayLabelInfoIds: number[] | string;
   displayLayerIds: number[] | string;
   displayControlIds: any;
-  displayLegendIds: string[] | string;
+  displayLegendIds: number[] | string;
   normalUrl: string;
   sateUrl: string;
   overlayUrl: string;
@@ -256,7 +257,7 @@ const openDialog = (row?: { [key: string]: any }) => {
     // 控件
     form.value.displayControlIds = row.displayControlIds ? row.displayControlIds.split(",") : [];
     // 图例
-    form.value.displayLegendIds = row.displayLegendIds ? row.displayLegendIds.split(",") : [];
+    form.value.displayLegendIds = row.displayLegendIds ? row.displayLegendIds.split(",").map((id: string) => Number(id)) : [];
   } else {
     state.dialogType = 0;
     form.value = { ...defaultParam };
@@ -327,64 +328,14 @@ const controlList = ref<{
     name: string;
   }>;
 }>({
-  data: [
-    {
-      code: "zoom",
-      name: "显示缩放控件"
-    },
-    {
-      code: "fullScreen",
-      name: "显示全屏控件"
-    },
-
-    {
-      code: "scaleLine",
-      name: "显示比例尺控件"
-    },
-    {
-      code: "showOverlay",
-      name: "显示路网叠加层"
-    },
-    {
-      code: "mapTypeSwitch",
-      name: "显示地图类型控件"
-    },
-    {
-      code: "navigationTree",
-      name: "显示导航树控件"
-    },
-    {
-      code: "tagTree",
-      name: "显示标签树控件"
-    },
-    {
-      code: "search",
-      name: "显示搜索控件"
-    },
-    {
-      code: "quickCreate",
-      name: "显示快速绘制控件"
-    },
-    {
-      code: "toolBox",
-      name: "显示工具箱控件"
-    },
-    {
-      code: "tagSelection",
-      name: "显示标签筛选控件"
-    },
-    {
-      code: "imgLegend",
-      name: "显示图例控件"
-    }
-  ]
+  data: GIS_CONTROLS
 });
 
 // 图例列表
 const legendIdsList = ref<{
   data: Array<{
     legendName: string;
-    legendPath: string;
+    id: number;
   }>;
   fetchData: Function;
 }>({

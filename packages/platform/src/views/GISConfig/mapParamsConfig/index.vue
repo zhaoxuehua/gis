@@ -101,7 +101,10 @@
         {{ scope.row.displayLayer?.map((item: any) => item?.name).join(",") }}
       </template>
       <template #displayControlIds="scope">
-        {{ scope.row.displayControlIds?.map((item: any) => item?.name).join(",") }}
+        {{ displayDisplayControlIds(scope.row.displayControlIds) }}
+      </template>
+      <template #displayLegend="scope">
+        {{ scope.row.displayLegend?.map((item: any) => item?.legendName).join(",") }}
       </template>
     </DetailDialog>
   </div>
@@ -110,6 +113,7 @@
 <script lang="ts" setup name="LayerConfig">
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { GIS_CONTROLS } from "@/constant/gisConstant";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import { getMapParamsList, deleteMapParamsCheck, deleteMapParams, getMapParamsDetail } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
@@ -256,6 +260,18 @@ const handleSelect = async () => {
   table.value.data = res.data.items;
   table.value.total = res.data.totalNum;
   table.value.loading = false;
+};
+
+const displayDisplayControlIds = (controlIds: string | null) => {
+  if (controlIds) {
+    let controlIdsArr: any = controlIds.split(",");
+    controlIdsArr = controlIdsArr.map((code: string) => {
+      let obj = GIS_CONTROLS.find((item: { [key: string]: any }) => item.code == code);
+      return obj?.name;
+    });
+    return controlIdsArr.join(",");
+  }
+  return "";
 };
 
 onMounted(() => {

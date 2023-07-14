@@ -109,7 +109,7 @@ export const GIS_MAPPARAMS_DETAIL = [
   },
   {
     label: "显示图例",
-    name: "displayLegendIds",
+    name: "displayLegend",
     slot: true
   },
   {

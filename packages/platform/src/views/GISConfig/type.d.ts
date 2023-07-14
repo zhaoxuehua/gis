@@ -17,7 +17,7 @@ export type LabelType = {
   name: string;
   layerConfigId: number | string;
   attribute: { [key: string]: any } | null;
-  attributeId: number;
+  attributeId: number | null;
   equipType: { [key: string]: any } | null;
   equipTypeId: number;
   isDefaultDisplayLabelName: boolean;
