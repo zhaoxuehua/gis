@@ -58,7 +58,7 @@
       <el-table-column label="创建时间" prop="createdOn" sortable="custom"></el-table-column>
       <el-table-column prop="path" label="操作" width="200" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link plain @click="table.onEdit(scope.row, 'detail')">
+          <el-button type="primary" link plain @click="table.onEdit(scope.row, 'detail')">
             {{ "详情" }}
           </el-button>
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LAYERCONFIG_EDIT">

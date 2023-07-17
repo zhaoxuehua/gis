@@ -60,13 +60,19 @@
             </template>
           </el-table-column>
         </el-table>
-        <Pagination
-          v-if="table.data?.length"
-          :total="table.total"
-          v-model:page="query.pageNo"
-          v-model:limit="query.pageSize"
-          @pagination="query.getPagination"
-        ></Pagination>
+        <div class="pagination-container" v-if="table.data?.length">
+          <el-pagination
+            :background="true"
+            v-model:current-page="query.pageNo"
+            v-model:page-size="query.pageSize"
+            :page-sizes="[10, 20, 30, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="table.total"
+            :small="true"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -192,6 +198,14 @@ const query = ref<{ [key: string]: any }>({
     table.value.getTableData();
   }
 });
+
+const handleSizeChange = (val: any) => {
+  query.value.getPagination({ page: query.value.pageNo, limit: val });
+};
+
+const handleCurrentChange = (val: any) => {
+  query.value.getPagination({ page: val, limit: query.value.pageSize });
+};
 
 const currentTarget = ref<{ [key: string]: any }>({}); // 当前选中左侧树是设备节点且是面的信息（选中对象及坐标）
 
@@ -435,6 +449,20 @@ const selectable = (row: any) => {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
+      .pagination-container {
+        padding: 32px 16px;
+      }
+      ::v-deep(.el-pagination .btn-next .el-icon),
+      ::v-deep(.el-pagination .btn-prev .el-icon) {
+        display: block;
+        width: auto;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .el-pagination {
+        position: absolute !important;
+        right: 0;
+      }
     }
   }
   .layer-config-table {

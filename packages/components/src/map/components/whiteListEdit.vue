@@ -112,7 +112,6 @@ const onConfirm = () => {
             message: res.msg
           });
         }
-        console.log(param, 1);
       } else if (state.dialogType == 1) {
         // 编辑
         const res: { [key: string]: any } = await whiteListEdit(param);

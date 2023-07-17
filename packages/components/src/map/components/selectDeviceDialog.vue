@@ -51,13 +51,19 @@
       </el-table-column>
     </el-table>
 
-    <Pagination
-      v-if="table.data?.length"
-      :total="table.total"
-      v-model:page="query.params.pageNumber"
-      v-model:limit="query.params.pageSize"
-      @pagination="query.getPagination"
-    ></Pagination>
+    <div class="pagination-container" v-if="table.data?.length">
+      <el-pagination
+        :background="true"
+        v-model:current-page="query.params.pageNumber"
+        v-model:page-size="query.params.pageSize"
+        :page-sizes="[10, 20, 30, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="table.total"
+        :small="true"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -88,6 +94,14 @@ const query = ref({
     table.value.getTableData();
   }
 });
+
+const handleSizeChange = (val: any) => {
+  query.value.getPagination({ page: query.value.params.pageNumber, limit: val });
+};
+
+const handleCurrentChange = (val: any) => {
+  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
+};
 
 const table = ref<TableList & { chooseList: any[] }>({
   loading: false,
@@ -155,4 +169,19 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.pagination-container {
+  padding: 32px 16px;
+}
+::v-deep(.el-pagination .btn-next .el-icon),
+::v-deep(.el-pagination .btn-prev .el-icon) {
+  display: block;
+  width: auto;
+  font-size: 12px;
+  font-weight: 700;
+}
+.el-pagination {
+  position: absolute !important;
+  right: 0;
+}
+</style>
