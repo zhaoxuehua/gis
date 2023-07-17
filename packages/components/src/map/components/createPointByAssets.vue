@@ -5,7 +5,7 @@
       <el-form :model="query.params">
         <el-row :gutter="20" class="action-bar">
           <el-col :span="10">
-            <el-form-item label="设备名称：" style="float: left; margin-right: 15px; margin-bottom: 0">
+            <el-form-item label="设备名称" style="float: left; margin-right: 15px; margin-bottom: 0">
               <el-input
                 class="action-search"
                 placeholder="请输入..."
@@ -319,6 +319,9 @@ onMounted(() => {
       border-bottom: #dadee5 solid 1px;
       label {
         display: inline-block;
+      }
+      .action-search {
+        width: 200px;
       }
       .target-info {
         display: inline-block;

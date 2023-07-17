@@ -42,7 +42,7 @@ onMounted(() => {});
 .quick-create {
   display: flex;
   flex-direction: column;
-  width: 1100px;
+  width: 1150px;
   height: 500px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);

@@ -179,7 +179,7 @@ onMounted(() => {
 .white-list {
   display: flex;
   flex-direction: column;
-  width: 800px;
+  width: 1150px;
   height: 400px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);

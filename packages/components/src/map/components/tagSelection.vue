@@ -120,7 +120,7 @@ watch(
 .map-type {
   display: flex;
   flex-direction: column;
-  width: 450px;
+  width: 560px;
   height: 320px;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 }

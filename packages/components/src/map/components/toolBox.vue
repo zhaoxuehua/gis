@@ -357,7 +357,7 @@ onMounted(() => {});
 .tool-box {
   display: flex;
   flex-direction: column;
-  width: 450px;
+  width: 560px;
   height: 320px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
@@ -378,7 +378,7 @@ onMounted(() => {});
   }
 }
 .content-box {
-  margin-left: 20px;
+  margin: 0 20px;
   .measuring-tools {
     padding: 20px 0;
   }

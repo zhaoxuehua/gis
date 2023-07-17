@@ -72,7 +72,7 @@
     <el-dialog
       title="选择设备"
       v-model="dialogVisible"
-      width="80%"
+      width="1150px"
       :close-on-click-modal="false"
       append-to-body
       :destroy-on-close="true"

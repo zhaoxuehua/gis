@@ -12,7 +12,7 @@
           <img :src="info?.src" alt="" width="20" />
           <div>
             <el-tooltip effect="light" :content="info?.name" placement="top-start">
-              <span>{{ info?.name }}</span>
+              <span>{{ info?.name }}iophn;popppiiiiiiii</span>
             </el-tooltip>
           </div>
         </div>
@@ -55,7 +55,7 @@ onMounted(() => {});
 .legend-sub {
   display: flex;
   flex-direction: column;
-  width: 320px;
+  width: 560px;
   max-height: 320px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
@@ -63,7 +63,6 @@ onMounted(() => {});
 .title-box {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   height: 60px;
   padding: 0 20px;
@@ -78,8 +77,10 @@ onMounted(() => {});
 .imgs-box {
   display: flex;
   flex-flow: row wrap;
+  justify-content: space-between;
   width: 100%;
   max-height: 260px;
+  padding: 0 20px 20px;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -88,9 +89,9 @@ onMounted(() => {});
   flex-direction: row; /* 将方向改为横向 */
   align-items: center; /* 垂直居中显示 */
   justify-content: flex-start; /* 水平显示 */
-  width: 110px; /* 根据内容自适应宽度 */
+  width: 160px; /* 根据内容自适应宽度 */
   height: 20px;
-  margin: 10px 20px; /* 调整间距 */
+  margin-top: 20px; /* 调整间距 */
 }
 .img-div img {
   display: flex;
