@@ -28,9 +28,11 @@
                 @selection-change="equipTypeList.onSelectionChange"
                 max-height="355"
                 ref="equipTypeTableRef"
+                stripe
+                border
               >
                 <el-table-column type="selection"></el-table-column>
-                <el-table-column label="序号" type="index" width="50"></el-table-column>
+                <el-table-column label="序号" type="index" width="60"></el-table-column>
                 <el-table-column label="设备类型编码" prop="code"></el-table-column>
                 <el-table-column label="设备类型名称" prop="name"></el-table-column>
                 <el-table-column label="创建时间" prop="createdOn"></el-table-column>

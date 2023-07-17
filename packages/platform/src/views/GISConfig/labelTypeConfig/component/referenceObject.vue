@@ -29,6 +29,8 @@
         :row-style="{ height: 32 + 'px' }"
         :cell-style="{ padding: '0px' }"
         @selection-change="table.onSelectionChange"
+        stripe
+        border
       >
         <el-table-column type="selection" v-if="table.data?.length"></el-table-column>
         <el-table-column v-for="column in table.columns" :key="column.prop" :prop="column.prop" :label="column.label">

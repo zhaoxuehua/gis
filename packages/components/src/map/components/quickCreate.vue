@@ -51,7 +51,7 @@ onMounted(() => {});
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    height: 55px;
+    height: 60px;
     padding: 0 20px;
     font-size: 16px;
     line-height: 55px;

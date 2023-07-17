@@ -80,8 +80,8 @@ watch(
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 50px;
-  padding: 0 10px;
+  height: 60px;
+  padding: 0 20px;
   background-color: var(--el-color-primary-light-8);
   span {
     font-size: 16px;
@@ -96,7 +96,7 @@ watch(
   align-items: center;
   width: 100%;
   height: 60px;
-  padding-left: 10px;
+  padding-left: 20px;
   overflow: auto;
 }
 </style>

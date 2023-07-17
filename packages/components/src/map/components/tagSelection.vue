@@ -129,8 +129,8 @@ watch(
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 50px;
-  padding: 0 10px;
+  height: 60px;
+  padding: 0 20px;
   background-color: var(--el-color-primary-light-8);
   span {
     font-size: 16px;
@@ -144,8 +144,8 @@ watch(
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
-  height: 250px;
-  padding-left: 10px;
+  height: 260px;
+  padding: 0 20px;
   overflow: auto;
   .all-tag {
     margin-top: 10px;

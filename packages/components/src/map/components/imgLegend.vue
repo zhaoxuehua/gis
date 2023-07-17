@@ -57,7 +57,7 @@ onMounted(() => {});
   flex-direction: column;
   width: 320px;
   max-height: 320px;
-  overflow-y: auto;
+  overflow: hidden;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 }
 .title-box {
@@ -65,8 +65,8 @@ onMounted(() => {});
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 50px;
-  padding: 0 10px;
+  height: 60px;
+  padding: 0 20px;
   background-color: var(--el-color-primary-light-8);
   span {
     font-size: 16px;
@@ -79,17 +79,18 @@ onMounted(() => {});
   display: flex;
   flex-flow: row wrap;
   width: 100%;
-  overflow-x: hidden; /* 隐藏横向滚动条 */
-  overflow-y: auto; /* 出现纵向滚动条 */
+  max-height: 260px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .img-div {
   display: flex;
   flex-direction: row; /* 将方向改为横向 */
   align-items: center; /* 垂直居中显示 */
   justify-content: flex-start; /* 水平显示 */
-  width: 130px; /* 根据内容自适应宽度 */
+  width: 110px; /* 根据内容自适应宽度 */
   height: 20px;
-  margin: 10px; /* 调整间距 */
+  margin: 10px 20px; /* 调整间距 */
 }
 .img-div img {
   display: flex;

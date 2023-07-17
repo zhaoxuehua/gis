@@ -367,8 +367,8 @@ onMounted(() => {});
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 50px;
-  padding: 0 10px;
+  height: 60px;
+  padding: 0 20px;
   background-color: var(--el-color-primary-light-8);
   span {
     font-size: 16px;
@@ -378,9 +378,9 @@ onMounted(() => {});
   }
 }
 .content-box {
-  margin-left: 10px;
+  margin-left: 20px;
   .measuring-tools {
-    padding: 20px;
+    padding: 20px 0;
   }
   .measuring-title {
     margin-bottom: 10px;

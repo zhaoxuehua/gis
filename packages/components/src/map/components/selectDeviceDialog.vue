@@ -30,6 +30,8 @@
       :cell-style="{ padding: '0px' }"
       @selection-change="table.onSelectionChange"
       max-height="360"
+      stripe
+      border
     >
       <el-table-column type="selection" :selectable="selectable"></el-table-column>
       <el-table-column label="设备编码" prop="code"> </el-table-column>
@@ -171,17 +173,8 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .pagination-container {
-  padding: 32px 16px;
-}
-::v-deep(.el-pagination .btn-next .el-icon),
-::v-deep(.el-pagination .btn-prev .el-icon) {
-  display: block;
-  width: auto;
-  font-size: 12px;
-  font-weight: 700;
-}
-.el-pagination {
-  position: absolute !important;
-  right: 0;
+  padding: 0;
+  margin: 0;
+  margin-top: 20px;
 }
 </style>

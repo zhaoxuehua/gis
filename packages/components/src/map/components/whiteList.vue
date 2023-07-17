@@ -179,9 +179,9 @@ onMounted(() => {
 .white-list {
   display: flex;
   flex-direction: column;
-  width: 700px;
-  height: 320px;
-  overflow-y: auto;
+  width: 800px;
+  height: 400px;
+  overflow: hidden;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 }
 .title-box {
@@ -189,8 +189,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 50px;
-  padding: 0 10px;
+  height: 60px;
+  padding: 0 20px;
   background-color: var(--el-color-primary-light-8);
   span {
     font-size: 16px;
@@ -201,7 +201,7 @@ onMounted(() => {
 }
 .content-box {
   flex: 1;
-  padding: 10px;
+  padding: 20px;
   .operate-area {
     display: flex;
     flex-direction: row;
@@ -213,7 +213,7 @@ onMounted(() => {
       align-items: center;
       justify-content: flex-end;
       span {
-        padding-right: 10px;
+        padding-right: 20px;
         color: #606266;
       }
     }
@@ -224,13 +224,15 @@ onMounted(() => {
       background-color: #f7f7fa;
     }
     .table-area {
-      height: 140px;
+      height: 200px;
       overflow-y: auto;
     }
+    .pagination-container {
+      padding: 0;
+      margin: 0;
+      margin-top: 20px;
+    }
   }
-}
-.pagination-container {
-  padding: 32px 16px;
 }
 ::v-deep(.el-pagination .btn-next .el-icon),
 ::v-deep(.el-pagination .btn-prev .el-icon) {
@@ -238,9 +240,5 @@ onMounted(() => {
   width: auto;
   font-size: 12px;
   font-weight: 700;
-}
-.el-pagination {
-  position: absolute !important;
-  right: 0;
 }
 </style>

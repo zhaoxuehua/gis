@@ -45,6 +45,8 @@
           :row-style="{ height: 32 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="table.onSelectionChange"
+          stripe
+          border
         >
           <el-table-column type="selection" :selectable="selectable"></el-table-column>
           <el-table-column label="设备名称" prop="name"></el-table-column>
@@ -450,18 +452,9 @@ const selectable = (row: any) => {
       padding: 20px;
       overflow-y: auto;
       .pagination-container {
-        padding: 32px 16px;
-      }
-      ::v-deep(.el-pagination .btn-next .el-icon),
-      ::v-deep(.el-pagination .btn-prev .el-icon) {
-        display: block;
-        width: auto;
-        font-size: 12px;
-        font-weight: 700;
-      }
-      .el-pagination {
-        position: absolute !important;
-        right: 0;
+        padding: 0;
+        margin: 0;
+        margin-top: 20px;
       }
     }
   }

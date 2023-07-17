@@ -23,9 +23,11 @@
           @selection-change="attributeList.onSelectionChange"
           ref="attributeTableRef"
           max-height="400"
+          stripe
+          border
         >
           <el-table-column type="selection"></el-table-column>
-          <el-table-column label="序号" type="index" width="50"></el-table-column>
+          <el-table-column label="序号" type="index" width="60"></el-table-column>
           <el-table-column label="属性编码" prop="name"></el-table-column>
           <el-table-column label="属性名称" prop="label"></el-table-column>
           <el-table-column label="属性值" width="210">

@@ -8,7 +8,7 @@
     <div class="content">
       <el-form :inline="false" :model="form" label-width="100px" :rules="rulesForm" ref="refForm">
         <el-form-item label="标签编码" prop="code">
-          <el-input placeholder="请输入..." v-model="form.code" disabled />
+          <el-input placeholder="请输入..." v-model="form.code" readonly />
         </el-form-item>
 
         <el-form-item label="标签名称" prop="name">
@@ -16,17 +16,17 @@
         </el-form-item>
 
         <el-form-item label="所属图层" prop="refLayer.name">
-          <el-input placeholder="请输入..." v-model="form.refLayer.name" disabled />
+          <el-input placeholder="请输入..." v-model="form.refLayer.name" readonly />
         </el-form-item>
 
         <el-form-item label="数据类型" prop="labelType.name">
-          <el-input placeholder="请输入..." v-model="labelDataType" disabled />
+          <el-input placeholder="请输入..." v-model="labelDataType" readonly />
         </el-form-item>
 
         <el-form-item label="坐标点" prop="labelData.coordinates">
-          <div class="form-coordinate">
-            <el-input placeholder="请输入..." v-model="form.labelData.coordinates" disabled />
-          </div>
+          <!-- <div class="form-coordinate"> -->
+          <el-input placeholder="请输入..." v-model="form.labelData.coordinates" readonly />
+          <!-- </div> -->
         </el-form-item>
 
         <!-- 点 -->
@@ -72,7 +72,7 @@
         <!-- 线 -->
         <template v-if="['2'].includes(form.labelType.dataType)">
           <el-form-item label="矢量路径" prop="labelData.style.lineVector.path">
-            <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.path" clearable disabled />
+            <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.path" clearable readonly />
           </el-form-item>
 
           <el-form-item label="矢量宽度" prop="labelData.style.lineVector.width">
@@ -103,7 +103,7 @@
           </el-form-item>
 
           <el-form-item label="字体" prop="font.fontFamily">
-            <el-select v-model="form.font.fontFamily" placeholder="请选择..." clearable>
+            <el-select v-model="form.font.fontFamily" placeholder="请选择..." clearable style="width: 213px">
               <el-option label="微软雅黑" value="MicrosoftYaHei"></el-option>
               <el-option label="宋体" value="SimSun"></el-option>
             </el-select>

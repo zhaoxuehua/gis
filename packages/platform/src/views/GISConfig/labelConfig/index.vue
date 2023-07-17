@@ -48,9 +48,11 @@
       :cell-style="{ padding: '0px' }"
       @sort-change="sortChange"
       @selection-change="table.onSelectionChange"
+      stripe
+      border
     >
       <el-table-column type="selection"></el-table-column>
-      <el-table-column label="序号" type="index" width="50"></el-table-column>
+      <el-table-column label="序号" type="index" width="60"></el-table-column>
       <el-table-column label="标签编码" prop="code" sortable="custom"></el-table-column>
       <el-table-column label="标签名称" prop="name" sortable="custom"></el-table-column>
       <el-table-column label="标签类型" prop="labelType" sortable="custom">
