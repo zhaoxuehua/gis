@@ -60,3 +60,24 @@ export function deleteLabelSingle(id: number) {
 export function getEquipListByPolygon(id: number) {
   return request.get(`/api/gis-service/equip/2DGis/label/line/getByAssert/${id}`);
 }
+
+// 白名单
+// 获取白名单列表
+export function getWhiteList(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
+}
+
+// 编辑白名单
+export function whiteListEdit(params: object) {
+  return request.put(`/api/equipment-service/equip/equip`, params);
+}
+
+// 新增白名单
+export function whiteListAdd(params: object) {
+  return request.post(`/api/equipment-service/equip/equip`, params);
+}
+
+// 删除白名单
+export function whiteListDelete(id: number) {
+  return request.delete(`/api/equipment-service/equip/equip/${id}`);
+}

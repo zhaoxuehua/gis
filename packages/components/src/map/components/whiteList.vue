@@ -9,7 +9,7 @@
     <div class="content-box">
       <div class="operate-area">
         <div class="left-operate">
-          <el-button type="primary">创建</el-button>
+          <el-button type="primary" @click="onAdd">创建</el-button>
           <el-button type="primary" @click="onRefresh">刷新</el-button>
         </div>
         <div class="right-operate">
@@ -50,7 +50,7 @@
           </el-table-column>
         </el-table>
         <Pagination
-          v-if="table.data?.length"
+          v-show="table.data?.length"
           :total="table.total"
           v-model:page="query.params.pageNumber"
           v-model:limit="query.params.pageSize"
@@ -66,8 +66,8 @@ import { onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { handleParam } from "@/utils/common.js";
 import type { VisualMap, TableList } from "../type";
-import { deviceEquipList } from "@/api/device";
 import WhiteListEdit from "./whiteListEdit.vue";
+import { getWhiteList, whiteListDelete } from "@/api/gis.js";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null
@@ -102,7 +102,7 @@ const query = ref({
 
 const onRefresh = () => {
   query.value.params.code = "";
-  query.value.onQuery();
+  querySearch();
 };
 
 const table = ref<TableList>({
@@ -112,7 +112,7 @@ const table = ref<TableList>({
   data: [],
   getTableData: async () => {
     table.value.loading = true;
-    const res: { [key: string]: any } = await deviceEquipList(...(handleParam(query.value.params) as [string, object]));
+    const res: { [key: string]: any } = await getWhiteList(...(handleParam(query.value.params) as [string, object]));
     if (res.items) {
       table.value.data = res.items;
       table.value.total = res.totalNum;
@@ -133,19 +133,23 @@ const table = ref<TableList>({
         type: "warning"
       })
         .then(async () => {
-          // table.value.loading = true;
-          // const res: { [key: string]: any } = await deleteLabel(row?.id);
-          // if (res.code == 200) {
-          //   ElMessage.success("删除成功");
-          //   table.value.getTableData();
-          // } else {
-          //   ElMessage.error(res.msg);
-          // }
+          table.value.loading = true;
+          const res: { [key: string]: any } = await whiteListDelete(row?.id);
+          if (res.code == 200) {
+            ElMessage.success("删除成功");
+            table.value.getTableData(); // 刷新列表
+          } else {
+            ElMessage.error(res.msg);
+          }
         })
         .catch(() => {});
     }
   }
 });
+
+const onAdd = () => {
+  whiteListEditRef.value?.openDialog();
+};
 
 const querySearch = () => {
   query.value.params.pageNumber = 1;

@@ -38,7 +38,7 @@ class RequestHttp {
         // 当前请求不需要显示 loading，在 api 服务中通过指定的第三个参数: { noLoading: true } 来控制
         // config.noLoading || showFullScreenLoading();
         if (config.headers && typeof config.headers.set === "function") {
-          config.headers.set("agioe_sso_sessionid", "26_0de83418a7de4e2eae82fc3963c8a65c");
+          config.headers.set("agioe_sso_sessionid", "26_b727ba2da9f04bf3bd33295a896c2265");
         }
         return config;
       },
