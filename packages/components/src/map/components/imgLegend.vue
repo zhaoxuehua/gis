@@ -12,7 +12,7 @@
           <img :src="info?.src" alt="" width="20" />
           <div>
             <el-tooltip effect="light" :content="info?.name" placement="top-start">
-              <span>{{ info?.name }}iophn;popppiiiiiiii</span>
+              <span>{{ info?.name }}</span>
             </el-tooltip>
           </div>
         </div>
@@ -63,6 +63,7 @@ onMounted(() => {});
 .title-box {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
   height: 60px;
   padding: 0 20px;
@@ -89,7 +90,7 @@ onMounted(() => {});
   flex-direction: row; /* 将方向改为横向 */
   align-items: center; /* 垂直居中显示 */
   justify-content: flex-start; /* 水平显示 */
-  width: 160px; /* 根据内容自适应宽度 */
+  width: 250px; /* 根据内容自适应宽度 */
   height: 20px;
   margin-top: 20px; /* 调整间距 */
 }
@@ -106,7 +107,6 @@ onMounted(() => {});
   flex-direction: row; /* 将方向改为横向 */
   align-items: center;
   justify-content: flex-start;
-  width: 180px;
   height: 20px;
   overflow: hidden;
   white-space: nowrap; /* 添加此属性，防止文本换行 */

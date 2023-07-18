@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-card class="rule-instance-card">
+    <el-card class="legend-card">
       <el-container>
         <el-header class="header-card">
           <div class="title">
@@ -85,16 +85,15 @@ const onReSearch = () => {
 </script>
 
 <style lang="scss" scoped>
-.rule-instance-card {
+.legend-card {
   width: 200px;
-  height: 200px;
+  height: 230px;
   .header-card {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 30px;
     .title {
-      width: 200px;
       margin: auto;
       overflow: hidden;
       font-weight: bold;
@@ -105,8 +104,9 @@ const onReSearch = () => {
   .main-card {
     position: relative;
     display: flex;
-    height: 130px;
-    margin-top: 3px;
+    height: 150px;
+    padding: 20px;
+    margin-top: 5px;
     overflow: hidden;
     cursor: pointer;
     border: 1px dashed #d9d9d9;

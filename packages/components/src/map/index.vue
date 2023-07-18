@@ -347,7 +347,7 @@ const initMap = async (mapId: string | number) => {
     const { labelType, layersIds } = defaultOptions;
     labelType.forEach((item: LabelType) => {
       if (layersIds.split(",").includes(String(item.layerConfigId))) {
-        if (item.labelTypeImagePath) {
+        if (item.labelTypeImagePath || item?.labelLegendImagePath) {
           // 标签类型筛选时直接使用拼接的icon(点的肯定有，其他配置了图例labelLegendImagePath有icon)
           if (item?.labelLegendImagePath) {
             item.iconUrl = `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${item.labelLegendImagePath}`;

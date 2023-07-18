@@ -37,7 +37,7 @@
         </Auth>
       </div>
     </div>
-    <div class="rule-instance-table">
+    <div class="legend-library-table">
       <Card v-for="(item, index) in table.data" :key="index" :info="item" @success-add="query.onQuery"></Card>
     </div>
     <Pagination
@@ -142,7 +142,7 @@ onMounted(() => {
 .legend-library-config .inline-input {
   width: 100%;
 }
-.rule-instance-table {
+.legend-library-table {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;

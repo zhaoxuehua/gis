@@ -407,7 +407,7 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
     form.value = { ...defaultParam };
   }
   if (typeof form.value.labelTypeImagePath == "string") {
-    form.value.labelTypeImagePath = form.value.labelTypeImagePath?.split(",");
+    form.value.labelTypeImagePath = form.value.labelTypeImagePath ? form.value.labelTypeImagePath?.split(",") : [];
   } else {
     form.value.labelTypeImagePath = [];
   }

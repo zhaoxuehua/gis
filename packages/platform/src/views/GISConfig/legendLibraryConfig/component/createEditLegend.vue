@@ -3,7 +3,7 @@
     <el-dialog
       :title="['创建图例', '编辑图例'][state.dialogType]"
       v-model="state.open"
-      width="520px"
+      width="560px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
