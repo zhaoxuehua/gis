@@ -3,7 +3,7 @@
     <el-dialog
       :title="['创建标签类型', '编辑标签类型', '标签类型详情'][state.dialogType]"
       v-model="state.open"
-      width="850px"
+      width="1150px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
@@ -38,7 +38,11 @@
           <el-input placeholder="请输入..." v-model="form.factor" clearable :disabled="state.dialogType == 2" />
         </el-form-item>
         <el-form-item label="默认显示标签名称" prop="isDefaultDisplayLabelName">
-          <el-checkbox v-model="form.isDefaultDisplayLabelName" :disabled="state.dialogType == 2"></el-checkbox>
+          <el-checkbox
+            v-model="form.isDefaultDisplayLabelName"
+            :disabled="state.dialogType == 2"
+            style="width: 200px"
+          ></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
           <el-select
@@ -92,9 +96,8 @@
           </el-form-item>
           <!-- 点类型下轨迹的设置（绘制轨迹时可以找到所属类型拿轨迹设置及图层信息） -->
           <el-form-item label="轨迹设置" prop="isTrackSetting">
-            <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" />
+            <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" style="width: 200px" />
           </el-form-item>
-          <div></div>
           <el-form-item label="轨迹模式" prop="trackMode" v-if="form.isTrackSetting">
             <el-select v-model="form.trackMode" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
               <el-option
@@ -171,7 +174,7 @@
             <el-input placeholder="请输入..." v-model="form.content" clearable :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="是否加粗" prop="isBold">
-            <el-checkbox v-model="form.isBold" :disabled="state.dialogType == 2"></el-checkbox>
+            <el-checkbox v-model="form.isBold" :disabled="state.dialogType == 2" style="width: 200px"></el-checkbox>
           </el-form-item>
           <el-form-item label="字体" prop="fontType">
             <el-select v-model="form.fontType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
@@ -179,11 +182,11 @@
               <el-option label="宋体" value="SimSun"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="字体颜色" prop="fontColor">
-            <el-color-picker v-model="form.fontColor" show-alpha :disabled="state.dialogType == 2" />
-          </el-form-item>
           <el-form-item label="字体大小" prop="fontSize">
             <el-input type="number" v-model="form.fontSize" :disabled="state.dialogType == 2" />
+          </el-form-item>
+          <el-form-item label="字体颜色" prop="fontColor">
+            <el-color-picker v-model="form.fontColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="边框线宽" prop="borderWidth">
             <el-input type="number" v-model="form.borderWidth" :disabled="state.dialogType == 2" />

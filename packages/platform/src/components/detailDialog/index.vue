@@ -36,7 +36,7 @@ interface DeatilDialogProps {
 const props = withDefaults(defineProps<DeatilDialogProps>(), {
   constant: "",
   title: "",
-  width: 667
+  width: 560
 });
 const state = reactive({
   open: false,
