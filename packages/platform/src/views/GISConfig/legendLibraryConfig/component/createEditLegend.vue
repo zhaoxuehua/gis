@@ -22,7 +22,7 @@
             class="avatar-uploader"
           >
             <div v-if="form.legendPath">
-              <img class="avatar" :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${form.legendPath}`" alt="" />
+              <img class="avatar" :src="`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${form.legendPath}`" alt="" />
             </div>
             <Icon v-else src="Plus" class="avatar-uploader-icon" :size="28"></Icon>
           </el-upload>

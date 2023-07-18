@@ -83,8 +83,8 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 40px;
-    padding: 0 15px;
+    height: 60px;
+    padding: 0 20px;
     background-color: var(--el-color-primary-light-8);
     border-bottom: #e0e0e0 solid 1px;
     span {
@@ -96,10 +96,10 @@ defineExpose({
   }
   .map-popup-body {
     flex: 1;
-    padding: 15px 0;
+    padding: 20px 0;
     overflow: hidden;
     span {
-      padding: 15px;
+      padding: 20px;
     }
   }
 }

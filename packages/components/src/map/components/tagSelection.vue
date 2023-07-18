@@ -120,7 +120,7 @@ watch(
 .map-type {
   display: flex;
   flex-direction: column;
-  width: 560px;
+  width: 430px;
   height: 320px;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 }
@@ -145,7 +145,7 @@ watch(
   align-items: flex-start;
   width: 100%;
   height: 260px;
-  padding: 0 20px;
+  padding: 0 20px 20px;
   overflow: auto;
   .all-tag {
     margin-top: 10px;

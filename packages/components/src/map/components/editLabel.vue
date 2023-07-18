@@ -58,7 +58,7 @@
           </el-form-item>
 
           <el-form-item label="线型" prop="labelData.style.stroke.lineDash">
-            <el-select placeholder="请选择..." v-model="form.labelData.style.stroke.lineDash" clearable>
+            <el-select placeholder="请选择..." v-model="form.labelData.style.stroke.lineDash" clearable style="width: 213px">
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
             </el-select>
@@ -134,7 +134,7 @@
           prop="labelData.style.text.placement"
           v-if="form.labelType.dataType !== '1' && form.labelType.dataType !== '6' && form.labelData.isDefaultDisplayLabelName"
         >
-          <el-select v-model="form.labelData.style.text.placement" placeholder="请选择..." clearable>
+          <el-select v-model="form.labelData.style.text.placement" placeholder="请选择..." clearable style="width: 213px">
             <el-option label="中心点标注" value="point"></el-option>
             <el-option label="沿要素边标注" value="line"></el-option>
           </el-select>
@@ -561,7 +561,7 @@ export default defineComponent({
   right: 10px;
   bottom: 50px;
   z-index: 2000;
-  width: 350px;
+  width: 360px;
   height: 500px;
   background-color: var(--background-color);
 }
@@ -570,19 +570,19 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 50px;
+  height: 60px;
   background-color: var(--el-color-primary-light-8);
 }
 .title span {
   font-size: 16px;
 }
 .tag-edit-draw .title {
-  padding: 0 10px;
+  padding: 0 20px;
 }
 .content {
   width: 100%;
-  height: calc(100% - 90px);
-  padding: 20px 20px 20px 0;
+  height: calc(100% - 110px);
+  padding: 20px 20px 0;
   overflow-y: auto;
 }
 .form-coordinate {

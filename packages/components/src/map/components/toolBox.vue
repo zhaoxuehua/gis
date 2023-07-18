@@ -105,9 +105,9 @@
         </div>
       </div>
       <!-- 轨迹动画设置 -->
-      <div class="measuring-tools" v-show="state.activeIndex == '3'">
+      <!-- <div class="measuring-tools" v-show="state.activeIndex == '3'">
         <div class="track-box"></div>
-      </div>
+      </div> -->
       <!-- 控件 -->
       <div class="measuring-tools" v-show="state.activeIndex == '4'">
         <div class="controls-box"></div>
@@ -357,7 +357,7 @@ onMounted(() => {});
 .tool-box {
   display: flex;
   flex-direction: column;
-  width: 560px;
+  width: 430px;
   height: 320px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);

@@ -1,6 +1,6 @@
 <!-- 线、点缓冲生成面（后端做过滤逻辑） -->
 <template>
-  <div>
+  <div class="main-content">
     <el-form :model="query.params">
       <el-row :gutter="20">
         <el-col :span="8">
@@ -28,7 +28,7 @@
           </el-form-item>
         </el-col>
 
-        <el-col :span="8">
+        <el-col :span="8" class="right-align">
           <el-button type="primary" @click="querySearch"><Icon src="Search"></Icon>搜索</el-button>
           <el-button type="primary" @click="onConfirm" :disabled="table.chooseList.length === 0">确认选择</el-button>
         </el-col>
@@ -190,9 +190,15 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.pagination-container {
-  padding: 0;
-  margin: 0;
-  margin-top: 20px;
+.main-content {
+  .right-align {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .pagination-container {
+    padding: 0;
+    margin: 0;
+    margin-top: 20px;
+  }
 }
 </style>

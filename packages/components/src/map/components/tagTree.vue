@@ -198,7 +198,7 @@ onMounted(() => {});
   cursor: pointer;
 }
 .tag-tree .title {
-  padding: 0 10px;
+  padding: 0 20px;
 }
 .tag-tree-content {
   height: calc(100% - 60px);

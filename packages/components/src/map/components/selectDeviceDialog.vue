@@ -15,7 +15,7 @@
           </el-form-item>
           <el-button type="primary" @click="querySearch"><Icon src="Search"></Icon>搜索</el-button>
         </el-col>
-        <el-col :span="3">
+        <el-col :span="14" class="right-align">
           <el-button type="primary" @click="onConfirm" :disabled="table.chooseList.length === 0">确认选择</el-button>
         </el-col>
       </el-row>
@@ -176,5 +176,9 @@ onMounted(() => {
   padding: 0;
   margin: 0;
   margin-top: 20px;
+}
+.right-align {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

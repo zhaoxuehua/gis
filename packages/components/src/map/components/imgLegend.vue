@@ -55,7 +55,7 @@ onMounted(() => {});
 .legend-sub {
   display: flex;
   flex-direction: column;
-  width: 560px;
+  width: 430px;
   max-height: 320px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
@@ -90,7 +90,7 @@ onMounted(() => {});
   flex-direction: row; /* 将方向改为横向 */
   align-items: center; /* 垂直居中显示 */
   justify-content: flex-start; /* 水平显示 */
-  width: 250px; /* 根据内容自适应宽度 */
+  width: 180px; /* 根据内容自适应宽度 */
   height: 20px;
   margin-top: 20px; /* 调整间距 */
 }

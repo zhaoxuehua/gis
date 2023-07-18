@@ -17,7 +17,7 @@
             </el-form-item>
             <el-button type="primary" @click="querySearch"><Icon src="Search"></Icon>搜索</el-button>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="14" class="right-align">
             <el-button type="primary" @click="onDraw" :disabled="table.chooseList.length === 0">批量生成标签</el-button>
             <el-button type="primary" @click="onDelete" :disabled="table.chooseList.length === 0">快速删除</el-button>
           </el-col>
@@ -346,6 +346,10 @@ onMounted(() => {
         margin: 0;
         margin-top: 20px;
       }
+    }
+    .right-align {
+      display: flex;
+      justify-content: flex-end;
     }
   }
 }

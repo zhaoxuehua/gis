@@ -28,7 +28,7 @@
             {{ currentTarget.coordinates }}
           </span>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="6" class="right-align">
           <!-- 选中标签配置存在且选择了列表点数据 -->
           <el-button type="primary" @click="onDraw" :disabled="!currentTarget.gisLabelConfig || table.data.length === 0"
             >生成标签</el-button
@@ -443,6 +443,7 @@ const calcSequence = function () {
     }
     .tree-content {
       height: calc(100% - 72px);
+      padding: 0 10px;
       overflow: auto;
     }
   }
@@ -472,6 +473,10 @@ const calcSequence = function () {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
+    }
+    .right-align {
+      display: flex;
+      justify-content: flex-end;
     }
   }
   .layer-config-table {

@@ -3,7 +3,7 @@
     <el-dialog
       :title="['创建标签类型', '编辑标签类型', '标签类型详情'][state.dialogType]"
       v-model="state.open"
-      width="1150px"
+      width="850px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"

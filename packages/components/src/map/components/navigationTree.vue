@@ -220,7 +220,7 @@ onMounted(() => {
   font-size: 16px;
 }
 .nav-tree .title {
-  padding: 0 10px;
+  padding: 0 20px;
 }
 .title .icon {
   cursor: pointer;

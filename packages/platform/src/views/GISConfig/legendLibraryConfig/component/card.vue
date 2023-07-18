@@ -13,7 +13,7 @@
           <div class="image-container">
             <el-upload action="#" :show-file-list="false" disabled>
               <div>
-                <img :src="`/backend1/equip/gisLabel/type/getAllPathByFileName/${info?.legendPath}`" alt="" />
+                <img :src="`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${info?.legendPath}`" alt="" />
                 <div class="upload-image-btn">
                   <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_EDIT">
                     <span @click="editLegend">

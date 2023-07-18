@@ -28,7 +28,7 @@
             {{ currentTarget.coordinates }}
           </span>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="6" class="right-align">
           <el-button type="primary" @click="onDraw" :disabled="!currentTarget.coordinates || table.ids.length === 0"
             >快速绘制</el-button
           >
@@ -422,6 +422,7 @@ const selectable = (row: any) => {
     }
     .tree-content {
       height: calc(100% - 72px);
+      padding: 0 10px;
       overflow: auto;
     }
   }
@@ -456,6 +457,10 @@ const selectable = (row: any) => {
         margin: 0;
         margin-top: 20px;
       }
+    }
+    .right-align {
+      display: flex;
+      justify-content: flex-end;
     }
   }
   .layer-config-table {

@@ -92,7 +92,7 @@
 
     <MapParamsEdit ref="mapParamsEditRef" @success-add="query.onQuery"></MapParamsEdit>
 
-    <DetailDialog ref="detailDialogRef" :constant="'GIS_MAPPARAMS_DETAIL'" :title="'地图参数详情'" :width="1150">
+    <DetailDialog ref="detailDialogRef" :constant="'GIS_MAPPARAMS_DETAIL'" :title="'地图参数详情'" :width="900">
       <template #displayMode="scope">
         {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
       </template>
