@@ -10,8 +10,6 @@
       <el-tabs v-model="state.activeIndex">
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
-        <el-tab-pane name="3" label="轨迹回放动画"></el-tab-pane>
-        <el-tab-pane name="4" label="控件"></el-tab-pane>
       </el-tabs>
 
       <!-- 展示内容区 -->
@@ -103,14 +101,6 @@
             </el-tab-pane>
           </el-tabs>
         </div>
-      </div>
-      <!-- 轨迹动画设置 -->
-      <!-- <div class="measuring-tools" v-show="state.activeIndex == '3'">
-        <div class="track-box"></div>
-      </div> -->
-      <!-- 控件 -->
-      <div class="measuring-tools" v-show="state.activeIndex == '4'">
-        <div class="controls-box"></div>
       </div>
     </div>
   </div>

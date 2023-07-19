@@ -9,6 +9,8 @@
       :leftBoxData="getLeftData"
       @left-box-data-change="leftBoxDataChange"
       @on-edit-label="onEditLabel"
+      @is-edit-change-hidden="isEditChangeHidden"
+      :deviceSearchVisible="!!controlList.includes('search')"
     >
     </LeftActionBox>
     <!-- 标签树、导航树的编辑弹框 -->
@@ -115,8 +117,14 @@ const state = reactive({
       icon: "iconfont icon-complex-device",
       label: "白名单",
       isShow: false,
-      visible: true,
+      visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/whiteList.vue")))
+    },
+    {
+      icon: "iconfont icon-GIS-07",
+      label: "编辑",
+      isShow: false,
+      visible: false
     }
   ]
 });
@@ -151,6 +159,10 @@ const leftBoxDataChange = (index: number) => {
   });
 };
 const controlList: string[] | any = ref([]);
+const isEdit: any = ref(false);
+const isEditShow = computed(() => {
+  return gisStore.isEdit;
+});
 
 const getRightData = computed(() => {
   state.rightBoxData.forEach((item: any) => {
@@ -167,6 +179,12 @@ const getRightData = computed(() => {
       case "图例":
         item.visible = !!controlList.value.includes("imgLegend");
         break;
+      case "白名单":
+        item.visible = !!controlList.value.includes("whiteList");
+        break;
+      case "编辑":
+        item.visible = !!isEdit.value;
+        break;
       default:
         break;
     }
@@ -181,6 +199,19 @@ const rightBoxDataChange = (index: number) => {
     } else {
       item.isShow = false;
     }
+  });
+  if (index == 5) {
+    // 编辑控件
+    gisStore.setIsEdit(!isEditShow.value);
+  }
+};
+
+const isEditChangeHidden = () => {
+  state.leftBoxData.forEach(item => {
+    item.isShow = false;
+  });
+  state.rightBoxData.forEach(item => {
+    item.isShow = false;
   });
 };
 
@@ -207,6 +238,8 @@ const initMap = async (mapId: string | number) => {
     const originalData = JSON.parse(JSON.stringify(res.data));
     const controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
     controlList.value = controls;
+    isEdit.value = !!originalData.isEdit;
+
     const defaultOptions = {
       target: "map",
       center: {
@@ -605,6 +638,7 @@ onMounted(() => {
   if (props?.config?.rightControl) {
     state.rightBoxData = state.rightBoxData.concat(props.config?.rightControl);
   }
+  gisStore.setIsEdit(false);
   const mapParams = props?.config?.id;
   if (!mapParams) return;
   initMap(mapParams);
@@ -701,19 +735,19 @@ onMounted(() => {
       position: absolute;
       bottom: 6px;
       left: 10px;
-      padding: 2px 6px;
+      padding: 4px 8px;
       font-family: Arial, sans-serif;
       font-size: 12px;
-      line-height: 1.5;
-      color: #333333;
+      line-height: 0.5;
+      color: #000000;
       text-align: center;
-      background-color: rgb(255 255 255 / 80%);
+      text-shadow: -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 1px 1px 0 #ffffff;
       border-right: 1px solid #333333;
-      border-bottom: 1px solid #333333;
+      border-bottom: 4px solid #333333;
       border-left: 1px solid #333333;
     }
 
-    /* ScaleLine 控件的单位样式 */
+    /* ScaleLine 控件的单位样式 control-scaleLine-inner */
     .control-scaleLine span {
       white-space: nowrap;
     }

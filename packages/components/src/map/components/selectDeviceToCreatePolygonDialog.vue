@@ -100,7 +100,7 @@ const query = ref({
   params: {
     name: "", // 设备名称
     equipTypeName: "", // 设备类型名称
-    dataType: "", // 数据类型（点、线2）
+    dataType: "", // 数据类型（点1、线2）
     orderByColumn: "",
     isAsc: "",
     pageNumber: 1,

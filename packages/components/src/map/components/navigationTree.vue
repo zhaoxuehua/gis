@@ -25,7 +25,7 @@
           <template #default="{ data }">
             <span class="custom-tree-node" :class="{ active: !!data.associationInfo }">
               <span>{{ data.name }}</span>
-              <span v-if="data.equipNodeFlag">
+              <span v-if="isEditShow && data.equipNodeFlag">
                 <Icon src="Plus" :size="14" @click="onAdd(data)" v-if="!data.associationInfo"></Icon>
                 <Icon src="EditPen" :size="14" v-if="data.associationInfo" @click.stop="onEdit(data)"></Icon>
                 <Icon src="Delete" :size="14" v-if="data.associationInfo" @click.stop="onDelete(data)"></Icon>
@@ -68,6 +68,10 @@ const onClose = () => {
 // 导航树数据源
 const navTreeData = computed(() => {
   return gisStore.navigationTree;
+});
+
+const isEditShow = computed(() => {
+  return gisStore.isEdit;
 });
 
 const treeSearch = () => {

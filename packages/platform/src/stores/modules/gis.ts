@@ -3,7 +3,6 @@ import { cloneDeep } from "lodash";
 import { ElMessage } from "element-plus";
 import piniaPersistConfig from "@/config/piniaPersist";
 import { getGisCustomTree } from "@/api/gis.js";
-import { getLegendConfigList } from "@/api/visconfig.js";
 
 export const useGisStore = defineStore({
   id: "geeker-gis",
@@ -13,7 +12,7 @@ export const useGisStore = defineStore({
     sourceCode: "",
     isDynamicLine: false, // 线环闪烁维护字段
     imgIndex: 0, // 动画点图片索引
-    imgLegendList: [] // 图例列表数据的存储（用于获取地图图例名称）
+    isEdit: false // 地图编辑
   }),
   actions: {
     // 导航树及关联关系
@@ -35,19 +34,6 @@ export const useGisStore = defineStore({
         }
       );
     },
-    getLegendList() {
-      getLegendConfigList("?pageSize=10000&pageNumber=1", { legendName: "" }).then(
-        (res: any) => {
-          if (res?.data?.items) {
-            this.imgLegendList = res.data.items;
-          }
-        },
-        (err: any) => {
-          console.warn(err);
-        }
-      );
-    },
-
     // 存储导航树的sourceCode
     setSourceCode(sourceCode: string = "") {
       this.sourceCode = sourceCode;
@@ -57,6 +43,9 @@ export const useGisStore = defineStore({
     },
     setImgIndex(imgIndex: number) {
       this.imgIndex = imgIndex;
+    },
+    setIsEdit(isEdit: boolean) {
+      this.isEdit = isEdit;
     }
   },
   persist: piniaPersistConfig("geeker-gis")

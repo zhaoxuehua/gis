@@ -4,7 +4,13 @@
       <!-- 导航栏部分 -->
       <div class="left-action">
         <div v-for="(item, index) in props.leftBoxData" :key="item.label">
-          <div class="left-action-item" :class="{ active: item.isShow }" @click.stop="leftBoxClick(index)" v-if="item.visible">
+          <!-- 当不是编辑状态时隐藏标签树及快速绘制 -->
+          <div
+            class="left-action-item"
+            :class="{ active: item.isShow }"
+            @click.stop="leftBoxClick(index)"
+            v-if="item.visible && !(!isEditShow && (item.label == '标签树' || item.label == '快速创建'))"
+          >
             <el-tooltip effect="light" :content="item.label" placement="bottom-start">
               <i :class="item.icon" class="left-icon"></i>
             </el-tooltip>
@@ -15,7 +21,6 @@
       <!-- 内容部分 -->
       <div class="left-content">
         <div v-for="item in props.leftBoxData" :key="item.label">
-          <!-- 父子组件交互数据Props 传递：通过定义子组件的 props及emit事件@handleEvent  :propName= -->
           <component
             :is="item.component"
             v-if="item.isShow"
@@ -26,18 +31,53 @@
         </div>
       </div>
     </div>
+    <!-- 标签搜索框 -->
+    <el-input
+      class="action-search"
+      v-model="inputParam"
+      :style="{ left: searchLeft + 'px' }"
+      placeholder="请输入标签名称"
+      clearable
+      @keyup.enter.stop="search"
+      v-if="deviceSearchVisible"
+    >
+      <template #append>
+        <el-button @click.stop="search"><Icon src="Search"></Icon></el-button>
+      </template>
+    </el-input>
   </div>
+  <SearchDialog ref="searchDialogRef"></SearchDialog>
 </template>
 
 <script lang="ts" setup>
+import { computed, ref, watch, nextTick } from "vue";
+import { useGisStore } from "@/stores/modules/gis";
 import type { VisualMap, leftBoxData as boxData } from "../type";
+import SearchDialog from "./searchDialog.vue";
 
-const props = withDefaults(defineProps<{ config?: any; map: VisualMap | null; leftBoxData: boxData[] }>(), {
-  config: () => [],
-  map: () => null,
-  leftBoxData: () => []
+const gisStore = useGisStore();
+const props = withDefaults(
+  defineProps<{
+    config?: any;
+    map: VisualMap | null;
+    leftBoxData: boxData[];
+    deviceSearchVisible?: boolean;
+  }>(),
+  {
+    config: () => [],
+    map: () => null,
+    leftBoxData: () => [],
+    deviceSearchVisible: () => false
+  }
+);
+const emits = defineEmits(["leftBoxDataChange", "onEditLabel", "isEditChangeHidden"]);
+const searchDialogRef = ref<InstanceType<typeof SearchDialog>>();
+const isEditShow = computed(() => {
+  return gisStore.isEdit;
 });
-const emits = defineEmits(["leftBoxDataChange", "onEditLabel"]);
+
+const searchLeft = ref();
+const inputParam = ref("");
 
 // 左侧控件导航点击
 const leftBoxClick = (index: number) => {
@@ -48,6 +88,38 @@ const leftBoxClick = (index: number) => {
 const onEditLabel = (labelCode: any) => {
   emits("onEditLabel", labelCode);
 };
+
+const search = () => {
+  searchDialogRef.value?.openDialog(props.map, inputParam.value);
+};
+
+watch(
+  isEditShow,
+  val => {
+    if (!val) {
+      // 不显示标签树、快速绘制
+      emits("isEditChangeHidden");
+    }
+    nextTick(() => {
+      searchLeft.value = (document.querySelector(".left-action")?.clientWidth || 0) + 25;
+    });
+  },
+  {
+    deep: true,
+    flush: "post"
+  }
+);
+
+watch(
+  props.leftBoxData,
+  () => {
+    searchLeft.value = (document.querySelector(".left-action")?.clientWidth || 0) + 25;
+  },
+  {
+    deep: true,
+    flush: "post"
+  }
+);
 </script>
 <style lang="scss" scoped>
 /* 大盒子的布局：导航+内容  列排 */
@@ -63,7 +135,6 @@ const onEditLabel = (labelCode: any) => {
 
 // 导航大盒子
 .left-action {
-  // z-index: 2;
   display: flex;
   align-items: center;
   padding: 0 3px;
@@ -100,5 +171,17 @@ const onEditLabel = (labelCode: any) => {
   overflow: auto;
   background-color: #ffffff;
   border-radius: 6px;
+}
+
+// 搜索
+.action-search {
+  position: absolute;
+  top: 15px;
+  width: 200px;
+  margin-left: 10px;
+  ::v-deep(.el-input__inner) {
+    height: 39px;
+    line-height: 39px;
+  }
 }
 </style>

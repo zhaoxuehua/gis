@@ -47,5 +47,9 @@ export const GIS_CONTROLS = [
   {
     code: "imgLegend",
     name: "显示图例控件"
+  },
+  {
+    code: "whiteList",
+    name: "显示白名单控件"
   }
 ];

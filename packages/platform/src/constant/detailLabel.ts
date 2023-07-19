@@ -123,6 +123,11 @@ export const GIS_MAPPARAMS_DETAIL = [
   {
     label: "路网叠加层URL",
     name: "overlayUrl"
+  },
+  {
+    label: "是否可编辑",
+    name: "isEdit",
+    slot: true
   }
 ];
 

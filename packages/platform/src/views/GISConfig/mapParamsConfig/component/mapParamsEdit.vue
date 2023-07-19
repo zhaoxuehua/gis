@@ -107,6 +107,9 @@
         <el-form-item label="路网叠加层URL" prop="overlayUrl" v-if="form.displayControlIds.includes('showOverlay')">
           <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
         </el-form-item>
+        <el-form-item label="是否可编辑" prop="isEdit">
+          <el-checkbox v-model="form.isEdit" style="width: 200px"></el-checkbox>
+        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -143,6 +146,7 @@ interface MapParamsForm {
   normalUrl: string;
   sateUrl: string;
   overlayUrl: string;
+  isEdit: boolean;
 }
 const emit = defineEmits(["successAdd"]);
 const layerLevelVerification = (rule: any, value: any, callback: Function) => {
@@ -238,7 +242,8 @@ const defaultParam = {
   displayLegendIds: [], // 图例列表
   normalUrl: "",
   sateUrl: "",
-  overlayUrl: ""
+  overlayUrl: "",
+  isEdit: false // 是否可编辑
 };
 
 let form = ref<MapParamsForm>(defaultParam);

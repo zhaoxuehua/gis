@@ -108,6 +108,9 @@
       <template #displayLegend="scope">
         {{ scope.row.displayLegend?.map((item: any) => item?.legendName).join(",") }}
       </template>
+      <template #isEdit="scope">
+        {{ scope.row.isEdit ? "是" : "否" }}
+      </template>
     </DetailDialog>
   </div>
 </template>

@@ -11,7 +11,8 @@ export const useGisStore = defineStore({
     relationMap: {}, // 关联关系
     sourceCode: "",
     isDynamicLine: false, // 线环闪烁维护字段
-    imgIndex: 0 // 动画点图片索引
+    imgIndex: 0, // 动画点图片索引
+    isEdit: false // 地图编辑
   }),
   actions: {
     // 导航树及关联关系
@@ -43,6 +44,9 @@ export const useGisStore = defineStore({
     },
     setImgIndex(imgIndex: number) {
       this.imgIndex = imgIndex;
+    },
+    setIsEdit(isEdit: boolean) {
+      this.isEdit = isEdit;
     }
   },
   persist: piniaPersistConfig("gis")

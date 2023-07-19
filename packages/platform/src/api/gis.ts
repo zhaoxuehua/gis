@@ -56,11 +56,6 @@ export function deleteLabelSingle(id: number) {
   return request.get(`/api/gis-service/equip/2DGis/label/delete/${id}`);
 }
 
-// 获取生成面的线路设备点信息
-export function getEquipListByPolygon(id: number) {
-  return request.get(`/api/gis-service/equip/2DGis/label/line/getByAssert/${id}`);
-}
-
 // 白名单
 // 获取白名单列表
 export function getWhiteList(queryString: string, params: object) {

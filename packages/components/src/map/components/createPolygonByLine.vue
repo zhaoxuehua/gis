@@ -62,7 +62,9 @@
           </el-table-column>
           <el-table-column label="操作" width="150">
             <template #default="scope">
-              <el-button @click="onRemove(scope.row)">删除</el-button>
+              <el-button type="primary" link @click="onUp(scope.row)">上移</el-button>
+              <el-button type="primary" link @click="onDown(scope.row)">下移</el-button>
+              <el-button type="primary" link @click="onRemove(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -86,7 +88,7 @@
 import { reactive, watch, onMounted, ref } from "vue";
 import * as turf from "@turf/turf";
 import { getTreeData } from "@/api/device";
-import { getLabelInfoByEquipId, getEquipListByPolygon, addLabelSingle, deleteLabelSingle } from "@/api/gis.js";
+import { getLabelInfoByEquipId, getEquipListByLine, addLabelSingle, deleteLabelSingle } from "@/api/gis.js";
 import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import type { TableList } from "../type";
 import SelectDeviceToCreatePolygonDialog from "./selectDeviceToCreatePolygonDialog.vue";
@@ -209,10 +211,12 @@ const table = ref<TableList>({
   data: [],
   getTableData: async () => {
     table.value.loading = true;
-    const res: { [key: string]: any } = await getEquipListByPolygon(query.value.lineId);
+    const res: { [key: string]: any } = await getEquipListByLine(query.value.lineId);
     if (res.code == 200) {
-      if (res.data?.items) {
-        table.value.data = res.data.items;
+      if (res.data?.parts) {
+        table.value.data = res.data.parts?.sort(function (a: any, b: any) {
+          return a.sequence - b.sequence;
+        });
       } else {
         table.value.data = [];
       }
@@ -389,10 +393,45 @@ const onDialogClose = () => {
   dialogVisible.value = false;
 };
 
+// 计算sequence，并排序
+const calcSequence = function () {
+  table.value.data = table.value.data
+    .map((item, index) => {
+      item.sequence = index;
+      return item;
+    })
+    .sort((a, b) => a.sequence - b.sequence);
+};
+
+// 上移
+const onUp = (item: any) => {
+  const currentIndex = table.value.data.findIndex(element => element.assetId === item.assetId);
+  if (currentIndex === 0) {
+    ElMessage.warning("不能再往上移了");
+    return;
+  }
+  const currentItem = table.value.data.splice(currentIndex, 1)[0];
+  table.value.data.splice(currentIndex - 1, 0, currentItem);
+  calcSequence();
+};
+
+// 下移
+const onDown = (item: any) => {
+  const currentIndex = table.value.data.findIndex(element => element.assetId === item.assetId);
+  if (currentIndex === table.value.data.length - 1) {
+    ElMessage.warning("不能再往下移了");
+    return;
+  }
+  const currentItem = table.value.data.splice(currentIndex, 1)[0];
+  table.value.data.splice(currentIndex + 1, 0, currentItem);
+  calcSequence();
+};
+
 // 删除
 const onRemove = (item: any) => {
   const currentIndex = table.value.data.findIndex(element => element.assetId === item.assetId);
   table.value.data.splice(currentIndex, 1);
+  calcSequence();
 };
 
 // 选择设备确认
@@ -417,6 +456,7 @@ const onDialogConfirm = (selection: Array<any>) => {
         objectId: gisLabelInfo.id,
         labelData: gisLabelInfo.labelData
       });
+      calcSequence();
     }
   });
 };

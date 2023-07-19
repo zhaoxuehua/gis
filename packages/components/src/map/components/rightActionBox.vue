@@ -14,8 +14,13 @@
       </div>
       <!-- 内容部分 -->
       <div class="right-content">
-        <div v-for="item in props.rightBoxData" :key="item.label">
-          <component :is="item.component" v-show="item.isShow" :map="props.map" @on-close="rightBoxClick"></component>
+        <div v-for="(item, index) in props.rightBoxData" :key="item.label">
+          <component
+            :is="item.component"
+            v-show="item.isShow && index !== 5"
+            :map="props.map"
+            @on-close="rightBoxClick"
+          ></component>
         </div>
       </div>
     </div>
