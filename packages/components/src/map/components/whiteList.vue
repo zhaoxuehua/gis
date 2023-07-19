@@ -55,7 +55,7 @@
             v-model:current-page="query.params.pageNumber"
             v-model:page-size="query.params.pageSize"
             :page-sizes="[10, 20, 30, 50]"
-            layout="total, sizes, prev, pager, next, jumper"
+            layout="total, prev, pager, next, sizes"
             :total="table.total"
             :small="true"
             @size-change="handleSizeChange"
@@ -191,7 +191,7 @@ onMounted(() => {
   width: 100%;
   height: 60px;
   padding: 0 20px;
-  background-color: var(--el-color-primary-light-8);
+  background-color: #f7f7fa;
   span {
     font-size: 16px;
   }

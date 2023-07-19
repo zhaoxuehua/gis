@@ -82,7 +82,7 @@ watch(
   width: 100%;
   height: 60px;
   padding: 0 20px;
-  background-color: var(--el-color-primary-light-8);
+  background-color: #f7f7fa;
   span {
     font-size: 16px;
   }

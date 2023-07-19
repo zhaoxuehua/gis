@@ -55,7 +55,7 @@ onMounted(() => {});
     padding: 0 20px;
     font-size: 16px;
     line-height: 55px;
-    background-color: var(--el-color-primary-light-8);
+    background-color: #f7f7fa;
     ::v-deep(.quick-create-title-tab) {
       .el-tabs {
         --el-tabs-header-height: 100%;
