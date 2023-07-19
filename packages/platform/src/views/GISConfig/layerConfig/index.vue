@@ -1,5 +1,5 @@
 <template>
-  <div class="layer-config">
+  <div class="standard-page">
     <div class="one-search">
       <el-form :model="query.params">
         <el-row :gutter="20">
@@ -29,54 +29,59 @@
       </el-form>
     </div>
 
-    <div class="option">
-      <div class="title">图层配置</div>
-      <div class="btn">
-        <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LAYERCONFIG_DELETE">
-          <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
-        </Auth>
-        <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LAYERCONFIG_ADD">
-          <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon>{{ "创建" }}</el-button>
-        </Auth>
+    <div class="table-card">
+      <div class="option">
+        <div class="title">图层配置</div>
+        <div class="btn">
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LAYERCONFIG_DELETE">
+            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
+          </Auth>
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LAYERCONFIG_ADD">
+            <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon>{{ "创建" }}</el-button>
+          </Auth>
+        </div>
+      </div>
+      <el-table
+        :data="table.data"
+        class="config-table"
+        v-loading="table.loading"
+        highlight-current-row
+        empty-text="暂无数据"
+        :row-style="{ height: 32 + 'px' }"
+        :cell-style="{ padding: '0px' }"
+        @sort-change="sortChange"
+        @selection-change="table.onSelectionChange"
+        stripe
+        border
+      >
+        <el-table-column type="selection"></el-table-column>
+        <el-table-column label="序号" type="index" width="60"></el-table-column>
+        <el-table-column label="图层编码" prop="code" sortable="custom" min-width="120"></el-table-column>
+        <el-table-column label="图层名称" prop="name" sortable="custom" min-width="120"></el-table-column>
+        <el-table-column label="创建时间" prop="createdOn" sortable="custom" min-width="200"></el-table-column>
+        <el-table-column prop="path" label="操作" width="200" fixed="right" class-name="small-padding fixed-width">
+          <template #default="scope">
+            <el-button type="primary" link plain @click="table.onEdit(scope.row, 'detail')">
+              {{ "详情" }}
+            </el-button>
+            <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LAYERCONFIG_EDIT">
+              <el-button type="primary" link @click="table.onEdit(scope.row, 'edit')">
+                {{ "编辑" }}
+              </el-button>
+            </Auth>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination-container">
+        <Pagination
+          :total="table.total"
+          v-model:page="query.params.pageNumber"
+          v-model:limit="query.params.pageSize"
+          @pagination="query.getPagination"
+        ></Pagination>
       </div>
     </div>
-    <el-table
-      :data="table.data"
-      class="layer-config-table"
-      v-loading="table.loading"
-      highlight-current-row
-      empty-text="暂无数据"
-      :row-style="{ height: 32 + 'px' }"
-      :cell-style="{ padding: '0px' }"
-      @sort-change="sortChange"
-      @selection-change="table.onSelectionChange"
-      stripe
-      border
-    >
-      <el-table-column type="selection"></el-table-column>
-      <el-table-column label="序号" type="index" width="60"></el-table-column>
-      <el-table-column label="图层编码" prop="code" sortable="custom"></el-table-column>
-      <el-table-column label="图层名称" prop="name" sortable="custom"></el-table-column>
-      <el-table-column label="创建时间" prop="createdOn" sortable="custom"></el-table-column>
-      <el-table-column prop="path" label="操作" width="200" class-name="small-padding fixed-width">
-        <template #default="scope">
-          <el-button type="primary" link plain @click="table.onEdit(scope.row, 'detail')">
-            {{ "详情" }}
-          </el-button>
-          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LAYERCONFIG_EDIT">
-            <el-button type="primary" link @click="table.onEdit(scope.row, 'edit')">
-              {{ "编辑" }}
-            </el-button>
-          </Auth>
-        </template>
-      </el-table-column>
-    </el-table>
-    <Pagination
-      :total="table.total"
-      v-model:page="query.params.pageNumber"
-      v-model:limit="query.params.pageSize"
-      @pagination="query.getPagination"
-    ></Pagination>
+
     <LayerEdit ref="layerEditRef" @success-add="query.onQuery"></LayerEdit>
     <DetailDialog ref="detailDialogRef" :constant="'GIS_LAYER_DETAIL'" :title="'图层详情'">
       <template #isTagAgg="scope">
@@ -225,18 +230,4 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-.layer-config {
-  width: calc(100vw - 260px);
-  height: calc(100vh - 109px);
-  padding: 20px;
-  background: var(--background-color);
-}
-.layer-config-table {
-  height: calc(100% - 153px);
-  margin-bottom: 20px;
-}
-.layer-config .inline-input {
-  width: 100%;
-}
-</style>
+<style lang="scss" scoped></style>

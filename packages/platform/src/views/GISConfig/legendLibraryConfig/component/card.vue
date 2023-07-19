@@ -92,7 +92,9 @@ const onReSearch = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 30px;
+    height: 30px !important;
+    background-color: #ffffff !important;
+    border: none !important;
     .title {
       margin: auto;
       overflow: hidden;

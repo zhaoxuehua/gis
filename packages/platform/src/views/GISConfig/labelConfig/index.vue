@@ -1,5 +1,5 @@
 <template>
-  <div class="layer-config">
+  <div class="standard-page">
     <div class="one-search">
       <el-form :model="query.params">
         <el-row :gutter="20">
@@ -28,60 +28,63 @@
         </el-row>
       </el-form>
     </div>
-
-    <div class="option">
-      <div class="title">标签信息</div>
-      <div class="btn">
-        <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELCONFIG_DELETE">
-          <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
-        </Auth>
-        <!-- <el-button type="primary" icon="el-icon-plus" @click="onAdd">{{ '创建' }}</el-button> -->
+    <div class="table-card">
+      <div class="option">
+        <div class="title">标签信息</div>
+        <div class="btn">
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELCONFIG_DELETE">
+            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
+          </Auth>
+          <!-- <el-button type="primary" icon="el-icon-plus" @click="onAdd">{{ '创建' }}</el-button> -->
+        </div>
       </div>
-    </div>
-    <el-table
-      :data="table.data"
-      class="layer-config-table"
-      v-loading="table.loading"
-      highlight-current-row
-      empty-text="暂无数据"
-      :row-style="{ height: 32 + 'px' }"
-      :cell-style="{ padding: '0px' }"
-      @sort-change="sortChange"
-      @selection-change="table.onSelectionChange"
-      stripe
-      border
-    >
-      <el-table-column type="selection"></el-table-column>
-      <el-table-column label="序号" type="index" width="60"></el-table-column>
-      <el-table-column label="标签编码" prop="code" sortable="custom"></el-table-column>
-      <el-table-column label="标签名称" prop="name" sortable="custom"></el-table-column>
-      <el-table-column label="标签类型" prop="labelType" sortable="custom">
-        <template #default="scope">
-          {{ scope.row.labelType?.name }}
-        </template>
-      </el-table-column>
-      <el-table-column label="所属图层" prop="refLayer" sortable="custom">
-        <template #default="scope">
-          {{ scope.row.refLayer?.name }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="path" label="操作" width="200" class-name="small-padding fixed-width">
-        <template #default="scope">
-          <el-button type="primary" link @click="table.onEdit(scope.row, 'detail')">
-            {{ "详情" }}
-          </el-button>
-          <!-- <el-button link @click="table.onEdit(scope.row, 'edit')">
+      <el-table
+        :data="table.data"
+        class="config-table"
+        v-loading="table.loading"
+        highlight-current-row
+        empty-text="暂无数据"
+        :row-style="{ height: 32 + 'px' }"
+        :cell-style="{ padding: '0px' }"
+        @sort-change="sortChange"
+        @selection-change="table.onSelectionChange"
+        stripe
+        border
+      >
+        <el-table-column type="selection"></el-table-column>
+        <el-table-column label="序号" type="index" min-width="60"></el-table-column>
+        <el-table-column label="标签编码" prop="code" sortable="custom" min-width="240"></el-table-column>
+        <el-table-column label="标签名称" prop="name" sortable="custom" min-width="180"></el-table-column>
+        <el-table-column label="标签类型" prop="labelType" sortable="custom" min-width="180">
+          <template #default="scope">
+            {{ scope.row.labelType?.name }}
+          </template>
+        </el-table-column>
+        <el-table-column label="所属图层" prop="refLayer" sortable="custom" min-width="120">
+          <template #default="scope">
+            {{ scope.row.refLayer?.name }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="path" label="操作" width="200" fixed="right" class-name="small-padding fixed-width">
+          <template #default="scope">
+            <el-button type="primary" link @click="table.onEdit(scope.row, 'detail')">
+              {{ "详情" }}
+            </el-button>
+            <!-- <el-button link @click="table.onEdit(scope.row, 'edit')">
 						{{ '编辑' }}
 					</el-button> -->
-        </template>
-      </el-table-column>
-    </el-table>
-    <Pagination
-      :total="table.total"
-      v-model:page="query.params.pageNumber"
-      v-model:limit="query.params.pageSize"
-      @pagination="query.getPagination"
-    ></Pagination>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination-container">
+        <Pagination
+          :total="table.total"
+          v-model:page="query.params.pageNumber"
+          v-model:limit="query.params.pageSize"
+          @pagination="query.getPagination"
+        ></Pagination>
+      </div>
+    </div>
 
     <LabelEdit ref="labelEditRef" @success-add="query.onQuery"></LabelEdit>
 
@@ -232,18 +235,4 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-.layer-config {
-  width: calc(100vw - 260px);
-  height: calc(100vh - 109px);
-  padding: 20px;
-  background: var(--background-color);
-}
-.layer-config-table {
-  height: calc(100% - 153px);
-  margin-bottom: 20px;
-}
-.layer-config .inline-input {
-  width: 100%;
-}
-</style>
+<style lang="scss" scoped></style>

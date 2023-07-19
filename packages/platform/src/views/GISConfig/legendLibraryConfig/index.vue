@@ -1,5 +1,5 @@
 <template>
-  <div class="legend-library-config">
+  <div class="standard-page">
     <div class="one-search">
       <el-form :model="query.params">
         <el-row :gutter="20">
@@ -28,24 +28,28 @@
         </el-row>
       </el-form>
     </div>
-
-    <div class="option">
-      <div class="title">图例库</div>
-      <div class="btn">
-        <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_ADD">
-          <el-button type="primary" @click="onAdd"><Icon src="Upload"></Icon>{{ "上传图例" }}</el-button>
-        </Auth>
+    <div class="table-card">
+      <div class="option">
+        <div class="title">图例库</div>
+        <div class="btn">
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_ADD">
+            <el-button type="primary" @click="onAdd"><Icon src="Upload"></Icon>{{ "上传图例" }}</el-button>
+          </Auth>
+        </div>
+      </div>
+      <div class="legend-library-table">
+        <Card v-for="(item, index) in table.data" :key="index" :info="item" @success-add="query.onQuery"></Card>
+      </div>
+      <div class="pagination-container">
+        <Pagination
+          :total="table.total"
+          v-model:page="query.params.pageNumber"
+          v-model:limit="query.params.pageSize"
+          @pagination="query.getPagination"
+        ></Pagination>
       </div>
     </div>
-    <div class="legend-library-table">
-      <Card v-for="(item, index) in table.data" :key="index" :info="item" @success-add="query.onQuery"></Card>
-    </div>
-    <Pagination
-      :total="table.total"
-      v-model:page="query.params.pageNumber"
-      v-model:limit="query.params.pageSize"
-      @pagination="query.getPagination"
-    ></Pagination>
+
     <CreateEditLegend ref="createEditLegend" @success-add="query.onQuery"></CreateEditLegend>
   </div>
 </template>
@@ -133,22 +137,12 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.legend-library-config {
-  width: calc(100vw - 260px);
-  height: calc(100vh - 109px);
-  padding: 20px;
-  background: var(--background-color);
-}
-.legend-library-config .inline-input {
-  width: 100%;
-}
 .legend-library-table {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   width: 100%;
-  height: calc(100% - 153px);
-  max-height: calc(100% - 153px);
+  height: calc(100% - 94px);
   margin-bottom: 20px;
   overflow: auto;
 }
