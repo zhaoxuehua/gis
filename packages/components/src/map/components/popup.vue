@@ -7,8 +7,12 @@
           <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
         </div>
         <div class="map-popup-body">
-          <span>名称：{{ props?.data?.featureName || "" }}</span>
-          <span>编码：{{ props?.data?.featureCode || "" }}</span>
+          <div>
+            <span>名称：{{ props?.data?.featureName || "" }}</span>
+          </div>
+          <div>
+            <span>编码：{{ props?.data?.featureCode || "" }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -95,12 +99,12 @@ defineExpose({
     }
   }
   .map-popup-body {
-    flex: 1;
-    padding: 20px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
     overflow: hidden;
-    span {
-      padding: 20px;
-    }
   }
 }
 </style>
