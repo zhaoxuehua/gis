@@ -41,6 +41,7 @@ import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null

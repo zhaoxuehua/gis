@@ -25,6 +25,7 @@
 
 <script lang="ts" setup>
 import { ref, useSlots } from "vue";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ data: { [key: string]: any } }>(), {
   data: () => ({})

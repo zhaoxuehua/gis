@@ -46,6 +46,7 @@ import { cloneDeep } from "lodash";
 
 import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null

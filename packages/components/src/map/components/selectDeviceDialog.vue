@@ -77,6 +77,7 @@ import { handleParam } from "@/utils/common.js";
 import { deviceEquipList } from "@/api/device";
 import { getLabelInfoByEquipId } from "@/api/gis.js";
 import type { TableList } from "../type";
+import Icon from "./Icon.vue";
 const emits = defineEmits(["onConfirm"]);
 
 const query = ref({

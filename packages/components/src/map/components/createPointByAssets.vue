@@ -83,7 +83,7 @@ import { cloneDeep } from "lodash";
 import { handleParam } from "@/utils/common.js";
 import { deviceEquipList } from "@/api/device";
 import { getLabelInfoByEquipId, addLabelBatch, deleteLabelBatch } from "@/api/gis.js";
-
+import Icon from "./Icon.vue";
 import type { TableList } from "../type";
 import { MAP_DATA_TYPE } from "../hooks/createGeometry";
 import { transformLabelType } from "../hooks/index";

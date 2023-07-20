@@ -27,6 +27,7 @@
 import { computed, reactive, ref, onMounted, watch } from "vue";
 import Feature from "ol/Feature";
 import type { VisualMap } from "../type";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null

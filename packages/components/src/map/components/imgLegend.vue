@@ -23,6 +23,7 @@
 <script lang="ts" setup>
 import { computed, onMounted } from "vue";
 import type { VisualMap } from "../type";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null

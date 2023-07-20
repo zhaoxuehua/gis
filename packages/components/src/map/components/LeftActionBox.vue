@@ -54,6 +54,7 @@ import { computed, ref, watch, nextTick } from "vue";
 import { useGisStore } from "@/stores/modules/gis";
 import type { VisualMap, leftBoxData as boxData } from "../type";
 import SearchDialog from "./searchDialog.vue";
+import Icon from "./Icon.vue";
 
 const gisStore = useGisStore();
 const props = withDefaults(

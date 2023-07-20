@@ -18,6 +18,7 @@
 <script lang="ts" setup>
 import { ref, watch, computed } from "vue";
 import type { VisualMap } from "../type";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null

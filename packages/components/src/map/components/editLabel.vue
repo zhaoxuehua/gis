@@ -1,12 +1,12 @@
 <template>
-  <div class="tag-edit-draw" v-if="isShow" @click.stop>
+  <div class="tag-edit-draw" v-if="state.isShow" @click.stop>
     <div class="title">
       <span>编辑标签</span>
       <Icon src="Close" :size="14" @click="onClose"></Icon>
     </div>
 
     <div class="content">
-      <el-form :inline="false" :model="form" label-width="100px" :rules="rulesForm" ref="refForm">
+      <el-form :inline="false" :model="form" label-width="100px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="标签编码" prop="code">
           <el-input placeholder="请输入..." v-model="form.code" readonly />
         </el-form-item>
@@ -193,8 +193,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { reactive, toRefs, ref, defineComponent, computed, onBeforeUnmount, watch } from "vue";
+<script lang="ts" setup>
+import { reactive, ref, computed, onBeforeUnmount, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { cloneDeep } from "lodash";
 import { Circle } from "ol/geom";
@@ -203,356 +203,338 @@ import type { LabelForm, LabelInfoData } from "../type";
 import { MAP_DATA_TYPE } from "../hooks/createGeometry.js";
 import { featureUpdate, getFeature } from "../hooks/index.js";
 import { editLabel } from "@/api/visconfig";
+import type { VisualMap } from "../type";
+import Icon from "./Icon.vue";
 
-export default defineComponent({
-  name: "EditLabel",
-  components: {},
-  props: {
-    map: {
-      type: Object,
-      default: () => ({})
-    }
-  },
-  setup(props, {}) {
-    const lineWidthVerify = (rule: any, value: any, callback: Function) => {
-      if (!/^(\d|[1-9]\d+)$/.test(value)) {
-        return callback(new Error("只能为0-100的整数"));
-      }
-      callback();
-    };
-    const state = reactive({
-      isShow: false,
-      // 弹窗表单验证
-      rulesForm: {
-        name: [
-          { required: true, message: "标签名称不能为空", trigger: ["blur", "change"] },
-          { max: 50, message: "标签名称长度不能大于50", trigger: ["blur", "change"] }
-        ],
-        // "labelData.style.icon.src": [{ required: true, message: "标签图片不能为空", trigger: ["blur", "change"] }],
-        "labelData.style.icon.scale": [
-          { required: true, message: "显示比例不能为空", trigger: ["blur", "change"] },
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value) || value > 100) {
-                return callback(new Error("只能为0-100的整数或浮点数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.icon.opacity": [
-          { required: true, message: "透明度不能为空", trigger: ["blur", "change"] },
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(?:1|0(?:\.[0-9]{1,4})?)$/.test(value)) {
-                return callback(new Error("只能为0-1的浮点数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.radius": [
-          { required: true, message: "半径不能为空", trigger: ["blur", "change"] },
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value)) {
-                return callback(new Error("只能为非负浮点数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.stroke.width": [
-          { required: true, message: "线宽不能为空", trigger: ["blur", "change"] },
-          { validator: lineWidthVerify, trigger: ["blur", "change"] }
-        ],
-        "labelData.style.lineVector.path": [
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (value && !/^(M|m).*$/.test(value)) {
-                return callback(new Error("SVG path格式不正确"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.lineVector.width": [
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value)) {
-                return callback(new Error("只能为正整数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.lineVector.height": [
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value)) {
-                return callback(new Error("只能为正整数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.text.text": [
-          { required: true, message: "文本内容不能为空", trigger: ["blur", "change"] },
-          { max: 50, message: "文本内容长度不能大于50", trigger: ["blur", "change"] }
-        ],
-        "font.fontSize": [
-          { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
-          { validator: lineWidthVerify, trigger: ["blur", "change"] }
-        ],
-        "labelData.style.text.fontStrokeWidth": [{ validator: lineWidthVerify, trigger: ["blur", "change"] }],
-        "labelData.style.text.rotation": [
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)$/.test(value) || value > 360) {
-                return callback(new Error("只能为0-360的整数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.text.offsetX": [
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)$/.test(value) || value > 1000) {
-                return callback(new Error("只能为0-10000的整数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.text.offsetY": [
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)$/.test(value) || value > 1000) {
-                return callback(new Error("只能为0-10000的整数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ],
-        "labelData.style.text.backgroundStrokeWidth": [
-          {
-            validator: (rule: any, value: any, callback: Function) => {
-              if (!/^(\d|[1-9]\d+)$/.test(value) || value > 100) {
-                return callback(new Error("只能为0-100的整数"));
-              }
-              callback();
-            },
-            trigger: ["blur", "change"]
-          }
-        ]
-      }
-    });
+const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
+  map: () => null
+});
 
-    const labelInfoMap = computed(() => {
-      return props.map?.get("labelInfoMap") || {};
-    });
-
-    const labelDataType = computed(() => {
-      if (form.value.labelType.dataType) {
-        return MAP_DATA_TYPE[form.value.labelType.dataType].title; // 点、线、面
-      } else {
-        return "";
-      }
-    });
-
-    const refForm = ref();
-    const form = ref<LabelForm>({
-      id: "",
-      code: "",
-      name: "",
-      refLayer: {},
-      refLayerId: null,
-      labelType: {},
-      labelTypeId: null,
-      labelData: {
-        isDefaultDisplayLabelName: false,
-        radius: 0,
-        coordinates: [],
-        style: {}
-      },
-      font: {
-        isBold: false,
-        fontSize: 12,
-        fontFamily: ""
-      }
-    });
-
-    const modifyFeature = ref(); // 编辑的要素
-    const modify = ref(); // 编辑交互器
-
-    // 自己逻辑实现
-    const originEditLabel = ref(); // 编辑前的原始数据
-    const hasEdit = ref(false); // 是否编辑过数据
-    const isEditSuccess = ref(false); // 是否编辑成功（即是否需要恢复原来的数据）
-
-    // 打开标签编辑
-    const onOpen = (labelCode: string) => {
-      if (labelCode) {
-        const editLabel = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
-        if (!editLabel) {
-          // 从标签信息中找不到（可能别的应用绘制了但是有的应用没有配置对应的类型所以地图上没有）
-          ElMessage.warning("标签不存在或已删除");
-          return;
-        }
-        originEditLabel.value = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
-        // 文本标注默认样式
-        const defaultTextStyle = {
-          font: "normal 12px MicrosoftYaHei",
-          fill: "rgba(0, 0, 0, 1)",
-          placement: "point",
-          fontStrokeWidth: 0,
-          offsetX: 0,
-          offsetY: editLabel.labelType.dataType === "1" || editLabel.labelType.dataType === "Point" ? 20 : 0,
-          rotation: 0, // 旋转角度默认0
-          backgroundStrokeWidth: 0 // 边框线宽默认0
-        };
-        editLabel.labelData.style.text = Object.assign({}, defaultTextStyle, editLabel.labelData.style.text || {});
-        // 解析字体样式
-        let fontArr =
-          editLabel.labelData.style.text && editLabel.labelData.style.text.font
-            ? editLabel.labelData.style.text.font.split(" ")
-            : defaultTextStyle.font.split(" ");
-        editLabel.font = {
-          isBold: fontArr[0] === "bold",
-          fontSize: Number(fontArr[1].replace("px", "")),
-          fontFamily: fontArr[2]
-        };
-        let feature = getFeature(editLabel, props.map);
-        if (!feature) {
-          ElMessage.warning("标签不存在或标签类型中已隐藏");
-          return;
-        }
-        // 更新表单
-        form.value = editLabel;
-        let featureCoordinates = feature?.getGeometry()?.getCoordinates(); // 坐标集合
-        let radius = null; // 圆的半径
-        if (feature?.getGeometry() instanceof Circle) {
-          featureCoordinates = feature.getGeometry().getCenter();
-          radius = feature.getGeometry().getRadius();
-        }
-        form.value.labelData.coordinates = featureCoordinates;
-        form.value.labelData.radius = radius;
-        state.isShow = true;
-      }
-    };
-
-    // 关闭标签编辑
-    const onClose = () => {
-      state.isShow = false;
-      clearModify();
-    };
-
-    // 新表单数据变化应用到地图上
-    const applyModify = (data: any) => {
-      hasEdit.value = true;
-      isEditSuccess.value = false;
-      labelInfoMap.value[data?.code] = data;
-      props.map.set("labelInfoMap", labelInfoMap.value); // 更新标签树
-      if (data && data.labelData && data.labelData.radius) {
-        data.labelData.radius = Number(data.labelData.radius);
-      }
-      featureUpdate(data, props.map);
-    };
-
-    // 保存
-    const onConfirm = () => {
-      refForm.value.validate((valid: any) => {
-        if (valid) {
-          const { id, code, name, labelTypeId, labelType, refLayerId, refLayer, labelData } = form.value;
-
-          editLabel({
-            id,
-            code,
-            name,
-            labelTypeId,
-            labelType,
-            refLayerId,
-            refLayer,
-            labelData: JSON.stringify(labelData)
-          }).then(
-            (res: any) => {
-              if (res.code == 200) {
-                const newLabel = cloneDeep(res.data);
-                newLabel.labelData = JSON.parse(newLabel.labelData);
-                labelInfoMap.value[newLabel.code] = newLabel;
-                props.map.set("labelInfoMap", labelInfoMap.value);
-                isEditSuccess.value = true;
-                ElMessage.success("保存成功");
-              } else {
-                console.warn(res.msg);
-                ElMessage.error("接口异常");
-              }
-              state.isShow = false;
-            },
-            (err: any) => {
-              console.error(err);
-              ElMessage.error("接口异常");
-            }
-          );
-        }
-      });
-    };
-
-    // 恢复原来的标签样式
-    const clearModify = () => {
-      if (hasEdit.value && !isEditSuccess.value) {
-        if (originEditLabel.value) {
-          labelInfoMap.value[originEditLabel.value?.code] = originEditLabel.value;
-          props.map.set("labelInfoMap", labelInfoMap.value); // 更新标签树
-          featureUpdate(originEditLabel.value, props.map);
-        }
-      }
-    };
-
-    onBeforeUnmount(() => {
-      clearModify();
-    });
-
-    watch(
-      form,
-      newForm => {
-        if (newForm.font) {
-          const bold = newForm.font.isBold ? "bold" : "normal";
-          newForm.labelData.style.text.font = bold + " " + newForm.font.fontSize + "px " + newForm.font.fontFamily;
-        }
-        // 修改地图元素样式
-        applyModify(newForm);
-      },
+const lineWidthVerify = (rule: any, value: any, callback: Function) => {
+  if (!/^(\d|[1-9]\d+)$/.test(value)) {
+    return callback(new Error("只能为0-100的整数"));
+  }
+  callback();
+};
+const state = reactive({
+  isShow: false,
+  // 弹窗表单验证
+  rulesForm: {
+    name: [
+      { required: true, message: "标签名称不能为空", trigger: ["blur", "change"] },
+      { max: 50, message: "标签名称长度不能大于50", trigger: ["blur", "change"] }
+    ],
+    // "labelData.style.icon.src": [{ required: true, message: "标签图片不能为空", trigger: ["blur", "change"] }],
+    "labelData.style.icon.scale": [
+      { required: true, message: "显示比例不能为空", trigger: ["blur", "change"] },
       {
-        deep: true,
-        flush: "post"
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value) || value > 100) {
+            return callback(new Error("只能为0-100的整数或浮点数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
       }
-    );
-
-    return {
-      ...toRefs(state),
-      labelInfoMap,
-      refForm,
-      form,
-      modifyFeature,
-      modify,
-      onOpen,
-      onClose,
-      onConfirm,
-      labelDataType
-    };
+    ],
+    "labelData.style.icon.opacity": [
+      { required: true, message: "透明度不能为空", trigger: ["blur", "change"] },
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(?:1|0(?:\.[0-9]{1,4})?)$/.test(value)) {
+            return callback(new Error("只能为0-1的浮点数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.radius": [
+      { required: true, message: "半径不能为空", trigger: ["blur", "change"] },
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value)) {
+            return callback(new Error("只能为非负浮点数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.style.stroke.width": [
+      { required: true, message: "线宽不能为空", trigger: ["blur", "change"] },
+      { validator: lineWidthVerify, trigger: ["blur", "change"] }
+    ],
+    "labelData.style.lineVector.path": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (value && !/^(M|m).*$/.test(value)) {
+            return callback(new Error("SVG path格式不正确"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.style.lineVector.width": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value)) {
+            return callback(new Error("只能为正整数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.style.lineVector.height": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)(\.\d+)?$/.test(value)) {
+            return callback(new Error("只能为正整数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.style.text.text": [
+      { required: true, message: "文本内容不能为空", trigger: ["blur", "change"] },
+      { max: 50, message: "文本内容长度不能大于50", trigger: ["blur", "change"] }
+    ],
+    "font.fontSize": [
+      { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
+      { validator: lineWidthVerify, trigger: ["blur", "change"] }
+    ],
+    "labelData.style.text.fontStrokeWidth": [{ validator: lineWidthVerify, trigger: ["blur", "change"] }],
+    "labelData.style.text.rotation": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)$/.test(value) || value > 360) {
+            return callback(new Error("只能为0-360的整数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.style.text.offsetX": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)$/.test(value) || value > 1000) {
+            return callback(new Error("只能为0-10000的整数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.style.text.offsetY": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)$/.test(value) || value > 1000) {
+            return callback(new Error("只能为0-10000的整数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+    "labelData.style.text.backgroundStrokeWidth": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)$/.test(value) || value > 100) {
+            return callback(new Error("只能为0-100的整数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ]
   }
 });
+
+const labelInfoMap = computed(() => {
+  return props.map?.get("labelInfoMap") || {};
+});
+
+const labelDataType = computed(() => {
+  if (form.value.labelType.dataType) {
+    return MAP_DATA_TYPE[form.value.labelType.dataType].title; // 点、线、面
+  } else {
+    return "";
+  }
+});
+
+const refForm = ref();
+const form = ref<LabelForm>({
+  id: "",
+  code: "",
+  name: "",
+  refLayer: {},
+  refLayerId: null,
+  labelType: {},
+  labelTypeId: null,
+  labelData: {
+    isDefaultDisplayLabelName: false,
+    radius: 0,
+    coordinates: [],
+    style: {}
+  },
+  font: {
+    isBold: false,
+    fontSize: 12,
+    fontFamily: ""
+  }
+});
+
+// 自己逻辑实现
+const originEditLabel = ref(); // 编辑前的原始数据
+const hasEdit = ref(false); // 是否编辑过数据
+const isEditSuccess = ref(false); // 是否编辑成功（即是否需要恢复原来的数据）
+
+// 打开标签编辑
+const onOpen = (labelCode: string) => {
+  if (labelCode) {
+    const editLabel = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
+    if (!editLabel) {
+      // 从标签信息中找不到（可能别的应用绘制了但是有的应用没有配置对应的类型所以地图上没有）
+      ElMessage.warning("标签不存在或已删除");
+      return;
+    }
+    originEditLabel.value = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
+    // 文本标注默认样式
+    const defaultTextStyle = {
+      font: "normal 12px MicrosoftYaHei",
+      fill: "rgba(0, 0, 0, 1)",
+      placement: "point",
+      fontStrokeWidth: 0,
+      offsetX: 0,
+      offsetY: editLabel.labelType.dataType === "1" || editLabel.labelType.dataType === "Point" ? 20 : 0,
+      rotation: 0, // 旋转角度默认0
+      backgroundStrokeWidth: 0 // 边框线宽默认0
+    };
+    editLabel.labelData.style.text = Object.assign({}, defaultTextStyle, editLabel.labelData.style.text || {});
+    // 解析字体样式
+    let fontArr =
+      editLabel.labelData.style.text && editLabel.labelData.style.text.font
+        ? editLabel.labelData.style.text.font.split(" ")
+        : defaultTextStyle.font.split(" ");
+    editLabel.font = {
+      isBold: fontArr[0] === "bold",
+      fontSize: Number(fontArr[1].replace("px", "")),
+      fontFamily: fontArr[2]
+    };
+    let feature = getFeature(editLabel, props.map);
+    if (!feature) {
+      ElMessage.warning("标签不存在或标签类型中已隐藏");
+      return;
+    }
+    // 更新表单
+    form.value = editLabel;
+    let featureCoordinates = feature?.getGeometry()?.getCoordinates(); // 坐标集合
+    let radius = null; // 圆的半径
+    if (feature?.getGeometry() instanceof Circle) {
+      featureCoordinates = feature.getGeometry().getCenter();
+      radius = feature.getGeometry().getRadius();
+    }
+    form.value.labelData.coordinates = featureCoordinates;
+    form.value.labelData.radius = radius;
+    state.isShow = true;
+  }
+};
+
+// 关闭标签编辑
+const onClose = () => {
+  state.isShow = false;
+  clearModify();
+};
+
+// 新表单数据变化应用到地图上
+const applyModify = (data: any) => {
+  hasEdit.value = true;
+  isEditSuccess.value = false;
+  labelInfoMap.value[data?.code] = data;
+  props.map.set("labelInfoMap", labelInfoMap.value); // 更新标签树
+  if (data && data.labelData && data.labelData.radius) {
+    data.labelData.radius = Number(data.labelData.radius);
+  }
+  featureUpdate(data, props.map);
+};
+
+// 保存
+const onConfirm = () => {
+  refForm.value.validate((valid: any) => {
+    if (valid) {
+      const { id, code, name, labelTypeId, labelType, refLayerId, refLayer, labelData } = form.value;
+
+      editLabel({
+        id,
+        code,
+        name,
+        labelTypeId,
+        labelType,
+        refLayerId,
+        refLayer,
+        labelData: JSON.stringify(labelData)
+      }).then(
+        (res: any) => {
+          if (res.code == 200) {
+            const newLabel = cloneDeep(res.data);
+            newLabel.labelData = JSON.parse(newLabel.labelData);
+            labelInfoMap.value[newLabel.code] = newLabel;
+            props.map.set("labelInfoMap", labelInfoMap.value);
+            isEditSuccess.value = true;
+            ElMessage.success("保存成功");
+          } else {
+            console.warn(res.msg);
+            ElMessage.error("接口异常");
+          }
+          state.isShow = false;
+        },
+        (err: any) => {
+          console.error(err);
+          ElMessage.error("接口异常");
+        }
+      );
+    }
+  });
+};
+
+// 恢复原来的标签样式
+const clearModify = () => {
+  if (hasEdit.value && !isEditSuccess.value) {
+    if (originEditLabel.value) {
+      labelInfoMap.value[originEditLabel.value?.code] = originEditLabel.value;
+      props.map.set("labelInfoMap", labelInfoMap.value); // 更新标签树
+      featureUpdate(originEditLabel.value, props.map);
+    }
+  }
+};
+
+onBeforeUnmount(() => {
+  clearModify();
+});
+
+defineExpose({
+  onOpen
+});
+
+watch(
+  form,
+  newForm => {
+    if (newForm.font) {
+      const bold = newForm.font.isBold ? "bold" : "normal";
+      newForm.labelData.style.text.font = bold + " " + newForm.font.fontSize + "px " + newForm.font.fontFamily;
+    }
+    // 修改地图元素样式
+    applyModify(newForm);
+  },
+  {
+    deep: true,
+    flush: "post"
+  }
+);
 </script>
 
 <style lang="scss" scoped>

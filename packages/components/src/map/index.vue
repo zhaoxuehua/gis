@@ -374,6 +374,13 @@ const initMap = async (mapId: string | number) => {
     map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
     map.set("clusterLayerCodes", clusterLayerCodes); // 存储所有的图层信息
 
+    // 创建固定的点图层用于定位时增加定位点到点图层
+    let positionPointLayer = new VectorLayer({
+      source: new VectorSource()
+    });
+    map.addLayer(positionPointLayer);
+    map.set("positionPointLayer", positionPointLayer);
+
     // 存储标签类型信息及根据标签类型分组 code => labelType
     const labelTypeMap: { [key: string]: LabelType } = {};
     let featureTypeGroup: { [key: string]: Feature[] } = {};

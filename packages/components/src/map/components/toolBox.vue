@@ -31,21 +31,21 @@
             <el-tab-pane label="度分秒" name="first">
               <div class="lon-box">
                 <label> 经度 </label>
-                <el-input v-model="state.lonDegree" class="short_l" />
+                <el-input type="number" v-model="state.lonDegree" class="short_l" />
                 <em>°</em>
-                <el-input v-model="state.lonMin" class="short_l" />
+                <el-input type="number" v-model="state.lonMin" class="short_l" />
                 <em>'</em>
-                <el-input v-model="state.lonSeconds" class="short_l" />
+                <el-input type="number" v-model="state.lonSeconds" class="short_l" />
                 <em>''</em>
                 <span class="tip-unit">E</span>
               </div>
               <div class="lon-box">
                 <label> 纬度 </label>
-                <el-input v-model="state.latDegree" class="short_l" />
+                <el-input type="number" v-model="state.latDegree" class="short_l" />
                 <em>°</em>
-                <el-input v-model="state.latMin" class="short_l" />
+                <el-input type="number" v-model="state.latMin" class="short_l" />
                 <em>'</em>
-                <el-input v-model="state.latSeconds" class="short_l" />
+                <el-input type="number" v-model="state.latSeconds" class="short_l" />
                 <em>''</em>
                 <span class="tip-unit">N</span>
               </div>
@@ -58,18 +58,18 @@
             <el-tab-pane label="度分" name="second">
               <div class="lon-box">
                 <label> 经度 </label>
-                <el-input v-model="state.lonDegree" class="short_2" />
+                <el-input type="number" v-model="state.lonDegree" class="short_2" />
                 <em>°</em>
-                <el-input v-model="state.lonMin" class="short_2" />
+                <el-input type="number" v-model="state.lonMin" class="short_2" />
                 <em>'</em>
                 <span class="tip-unit">E</span>
               </div>
 
               <div class="lon-box">
                 <label> 纬度 </label>
-                <el-input v-model="state.latDegree" class="short_2" />
+                <el-input type="number" v-model="state.latDegree" class="short_2" />
                 <em>°</em>
-                <el-input v-model="state.latMin" class="short_2" />
+                <el-input type="number" v-model="state.latMin" class="short_2" />
                 <em>'</em>
                 <span class="tip-unit">N</span>
               </div>
@@ -83,14 +83,14 @@
             <el-tab-pane label="度" name="third">
               <div class="lon-box">
                 <label> 经度 </label>
-                <el-input v-model="state.lonDegree" class="short_3" />
+                <el-input type="number" v-model="state.lonDegree" class="short_3" />
                 <em>°</em>
                 <span class="tip-unit">E</span>
               </div>
 
               <div class="lon-box">
                 <label> 纬度 </label>
-                <el-input v-model="state.latDegree" class="short_3" />
+                <el-input type="number" v-model="state.latDegree" class="short_3" />
                 <em>°</em>
                 <span class="tip-unit">N</span>
               </div>
@@ -107,16 +107,20 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from "vue";
+import { Feature } from "ol";
 import { fromLonLat } from "ol/proj";
 import { Draw } from "ol/interaction";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
-import { LineString, Polygon } from "ol/geom";
+import { LineString, Polygon, Point } from "ol/geom";
 import { getArea, getLength } from "ol/sphere";
 import Overlay from "ol/Overlay";
 import { unByKey } from "ol/Observable";
+import { Style, Icon as IconStyle } from "ol/style";
 import { measureStyle } from "../hooks/styleFunction";
 import type { VisualMap } from "../type";
+import pointImg from "../img/piont.png";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null
@@ -301,7 +305,6 @@ const changeToDu = (d: string = "0", f: string = "0", m: string = "0") => {
   if (m) {
     num = num + Number(m) / 3600;
   }
-
   return num;
 };
 const conformPosition = () => {
@@ -311,7 +314,7 @@ const conformPosition = () => {
 };
 
 const mapCenterByPic = (lon: any, lat: any) => {
-  if (!lon || !lat) {
+  if (!lon || !lat || !props.map) {
     return false;
   }
 
@@ -320,9 +323,26 @@ const mapCenterByPic = (lon: any, lat: any) => {
   const zoom = view?.getMaxZoom();
   props.map?.getView().animate({
     center: centerCoArr,
-    zoom: zoom,
-    duration: 500
+    zoom: zoom
   });
+
+  let positionPointLayer = props?.map?.get("positionPointLayer");
+  if (positionPointLayer) {
+    let pointFeature = new Feature({
+      geometry: new Point(centerCoArr)
+    });
+    pointFeature.setStyle(
+      new Style({
+        image: new IconStyle({
+          src: pointImg
+        })
+      })
+    );
+    positionPointLayer?.getSource()?.addFeature(pointFeature);
+    setTimeout(() => {
+      positionPointLayer?.getSource()?.removeFeature(pointFeature);
+    }, 2000);
+  }
 };
 
 const toMapCenter = () => {
@@ -398,15 +418,15 @@ onMounted(() => {});
     margin-top: 10px;
   }
   .short_l {
-    width: 60px;
+    width: 80px;
     margin-left: 10px;
   }
   .short_2 {
-    width: 100px;
+    width: 130px;
     margin-left: 10px;
   }
   .short_3 {
-    width: 220px;
+    width: 280px;
   }
   .tip-unit {
     display: inline-block;

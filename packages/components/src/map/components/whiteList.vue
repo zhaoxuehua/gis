@@ -74,6 +74,7 @@ import { handleParam } from "@/utils/common.js";
 import type { VisualMap, TableList } from "../type";
 import WhiteListEdit from "./whiteListEdit.vue";
 import { getWhiteList, whiteListDelete } from "@/api/gis.js";
+import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null

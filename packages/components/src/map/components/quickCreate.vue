@@ -23,6 +23,7 @@ import { reactive, onMounted } from "vue";
 import CreatePointBox from "./createPointBox.vue";
 import CreateLineBox from "./createLineBox.vue";
 import CreatePolygon from "./createPolygon.vue";
+import Icon from "./Icon.vue";
 
 const emits = defineEmits(["onClose"]);
 
