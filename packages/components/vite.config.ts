@@ -23,7 +23,7 @@ export default defineConfig({
           //打包后文件名
           entryFileNames: "[name].mjs",
           //让打包目录和我们目录对应
-          preserveModules: true,
+          // preserveModules: true,
           exports: "named",
           //配置打包根目录
           dir: "../agmap/es"
@@ -34,7 +34,7 @@ export default defineConfig({
           //打包后文件名
           entryFileNames: "[name].js",
           //让打包目录和我们目录对应
-          preserveModules: true,
+          // preserveModules: true,
           exports: "named",
           //配置打包根目录
           dir: "../agmap/lib"
