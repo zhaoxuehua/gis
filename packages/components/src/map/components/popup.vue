@@ -85,7 +85,7 @@ defineExpose({
     justify-content: space-between;
     height: 60px;
     padding: 0 20px;
-    background-color: var(--el-color-primary-light-8);
+    background-color: #f7f7fa;
     border-bottom: #e0e0e0 solid 1px;
     span {
       font-size: 16px;

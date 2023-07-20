@@ -56,6 +56,10 @@ export function deleteLabelSingle(id: number) {
 export function getEquipListByLine(id: number) {
   return request.get(`/api/gis-service/equip/2DGis/label/line/getByAssert/${id}`);
 }
+// 快速绘制（创建面设备弹框列表）
+export function gisDeviceEquipList(queryString: string, params: object) {
+  return request.get(`/api/gis-service/equip/2DGis/label/equip${queryString}`, params);
+}
 
 // 白名单
 // 获取白名单列表

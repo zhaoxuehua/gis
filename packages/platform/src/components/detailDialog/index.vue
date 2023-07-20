@@ -12,7 +12,7 @@
       <el-descriptions :column="2" border class="menu-detail-common" :key="state.key" v-if="state.open">
         <template v-for="item in state.info" :key="item.name">
           <!-- 带有optional属性的，有值的时候才会显示 -->
-          <el-descriptions-item :label="item.label" v-if="!(item.optional && !item.value)">
+          <el-descriptions-item :label="item.label" v-if="!(item.optional && !item.value)" width="100px">
             <span v-if="!item.slot">
               <Popover :info="item.value" :len="20" placement="right"></Popover>
             </span>
@@ -67,4 +67,8 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.my-label {
+  width: 120px;
+}
+</style>

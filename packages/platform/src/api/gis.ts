@@ -55,6 +55,10 @@ export function addLabelSingle(params: object) {
 export function deleteLabelSingle(id: number) {
   return request.get(`/api/gis-service/equip/2DGis/label/delete/${id}`);
 }
+// 快速绘制（创建面设备弹框列表）
+export function gisDeviceEquipList(queryString: string, params: object) {
+  return request.get(`/api/gis-service/equip/2DGis/label/equip${queryString}`, params);
+}
 
 // 白名单
 // 获取白名单列表
