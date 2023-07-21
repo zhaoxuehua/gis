@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.3
+
+### Patch Changes
+
+- store 改为相对路径，hooks 中 ts 暂未使用 store+注释打包路径匹配
+
 ## 1.0.2
 
 ### Patch Changes
