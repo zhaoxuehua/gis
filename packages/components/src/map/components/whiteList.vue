@@ -42,7 +42,7 @@
           <el-table-column label="开始免监控时间" prop="startTime" width="120"> </el-table-column>
           <el-table-column label="结束免监控时间" prop="endTime" width="120"> </el-table-column>
           <el-table-column label="状态" prop="status"> </el-table-column>
-          <el-table-column label="操作" width="120">
+          <el-table-column label="操作" width="180">
             <template #default="scope">
               <el-button text type="primary" @click="table.onEdit(scope.row, 'edit')"> 编辑 </el-button>
               <el-button link type="primary" @click="table.onEdit(scope.row, 'delete')"> 删除 </el-button>
