@@ -7,7 +7,7 @@ import type { Coordinate } from "ol/coordinate";
 import { Circle } from "ol/geom";
 import { isObject, find } from "lodash";
 // import { useGisStore } from "@/stores/modules/gis";
-import { useGisStore } from "../../stores/modules/gis";
+import useGisStore from "../../stores/modules/gis";
 // import { mapStores } from "pinia";
 
 import { deleteAssociation } from "@/api/gis.js";

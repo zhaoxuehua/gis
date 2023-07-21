@@ -42,7 +42,7 @@ import type { VisualMap, LabelType, LabelInfoData } from "./type";
 import { getMapParamsDetail, getLabelList } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
 // import { useGisStore } from "@/stores/modules/gis";
-import { useGisStore } from "../stores/modules/gis";
+import useGisStore from "../stores/modules/gis";
 
 import { layerStyle, clusterLayerStyle } from "./hooks/styleFunction.js";
 import { createGeometry } from "./hooks/createGeometry.js";

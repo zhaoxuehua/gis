@@ -1,10 +1,11 @@
 import { defineStore } from "pinia";
+import pinia from "../index";
 import { cloneDeep } from "lodash";
 import { ElMessage } from "element-plus";
 import piniaPersistConfig from "../../config/piniaPersist";
 import { getGisCustomTree } from "@/api/gis.js";
 
-export const useGisStore = defineStore({
+const useGisStore: any = defineStore({
   id: "gis",
   state: (): any => ({
     navigationTree: [], // 导航树
@@ -51,6 +52,8 @@ export const useGisStore = defineStore({
   },
   persist: piniaPersistConfig("gis")
 });
+
+pinia.use(useGisStore);
 
 // 格式化树数据，按order进行排序
 const formatTree = (tree: any[]) => {
@@ -112,3 +115,5 @@ const collectRelation = (nodes: any[]) => {
   })();
   return collectBindRelation(nodes, null);
 };
+
+export default useGisStore;
