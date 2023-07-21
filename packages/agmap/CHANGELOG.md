@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.4
+
+### Patch Changes
+
+- store 问题
+
 ## 1.0.3
 
 ### Patch Changes
