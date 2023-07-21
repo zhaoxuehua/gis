@@ -32,7 +32,7 @@ class RequestHttp {
     this.service.interceptors.request.use(
       (config: CustomAxiosRequestConfig) => {
         if (config.headers && typeof config.headers.set === "function") {
-          config.headers.set("agioe_sso_sessionid", "26_cb2a13c6326e48f2b9c65becd3c5d951");
+          config.headers.set("agioe_sso_sessionid", "26_68f586b819d4485ca54ac20f1d11654d");
         }
         return config;
       },
