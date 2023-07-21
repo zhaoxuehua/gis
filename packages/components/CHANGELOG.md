@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.6
+
+### Patch Changes
+
+- 解决 store 问题
+
 ## 1.0.5
 
 ### Patch Changes
