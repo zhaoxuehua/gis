@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.5
+
+### Patch Changes
+
+- index 中增加实例化
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.5
+
 ## 1.0.4
 
 ### Patch Changes
