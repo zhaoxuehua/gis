@@ -1,7 +1,7 @@
 {
   "name": "@adm-gis-ui/platform",
   "private": true,
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "description": "front-vue3-template",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "preview": "npm run build:dev && vite preview"
   },
   "dependencies": {
-    "@adm-gis-ui/components": "workspace:^1.0.9",
+    "@adm-gis-ui/components": "workspace:^1.0.10",
     "@element-plus/icons-vue": "^2.1.0",
     "@svgdotjs/svg.js": "^3.2.0",
     "@turf/turf": "^6.5.0",

@@ -7,15 +7,13 @@ import type { Coordinate } from "ol/coordinate";
 import { Circle } from "ol/geom";
 import { isObject, find } from "lodash";
 // import { useGisStore } from "@/stores/modules/gis";
-// import useGisStore from "../../stores/modules/gis";
+import { useGisStore } from "../../stores/modules/gis";
 // import { mapStores } from "pinia";
 
 import { deleteAssociation } from "@/api/gis.js";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, multiArray, getGeometryCenter } from "./createGeometry.js";
 import { createStyle, clusterLayerStyle } from "./styleFunction.js";
-
-// const gisStore = useGisStore();
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
 export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: Function) {
@@ -235,9 +233,9 @@ export function removeLabel(label: LabelInfoData, map: any) {
 
 // 删除关联关系(导航树的删除一定存在关联关系的删除。标签树的删除可能存在可能不存在)
 export function removeRelation(label: LabelInfoData) {
-  // const relationMap = gisStore.relationMap;
-  const relationMap: any = {};
-  // let relationMap: any = {};
+  let gisStore = useGisStore();
+  const relationMap = gisStore.relationMap;
+
   console.log(relationMap, 33376666);
   // 检查是否有关联关系
   const node = find(relationMap, (item: any) => {
