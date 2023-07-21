@@ -1,10 +1,7 @@
 import * as components from "./src/index";
 export * from "./src/index";
 import { App } from "vue";
-import { createPinia } from "pinia";
-
-// 创建Pinia实例
-const pinia = createPinia();
+import pinia from "./src/stores/index";
 
 export default {
   install: (app: App) => {

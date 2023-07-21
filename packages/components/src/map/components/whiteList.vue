@@ -44,7 +44,7 @@
           <el-table-column label="状态" prop="status"> </el-table-column>
           <el-table-column label="操作" width="120">
             <template #default="scope">
-              <el-button link type="primary" @click="table.onEdit(scope.row, 'edit')"> 编辑 </el-button>
+              <el-button text type="primary" @click="table.onEdit(scope.row, 'edit')"> 编辑 </el-button>
               <el-button link type="primary" @click="table.onEdit(scope.row, 'delete')"> 删除 </el-button>
             </template>
           </el-table-column>
