@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { cloneDeep } from "lodash";
 import { ElMessage } from "element-plus";
-import piniaPersistConfig from "@/config/piniaPersist";
+import piniaPersistConfig from "../../config/piniaPersist";
 import { getGisCustomTree } from "@/api/gis.js";
 
 export const useGisStore = defineStore({

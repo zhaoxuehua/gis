@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.2
+
+### Patch Changes
+
+- ts 中不使用 store
+
 ## 1.0.1
 
 ### Patch Changes
