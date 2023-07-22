@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.16
+
+### Patch Changes
+
+- 将 api 改为相对路径
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.16
+
 ## 1.0.15
 
 ### Patch Changes

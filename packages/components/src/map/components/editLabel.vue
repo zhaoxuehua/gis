@@ -202,7 +202,7 @@ import type { LabelForm, LabelInfoData } from "../type";
 
 import { MAP_DATA_TYPE } from "../hooks/createGeometry.js";
 import { featureUpdate, getFeature } from "../hooks/index.js";
-import { editLabel } from "@/api/visconfig";
+import { editLabel } from "../../api/visconfig";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
 

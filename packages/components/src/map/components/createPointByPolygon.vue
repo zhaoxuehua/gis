@@ -81,8 +81,8 @@
 </template>
 <script lang="ts" setup>
 import { reactive, watch, onMounted, ref } from "vue";
-import { getTreeData } from "@/api/device";
-import { getLabelInfoByEquipId, getEquipListByNodeCode, addLabelBatch, deleteLabelBatch } from "@/api/gis.js";
+import { getTreeData } from "../../api/device";
+import { getLabelInfoByEquipId, getEquipListByNodeCode, addLabelBatch, deleteLabelBatch } from "../../api/gis.js";
 import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import Feature from "ol/Feature";
 import { Polygon } from "ol/geom";

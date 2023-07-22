@@ -85,8 +85,8 @@
 
 <script lang="ts" setup>
 import { reactive, watch, onMounted, ref } from "vue";
-import { getTreeData } from "@/api/device";
-import { getLabelInfoByEquipId, getEquipListByLine, addLabelSingle, deleteLabelSingle } from "@/api/gis.js";
+import { getTreeData } from "../../api/device";
+import { getLabelInfoByEquipId, getEquipListByLine, addLabelSingle, deleteLabelSingle } from "../../api/gis";
 import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import type { TableList } from "../type";
 import SelectDeviceDialog from "./selectDeviceDialog.vue";

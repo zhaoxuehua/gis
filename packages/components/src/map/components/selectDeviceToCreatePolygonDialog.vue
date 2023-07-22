@@ -87,7 +87,7 @@ import { onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { cloneDeep } from "lodash";
 import { handleParam } from "@/utils/common.js";
-import { gisDeviceEquipList, getLabelInfoByEquipId } from "@/api/gis.js";
+import { gisDeviceEquipList, getLabelInfoByEquipId } from "../../api/gis.js";
 import type { TableList } from "../type";
 import Icon from "./Icon.vue";
 

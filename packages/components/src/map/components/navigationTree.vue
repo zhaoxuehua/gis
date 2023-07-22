@@ -41,7 +41,7 @@
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useGisStore } from "../../stores/modules/gis";
-import { getLabelInfoByEquipId, addAssociation } from "@/api/gis.js";
+import { getLabelInfoByEquipId, addAssociation } from "../../api/gis.js";
 import { cloneDeep } from "lodash";
 
 import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";

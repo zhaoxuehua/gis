@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.16
+
+### Patch Changes
+
+- 将 api 改为相对路径
+
 ## 1.0.15
 
 ### Patch Changes

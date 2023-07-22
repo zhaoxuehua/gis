@@ -39,7 +39,7 @@ import { Select } from "ol/interaction";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
-import { getMapParamsDetail, getLabelList } from "@/api/visconfig.js";
+import { getMapParamsDetail, getLabelList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { useGisStore } from "../stores/modules/gis";
 

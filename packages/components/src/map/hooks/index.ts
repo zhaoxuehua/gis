@@ -1,4 +1,4 @@
-import { addLabel, deleteLabel } from "@/api/visconfig.js";
+import { addLabel, deleteLabel } from "../../api/visconfig";
 import { ElMessage } from "element-plus";
 import Draw, { DrawEvent, createBox } from "ol/interaction/Draw";
 import type { Type } from "ol/geom/Geometry";
@@ -7,7 +7,7 @@ import type { Coordinate } from "ol/coordinate";
 import { Circle } from "ol/geom";
 import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
-import { deleteAssociation } from "@/api/gis.js";
+import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, multiArray, getGeometryCenter } from "./createGeometry.js";
 import { createStyle, clusterLayerStyle } from "./styleFunction.js";

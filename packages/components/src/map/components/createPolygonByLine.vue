@@ -87,8 +87,8 @@
 <script lang="ts" setup>
 import { reactive, watch, onMounted, ref } from "vue";
 import * as turf from "@turf/turf";
-import { getTreeData } from "@/api/device";
-import { getLabelInfoByEquipId, getEquipListByLine, addLabelSingle, deleteLabelSingle } from "@/api/gis.js";
+import { getTreeData } from "../../api/device";
+import { getLabelInfoByEquipId, getEquipListByLine, addLabelSingle, deleteLabelSingle } from "../../api/gis.js";
 import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import type { TableList } from "../type";
 import SelectDeviceToCreatePolygonDialog from "./selectDeviceToCreatePolygonDialog.vue";

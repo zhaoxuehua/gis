@@ -37,7 +37,7 @@
 import { reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import moment from "moment";
-import { whiteListAdd, whiteListEdit } from "@/api/gis.js";
+import { whiteListAdd, whiteListEdit } from "../../api/gis.js";
 
 const emit = defineEmits(["successAdd"]);
 
