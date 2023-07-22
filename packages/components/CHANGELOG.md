@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.14
+
+### Patch Changes
+
+- 编辑报错+table 样式
+
 ## 1.0.13
 
 ### Patch Changes

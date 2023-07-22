@@ -1,10 +1,6 @@
 <template>
   <div class="map-view">
-    <ag-map :config="config" v-if="config.id">
-      <!-- <template #customContent>
-        <div style="height: 50px">111111111111自定义</div>
-      </template> -->
-    </ag-map>
+    <ag-map :config="config" v-if="config.id"> </ag-map>
   </div>
 </template>
 <script lang="ts" setup name="mapView">

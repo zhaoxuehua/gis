@@ -465,6 +465,7 @@ const selectable = (row: any) => {
   }
   .layer-config-table {
     height: calc(100% - 50px);
+    overflow-y: auto !important;
   }
 }
 </style>

@@ -36,9 +36,6 @@
         </el-table-column>
         <el-table-column prop="path" label="操作" width="100">
           <template #default="scope">
-            <!-- <el-button type="primary" link @click="table.panToFeature(scope.row)">
-              {{ "定位" }}
-            </el-button> -->
             <el-link class="my-el-link" type="primary" :underline="false" @click="table.panToFeature(scope.row)">
               {{ "定位" }}</el-link
             >

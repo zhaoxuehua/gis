@@ -340,6 +340,7 @@ onMounted(() => {
       overflow-y: auto;
       .table {
         height: calc(100% - 50px);
+        overflow-y: auto !important;
       }
       .pagination-container {
         padding: 0;

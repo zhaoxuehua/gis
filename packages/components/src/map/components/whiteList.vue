@@ -44,8 +44,10 @@
           <el-table-column label="状态" prop="status" width="100"> </el-table-column>
           <el-table-column label="操作" width="200">
             <template #default="scope">
-              <el-link type="primary" :underline="false" @click="table.onEdit(scope.row, 'edit')">编辑</el-link>
-              <el-link type="primary" :underline="false" @click="table.onEdit(scope.row, 'delete')">删除</el-link>
+              <el-link type="primary" class="my-el-link" :underline="false" @click="onEditListRow(scope.row, 'edit')"
+                >编辑</el-link
+              >
+              <el-link type="primary" :underline="false" @click="onEditListRow(scope.row, 'delete')">删除</el-link>
             </template>
           </el-table-column>
         </el-table>
@@ -138,29 +140,31 @@ const table = ref<TableList>({
     table.value.loading = false;
   },
   onSelectionChange: () => {},
-  onEdit: (row: { [key: string]: any }, type: string) => {
-    if (type == "edit") {
-      whiteListEditRef.value?.openDialog(row);
-    } else if (type == "delete") {
-      ElMessageBox.confirm("确定删除？", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(async () => {
-          table.value.loading = true;
-          const res: { [key: string]: any } = await whiteListDelete(row?.id);
-          if (res.code == 200) {
-            ElMessage.success("删除成功");
-            table.value.getTableData(); // 刷新列表
-          } else {
-            ElMessage.error(res.msg);
-          }
-        })
-        .catch(() => {});
-    }
-  }
+  onEdit: () => {}
 });
+
+const onEditListRow = (row: { [key: string]: any }, type: string) => {
+  if (type == "edit") {
+    whiteListEditRef.value?.openDialog(row);
+  } else if (type == "delete") {
+    ElMessageBox.confirm("确定删除？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(async () => {
+        table.value.loading = true;
+        const res: { [key: string]: any } = await whiteListDelete(row?.id);
+        if (res.code == 200) {
+          ElMessage.success("删除成功");
+          table.value.getTableData(); // 刷新列表
+        } else {
+          ElMessage.error(res.msg);
+        }
+      })
+      .catch(() => {});
+  }
+};
 
 const onAdd = () => {
   whiteListEditRef.value?.openDialog();
@@ -227,8 +231,8 @@ onMounted(() => {
     .table-area {
       height: 200px;
       overflow-y: auto;
-      .el-link {
-        margin-right: 8px;
+      .my-el-link {
+        margin-right: 12px !important;
       }
     }
     .pagination-container {

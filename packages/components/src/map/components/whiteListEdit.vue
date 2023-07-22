@@ -33,9 +33,9 @@
   </div>
 </template>
 
-<script lang="ts" setup name="LayerEdit">
+<script lang="ts" setup>
 import { reactive, ref } from "vue";
-import { ElForm, ElMessage } from "element-plus";
+import { ElMessage } from "element-plus";
 import moment from "moment";
 import { whiteListAdd, whiteListEdit } from "@/api/gis.js";
 
