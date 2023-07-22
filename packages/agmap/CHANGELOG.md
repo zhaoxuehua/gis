@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.11
+
+### Patch Changes
+
+- 验证文本按钮及 ts 中的 pinia
+
 ## 1.0.10
 
 ### Patch Changes

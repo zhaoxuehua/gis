@@ -44,8 +44,10 @@
           <el-table-column label="状态" prop="status"> </el-table-column>
           <el-table-column label="操作" width="180">
             <template #default="scope">
-              <el-button text type="primary" @click="table.onEdit(scope.row, 'edit')"> 编辑7 </el-button>
-              <el-button link type="primary" @click="table.onEdit(scope.row, 'delete')"> 删除7 </el-button>
+              <!-- <el-button text type="primary" @click="table.onEdit(scope.row, 'edit')">  </el-button> -->
+              <!-- <el-button link type="primary" @click="table.onEdit(scope.row, 'delete')"> 删除 </el-button> -->
+              <el-link type="primary" @click="table.onEdit(scope.row, 'edit')">编辑</el-link>
+              <el-link type="primary" @click="table.onEdit(scope.row, 'delete')">删除</el-link>
             </template>
           </el-table-column>
         </el-table>
@@ -227,6 +229,9 @@ onMounted(() => {
     .table-area {
       height: 200px;
       overflow-y: auto;
+      .el-link {
+        margin-right: 8px;
+      }
     }
     .pagination-container {
       padding: 0;

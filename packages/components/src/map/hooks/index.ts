@@ -6,10 +6,7 @@ import { toLonLat } from "ol/proj";
 import type { Coordinate } from "ol/coordinate";
 import { Circle } from "ol/geom";
 import { isObject, find } from "lodash";
-// import { useGisStore } from "@/stores/modules/gis";
 import { useGisStore } from "../../stores/modules/gis";
-// import { mapStores } from "pinia";
-
 import { deleteAssociation } from "@/api/gis.js";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, multiArray, getGeometryCenter } from "./createGeometry.js";
@@ -234,9 +231,7 @@ export function removeLabel(label: LabelInfoData, map: any) {
 // 删除关联关系(导航树的删除一定存在关联关系的删除。标签树的删除可能存在可能不存在)
 export function removeRelation(label: LabelInfoData) {
   let gisStore = useGisStore();
-  const relationMap = gisStore.relationMap;
-
-  console.log(relationMap, 33376666);
+  const relationMap = gisStore?.relationMap;
   // 检查是否有关联关系
   const node = find(relationMap, (item: any) => {
     return item.associationInfo && item.associationInfo.associationObjectCode === label.code;
@@ -245,7 +240,7 @@ export function removeRelation(label: LabelInfoData) {
   deleteAssociation([node.associationInfo.id]).then(
     (res: any) => {
       if (res.code === 200) {
-        // gisStore.fetchNavigationTree(); // 更新导航树及关联关系
+        gisStore?.fetchNavigationTree(); // 更新导航树及关联关系
         ElMessage.success("删除关联关系成功");
       } else {
         console.warn(res);
@@ -310,6 +305,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   if (!map || !featureCode) {
     return;
   }
+  let gisStore = useGisStore();
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let labelInfo = labelInfoMap[featureCode];
   // 点击的不是要绘制节点
@@ -345,8 +341,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       clusterFeature.get("features").forEach(function (originalFeature: any) {
         if (originalFeature.get("code") === featureCode) {
           // 设置原始要素的样式以示选中
-          // clusterFeature.setStyle((feature: any) => clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, true));
-          clusterFeature.setStyle((feature: any) => clusterLayerStyle(feature, false, 0, true));
+          clusterFeature.setStyle((feature: any) => clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, true));
           clusterFeature.changed();
           map.set("clusterSelectFeature", clusterFeature);
         }
@@ -464,6 +459,7 @@ export function getTypeStatsByLabelType(labelType: any, dataType: any) {
 
 // 清空聚合图层与非聚合图层的选中
 export function clearSelectedFeature(map: VisualMap) {
+  let gisStore = useGisStore();
   let selectInteraction = map?.get("selectInteraction");
   if (selectInteraction) {
     selectInteraction.getFeatures().clear();
@@ -478,8 +474,7 @@ export function clearSelectedFeature(map: VisualMap) {
   // 处理聚合图层的选中状态
   let clusterSelectFeature = map?.get("clusterSelectFeature");
   if (clusterSelectFeature) {
-    // clusterSelectFeature.setStyle((feature: any) => clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, false));
-    clusterSelectFeature.setStyle((feature: any) => clusterLayerStyle(feature, false, 0, false));
+    clusterSelectFeature.setStyle((feature: any) => clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, false));
     map.set("clusterSelectFeature", null);
   }
 }
