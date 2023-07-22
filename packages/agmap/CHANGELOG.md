@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.15
+
+### Patch Changes
+
+- 资产表格样式+警告
+
 ## 1.0.14
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.15
+
+### Patch Changes
+
+- 资产表格样式+警告
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.15
+
 ## 1.0.14
 
 ### Patch Changes

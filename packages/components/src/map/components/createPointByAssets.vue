@@ -26,7 +26,7 @@
 
       <div class="main-content-list">
         <el-table
-          class="table"
+          class="layer-config-table"
           :data="table.data"
           v-loading="table.loading"
           highlight-current-row
@@ -34,7 +34,6 @@
           :row-style="{ height: 32 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="table.onSelectionChange"
-          max-height="300"
           stripe
           border
         >
@@ -320,9 +319,6 @@ onMounted(() => {
       label {
         display: inline-block;
       }
-      .action-search {
-        width: 200px;
-      }
       .target-info {
         display: inline-block;
         width: 160px;
@@ -338,10 +334,6 @@ onMounted(() => {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
-      .table {
-        height: calc(100% - 50px);
-        overflow-y: auto !important;
-      }
       .pagination-container {
         padding: 0;
         margin: 0;
@@ -352,6 +344,10 @@ onMounted(() => {
       display: flex;
       justify-content: flex-end;
     }
+  }
+  .layer-config-table {
+    height: calc(100% - 50px);
+    overflow-y: auto !important;
   }
 }
 </style>
