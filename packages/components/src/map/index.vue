@@ -18,7 +18,7 @@
     <!-- 右侧控件 -->
     <RightActionBox :map="exportMap" :rightBoxData="getRightData" @right-box-data-change="rightBoxDataChange"> </RightActionBox>
     <!-- 地图点击弹框 -->
-    <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef" v-bind="$attrs">
+    <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
       <template #customContent v-if="customContent">
         <component :is="customContent"></component>
       </template>

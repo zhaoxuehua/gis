@@ -1,5 +1,5 @@
 <template>
-  <div class="map-popup" ref="popupRef" v-bind="$attrs">
+  <div class="map-popup" ref="popupRef">
     <div style="width: 450px" v-if="!customContent">
       <div v-if="props?.data?.featureCode">
         <div class="map-popup-header">
