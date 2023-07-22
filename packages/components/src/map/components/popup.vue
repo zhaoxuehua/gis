@@ -1,27 +1,25 @@
 <template>
-  <div>
-    <div class="map-popup" ref="popupRef">
-      <div style="width: 450px" v-if="!customContent">
-        <div v-if="props?.data?.featureCode">
-          <div class="map-popup-header">
-            <span>标签信息 </span>
-            <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
+  <div class="map-popup" ref="popupRef">
+    <div style="width: 450px" v-if="!customContent">
+      <div v-if="props?.data?.featureCode">
+        <div class="map-popup-header">
+          <span>标签信息 </span>
+          <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
+        </div>
+        <div class="map-popup-body">
+          <div>
+            <span>名称：{{ props?.data?.featureName || "" }}</span>
           </div>
-          <div class="map-popup-body">
-            <div>
-              <span>名称：{{ props?.data?.featureName || "" }}</span>
-            </div>
-            <div>
-              <span>编码：{{ props?.data?.featureCode || "" }}</span>
-            </div>
+          <div>
+            <span>编码：{{ props?.data?.featureCode || "" }}</span>
           </div>
         </div>
       </div>
-      <!-- 自定义内容插槽 -->
-      <template v-else>
-        <slot name="customContent"></slot>
-      </template>
     </div>
+    <!-- 自定义内容插槽 -->
+    <template v-else>
+      <slot name="customContent"></slot>
+    </template>
   </div>
 </template>
 
