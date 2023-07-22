@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.13
+
+### Patch Changes
+
+- 测试文案按钮
+
 ## 1.0.12
 
 ### Patch Changes

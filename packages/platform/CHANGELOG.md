@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.13
+
+### Patch Changes
+
+- 测试文案按钮
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.13
+
 ## 1.0.12
 
 ### Patch Changes

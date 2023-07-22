@@ -51,7 +51,7 @@ const state = reactive({
     endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }]
   }
 });
-const refForm = ref<InstanceType<typeof ElForm>>();
+const refForm: any = ref();
 
 const defaultParam = {
   code: "",
@@ -92,7 +92,7 @@ const onClose = () => {
 };
 
 const onConfirm = () => {
-  refForm.value?.validate(async valid => {
+  refForm.value?.validate(async (valid: any) => {
     if (valid) {
       let param: { [key: string]: any } = { ...form.value };
       // 校验时间大小（结束>开始）

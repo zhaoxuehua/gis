@@ -39,23 +39,13 @@
         >
           <el-table-column label="对象编码" prop="name"></el-table-column>
           <el-table-column label="对象名称" prop="code"></el-table-column>
-          <el-table-column label="开始免监控时间" prop="startTime" min-width="120"> </el-table-column>
-          <el-table-column label="结束免监控时间" prop="endTime" min-width="120"> </el-table-column>
-          <el-table-column label="状态" prop="status"> </el-table-column>
-          <el-table-column label="操作" min-width="120">
+          <el-table-column label="开始免监控时间" prop="startTime" width="150"> </el-table-column>
+          <el-table-column label="结束免监控时间" prop="endTime" width="150"> </el-table-column>
+          <el-table-column label="状态" prop="status" width="100"> </el-table-column>
+          <el-table-column label="操作" width="200">
             <template #default="scope">
-              <el-button text type="primary" @click="table.onEdit(scope.row, 'edit')"> 编辑1 </el-button>
-              <el-button link type="primary" @click="table.onEdit(scope.row, 'delete')"> 删除1 </el-button>
-              <el-link type="primary" :underline="false" @click="table.onEdit(scope.row, 'edit')">编辑2</el-link>
-              <el-link type="primary" :underline="false" @click="table.onEdit(scope.row, 'delete')">删除2</el-link>
-              <el-button type="text" @click="table.onEdit(scope.row, 'edit')"> 编辑3 </el-button>
-              <el-button type="text" @click="table.onEdit(scope.row, 'delete')"> 删除3 </el-button>
-              <button class="my-el-button my-el-button--text my-el-button--primary" @click="table.onEdit(scope.row, 'edit')">
-                编辑4
-              </button>
-              <button class="my-el-button my-el-button--text my-el-button--primary" @click="table.onEdit(scope.row, 'delete')">
-                删除4
-              </button>
+              <el-link type="primary" :underline="false" @click="table.onEdit(scope.row, 'edit')">编辑</el-link>
+              <el-link type="primary" :underline="false" @click="table.onEdit(scope.row, 'delete')">删除</el-link>
             </template>
           </el-table-column>
         </el-table>
@@ -254,29 +244,5 @@ onMounted(() => {
   width: auto;
   font-size: 12px;
   font-weight: 700;
-}
-.my-el-button {
-  /* 共享的基础样式 */
-  display: inline-block;
-  padding: 12px 20px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-.my-el-button--text {
-  /* 文字按钮样式 */
-  background-color: transparent;
-  border: none;
-}
-.my-el-button--primary {
-  padding: 0;
-  padding-right: 8px;
-  margin: 0;
-  font-size: 14px;
-
-  /* 主要按钮样式 */
-  color: var(--el-color-primary);
-
-  // background-color: var(--el-color-primary);
 }
 </style>
