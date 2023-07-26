@@ -39,7 +39,7 @@ const onOpenRightMenu = async (option: { [key: string]: any }) => {
 };
 
 const onCloseRightMenu = async () => {
-  console.log(6);
+  console.log("close");
 };
 
 onMounted(() => {

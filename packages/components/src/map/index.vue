@@ -565,13 +565,12 @@ const initMap = async (mapId: string | number) => {
         popupData.featureName = featureName;
         overlay.setPosition(center);
       }
-      console.log(666);
     };
 
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
-      map.closePopup();
-      emits("onCloseRightMenu");
+      map.closePopup(); // 关闭点击弹框
+      emits("onCloseRightMenu"); // 关闭右键菜单
       let featureSelect = map.get("featureSelect");
       clearSelectedFeature(map);
       const feature = map.forEachFeatureAtPixel(
@@ -610,6 +609,7 @@ const initMap = async (mapId: string | number) => {
       });
       map.addInteraction(selectInteraction);
       selectInteraction.on("select", function (e) {
+        emits("onCloseRightMenu");
         if (e.selected?.length > 0) {
           let originalFeatureList: any = [];
           // let propertiesList=[]
@@ -643,18 +643,23 @@ const initMap = async (mapId: string | number) => {
 
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
-      console.log(555);
       evt.preventDefault();
       let pixel = map.getEventPixel(evt);
-      const feature = map.forEachFeatureAtPixel(pixel, function (feature: FeatureLike) {
-        if (feature) {
+      const features = map.getFeaturesAtPixel(pixel, { hitTolerance: 5 });
+      if (features && features.length > 0) {
+        let feature: any = null;
+        let clickedFeature = features[0];
+        // 判断是否聚合要素
+        if (clickedFeature?.get("features")) {
+          const originalFeatures = clickedFeature.get("features");
+          feature = originalFeatures[0];
+        } else if (clickedFeature instanceof Feature) {
+          feature = clickedFeature;
         }
-        return feature;
-      });
-
-      if (feature) {
-        const featureCode = feature.getId();
-        emits("onOpenRightMenu", { featureCode, relationMap: gisStore?.relationMap });
+        if (feature) {
+          const featureCode = feature?.getId();
+          emits("onOpenRightMenu", { featureCode, relationMap: gisStore?.relationMap });
+        }
       }
     };
 
