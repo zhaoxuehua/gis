@@ -359,7 +359,6 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       console.log("未找到匹配的要素");
     }
   }
-  // 需要考虑是否编辑状态（不是编辑状态下才会有弹框）
   let featureName = labelInfo?.name;
   map.popupInfo({ featureCode, featureName, center });
 }

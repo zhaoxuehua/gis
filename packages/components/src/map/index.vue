@@ -56,10 +56,15 @@ defineOptions({ name: "AgMap" });
 const customContent = useSlots()?.customContent;
 
 const gisStore = useGisStore();
-const props = withDefaults(defineProps<{ config: any }>(), {
-  config: () => {}
+const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function }>(), {
+  config: () => {},
+  onClickFeaturePopup: () => true
 });
+
+const emits = defineEmits(["onOpenRightMenu", "onCloseRightMenu"]);
+
 const exportMap = ref<VisualMap>();
+const mapRef = ref();
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -548,15 +553,25 @@ const initMap = async (mapId: string | number) => {
     };
     // 地图标签元素默认浮窗
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }) => {
+      // 不是编辑状态下才会有弹框
+      if (gisStore?.isEdit) {
+        map.closePopup();
+        return;
+      }
       const { featureCode, center, featureName } = options;
-      popupData.featureCode = featureCode;
-      popupData.featureName = featureName;
-      overlay.setPosition(center);
+      const result: any = await props?.onClickFeaturePopup({ featureCode, relationMap: gisStore?.relationMap });
+      if (result) {
+        popupData.featureCode = featureCode;
+        popupData.featureName = featureName;
+        overlay.setPosition(center);
+      }
+      console.log(666);
     };
 
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
       map.closePopup();
+      emits("onCloseRightMenu");
       let featureSelect = map.get("featureSelect");
       clearSelectedFeature(map);
       const feature = map.forEachFeatureAtPixel(
@@ -626,6 +641,23 @@ const initMap = async (mapId: string | number) => {
       map.set("selectInteraction", selectInteraction);
     }
 
+    // 右键功能
+    mapRef.value.oncontextmenu = async (evt: any) => {
+      console.log(555);
+      evt.preventDefault();
+      let pixel = map.getEventPixel(evt);
+      const feature = map.forEachFeatureAtPixel(pixel, function (feature: FeatureLike) {
+        if (feature) {
+        }
+        return feature;
+      });
+
+      if (feature) {
+        const featureCode = feature.getId();
+        emits("onOpenRightMenu", { featureCode, relationMap: gisStore?.relationMap });
+      }
+    };
+
     exportMap.value = map;
   } else {
     ElMessage.error("接口异常");
@@ -636,6 +668,8 @@ const onScadaClose = () => {
 };
 
 onMounted(() => {
+  // 存储sessionId
+  localStorage.setItem("sessionId", props?.config?.sessionId);
   // 存储导航树应用id
   const sourceCode = props?.config?.navSourceCode;
   gisStore.setSourceCode(sourceCode);
@@ -650,6 +684,14 @@ onMounted(() => {
   const mapParams = props?.config?.id;
   if (!mapParams) return;
   initMap(mapParams);
+});
+
+const getMapElement = () => {
+  return exportMap.value;
+};
+
+defineExpose({
+  getMapElement
 });
 </script>
 <style lang="scss" scoped>
