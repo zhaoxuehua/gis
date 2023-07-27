@@ -78,8 +78,9 @@ import WhiteListEdit from "./whiteListEdit.vue";
 import { getWhiteList, whiteListDelete } from "../../api/gis.js";
 import Icon from "./Icon.vue";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
-  map: () => null
+const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
+  map: () => null,
+  index: () => 0
 });
 console.log(props, 7766);
 const emits = defineEmits(["onClose"]);
@@ -88,7 +89,7 @@ const whiteListEditRef = ref<InstanceType<typeof WhiteListEdit>>();
 
 // 关闭图例
 const onClose = () => {
-  emits("onClose", 4);
+  emits("onClose", props.index);
 };
 
 const query = ref({

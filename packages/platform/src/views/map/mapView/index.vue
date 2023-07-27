@@ -12,6 +12,7 @@
         <div>{{ option1?.featureCode }}</div>
       </template>
     </ag-map>
+    <el-button>框选</el-button>
   </div>
 </template>
 <script lang="ts" setup name="mapView">
@@ -25,6 +26,16 @@ let config: { [key: string]: any } = reactive({
   id: null,
   navSourceCode: "Default",
   sessionId: "26_c1f2d2c0dc744ea48f4b277993114125"
+  // rightControl: [
+  //   {
+  //     label: "ceshi",
+  //     isShow: false,
+  //     visible: true
+  //   }
+  // ]
+  // rightControlIndex: 0,
+  // bigScreenControls: ["tagTree"],
+  // bigScreenMapEdit: true
 });
 
 let option1 = ref();
@@ -49,6 +60,8 @@ onMounted(() => {
   //   initData(mapRef.value?.getMapElement());
   // }, 1000);
 });
+
+// 框选功能mock
 </script>
 <style lang="scss" scoped>
 .map-view {

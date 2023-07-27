@@ -48,8 +48,9 @@ import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
-  map: () => null
+const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
+  map: () => null,
+  index: () => 0
 });
 const emits = defineEmits(["onEditLabel", "onClose"]);
 const gisStore = useGisStore();
@@ -64,7 +65,7 @@ const state = reactive({
 
 // 关闭标签树
 const onClose = () => {
-  emits("onClose", 0);
+  emits("onClose", props.index);
 };
 // 导航树数据源
 const navTreeData = computed(() => {

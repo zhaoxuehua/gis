@@ -20,14 +20,15 @@ import { ref, watch, computed } from "vue";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
-  map: () => null
+const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
+  map: () => null,
+  index: () => 0
 });
 const emits = defineEmits(["onClose"]);
 
 // 关闭地图类型
 const onClose = () => {
-  emits("onClose", 2);
+  emits("onClose", props.index);
 };
 const defaultOptions = computed(() => {
   let defaultOptions = props.map?.defaultOptions;

@@ -3,8 +3,13 @@
     <div class="right-box">
       <!-- 导航栏部分 -->
       <div class="right-action">
-        <div v-for="(item, index) in props.rightBoxData" :key="item.label">
-          <div class="right-action-item" :class="{ active: item.isShow }" @click.stop="rightBoxClick(index)" v-if="item.visible">
+        <div v-for="(item, index) in props.rightBoxData" :key="index">
+          <div
+            class="right-action-item"
+            :class="{ active: item.isShow }"
+            @click.stop="rightBoxClick(index, item.label)"
+            v-if="item.visible"
+          >
             <el-tooltip effect="light" :content="item.label" placement="bottom-start">
               <i :class="item.icon" class="left-icon"></i>
             </el-tooltip>
@@ -14,11 +19,12 @@
       </div>
       <!-- 内容部分 -->
       <div class="right-content">
-        <div v-for="(item, index) in props.rightBoxData" :key="item.label">
+        <div v-for="(item, index) in props.rightBoxData" :key="index">
           <component
             :is="item.component"
-            v-show="item.isShow && index !== 5"
+            v-show="item.isShow && item?.label !== '编辑'"
             :map="props.map"
+            :index="index"
             @on-close="rightBoxClick"
           ></component>
         </div>
@@ -37,8 +43,8 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; rightBoxData: le
 const emits = defineEmits(["rightBoxDataChange"]);
 
 // 左侧控件导航点击
-const rightBoxClick = (index: number) => {
-  emits("rightBoxDataChange", index);
+const rightBoxClick = (index: number, label: string = "") => {
+  emits("rightBoxDataChange", index, label);
 };
 </script>
 <style lang="scss" scoped>

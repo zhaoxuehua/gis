@@ -198,7 +198,7 @@ const getRightData = computed(() => {
   return state.rightBoxData;
 });
 
-const rightBoxDataChange = (index: number) => {
+const rightBoxDataChange = (index: number, label: string = "") => {
   state.rightBoxData.forEach((item: { [key: string]: any }, innerIndex: number) => {
     if (innerIndex == index) {
       item.isShow = !item.isShow;
@@ -206,7 +206,7 @@ const rightBoxDataChange = (index: number) => {
       item.isShow = false;
     }
   });
-  if (index == 5) {
+  if (label == "编辑") {
     // 编辑控件
     gisStore.setIsEdit(!isEditShow.value);
   }
@@ -242,9 +242,33 @@ const initMap = async (mapId: string | number) => {
   const res: { [key: string]: any } = await getMapParamsDetail(mapId);
   if (res.code === 200 && res.data) {
     const originalData = JSON.parse(JSON.stringify(res.data));
-    const controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
+    let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
+    if (props?.config?.bigScreenControls) {
+      let newControls = [];
+      // 监控二次配置了部分控件
+      // 1、拿出缩放控件、全屏控件、比例尺控件、路网叠加层
+      if (controls.includes("zoom")) {
+        newControls.push("zoom");
+      }
+      if (controls.includes("fullScreen")) {
+        newControls.push("fullScreen");
+      }
+      if (controls.includes("scaleLine")) {
+        newControls.push("scaleLine");
+      }
+      if (controls.includes("showOverlay")) {
+        newControls.push("showOverlay");
+      }
+      controls = newControls.concat(props?.config?.bigScreenControls);
+    }
     controlList.value = controls;
-    isEdit.value = !!originalData.isEdit;
+
+    // 编辑控件的处理逻辑
+    if (props?.config?.bigScreenMapEdit != undefined) {
+      isEdit.value = props?.config?.bigScreenMapEdit;
+    } else {
+      isEdit.value = !!originalData.isEdit;
+    }
 
     const defaultOptions = {
       target: "map",
@@ -678,12 +702,20 @@ onMounted(() => {
   // 存储导航树应用id
   const sourceCode = props?.config?.navSourceCode;
   gisStore.setSourceCode(sourceCode);
-  // 拼接控件扩展
+  // 拼接控件扩展 是数组[]
   if (props?.config?.leftControl) {
-    state.leftBoxData = state.leftBoxData.concat(props.config?.leftControl);
+    if (props?.config?.leftControlIndex || props?.config?.leftControlIndex == 0) {
+      state.leftBoxData.splice(props?.config?.leftControlIndex, 0, ...props?.config?.leftControl);
+    } else {
+      state.leftBoxData = state.leftBoxData.concat(props.config?.leftControl);
+    }
   }
   if (props?.config?.rightControl) {
-    state.rightBoxData = state.rightBoxData.concat(props.config?.rightControl);
+    if (props?.config?.rightControlIndex || props?.config?.rightControlIndex == 0) {
+      state.rightBoxData.splice(props?.config?.rightControlIndex, 0, ...props?.config?.rightControl);
+    } else {
+      state.rightBoxData = state.rightBoxData.concat(props.config?.rightControl);
+    }
   }
   gisStore.setIsEdit(false);
   const mapParams = props?.config?.id;

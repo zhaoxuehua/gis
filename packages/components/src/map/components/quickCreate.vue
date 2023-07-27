@@ -25,11 +25,14 @@ import CreateLineBox from "./createLineBox.vue";
 import CreatePolygon from "./createPolygon.vue";
 import Icon from "./Icon.vue";
 
+const props = withDefaults(defineProps<{ index: number }>(), {
+  index: () => 0
+});
 const emits = defineEmits(["onClose"]);
 
 // 关闭快速绘制
 const onClose = () => {
-  emits("onClose", 2);
+  emits("onClose", props.index);
 };
 
 const state = reactive({

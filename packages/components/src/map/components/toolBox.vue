@@ -122,8 +122,9 @@ import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
-  map: () => null
+const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
+  map: () => null,
+  index: () => 0
 });
 const emits = defineEmits(["onClose"]);
 const state = reactive({
@@ -281,7 +282,7 @@ const measureRemoveInteraction = () => {
 
 // 关闭地图类型
 const onClose = () => {
-  emits("onClose", 1);
+  emits("onClose", props.index);
 };
 
 // 切换时清空度分秒绑定值

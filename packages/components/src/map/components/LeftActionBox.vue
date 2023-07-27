@@ -20,11 +20,12 @@
       </div>
       <!-- 内容部分 -->
       <div class="left-content">
-        <div v-for="item in props.leftBoxData" :key="item.label">
+        <div v-for="(item, index) in props.leftBoxData" :key="index">
           <component
             :is="item.component"
             v-if="item.isShow"
             :map="props.map"
+            :index="index"
             @on-close="leftBoxClick"
             @on-edit-label="onEditLabel"
           ></component>

@@ -43,8 +43,9 @@ import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
-  map: () => null
+const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
+  map: () => null,
+  index: () => 0
 });
 const emits = defineEmits(["onEditLabel", "onClose"]);
 const treeRef = ref();
@@ -58,7 +59,7 @@ const state = reactive({
 
 // 关闭标签树
 const onClose = () => {
-  emits("onClose", 1);
+  emits("onClose", props.index);
 };
 // 标签树数据源（需要的数据labelTypeMap   labelInfoMap  拼接节点与子节点 ）
 const tagTreeData = computed(() => {
