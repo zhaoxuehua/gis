@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.17
+
+### Patch Changes
+
+- 增加交互功能块
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.17
+
 ## 1.0.16
 
 ### Patch Changes

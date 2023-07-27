@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.17
+
+### Patch Changes
+
+- 增加交互功能块
+
 ## 1.0.16
 
 ### Patch Changes
