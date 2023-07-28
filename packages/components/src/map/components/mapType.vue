@@ -1,5 +1,5 @@
 <template>
-  <div class="map-type">
+  <div class="map-type" @click.stop>
     <!-- title模块 -->
     <div class="title-box">
       <span>地图类型</span>
@@ -9,14 +9,14 @@
     <div class="content-box">
       <span>地图类型：</span>
       <el-radio-group v-model="radio" @change="radioChange">
-        <el-radio label="1">街道地图</el-radio>
-        <el-radio label="2">卫星地图</el-radio>
+        <el-radio label="1">街道地图1</el-radio>
+        <el-radio label="2">卫星地图1</el-radio>
       </el-radio-group>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, toRefs } from "vue";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
 
@@ -26,32 +26,35 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
 });
 const emits = defineEmits(["onClose"]);
 
+const { map, index } = toRefs(props);
 // 关闭地图类型
 const onClose = () => {
-  emits("onClose", props.index);
+  emits("onClose", index.value);
 };
+
 const defaultOptions = computed(() => {
-  let defaultOptions = props.map?.defaultOptions;
+  let defaultOptions = map.value?.defaultOptions;
   return defaultOptions;
 });
 const radio = ref<string>();
 const radioChange = (value: any) => {
   radio.value = value;
-  if (!props.map) return;
-  console.log(radio.value, props.map?.defaultOptions, "测试地图类型");
-  const { showOverlay } = props.map?.defaultOptions || {};
-  const { normalMap, sateMap, overlayMap } = props.map?.get("layerMap");
-  if (props?.map && props.map?.defaultOptions) {
-    props.map.defaultOptions.defaultMapType = Number(value);
+  if (!map.value) return;
+  console.log(radio.value, map.value?.defaultOptions, "测试地图类型");
+  const { showOverlay } = map.value?.defaultOptions || {};
+  const { normalMap, sateMap, overlayMap } = map.value?.get("layerMap");
+
+  if (map.value && map.value?.defaultOptions) {
+    map.value.defaultOptions.defaultMapType = Number(value);
   }
   if (Number(value) === 1) {
-    normalMap.setVisible(true);
-    sateMap.setVisible(false);
-    overlayMap.setVisible(false);
+    normalMap?.setVisible(true);
+    sateMap?.setVisible(false);
+    overlayMap?.setVisible(false);
   } else {
-    normalMap.setVisible(false);
-    sateMap.setVisible(true);
-    overlayMap.setVisible(showOverlay);
+    normalMap?.setVisible(false);
+    sateMap?.setVisible(true);
+    overlayMap?.setVisible(showOverlay);
   }
 };
 

@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.19
+
+### Patch Changes
+
+- 测试地图类型
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.19
+
 ## 1.0.18
 
 ### Patch Changes
