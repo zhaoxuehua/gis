@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.18
+
+### Patch Changes
+
+- 增加交互快及框选功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.18
+
 ## 1.0.17
 
 ### Patch Changes

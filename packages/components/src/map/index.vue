@@ -16,7 +16,13 @@
     <!-- 标签树、导航树的编辑弹框 -->
     <EditLabel ref="editLabelRef" :map="exportMap"></EditLabel>
     <!-- 右侧控件 -->
-    <RightActionBox :map="exportMap" :rightBoxData="getRightData" @right-box-data-change="rightBoxDataChange"> </RightActionBox>
+    <RightActionBox
+      :map="exportMap"
+      :rightBoxData="getRightData"
+      @right-box-data-change="rightBoxDataChange"
+      @on-click-box-selection="onClickBoxSelection"
+    >
+    </RightActionBox>
     <!-- 地图点击弹框 -->
     <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
       <template #customContent v-if="customContent">
@@ -26,7 +32,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots } from "vue";
+import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
@@ -41,11 +47,12 @@ import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
 import { getMapParamsDetail, getLabelList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
+import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
 
 import { layerStyle, clusterLayerStyle } from "./hooks/styleFunction.js";
 import { createGeometry } from "./hooks/createGeometry.js";
-import { clearSelectedFeature } from "./hooks/index";
+import { clearSelectedFeature, labelOnSelect } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -56,12 +63,13 @@ defineOptions({ name: "AgMap" });
 const customContent = useSlots()?.customContent;
 
 const gisStore = useGisStore();
-const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function }>(), {
+const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function; outsideTreeNode?: any }>(), {
   config: () => {},
-  onClickFeaturePopup: () => true
+  onClickFeaturePopup: () => true,
+  outsideTreeNode: () => ""
 });
 
-const emits = defineEmits(["onOpenRightMenu", "onCloseRightMenu"]);
+const emits = defineEmits(["onOpenRightMenu", "onCloseRightMenu", "getClickBoxSelection"]);
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
@@ -91,6 +99,13 @@ const state = reactive({
     }
   ],
   rightBoxData: [
+    {
+      icon: "iconfont icon-GIS-03",
+      label: "框选",
+      isShow: false,
+      visible: false,
+      component: shallowRef(defineAsyncComponent(() => import("./components/boxSelection.vue")))
+    },
     {
       icon: "iconfont icon-GIS-04",
       label: "标签筛选",
@@ -173,6 +188,9 @@ const isEditShow = computed(() => {
 const getRightData = computed(() => {
   state.rightBoxData.forEach((item: any) => {
     switch (item.label) {
+      case "框选":
+        item.visible = !!controlList.value.includes("boxSelection");
+        break;
       case "标签筛选":
         item.visible = !!controlList.value.includes("tagSelection");
         break;
@@ -682,7 +700,13 @@ const initMap = async (mapId: string | number) => {
         }
         if (feature) {
           const featureCode = feature?.getId();
-          emits("onOpenRightMenu", { featureCode, relationMap: gisStore?.relationMap });
+          console.log(evt.offsetX, evt.offsetY);
+          emits("onOpenRightMenu", {
+            featureCode,
+            relationMap: gisStore?.relationMap,
+            offsetX: evt.offsetX,
+            offsetY: evt.offsetY
+          });
         }
       }
     };
@@ -723,13 +747,49 @@ onMounted(() => {
   initMap(mapParams);
 });
 
+const onClickBoxSelection = (selectionFeatures: any[]) => {
+  emits("getClickBoxSelection", selectionFeatures, gisStore?.relationMap);
+};
+
+// 导出事件
 const getMapElement = () => {
   return exportMap.value;
 };
+const panToFeature = (featureCode: string | number, isFeatureClick: boolean) => {
+  labelOnSelect(exportMap.value, featureCode, isFeatureClick);
+};
+const getRelationMap = () => {
+  return gisStore?.relationMap;
+};
 
 defineExpose({
-  getMapElement
+  getMapElement,
+  panToFeature,
+  getRelationMap
 });
+
+// 监听外部树节点点击
+watch(
+  () => props.outsideTreeNode,
+  node => {
+    if (node) {
+      const { tupleList, equipNodeFlag } = node;
+      const equipId = Number(tupleList[0]);
+
+      if (equipNodeFlag) {
+        const res = find(gisStore?.relationMap, (item: any) => {
+          return item.id === equipId;
+        });
+        if (res && res.associationInfo && exportMap.value) {
+          labelOnSelect(exportMap.value, res.associationInfo.associationObjectCode, false);
+        }
+      }
+    }
+  },
+  {
+    deep: true
+  }
+);
 </script>
 <style lang="scss" scoped>
 .component-box {

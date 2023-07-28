@@ -5,6 +5,7 @@
       :onClickFeaturePopup="onClickFeaturePopup"
       @on-open-right-menu="onOpenRightMenu"
       @on-close-right-menu="onCloseRightMenu"
+      @get-click-box-selection="getClickBoxSelection"
       v-if="config.id"
       ref="mapRef"
     >
@@ -12,7 +13,6 @@
         <div>{{ option1?.featureCode }}</div>
       </template>
     </ag-map>
-    <el-button>框选</el-button>
   </div>
 </template>
 <script lang="ts" setup name="mapView">
@@ -25,7 +25,8 @@ const mapRef = ref<InstanceType<typeof AgMap>>();
 let config: { [key: string]: any } = reactive({
   id: null,
   navSourceCode: "Default",
-  sessionId: "26_c1f2d2c0dc744ea48f4b277993114125"
+  sessionId: "26_87a17b73c22945fb9fe6e57fc78c31df"
+
   // rightControl: [
   //   {
   //     label: "ceshi",
@@ -46,11 +47,25 @@ const onClickFeaturePopup = async (option: { [key: string]: any }) => {
 };
 
 const onOpenRightMenu = async (option: { [key: string]: any }) => {
+  mapRef?.value?.panToFeature("GISRing1689155066181", false);
   console.log(option, "right");
 };
 
 const onCloseRightMenu = async () => {
   console.log("close");
+};
+
+const getClickBoxSelection = (selectionFeatures: any[], relationMap: any) => {
+  // 从框选的标签中筛选出设备id
+  const featureList = selectionFeatures.filter((item: any) => {
+    return relationMap.hasOwnProperty(item?.getId());
+  });
+
+  const deviceIds = featureList.map((item: any) => {
+    return relationMap[item?.getId()].id;
+  });
+
+  console.log(selectionFeatures, relationMap, deviceIds, 7654);
 };
 
 onMounted(() => {

@@ -4,13 +4,15 @@ import Draw, { DrawEvent, createBox } from "ol/interaction/Draw";
 import type { Type } from "ol/geom/Geometry";
 import { toLonLat } from "ol/proj";
 import type { Coordinate } from "ol/coordinate";
+import { Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorSource } from "ol/source";
 import { Circle } from "ol/geom";
 import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
 import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, multiArray, getGeometryCenter } from "./createGeometry.js";
-import { createStyle, clusterLayerStyle } from "./styleFunction.js";
+import { createStyle, clusterLayerStyle, selectBoxStyle } from "./styleFunction.js";
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
 export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: Function) {
@@ -476,4 +478,94 @@ export function clearSelectedFeature(map: VisualMap) {
     clusterSelectFeature.setStyle((feature: any) => clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, false));
     map.set("clusterSelectFeature", null);
   }
+}
+
+// 实现框选
+export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function) {
+  let boxSelectionSource: any = map?.get("boxSelectionSource");
+  let boxSelectionVectorLayer = map?.get("boxSelectionSource");
+  let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
+  if (!map) return;
+  if (boxSelectionDrawInteraction) {
+    map?.removeInteraction(boxSelectionDrawInteraction);
+    map?.set("boxSelectionDrawInteraction", null);
+    boxSelectionDrawInteraction = null;
+  }
+  if (boxSelectionVectorLayer) {
+    map?.removeLayer(boxSelectionVectorLayer);
+    map?.set("selectionVectorLayer", null);
+    boxSelectionVectorLayer = null;
+  }
+  if (boxSelectionSource) {
+    boxSelectionSource?.clear();
+    map?.set("boxSelectionSource", null);
+    boxSelectionSource = null;
+  }
+
+  boxSelectionSource = new VectorSource();
+  boxSelectionVectorLayer = new VectorLayer({
+    source: boxSelectionSource,
+    style: selectBoxStyle
+  });
+
+  map.addLayer(boxSelectionVectorLayer);
+  map?.set("boxSelectionVectorLayer", boxSelectionVectorLayer);
+  map?.set("boxSelectionSource", boxSelectionSource);
+
+  boxSelectionDrawInteraction = new Draw({
+    source: boxSelectionSource,
+    type: value,
+    geometryFunction: value === "Circle" ? createBox() : undefined,
+    style: selectBoxStyle
+  });
+  map.addInteraction(boxSelectionDrawInteraction);
+  map?.set("boxSelectionDrawInteraction", boxSelectionDrawInteraction);
+
+  boxSelectionDrawInteraction.on("drawstart", function () {
+    boxSelectionSource?.clear(); //不写的话可以绘制多次，添加后只能绘制一次
+  });
+
+  boxSelectionDrawInteraction.on("drawend", function (evt: DrawEvent) {
+    const polygon = evt.feature?.getGeometry();
+    if (!polygon || !map) return;
+    const extent = polygon?.getExtent();
+    const currentZoom = map?.getView()?.getZoom(); // 当前层级
+    let selectionFeatures = [];
+
+    // 框选的要素
+    let layerMap = map?.get("layerMap");
+    for (let key in layerMap) {
+      let layer: any = layerMap[key]; // 每个图层
+      if (layer && currentZoom) {
+        // 所属图层不可见则忽略
+        if (currentZoom < layer.getMinZoom() || currentZoom > layer.getMaxZoom()) continue;
+        // 需要考虑聚合和非聚合图层，然后取出要素
+        const isTagAgg = layer.get("isTagAgg");
+        let source: any;
+        if (isTagAgg) {
+          const clusterDataSource = layer.getSource();
+          clusterDataSource.forEachFeatureInExtent(extent, function (feature: any) {
+            if (!feature.get("features")) {
+              // 如果要素不是聚合要素，则为原始要素
+              selectionFeatures.push(feature);
+            } else {
+              // 如果要素是聚合要素，则进一步处理每个子要素
+              const clusterFeatures = feature.get("features");
+              selectionFeatures.push(...clusterFeatures);
+            }
+          });
+        } else {
+          source = layer.getSource();
+          if (source instanceof VectorSource) {
+            const features = layer.getSource().getFeaturesInExtent(extent);
+
+            selectionFeatures.push(...features);
+          }
+        }
+      }
+    }
+    // 调用方法将要素抛出去应用实现逻辑
+
+    callback(selectionFeatures);
+  });
 }

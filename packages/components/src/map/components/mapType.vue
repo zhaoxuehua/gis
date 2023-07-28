@@ -36,7 +36,9 @@ const defaultOptions = computed(() => {
 });
 const radio = ref<string>();
 const radioChange = (value: any) => {
+  radio.value = value;
   if (!props.map) return;
+  console.log(radio.value, props.map?.defaultOptions, "测试地图类型");
   const { showOverlay } = props.map?.defaultOptions || {};
   const { normalMap, sateMap, overlayMap } = props.map?.get("layerMap");
   if (props?.map && props.map?.defaultOptions) {

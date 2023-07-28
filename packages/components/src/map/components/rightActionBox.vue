@@ -25,7 +25,9 @@
             v-show="item.isShow && item?.label !== '编辑'"
             :map="props.map"
             :index="index"
+            :isShow="item.isShow"
             @on-close="rightBoxClick"
+            @on-box-selection="onBoxSelection"
           ></component>
         </div>
       </div>
@@ -40,11 +42,15 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; rightBoxData: le
   map: () => null,
   rightBoxData: () => []
 });
-const emits = defineEmits(["rightBoxDataChange"]);
+const emits = defineEmits(["rightBoxDataChange", "onClickBoxSelection"]);
 
 // 左侧控件导航点击
 const rightBoxClick = (index: number, label: string = "") => {
   emits("rightBoxDataChange", index, label);
+};
+
+const onBoxSelection = (selectionFeatures: any[]) => {
+  emits("onClickBoxSelection", selectionFeatures);
 };
 </script>
 <style lang="scss" scoped>

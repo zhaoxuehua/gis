@@ -512,3 +512,22 @@ export function measureStyle() {
   });
   return style;
 }
+
+export const selectBoxStyle = new Style({
+  fill: new Fill({
+    color: "rgba(255, 255, 255, 0.2)"
+  }),
+  stroke: new Stroke({
+    color: "#ff3333",
+    width: 2
+  }),
+  image: new Circle({
+    radius: 7,
+    stroke: new Stroke({
+      color: "#ff3333"
+    }),
+    fill: new Fill({
+      color: "rgba(255, 255, 255, 0.2)"
+    })
+  })
+});

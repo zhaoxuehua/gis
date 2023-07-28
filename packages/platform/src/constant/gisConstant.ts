@@ -37,12 +37,16 @@ export const GIS_CONTROLS = [
     name: "显示快速绘制控件"
   },
   {
-    code: "toolBox",
-    name: "显示工具箱控件"
+    code: "boxSelection",
+    name: "显示框选控件"
   },
   {
     code: "tagSelection",
     name: "显示标签筛选控件"
+  },
+  {
+    code: "toolBox",
+    name: "显示工具箱控件"
   },
   {
     code: "imgLegend",

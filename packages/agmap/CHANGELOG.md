@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.18
+
+### Patch Changes
+
+- 增加交互快及框选功能
+
 ## 1.0.17
 
 ### Patch Changes

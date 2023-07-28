@@ -39,7 +39,7 @@ const onClose = () => {
   emits("onClose", props.index);
 };
 
-const state = reactive({
+let state = reactive({
   checkAll: true, // 全选
   isIndeterminate: false // 半选状态
 });
@@ -63,12 +63,13 @@ const layerMap = computed(() => {
 });
 
 // 已选择的标签
-const checkedTags = ref<Array<string>>([]);
+let checkedTags = ref<Array<string>>([]);
 
 const handleCheckAllChange = (val: any) => {
   checkedTags.value = val ? labelTypeList.value?.map((item: any) => item.code) : [];
   state.isIndeterminate = false;
   setFeatureVisible();
+  console.log(checkedTags.value, state.isIndeterminate, "测试部分标签选中");
 };
 
 const handleCheckedChange = (value: any[]) => {
@@ -76,6 +77,7 @@ const handleCheckedChange = (value: any[]) => {
   state.checkAll = checkedCount === checkedTags.value.length;
   state.isIndeterminate = checkedCount > 0 && checkedCount < labelTypeList.value?.length;
   setFeatureVisible();
+  console.log(state.checkAll, state.isIndeterminate, "测试全选或全不选切换");
 };
 
 // 遍历所有标签类型，根据选中状态修改每个类型下的标签要素的显示状态
