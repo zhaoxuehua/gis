@@ -11,6 +11,8 @@
       @on-edit-label="onEditLabel"
       @is-edit-change-hidden="isEditChangeHidden"
       :deviceSearchVisible="!!controlList.includes('search')"
+      :isCustomSearchDialog="props.config.isCustomSearchDialog"
+      @custom-search-dialog="customSearchDialog"
     >
     </LeftActionBox>
     <!-- 标签树、导航树的编辑弹框 -->
@@ -69,7 +71,7 @@ const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Func
   outsideTreeNode: () => ""
 });
 
-const emits = defineEmits(["onOpenRightMenu", "onCloseRightMenu", "getClickBoxSelection"]);
+const emits = defineEmits(["onOpenRightMenu", "onCloseRightMenu", "getClickBoxSelection", "getCustomSearchContent"]);
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
@@ -746,9 +748,14 @@ onMounted(() => {
   if (!mapParams) return;
   initMap(mapParams);
 });
-
+// 自定义框选弹框
 const onClickBoxSelection = (selectionFeatures: any[]) => {
   emits("getClickBoxSelection", selectionFeatures, gisStore?.relationMap);
+};
+
+// 自定义搜素
+const customSearchDialog = (inputValue: string) => {
+  emits("getCustomSearchContent", inputValue, gisStore?.relationMap);
 };
 
 // 导出事件

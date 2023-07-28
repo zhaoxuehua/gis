@@ -24,7 +24,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, reactive, ref, onMounted, watch } from "vue";
+import { computed, reactive, ref, onMounted, watch, toRefs } from "vue";
 import Feature from "ol/Feature";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
@@ -35,8 +35,10 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
 });
 const emits = defineEmits(["onClose"]);
 
+const { map, index } = toRefs(props);
+
 const onClose = () => {
-  emits("onClose", props.index);
+  emits("onClose", index.value);
 };
 
 let state = reactive({
@@ -46,19 +48,19 @@ let state = reactive({
 
 // 标签要素分组
 const featureTypeGroup = computed(() => {
-  let featureTypeGroup = props?.map?.get("featureTypeGroup") || {};
+  let featureTypeGroup = map.value?.get("featureTypeGroup") || {};
   return featureTypeGroup;
 });
 
 // 标签类型
 const labelTypeList: any = computed(() => {
-  let labelTypeMap = props?.map?.get("labelTypeMap") || {};
+  let labelTypeMap = map.value?.get("labelTypeMap") || {};
   return Object.values(labelTypeMap);
 });
 
 // 地图图层
 const layerMap = computed(() => {
-  let layerMap = props?.map?.get("layerMap") || {};
+  let layerMap = map.value?.get("layerMap") || {};
   return layerMap;
 });
 
@@ -69,7 +71,6 @@ const handleCheckAllChange = (val: any) => {
   checkedTags.value = val ? labelTypeList.value?.map((item: any) => item.code) : [];
   state.isIndeterminate = false;
   setFeatureVisible();
-  console.log(checkedTags.value, state.isIndeterminate, "测试部分标签选中");
 };
 
 const handleCheckedChange = (value: any[]) => {
@@ -77,7 +78,6 @@ const handleCheckedChange = (value: any[]) => {
   state.checkAll = checkedCount === checkedTags.value.length;
   state.isIndeterminate = checkedCount > 0 && checkedCount < labelTypeList.value?.length;
   setFeatureVisible();
-  console.log(state.checkAll, state.isIndeterminate, "测试全选或全不选切换");
 };
 
 // 遍历所有标签类型，根据选中状态修改每个类型下的标签要素的显示状态

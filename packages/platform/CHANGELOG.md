@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.20
+
+### Patch Changes
+
+- 测试自定义搜索加筛选
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.20
+
 ## 1.0.19
 
 ### Patch Changes

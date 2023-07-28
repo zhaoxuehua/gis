@@ -8,6 +8,7 @@
       @get-click-box-selection="getClickBoxSelection"
       v-if="config.id"
       ref="mapRef"
+      @get-custom-search-content="getCustomSearchContent"
     >
       <template #customContent>
         <div>{{ option1?.featureCode }}</div>
@@ -25,7 +26,8 @@ const mapRef = ref<InstanceType<typeof AgMap>>();
 let config: { [key: string]: any } = reactive({
   id: null,
   navSourceCode: "Default",
-  sessionId: "26_87a17b73c22945fb9fe6e57fc78c31df"
+  sessionId: "26_87a17b73c22945fb9fe6e57fc78c31df",
+  isCustomSearchDialog: false
 
   // rightControl: [
   //   {
@@ -66,6 +68,10 @@ const getClickBoxSelection = (selectionFeatures: any[], relationMap: any) => {
   });
 
   console.log(selectionFeatures, relationMap, deviceIds, 7654);
+};
+
+const getCustomSearchContent = (value: string, map: any) => {
+  console.log(value, map, "搜索");
 };
 
 onMounted(() => {

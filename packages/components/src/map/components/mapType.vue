@@ -9,8 +9,8 @@
     <div class="content-box">
       <span>地图类型：</span>
       <el-radio-group v-model="radio" @change="radioChange">
-        <el-radio label="1">街道地图1</el-radio>
-        <el-radio label="2">卫星地图1</el-radio>
+        <el-radio label="1">街道地图</el-radio>
+        <el-radio label="2">卫星地图</el-radio>
       </el-radio-group>
     </div>
   </div>
@@ -40,7 +40,6 @@ const radio = ref<string>();
 const radioChange = (value: any) => {
   radio.value = value;
   if (!map.value) return;
-  console.log(radio.value, map.value?.defaultOptions, "测试地图类型");
   const { showOverlay } = map.value?.defaultOptions || {};
   const { normalMap, sateMap, overlayMap } = map.value?.get("layerMap");
 

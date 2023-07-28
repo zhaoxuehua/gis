@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.20
+
+### Patch Changes
+
+- 测试自定义搜索加筛选
+
 ## 1.0.19
 
 ### Patch Changes

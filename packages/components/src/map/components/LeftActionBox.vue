@@ -60,19 +60,19 @@ import Icon from "./Icon.vue";
 const gisStore = useGisStore();
 const props = withDefaults(
   defineProps<{
-    config?: any;
     map: VisualMap | null;
     leftBoxData: boxData[];
     deviceSearchVisible?: boolean;
+    isCustomSearchDialog?: boolean;
   }>(),
   {
-    config: () => [],
     map: () => null,
     leftBoxData: () => [],
-    deviceSearchVisible: () => false
+    deviceSearchVisible: () => false,
+    isCustomSearchDialog: () => false
   }
 );
-const emits = defineEmits(["leftBoxDataChange", "onEditLabel", "isEditChangeHidden"]);
+const emits = defineEmits(["leftBoxDataChange", "onEditLabel", "isEditChangeHidden", "customSearchDialog"]);
 const searchDialogRef = ref<InstanceType<typeof SearchDialog>>();
 const isEditShow = computed(() => {
   return gisStore.isEdit;
@@ -92,7 +92,13 @@ const onEditLabel = (labelCode: any) => {
 };
 
 const search = () => {
-  searchDialogRef.value?.openDialog(props.map, inputParam.value);
+  console.log(props.isCustomSearchDialog, 7666);
+  if (props.isCustomSearchDialog) {
+    // 自定义弹框内容
+    emits("customSearchDialog", inputParam.value);
+  } else {
+    searchDialogRef.value?.openDialog(props.map, inputParam.value);
+  }
 };
 
 watch(
