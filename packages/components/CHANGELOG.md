@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.22
+
+### Patch Changes
+
+- 测试 bug
+
 ## 1.0.21
 
 ### Patch Changes

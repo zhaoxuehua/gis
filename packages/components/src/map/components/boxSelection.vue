@@ -1,6 +1,6 @@
 <!-- 框选 -->
 <template>
-  <div class="box-selection">
+  <div class="box-selection" @click.stop>
     <!-- title模块 -->
     <div class="title-box">
       <span>框选模式</span>
@@ -9,9 +9,9 @@
     <!-- 图片显示模块 -->
     <div class="content-box">
       <span>框选模式：</span>
-      <el-radio-group v-model="radio" @change="boxSelectChange">
-        <el-radio label="Circle">矩形</el-radio>
-        <el-radio label="Polygon">多边形</el-radio>
+      <el-radio-group v-model="radio" @change="boxSelectRadioChange">
+        <el-radio label="Circle">矩形1</el-radio>
+        <el-radio label="Polygon">多边形1</el-radio>
       </el-radio-group>
     </div>
   </div>
@@ -22,7 +22,7 @@ import { ref, toRefs, watch } from "vue";
 import { selectionAddDrawInteraction } from "../hooks/index";
 import type { VisualMap } from "../type";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; isShow: boolean }>(), {
+const props = withDefaults(defineProps<{ map: VisualMap | null; index?: number; isShow?: boolean }>(), {
   map: () => null,
   index: () => 0,
   isShow: () => false
@@ -65,12 +65,13 @@ watch(
   }
 );
 
-const boxSelectChange = (val: any) => {
+const boxSelectRadioChange = (val: any) => {
   radio.value = val;
   console.log(radio.value, 111);
   selectionAddDrawInteraction(map.value, val, handleSelectionFeatures);
 };
 const handleSelectionFeatures = (selectionFeatures: any[]) => {
+  console.log(selectionFeatures, "selectFeature");
   emits("onBoxSelection", selectionFeatures);
 };
 </script>

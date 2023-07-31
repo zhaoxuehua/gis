@@ -1,5 +1,5 @@
 <template>
-  <div class="map-type">
+  <div class="map-type" @click.stop>
     <!-- title模块 -->
     <div class="title-box">
       <span>标签筛选</span>
@@ -7,12 +7,12 @@
     </div>
     <!-- 标签类型显示模块 -->
     <div class="content-box">
-      <div class="all-tag">
+      <div class="all-tag" @click.stop>
         <el-checkbox v-model="state.checkAll" :indeterminate="state.isIndeterminate" @change="handleCheckAllChange"
           >全部
         </el-checkbox>
       </div>
-      <div>
+      <div @click.stop>
         <el-checkbox-group v-model="checkedTags" @change="handleCheckedChange">
           <el-checkbox v-for="(item, idx) in labelTypeList" :key="idx" :label="item.code">
             <img v-if="item.labelLegendImagePath" :src="item?.iconUrl" />
@@ -29,16 +29,19 @@ import Feature from "ol/Feature";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
-  map: () => null,
-  index: () => 0
+const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
+  map: () => null
 });
 const emits = defineEmits(["onClose"]);
 
-const { map, index } = toRefs(props);
+const {
+  map
+  // index
+} = toRefs(props);
 
 const onClose = () => {
-  emits("onClose", index.value);
+  // emits("onClose", index.value);
+  emits("onClose", 1);
 };
 
 let state = reactive({
@@ -113,6 +116,7 @@ watch(
   value => {
     if (value && value?.length) {
       checkedTags.value = value.map((item: any) => item.code);
+      console.log(value, checkedTags.value, 333333333);
     }
   },
   {
