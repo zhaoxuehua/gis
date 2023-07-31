@@ -1,5 +1,5 @@
 <template>
-  <div class="map-type" @click.stop>
+  <div class="tag-selection-box" @click.stop>
     <!-- title模块 -->
     <div class="title-box">
       <span>标签筛选</span>
@@ -29,19 +29,16 @@ import Feature from "ol/Feature";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
-  map: () => null
+const props = withDefaults(defineProps<{ map: VisualMap | null; index?: number }>(), {
+  map: () => null,
+  index: () => 0
 });
 const emits = defineEmits(["onClose"]);
 
-const {
-  map
-  // index
-} = toRefs(props);
+const { map, index } = toRefs(props);
 
 const onClose = () => {
-  // emits("onClose", index.value);
-  emits("onClose", 1);
+  emits("onClose", index.value);
 };
 
 let state = reactive({
@@ -73,7 +70,6 @@ let checkedTags = ref<Array<string>>([]);
 const handleCheckAllChange = (val: any) => {
   checkedTags.value = val ? labelTypeList.value?.map((item: any) => item.code) : [];
   state.isIndeterminate = false;
-  console.log(state.isIndeterminate, 766666666);
   setFeatureVisible();
 };
 
@@ -81,7 +77,6 @@ const handleCheckedChange = (value: any[]) => {
   const checkedCount = value.length;
   state.checkAll = checkedCount === checkedTags.value.length;
   state.isIndeterminate = checkedCount > 0 && checkedCount < labelTypeList.value?.length;
-  console.log(value, state.checkAll, state.isIndeterminate, checkedTags.value.length, 8888888888);
   setFeatureVisible();
 };
 
@@ -116,7 +111,6 @@ watch(
   value => {
     if (value && value?.length) {
       checkedTags.value = value.map((item: any) => item.code);
-      console.log(value, checkedTags.value, 333333333);
     }
   },
   {
@@ -127,7 +121,7 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-.map-type {
+.tag-selection-box {
   display: flex;
   flex-direction: column;
   width: 430px;

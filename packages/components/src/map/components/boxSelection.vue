@@ -10,8 +10,8 @@
     <div class="content-box">
       <span>框选模式：</span>
       <el-radio-group v-model="radio" @change="boxSelectRadioChange">
-        <el-radio label="Circle">矩形1</el-radio>
-        <el-radio label="Polygon">多边形1</el-radio>
+        <el-radio label="Circle">矩形</el-radio>
+        <el-radio label="Polygon">多边形</el-radio>
       </el-radio-group>
     </div>
   </div>
@@ -42,9 +42,7 @@ watch(
   () => isShow.value,
   isShowVal => {
     if (isShowVal) {
-      console.log(map.value, radio.value, 22222);
       selectionAddDrawInteraction(map.value, radio.value, handleSelectionFeatures);
-      console.log(3333333);
     } else {
       if (map.value) {
         // 关闭框选
@@ -67,11 +65,9 @@ watch(
 
 const boxSelectRadioChange = (val: any) => {
   radio.value = val;
-  console.log(radio.value, 111);
   selectionAddDrawInteraction(map.value, val, handleSelectionFeatures);
 };
 const handleSelectionFeatures = (selectionFeatures: any[]) => {
-  console.log(selectionFeatures, "selectFeature");
   emits("onBoxSelection", selectionFeatures);
 };
 </script>
