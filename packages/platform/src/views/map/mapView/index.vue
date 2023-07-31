@@ -26,7 +26,7 @@ const mapRef = ref<InstanceType<typeof AgMap>>();
 let config: { [key: string]: any } = reactive({
   id: null,
   navSourceCode: "Default",
-  sessionId: "26_87a17b73c22945fb9fe6e57fc78c31df",
+  sessionId: "26_65a02a1d79384aa9a9d94539c8bddfd7",
   isCustomSearchDialog: false
 
   // rightControl: [

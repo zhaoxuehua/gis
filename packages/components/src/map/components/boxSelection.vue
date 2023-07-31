@@ -9,7 +9,7 @@
     <!-- 图片显示模块 -->
     <div class="content-box">
       <span>框选模式：</span>
-      <el-radio-group v-model="state.radio" @change="boxSelectChange">
+      <el-radio-group v-model="radio" @change="boxSelectChange">
         <el-radio label="Circle">矩形</el-radio>
         <el-radio label="Polygon">多边形</el-radio>
       </el-radio-group>
@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, toRefs, watch } from "vue";
+import { ref, toRefs, watch } from "vue";
 import { selectionAddDrawInteraction } from "../hooks/index";
 import type { VisualMap } from "../type";
 
@@ -29,23 +29,22 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; i
 });
 const emits = defineEmits(["onClose", "onBoxSelection"]);
 
+// 地图实例
+const { map, isShow, index } = toRefs(props);
 // 关闭地图类型
 const onClose = () => {
-  emits("onClose", props.index);
+  emits("onClose", index.value);
 };
 
-const state = reactive({
-  radio: "Circle"
-});
-
-// 地图实例
-const { map, isShow } = toRefs(props);
+const radio = ref<string>("Circle");
 
 watch(
   () => isShow.value,
   isShowVal => {
     if (isShowVal) {
-      selectionAddDrawInteraction(map.value, state.radio, handleSelectionFeatures);
+      console.log(map.value, radio.value, 22222);
+      selectionAddDrawInteraction(map.value, radio.value, handleSelectionFeatures);
+      console.log(3333333);
     } else {
       if (map.value) {
         // 关闭框选
@@ -67,11 +66,12 @@ watch(
 );
 
 const boxSelectChange = (val: any) => {
+  radio.value = val;
+  console.log(radio.value, 111);
   selectionAddDrawInteraction(map.value, val, handleSelectionFeatures);
 };
 const handleSelectionFeatures = (selectionFeatures: any[]) => {
   emits("onBoxSelection", selectionFeatures);
-  // console.log(selectionFeatures, 77666);
 };
 </script>
 

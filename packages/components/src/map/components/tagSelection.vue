@@ -14,7 +14,7 @@
       </div>
       <div>
         <el-checkbox-group v-model="checkedTags" @change="handleCheckedChange">
-          <el-checkbox v-for="item in labelTypeList" :key="item.code" :label="item.code">
+          <el-checkbox v-for="(item, idx) in labelTypeList" :key="idx" :label="item.code">
             <img v-if="item.labelLegendImagePath" :src="item?.iconUrl" />
             {{ item.name }}
           </el-checkbox>
@@ -70,6 +70,7 @@ let checkedTags = ref<Array<string>>([]);
 const handleCheckAllChange = (val: any) => {
   checkedTags.value = val ? labelTypeList.value?.map((item: any) => item.code) : [];
   state.isIndeterminate = false;
+  console.log(state.isIndeterminate, 766666666);
   setFeatureVisible();
 };
 
@@ -77,6 +78,7 @@ const handleCheckedChange = (value: any[]) => {
   const checkedCount = value.length;
   state.checkAll = checkedCount === checkedTags.value.length;
   state.isIndeterminate = checkedCount > 0 && checkedCount < labelTypeList.value?.length;
+  console.log(value, state.checkAll, state.isIndeterminate, checkedTags.value.length, 8888888888);
   setFeatureVisible();
 };
 
