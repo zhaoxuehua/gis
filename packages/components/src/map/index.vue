@@ -603,7 +603,7 @@ const initMap = async (mapId: string | number) => {
         return;
       }
       const { featureCode, center, featureName } = options;
-      const result: any = await props?.onClickFeaturePopup({ featureCode, relationMap: gisStore?.relationMap });
+      const result: any = await props?.onClickFeaturePopup({ featureCode, featureName, relationMap: gisStore?.relationMap });
       if (result) {
         popupData.featureCode = featureCode;
         popupData.featureName = featureName;

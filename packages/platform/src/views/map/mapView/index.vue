@@ -44,7 +44,7 @@ let config: { [key: string]: any } = reactive({
 let option1 = ref();
 
 const onClickFeaturePopup = async (option: { [key: string]: any }) => {
-  await (option1.value = option); // 执行更新自定义组件需要的逻辑
+  await (option1.value = option); // 执行更新自定义组件需要的逻辑（必须返回true）
   return true;
 };
 
@@ -76,10 +76,6 @@ const getCustomSearchContent = (value: string, map: any) => {
 
 onMounted(() => {
   config.id = route.query?.id as string | number | null;
-  // setTimeout(() => {
-  //   console.log(mapRef.value?.getMapElement(), 654321);
-  //   initData(mapRef.value?.getMapElement());
-  // }, 1000);
 });
 
 // 框选功能mock
