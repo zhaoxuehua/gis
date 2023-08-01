@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.25
+
+### Patch Changes
+
+- fia
+
 ## 1.0.24
 
 ### Patch Changes

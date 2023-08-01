@@ -11,16 +11,18 @@
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="对象编码" prop="code">
-          <el-input placeholder="请输入..." v-model="form.code" clearable />
+          <el-input placeholder="请输入..." v-model="form.code" clearable style="width: 230px" />
         </el-form-item>
         <el-form-item label="开始时间" prop="startTime">
-          <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间"> </el-date-picker>
+          <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" style="width: 230px">
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="结束时间" prop="endTime">
-          <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间"> </el-date-picker>
+          <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" style="width: 230px">
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input type="textarea" style="width: 200px" v-model="form.remark" />
+          <el-input type="textarea" style="width: 230px" v-model="form.remark" />
         </el-form-item>
       </el-form>
       <template #footer>

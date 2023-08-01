@@ -34,9 +34,9 @@
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
-        <el-form-item label="对应要素" prop="factor">
+        <!-- <el-form-item label="对应要素" prop="factor">
           <el-input placeholder="请输入..." v-model="form.factor" clearable :disabled="state.dialogType == 2" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="默认显示标签名称" prop="isDefaultDisplayLabelName">
           <el-checkbox
             v-model="form.isDefaultDisplayLabelName"
@@ -313,7 +313,6 @@ const defaultParam = {
   referenceObject: null, // 配置的关联对象
 
   isDefaultDisplayLabelName: false,
-  factor: "",
   labelLegendImagePath: "", // 标签图例
   labelLegendImageAllPath: "",
   dataType: "1",
@@ -448,6 +447,18 @@ const onConfirm = () => {
       // 点数据时标签类型图片
       if (Array.isArray(param.labelTypeImagePath)) {
         param.labelTypeImagePath = param.labelTypeImagePath.join(",");
+      }
+      // 校验选择的是聚合图层时只能是点类型数据layerConfigId
+      let isTagAgg = false;
+      layerList.value.data?.forEach((obj: { [key: string]: any }) => {
+        if (`${obj.id}` == `${param.layerConfigId}`) {
+          isTagAgg = !!obj?.isTagAgg;
+        }
+      });
+      // 是聚合图层但不是点类型数据
+      if (isTagAgg && param.dataType != "1") {
+        ElMessage.warning("聚合图层只能选择点类型数据");
+        return;
       }
       if (state.dialogType == 0) {
         // 添加

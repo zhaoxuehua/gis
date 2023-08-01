@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.25
+
+### Patch Changes
+
+- fia
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.25
+
 ## 1.0.24
 
 ### Patch Changes

@@ -594,6 +594,8 @@ const initMap = async (mapId: string | number) => {
       overlay && overlay.setPosition(undefined);
       popupData.featureCode = "";
       popupData.featureName = "";
+      // 移除选中状态
+      clearSelectedFeature(map);
     };
     // 地图标签元素默认浮窗
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }) => {

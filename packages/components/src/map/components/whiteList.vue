@@ -225,8 +225,8 @@ onMounted(() => {
     }
   }
   .list-area {
-    margin-top: 20px;
     width: 100%;
+    margin-top: 20px;
     .header-table {
       background-color: #f7f7fa;
     }
