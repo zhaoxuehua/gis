@@ -41,7 +41,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-container-gis" v-if="table.data?.length">
+      <div class="pagination-container" v-if="table.data?.length">
         <el-pagination
           :background="true"
           v-model:current-page="query.params.pageNumber"
@@ -149,9 +149,7 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.pagination-container-gis {
-  display: flex;
-  justify-content: end;
+.pagination-container {
   padding: 0;
   margin: 0;
   margin-top: 20px;
