@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.26
+
+### Patch Changes
+
+- 隔离修复翻页样式
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.26
+
 ## 1.0.25
 
 ### Patch Changes

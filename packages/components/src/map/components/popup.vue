@@ -58,7 +58,6 @@ defineExpose({
   flex-direction: column;
   min-width: 200px;
   background-color: #ffffff;
-  border: #e0e0e0 solid 1px;
   border-radius: 3px;
   box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
   &::after,
@@ -91,7 +90,6 @@ defineExpose({
     height: 60px;
     padding: 0 20px;
     background-color: #f7f7fa;
-    border-bottom: #e0e0e0 solid 1px;
     span {
       font-size: 16px;
     }

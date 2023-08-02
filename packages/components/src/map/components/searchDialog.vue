@@ -4,7 +4,6 @@
       title="标签信息"
       v-model="open"
       width="1150px"
-      class="canvas-dialog"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
@@ -42,7 +41,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-container" v-if="table.data?.length">
+      <div class="pagination-container-gis" v-if="table.data?.length">
         <el-pagination
           :background="true"
           v-model:current-page="query.params.pageNumber"
@@ -150,11 +149,9 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-::v-deep(.canvas-dialog) {
-  position: absolute;
-  bottom: 6vh;
-}
-.pagination-container {
+.pagination-container-gis {
+  display: flex;
+  justify-content: end;
   padding: 0;
   margin: 0;
   margin-top: 20px;

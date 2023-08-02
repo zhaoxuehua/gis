@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.26
+
+### Patch Changes
+
+- 隔离修复翻页样式
+
 ## 1.0.25
 
 ### Patch Changes

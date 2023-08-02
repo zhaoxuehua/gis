@@ -68,10 +68,16 @@ const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function; outsideTreeNode?: any }>(), {
   config: () => {},
   onClickFeaturePopup: () => true,
-  outsideTreeNode: () => ""
+  outsideTreeNode: () => null
 });
 
-const emits = defineEmits(["onOpenRightMenu", "onCloseRightMenu", "getClickBoxSelection", "getCustomSearchContent"]);
+const emits = defineEmits([
+  "onOpenRightMenu",
+  "onCloseRightMenu",
+  "getClickBoxSelection",
+  "getCustomSearchContent",
+  "getInitMapExportData"
+]);
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
@@ -601,7 +607,7 @@ const initMap = async (mapId: string | number) => {
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }) => {
       // 不是编辑状态下才会有弹框
       if (gisStore?.isEdit) {
-        map.closePopup();
+        // map.closePopup();
         return;
       }
       const { featureCode, center, featureName } = options;
@@ -716,6 +722,7 @@ const initMap = async (mapId: string | number) => {
     };
 
     exportMap.value = map;
+    emits("getInitMapExportData", exportMap.value); // 应用获取初始化地图实例
   } else {
     ElMessage.error("接口异常");
   }

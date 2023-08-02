@@ -181,7 +181,7 @@ defineExpose({
   }
   .confirm-button {
     position: absolute;
-    right: 20px;
+    right: 0;
     z-index: 1;
   }
 }

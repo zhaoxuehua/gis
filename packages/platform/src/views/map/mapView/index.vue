@@ -18,8 +18,6 @@ let config: { [key: string]: any } = reactive({
 onMounted(() => {
   config.id = route.query?.id as string | number | null;
 });
-
-// 框选功能mock
 </script>
 <style lang="scss" scoped>
 .map-view {
