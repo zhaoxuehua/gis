@@ -16,9 +16,9 @@ const config = {
   // 默认地址请求地址，可在 .env.** 文件中修改
   baseURL: import.meta.env.VITE_API_URL as string,
   // 设置超时时间
-  timeout: ResultEnum.TIMEOUT as number,
+  timeout: ResultEnum.TIMEOUT as number
   // 跨域时候允许携带凭证
-  withCredentials: true
+  // withCredentials: true
 };
 
 class RequestHttp {
@@ -34,11 +34,11 @@ class RequestHttp {
      */
     this.service.interceptors.request.use(
       (config: CustomAxiosRequestConfig) => {
-        // const userStore = useUserStore();
+        const userStore = useUserStore();
         // 当前请求不需要显示 loading，在 api 服务中通过指定的第三个参数: { noLoading: true } 来控制
         // config.noLoading || showFullScreenLoading();
         if (config.headers && typeof config.headers.set === "function") {
-          config.headers.set("agioe_sso_sessionid", "26_65a02a1d79384aa9a9d94539c8bddfd7");
+          config.headers.set("agioe_sso_sessionid", userStore.token);
         }
         return config;
       },
@@ -58,6 +58,10 @@ class RequestHttp {
         // tryHideFullScreenLoading();
         // 登陆失效
         if (data.code == ResultEnum.OVERDUE) {
+          if (window.__POWERED_BY_WUJIE__) {
+            window.$wujie.bus.$emit("subapp-logout");
+            return;
+          }
           userStore.setToken("");
           router.replace(LOGIN_URL);
           ElMessage.error(data.msg);

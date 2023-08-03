@@ -1,11 +1,11 @@
 <!-- 💥 这里是一次性加载 LayoutComponents -->
 <template>
   <component :is="LayoutComponents[layout]" />
-  <ThemeDrawer />
+  <ThemeDrawer v-if="!isSubApp" />
 </template>
 
 <script setup lang="ts" name="layout">
-import { computed, type Component } from "vue";
+import { computed, type Component, inject } from "vue";
 import { LayoutType } from "@/stores/interface";
 import { useGlobalStore } from "@/stores/modules/global";
 import ThemeDrawer from "./components/ThemeDrawer/index.vue";
@@ -23,6 +23,7 @@ const LayoutComponents: Record<LayoutType, Component> = {
 
 const globalStore = useGlobalStore();
 const layout = computed(() => globalStore.layout);
+const isSubApp = inject("isSubApp");
 </script>
 
 <style scoped lang="scss">
