@@ -1,6 +1,6 @@
 <template>
   <Maximize v-if="maximize" />
-  <Tabs v-if="tabs" />
+  <Tabs v-if="!isSubApp" />
   <el-main>
     <router-view v-slot="{ Component, route }">
       <transition appear name="fade-transform" mode="out-in">
@@ -10,13 +10,13 @@
       </transition>
     </router-view>
   </el-main>
-  <el-footer v-if="footer">
+  <el-footer v-if="!isSubApp">
     <Footer />
   </el-footer>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, provide, watch } from "vue";
+import { ref, onBeforeUnmount, provide, watch, inject } from "vue";
 import { storeToRefs } from "pinia";
 import { useDebounceFn } from "@vueuse/core";
 import { useGlobalStore } from "@/stores/modules/global";
@@ -25,8 +25,10 @@ import Maximize from "./components/Maximize.vue";
 import Tabs from "@/layouts/components/Tabs/index.vue";
 import Footer from "@/layouts/components/Footer/index.vue";
 
+const isSubApp = inject("isSubApp");
+
 const globalStore = useGlobalStore();
-const { maximize, isCollapse, layout, tabs, footer } = storeToRefs(globalStore);
+const { maximize, isCollapse, layout } = storeToRefs(globalStore);
 
 const keepAliveStore = useKeepAliveStore();
 const { keepAliveName } = storeToRefs(keepAliveStore);

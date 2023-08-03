@@ -15,16 +15,27 @@ import { useGlobalStore } from "@/stores/modules/global";
 
 import en from "element-plus/es/locale/lang/en";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
+import { useRouter } from "vue-router";
 
 const globalStore = useGlobalStore();
 
 // init theme
-const { initTheme } = useTheme();
+const { initTheme, changePrimary } = useTheme();
 initTheme();
 
 // init language
 const i18n = useI18n();
+
+const router = useRouter();
+
 onMounted(() => {
+  if (window.__POWERED_BY_WUJIE__) {
+    window.$wujie.bus.$on(window.$wujie.props.appId + "-router-change", path => {
+      router.push(path);
+    });
+    changePrimary(window.$wujie.props.theme);
+  }
+
   const language = globalStore.language ?? getBrowserLang();
   i18n.locale.value = language;
   globalStore.setGlobalState("language", language as LanguageType);

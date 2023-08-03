@@ -98,20 +98,5 @@ export const authMenuList = [
         }
       }
     ]
-  },
-  {
-    path: "/map/mapView",
-    name: "mapView",
-    component: "/map/mapView/index",
-    meta: {
-      icon: "Menu",
-      title: "设计",
-      isLink: "",
-      isHide: true,
-      isFull: false,
-      isAffix: false,
-      isKeepAlive: false
-    },
-    children: []
   }
 ];

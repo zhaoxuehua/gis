@@ -59,3 +59,5 @@ app
   .component("MulAuth", mulAuth)
   .component("Popover", Popover)
   .mount("#app");
+
+app.provide("isSubApp", !!window.__POWERED_BY_WUJIE__);

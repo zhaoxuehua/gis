@@ -15,6 +15,21 @@ export const staticRouter: RouteRecordRaw[] = [
     component: () => import("@/layouts/index.vue"),
     redirect: HOME_URL,
     children: []
+  },
+  {
+    path: "/map/mapView",
+    name: "mapView",
+    component: () => import("@/views/map/mapView/index.vue"),
+    meta: {
+      icon: "Menu",
+      title: "设计",
+      isLink: "",
+      isHide: true,
+      isFull: false,
+      isAffix: false,
+      isKeepAlive: false
+    },
+    children: []
   }
 ];
 

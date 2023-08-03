@@ -7,12 +7,15 @@
 import { onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import { AgMap } from "@adm-gis-ui/components";
+import { useUserStore } from "@/stores/modules/user";
 const route = useRoute();
 const mapRef = ref<InstanceType<typeof AgMap>>();
 
+const userStore = useUserStore();
+
 let config: { [key: string]: any } = reactive({
   navSourceCode: "Default",
-  sessionId: "26_65a02a1d79384aa9a9d94539c8bddfd7"
+  sessionId: userStore.token
 });
 
 onMounted(() => {

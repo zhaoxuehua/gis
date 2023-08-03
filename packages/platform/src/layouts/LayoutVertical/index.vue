@@ -1,7 +1,7 @@
 <!-- 纵向布局 -->
 <template>
   <el-container class="layout">
-    <el-aside>
+    <el-aside v-if="!isSubApp">
       <div class="aside-box" :style="{ width: isCollapse ? '65px' : '210px' }">
         <div class="logo flx-center">
           <img
@@ -26,7 +26,7 @@
       </div>
     </el-aside>
     <el-container>
-      <el-header>
+      <el-header v-if="!isSubApp">
         <ToolBarLeft />
         <ToolBarRight />
       </el-header>
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts" name="layoutVertical">
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/modules/auth";
 import { useGlobalStore } from "@/stores/modules/global";
@@ -51,6 +51,7 @@ const globalStore = useGlobalStore();
 const isCollapse = computed(() => globalStore.isCollapse);
 const menuList = computed(() => authStore.showMenuListGet);
 const activeMenu = computed(() => (route.meta.activeMenu ? route.meta.activeMenu : route.path) as string);
+const isSubApp = inject("isSubApp");
 </script>
 
 <style scoped lang="scss">
