@@ -59,7 +59,8 @@ class RequestHttp {
         // 登陆失效
         if (data.code == ResultEnum.OVERDUE) {
           if (window.__POWERED_BY_WUJIE__) {
-            return window.$wujie.bus.$emit("subapp-logout");
+            window.$wujie.bus.$emit("subapp-logout");
+            return;
           }
           userStore.setToken("");
           router.replace(LOGIN_URL);
