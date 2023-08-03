@@ -565,7 +565,6 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
       }
     }
     // 调用方法将要素抛出去应用实现逻辑
-
     callback(selectionFeatures);
   });
 }

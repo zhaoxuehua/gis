@@ -90,7 +90,7 @@ const handleNodeClick = (data: NavigationTreeNodeData) => {
 };
 
 // 编辑
-const onEdit = (data: NavigationTreeNodeData) => {
+const onEdit = async (data: NavigationTreeNodeData) => {
   emits("onEditLabel", data.associationInfo?.associationObjectCode);
 };
 
@@ -247,6 +247,20 @@ onMounted(() => {
 .custom-tree-node {
   display: flex;
   align-items: center;
+  color: #999999;
+  &.active {
+    color: #606266;
+  }
+  .highlight {
+    color: var(--color-primary);
+  }
+  .action-btns {
+    padding-left: 5px;
+    visibility: hidden;
+    i {
+      margin-right: 6px;
+    }
+  }
 }
 .custom-tree-node i {
   margin-left: 8px;

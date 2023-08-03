@@ -83,9 +83,11 @@
                 {{ "编辑" }}
               </el-button>
             </Auth>
-            <el-button type="primary" link @click="table.onEdit(scope.row, 'map')">
-              {{ "地图" }}
-            </el-button>
+            <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_MAP">
+              <el-button type="primary" link @click="table.onEdit(scope.row, 'map')">
+                {{ "地图" }}
+              </el-button>
+            </Auth>
           </template>
         </el-table-column>
       </el-table>

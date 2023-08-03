@@ -17,9 +17,10 @@ export const MENU_BTNS_AUTH = {
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_ADD: "visconfig:gisconfig:mapparamsconfig:add", //创建
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_EDIT: "visconfig:gisconfig:mapparamsconfig:edit", //编辑
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_DELETE: "visconfig:gisconfig:mapparamsconfig:delete", //删除
+  VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_MAP: "visconfig:gisconfig:mapparamsconfig:map", //地图
 
   // 图例
   VISCONFIG_GISCONFIG_MAPLegendCONFIG_ADD: "visconfig:gisconfig:maplegendconfig:add", //添加图例
   VISCONFIG_GISCONFIG_MAPLegendCONFIG_EDIT: "visconfig:gisconfig:maplegendconfig:edit", // 编辑图例
-  VISCONFIG_GISCONFIG_MAPLegendCONFIG_DELETE: "visconfig:gisconfig:maplegendconfig:delete"
+  VISCONFIG_GISCONFIG_MAPLegendCONFIG_DELETE: "visconfig:gisconfig:maplegendconfig:delete" // 删除图例
 };
