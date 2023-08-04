@@ -35,7 +35,6 @@ import authAll from "@/components/auth/authAll.vue";
 import mulAuth from "@/components/auth/mulAuth.vue";
 import Popover from "@/components/popover/index.vue";
 import Agmap from "@adm-gis-ui/components";
-import "@adm-gis-ui/agmap/es/style.css";
 
 const app = createApp(App);
 app.config.errorHandler = errorHandler;
