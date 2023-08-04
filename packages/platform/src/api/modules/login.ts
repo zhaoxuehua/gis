@@ -15,8 +15,8 @@ export const loginApi = (params: Login.ReqLoginForm) => {
 // 获取菜单列表
 export const getAuthMenuListApi = () => {
   if (window.__POWERED_BY_WUJIE__) {
-    console.log(window.$wujie.props.authMenuList);
-    return window.$wujie.props.authMenuList;
+    console.log(window.$wujie.props?.authMenuList);
+    return window.$wujie.props?.authMenuList;
   } else {
     return authMenuList;
   }
@@ -25,8 +25,8 @@ export const getAuthMenuListApi = () => {
 // 获取按钮权限
 export const getAuthButtonListApi = () => {
   if (window.__POWERED_BY_WUJIE__) {
-    console.log(window.$wujie.props.authButtonList);
-    return window.$wujie.props.authButtonList;
+    console.log(window.$wujie.props?.authButtonList);
+    return window.$wujie.props?.authButtonList;
   } else {
     return USER_BTNS_AUTH;
   }

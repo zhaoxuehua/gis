@@ -55,7 +55,7 @@ router.beforeEach(async (to, from, next) => {
 
   // 5.判断是否有 Token，没有重定向到 login 页面
   if (!userStore.token) {
-    userStore.setToken(window.$wujie?.props.sessionId || "351_60066c79b3df43aabaa3eb8c4aec0cea");
+    userStore.setToken(window.$wujie?.props?.sessionId || "351_60066c79b3df43aabaa3eb8c4aec0cea");
   }
 
   // 6.如果没有菜单列表，就重新请求菜单列表并添加动态路由
