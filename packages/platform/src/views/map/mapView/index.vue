@@ -25,7 +25,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .map-view {
   width: 100%;
-  height: calc(100vh - 138px);
+  height: 100%;
   padding: 20px;
   background: var(--background-color);
 }
