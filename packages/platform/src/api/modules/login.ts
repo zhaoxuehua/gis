@@ -14,12 +14,22 @@ export const loginApi = (params: Login.ReqLoginForm) => {
 
 // 获取菜单列表
 export const getAuthMenuListApi = () => {
-  return authMenuList;
+  if (window.__POWERED_BY_WUJIE__) {
+    console.log(window.$wujie.props.authMenuList);
+    return window.$wujie.props.authMenuList;
+  } else {
+    return authMenuList;
+  }
 };
 
 // 获取按钮权限
 export const getAuthButtonListApi = () => {
-  return USER_BTNS_AUTH;
+  if (window.__POWERED_BY_WUJIE__) {
+    console.log(window.$wujie.props.authButtonList);
+    return window.$wujie.props.authButtonList;
+  } else {
+    return USER_BTNS_AUTH;
+  }
 };
 
 // 用户户退出登录
