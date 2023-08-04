@@ -1,0 +1,22 @@
+variables:
+#  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+   GIT_DEPTH: "1"  # Tells git to fetch all the branches of the project, required by the analysis task
+sonarqube-check:
+  image: 
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  script: 
+    - sonar-scanner -Dsonar.projectKey=$CI_PROJECT_NAME
+      -Dsonar.branch.name=$CI_COMMIT_REF_NAME
+      -Dsonar.host.url=http://192.168.16.21:7777
+      -Dsonar.login=sqa_2f4728446b9185fc64079880748af90ea29d31c1
+      -Dsonar.projectName=$CI_PROJECT_NAME
+      -Dsonar.projectVersion=$CI_COMMIT_REF_NAME
+      -Dsonar.projectDescription=$CI_PROJECT_TITLE
+      -Dsonar.qualitygate.wait=true
+  only:
+    - merge_requests
+    - release # or the name of your main branch
+    - master
+  tags:
+    - gitlab-docker
