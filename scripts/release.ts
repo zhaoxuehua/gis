@@ -3,7 +3,6 @@ import readChangesets from "@changesets/read";
 import { PreState, NewChangeset } from "@changesets/types";
 import { exec } from "child_process";
 
-
 interface ChangesetState {
   preState: PreState | undefined;
   changesets: NewChangeset[];
