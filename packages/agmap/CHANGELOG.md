@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.29
+
+### Patch Changes
+
+- 测试翻页样式
+
 ## 1.0.28
 
 ### Patch Changes

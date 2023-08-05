@@ -157,6 +157,9 @@ defineExpose({
   padding: 0;
   margin: 0;
   margin-top: 20px;
+  .el-pagination__sizes {
+    margin: 0 0 0 16px !important;
+  }
   .pagination-container-gis .el-pagination {
     position: absolute;
     right: 0;

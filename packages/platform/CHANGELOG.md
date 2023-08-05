@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.29
+
+### Patch Changes
+
+- 测试翻页样式
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.29
+
 ## 1.0.28
 
 ### Patch Changes
