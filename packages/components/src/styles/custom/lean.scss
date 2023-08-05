@@ -18,23 +18,6 @@
   // PingFang SC
   font-family: "PingFang SC";
 }
-.one-search {
-  margin-bottom: 2px;
-  .el-form {
-    .el-input,
-    .el-select {
-      width: 100%;
-    }
-  }
-  .el-input,
-  .el-select,
-  .el-form-item {
-    width: 100%;
-  }
-  .el-autocomplete {
-    width: 100%;
-  }
-}
 .config-form {
   display: flex;
   align-items: center;
@@ -125,28 +108,6 @@
 .status .el-checkbox__inner {
   border-radius: 0;
 }
-
-// el-tab样式
-
-// .el-tabs{
-//     .el-tabs__header{
-//         height: 32px;
-//         margin: 0px;
-//     }
-//     .el-tabs__nav-scroll{
-//         height: 32px;
-//         .el-tabs__nav{
-//             height: 32px;
-//             display: flex;
-//             .el-tabs__item{
-//                 height: 32px;
-//                 display: flex;
-//                 align-items: center;
-//                 justify-content: center;
-//             }
-//         }
-//     }
-// }
 .el-tabs {
   .el-tabs__header {
     margin: 0;
@@ -159,9 +120,6 @@
 // popover的样式
 .el-popover.el-popper {
   background-color: var(--color-whites);
-}
-.el-popper {
-  // background-color: var(--color-whites) !important;
 }
 .editor-content-cfg {
   .el-tabs {
