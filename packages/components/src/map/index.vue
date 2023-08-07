@@ -52,9 +52,10 @@ import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
 
-import { layerStyle, clusterLayerStyle } from "./hooks/styleFunction.js";
-import { createGeometry } from "./hooks/createGeometry.js";
-import { clearSelectedFeature, labelOnSelect } from "./hooks/index";
+import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
+import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
+import { createdFeature } from "./hooks/createdFeature.js";
+import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -727,6 +728,7 @@ const initMap = async (mapId: string | number) => {
     ElMessage.error("接口异常");
   }
 };
+
 const onScadaClose = () => {
   exportMap.value?.closePopup();
 };
@@ -781,7 +783,15 @@ const getRelationMap = () => {
 defineExpose({
   getMapElement,
   panToFeature,
-  getRelationMap
+  getRelationMap,
+  createdFeature,
+  createGeometry,
+  createLabel,
+  removeLabel,
+  getFeature,
+  clearSelectedFeature,
+  createStyle,
+  getGeometryCenter
 });
 
 // 监听外部树节点点击
