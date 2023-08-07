@@ -1,5 +1,7 @@
 import { Draw } from "ol/interaction";
 import { Geometry } from "ol/geom";
+import { Feature } from "ol";
+import Point from "ol/geom/Point.js";
 export type VisualMap = Map & { defaultOptions: { [key: string]: any }; popupInfo: function; closePopup: function };
 // 标签类型
 export type LabelType = {
@@ -112,3 +114,11 @@ export type TableList = {
   onSelectionChange: Function;
   onEdit: Function;
 };
+
+// 创建要素
+interface createdFeatureArgFace {
+  name: string;
+  geometry: Point;
+}
+
+export type createdFeatureType = (data: createdFeatureArgFace) => Feature;
