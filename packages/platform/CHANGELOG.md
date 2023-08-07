@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.30
+
+### Patch Changes
+
+- 增加导出方法
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.30
+
 ## 1.0.29
 
 ### Patch Changes

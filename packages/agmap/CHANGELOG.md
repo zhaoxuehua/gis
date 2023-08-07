@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.30
+
+### Patch Changes
+
+- 增加导出方法
+
 ## 1.0.29
 
 ### Patch Changes
