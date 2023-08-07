@@ -52,10 +52,10 @@ import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
 
-import { layerStyle, clusterLayerStyle } from "./hooks/styleFunction.js";
-import { createGeometry } from "./hooks/createGeometry.js";
+import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
+import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
-import { clearSelectedFeature, labelOnSelect } from "./hooks/index";
+import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -785,7 +785,13 @@ defineExpose({
   panToFeature,
   getRelationMap,
   createdFeature,
-  createGeometry
+  createGeometry,
+  createLabel,
+  removeLabel,
+  getFeature,
+  clearSelectedFeature,
+  createStyle,
+  getGeometryCenter
 });
 
 // 监听外部树节点点击
