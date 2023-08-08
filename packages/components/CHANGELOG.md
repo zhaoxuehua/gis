@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.31
+
+### Patch Changes
+
+- z 创建要素函数 增减扩展属性字段
+
 ## 1.0.30
 
 ### Patch Changes
