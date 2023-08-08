@@ -96,6 +96,20 @@ export const authMenuList = [
           isAffix: false,
           isKeepAlive: true
         }
+      },
+      {
+        path: "/GISConfig/labelDialogConfig",
+        name: "labelDialogConfig",
+        component: "/GISConfig/labelDialogConfig/index",
+        meta: {
+          icon: "Menu",
+          title: "标签弹窗信息配置",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true
+        }
       }
     ]
   }
