@@ -85,7 +85,9 @@ const pagination = reactive({
   page: 1,
   pageSize: 10
 });
-const getTableData = () => {};
+const getTableData = () => {
+  console.log(1);
+};
 const handleSelectionChange = (val: any) => {
   state.selectedList = val;
   state.ids = val.map((col: any) => col.id);
