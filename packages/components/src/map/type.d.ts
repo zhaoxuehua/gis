@@ -116,9 +116,11 @@ export type TableList = {
 };
 
 // 创建要素
-interface createdFeatureArgFace {
+interface createdFeatureArgType {
   name: string;
   geometry: Point;
+  extendsData?: any;
+  [key: string]: any;
 }
 
-export type createdFeatureType = (data: createdFeatureArgFace) => Feature;
+export type createdFeatureType = (data: createdFeatureArgType) => Feature;

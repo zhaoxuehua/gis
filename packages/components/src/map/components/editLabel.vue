@@ -8,7 +8,7 @@
     <div class="content">
       <el-form :inline="false" :model="form" label-width="100px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="标签编码" prop="code">
-          <el-input placeholder="请输入..." v-model="form.code" readonly />
+          <el-input placeholder="请输入..." v-model="form.code" disabled />
         </el-form-item>
 
         <el-form-item label="标签名称" prop="name">
@@ -16,25 +16,33 @@
         </el-form-item>
 
         <el-form-item label="所属图层" prop="refLayer.name">
-          <el-input placeholder="请输入..." v-model="form.refLayer.name" readonly />
+          <el-input placeholder="请输入..." v-model="form.refLayer.name" disabled />
         </el-form-item>
 
         <el-form-item label="数据类型" prop="labelType.name">
-          <el-input placeholder="请输入..." v-model="labelDataType" readonly />
+          <el-input placeholder="请输入..." v-model="labelDataType" disabled />
         </el-form-item>
 
         <el-form-item label="坐标点" prop="labelData.coordinates">
-          <!-- <div class="form-coordinate"> -->
-          <el-input placeholder="请输入..." v-model="form.labelData.coordinates" readonly />
-          <!-- </div> -->
+          <el-input
+            placeholder="请输入..."
+            v-model="form.labelData.coordinates"
+            :disabled="form.labelType.dataType != '1' && form.labelType.dataType != '6' && form.labelType.dataType != '4'"
+            :class="{
+              showEditIcon: form.labelType.dataType != '1' && form.labelType.dataType != '6' && form.labelType.dataType != '4'
+            }"
+          />
+          <div
+            class="editIcon"
+            v-show="form.labelType.dataType != '1' && form.labelType.dataType != '6' && form.labelType.dataType != '4'"
+            @click.stop="showEditPosition"
+          >
+            <Icon src="Edit" :size="14" class="icon"></Icon>
+          </div>
         </el-form-item>
 
         <!-- 点 -->
         <template v-if="['1'].includes(form.labelType.dataType)">
-          <!-- <el-form-item label="标签图片" prop="labelData.style.icon.src">
-            <el-input placeholder="请输入..." v-model="form.labelData.style.icon.src" clearable />
-          </el-form-item> -->
-
           <el-form-item label="显示比例" prop="labelData.style.icon.scale">
             <el-input placeholder="请输入..." v-model="form.labelData.style.icon.scale" clearable />
           </el-form-item>
@@ -72,7 +80,7 @@
         <!-- 线 -->
         <template v-if="['2'].includes(form.labelType.dataType)">
           <el-form-item label="矢量路径" prop="labelData.style.lineVector.path">
-            <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.path" clearable readonly />
+            <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.path" clearable disabled />
           </el-form-item>
 
           <el-form-item label="矢量宽度" prop="labelData.style.lineVector.width">
@@ -190,6 +198,7 @@
         <el-button type="primary" @click="onConfirm">确认</el-button>
       </span>
     </div>
+    <EditPositionDialog ref="editPositionRef" @success-add="savePosition"></EditPositionDialog>
   </div>
 </template>
 
@@ -197,7 +206,6 @@
 import { reactive, ref, computed, onBeforeUnmount, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { cloneDeep } from "lodash";
-import { Circle } from "ol/geom";
 import type { LabelForm, LabelInfoData } from "../type";
 
 import { MAP_DATA_TYPE } from "../hooks/createGeometry.js";
@@ -205,6 +213,7 @@ import { featureUpdate, getFeature } from "../hooks/index.js";
 import { editLabel } from "../../api/visconfig";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
+import EditPositionDialog from "./editPositionDialog.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null
@@ -366,6 +375,7 @@ const labelDataType = computed(() => {
   }
 });
 
+const editPositionRef = ref();
 const refForm = ref();
 const form = ref<LabelForm>({
   id: "",
@@ -432,14 +442,6 @@ const onOpen = (labelCode: string) => {
     }
     // 更新表单
     form.value = editLabel;
-    let featureCoordinates = feature?.getGeometry()?.getCoordinates(); // 坐标集合
-    let radius = null; // 圆的半径
-    if (feature?.getGeometry() instanceof Circle) {
-      featureCoordinates = feature.getGeometry().getCenter();
-      radius = feature.getGeometry().getRadius();
-    }
-    form.value.labelData.coordinates = featureCoordinates;
-    form.value.labelData.radius = radius;
     state.isShow = true;
   }
 };
@@ -450,6 +452,15 @@ const onClose = () => {
   clearModify();
 };
 
+// 编辑坐标（线、面、矩形、环）
+const showEditPosition = () => {
+  editPositionRef.value?.openDialog(cloneDeep(form.value.labelData.coordinates), form.value.labelType.dataType);
+};
+// 坐标更改后的回调
+const savePosition = (coordinates: any[]) => {
+  form.value.labelData.coordinates = coordinates;
+};
+
 // 新表单数据变化应用到地图上
 const applyModify = (data: any) => {
   hasEdit.value = true;
@@ -458,6 +469,13 @@ const applyModify = (data: any) => {
   props.map.set("labelInfoMap", labelInfoMap.value); // 更新标签树
   if (data && data.labelData && data.labelData.radius) {
     data.labelData.radius = Number(data.labelData.radius);
+  }
+  // 坐标更改(点、文本、圆的数据结构及类型)
+  if (data && data.labelData && data.labelData.coordinates) {
+    if (typeof data.labelData.coordinates == "string") {
+      let arr = data.labelData.coordinates.split(",");
+      data.labelData.coordinates = arr.map((num: string) => Number(num));
+    }
   }
   featureUpdate(data, props.map);
 };
@@ -566,13 +584,21 @@ watch(
   height: calc(100% - 110px);
   padding: 20px 20px 0;
   overflow-y: auto;
-}
-.form-coordinate {
-  display: flex;
-  align-items: center;
-}
-.form-coordinate i {
-  margin-left: 8px;
+  .showEditIcon {
+    width: 165px !important;
+  }
+  .editIcon {
+    width: 32px;
+    height: 32px;
+    margin-left: 5px;
+    line-height: 32px;
+    color: #ffffff;
+    text-align: center;
+    cursor: pointer;
+    background: var(--el-color-primary);
+    border: 1px solid #dddddd;
+    border-radius: 50%;
+  }
 }
 .footer {
   display: flex;

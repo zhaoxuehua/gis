@@ -739,6 +739,9 @@ onMounted(() => {
   // 存储导航树应用id
   const sourceCode = props?.config?.navSourceCode;
   gisStore.setSourceCode(sourceCode);
+  // 设置并请求导航树、关联关系
+  gisStore.setNavTreeAndRelation(); // 清空导航树数据
+  gisStore.fetchNavigationTree(); // 获取导航树数据
   // 拼接控件扩展 是数组[]
   if (props?.config?.leftControl) {
     if (props?.config?.leftControlIndex || props?.config?.leftControlIndex == 0) {

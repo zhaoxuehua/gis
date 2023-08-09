@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -277,7 +277,7 @@ importers:
   packages/platform:
     dependencies:
       '@adm-gis-ui/components':
-        specifier: workspace:^1.0.30
+        specifier: workspace:^1.0.31
         version: link:../components
       '@element-plus/icons-vue':
         specifier: ^2.1.0

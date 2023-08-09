@@ -24,23 +24,7 @@ export function createGeometry(labelData: LabelData) {
 
   let coordinates = labelData?.coordinates;
   let radius = labelData.radius;
-
-  // 坐标转换：EPSG:4326=>EPSG:3857
-  const deep = multiArray(coordinates);
-  // 兼容老数据
-  if (deep === 3) {
-    if (coordinates[0][0][0] < 180) {
-      coordinates = coordinates?.map((item: any) => item.map((coord: Coordinate) => fromLonLat(coord)));
-    }
-  } else if (deep === 2) {
-    if (coordinates[0][0] < 180) {
-      coordinates = coordinates?.map((coord: any) => fromLonLat(coord));
-    }
-  } else {
-    if (coordinates[0] < 180) {
-      coordinates = fromLonLat(coordinates);
-    }
-  }
+  coordinates = getCoordinate(coordinates); // 坐标转换：EPSG:4326=>EPSG:3857
   switch (type) {
     case "Point":
       geometry = new Point(coordinates);
@@ -158,4 +142,25 @@ export function getGeometryCenter(labelData: LabelData) {
       break;
   }
   return geometryCenter;
+}
+
+//  坐标转换：EPSG:4326=>EPSG:3857  返回坐标值
+export function getCoordinate(positionCoordinates: any[]) {
+  let coordinates = positionCoordinates;
+  const deep = multiArray(coordinates);
+  // 兼容老数据
+  if (deep === 3) {
+    if (coordinates[0][0][0] < 180) {
+      coordinates = coordinates?.map((item: any) => item.map((coord: Coordinate) => fromLonLat(coord)));
+    }
+  } else if (deep === 2) {
+    if (coordinates[0][0] < 180) {
+      coordinates = coordinates?.map((coord: any) => fromLonLat(coord));
+    }
+  } else {
+    if (coordinates[0] < 180) {
+      coordinates = fromLonLat(coordinates);
+    }
+  }
+  return coordinates;
 }

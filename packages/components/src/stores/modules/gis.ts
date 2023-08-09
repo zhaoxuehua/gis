@@ -47,6 +47,11 @@ export const useGisStore = defineStore({
     },
     setIsEdit(isEdit: boolean) {
       this.isEdit = isEdit;
+    },
+    // 设置导航树数据及关联关系为空
+    setNavTreeAndRelation() {
+      this.navigationTree = [];
+      this.relationMap = {};
     }
   },
   persist: piniaPersistConfig("gis")

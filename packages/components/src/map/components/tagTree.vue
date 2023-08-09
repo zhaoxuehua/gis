@@ -21,14 +21,17 @@
           @node-click="handleNodeClick"
           :filter-node-method="filterNode"
           ref="treeRef"
+          :expand-on-click-node="false"
+          :default-expanded-keys="state.expandedKeys"
+          node-key="code"
         >
-          <template #default="{ data }">
+          <template #default="{ node, data }">
             <span class="custom-tree-node">
               <span>{{ data.name }}</span>
               <!-- 父节点可以新增即只有标签类型可以新增（子节点可以修改删除） -->
-              <Icon src="Plus" :size="14" @click="onAdd(data)" v-if="data.isParent"></Icon>
-              <Icon src="EditPen" :size="14" v-if="!data.isParent" @click.stop="onEdit(data)"></Icon>
-              <Icon src="Delete" :size="14" v-if="!data.isParent" @click.stop="onDelete(data)"></Icon>
+              <Icon src="Plus" :size="14" @click="onAdd(node, data)" v-if="data.isParent"></Icon>
+              <Icon src="EditPen" :size="14" v-if="!data.isParent" @click.stop="onEdit(node, data)"></Icon>
+              <Icon src="Delete" :size="14" v-if="!data.isParent" @click.stop="onDelete(node, data)"></Icon>
             </span>
           </template>
         </el-tree>
@@ -49,12 +52,13 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
 });
 const emits = defineEmits(["onEditLabel", "onClose"]);
 const treeRef = ref();
-const state = reactive({
+const state: { defaultProps: { [key: string]: any }; expandedKeys: any[]; filterText: string } = reactive({
   defaultProps: {
     children: "children",
     label: "name"
   },
-  filterText: "" // 树搜索字段
+  filterText: "", // 树搜索字段
+  expandedKeys: [] // 已展开的节点键
 });
 
 // 关闭标签树
@@ -101,14 +105,16 @@ const handleNodeClick = (node: any) => {
 };
 
 // 编辑
-const onEdit = (node: any) => {
-  emits("onEditLabel", node.code);
+const onEdit = (node: { [key: string]: any }, data: { [key: string]: any }) => {
+  getParentNode(node);
+  emits("onEditLabel", data.code);
 };
 
 // 删除
-const onDelete = (node: any) => {
+const onDelete = (node: { [key: string]: any }, data: { [key: string]: any }) => {
+  getParentNode(node);
   const labelInfoMap = props.map?.get("labelInfoMap") || {};
-  const label = labelInfoMap[node.code];
+  const label = labelInfoMap[data.code];
   if (!label) {
     ElMessage.warning("标签不存在");
     return;
@@ -125,12 +131,16 @@ const onDelete = (node: any) => {
 };
 
 // 新增标签
-const onAdd = (node: any) => {
-  if (!node.id) return;
+const onAdd = (node: { [key: string]: any }, data: { [key: string]: any }) => {
+  if (!data.id) return;
+  const parentNodeCode = node?.data?.code;
+  if (parentNodeCode) {
+    state.expandedKeys = [parentNodeCode];
+  }
   const labelTypeMap = props.map?.get("labelTypeMap") || {};
   let featureType: any;
   Object.values(labelTypeMap).forEach((labelInfo: any) => {
-    if (labelInfo.id == node.id) {
+    if (labelInfo.id == data.id) {
       featureType = labelInfo;
       return;
     }
@@ -152,6 +162,16 @@ const onAdd = (node: any) => {
     props.map?.set("featureTypeGroup", featureTypeGroup);
     ElMessage.success("创建标签成功");
   });
+};
+
+// 查找父节点并存储展开节点
+const getParentNode = (node: { [key: string]: any }) => {
+  // 找父节点塞数据
+  const parentNode: { [key: string]: any } = node.parent;
+  const parentNodeCode: string | undefined = parentNode?.data?.code;
+  if (parentNodeCode) {
+    state.expandedKeys = [parentNodeCode];
+  }
 };
 
 // 监听键盘ESC
