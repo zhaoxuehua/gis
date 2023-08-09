@@ -11,7 +11,7 @@ import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
 import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
-import { MAP_DATA_TYPE, multiArray, getGeometryCenter } from "./createGeometry.js";
+import { MAP_DATA_TYPE, multiArray, getGeometryCenter, getCoordinate } from "./createGeometry.js";
 import { createStyle, clusterLayerStyle, selectBoxStyle } from "./styleFunction.js";
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
@@ -379,12 +379,16 @@ export function featureUpdate(labelData: any, map: VisualMap) {
   }
   let feature = source.getFeatureById(labelData.code);
   let dataType = labelData.labelType?.dataType;
+  let geo = feature?.getGeometry();
+  // 考虑坐标点的编辑(替换为新的经度和纬度值)
   // 如果是圆的话特殊处理
   if (dataType === "4") {
     if (feature.getGeometry() instanceof Circle) {
-      let geo = feature.getGeometry();
-      geo.setRadius(labelData.labelData?.radius);
+      geo?.setRadius(labelData.labelData?.radius);
+      geo?.setCenter(getCoordinate(labelData.labelData.coordinates));
     }
+  } else {
+    geo.setCoordinates(getCoordinate(labelData.labelData.coordinates));
   }
 
   feature.setId(labelData.code);
