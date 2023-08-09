@@ -14,7 +14,8 @@
     "url": "http://192.168.15.91/FRONT-COMPONENT/front-vue3-template/issues"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --mode development",
+    "test": "vite --mode test",
     "serve": "vite",
     "build:dev": "vue-tsc && vite build --mode development",
     "build:test": "vue-tsc && vite build --mode test",

@@ -269,6 +269,7 @@ const initMap = async (mapId: string | number) => {
   const res: { [key: string]: any } = await getMapParamsDetail(mapId);
   if (res.code === 200 && res.data) {
     const originalData = JSON.parse(JSON.stringify(res.data));
+    originalData.displaySearchIds = "3,55,54,53,52,51,50,1,7";
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
     if (props?.config?.bigScreenControls) {
       let newControls = [];
@@ -316,6 +317,7 @@ const initMap = async (mapId: string | number) => {
       labelTypeIds: originalData.displayLabelInfoIds, // 标签类型id  string
       layers: originalData.displayLayer, // 显示图层  object[]
       layersIds: originalData.displayLayerIds, // 图层id string
+      displaySearchIds: originalData.displaySearchIds, // 搜索类型id
 
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
