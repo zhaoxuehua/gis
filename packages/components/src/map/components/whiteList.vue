@@ -82,7 +82,6 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
   map: () => null,
   index: () => 0
 });
-console.log(props, 7766);
 const emits = defineEmits(["onClose"]);
 
 const whiteListEditRef = ref<InstanceType<typeof WhiteListEdit>>();
