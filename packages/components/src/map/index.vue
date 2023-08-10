@@ -55,6 +55,7 @@ import { useGisStore } from "../stores/modules/gis";
 import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
+import { createdTrackLayer } from "./hooks/createdTrackLayer.js";
 import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
@@ -411,6 +412,7 @@ const initMap = async (mapId: string | number) => {
           isTagAgg: item?.isTagAgg,
           style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
         };
+        createdTrackLayer(item); // 是否设置对应改图的要素有轨迹
       } else {
         options = {
           source: new VectorSource({ wrapX: false }),
@@ -429,6 +431,9 @@ const initMap = async (mapId: string | number) => {
       }
       map.addLayer(layerMap[item.code]);
     });
+    console.log(defaultOptions, "............defaultOptions...........");
+
+    /**********************************************************************/
 
     map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
     map.set("clusterLayerCodes", clusterLayerCodes); // 存储所有的图层信息
@@ -764,6 +769,7 @@ onMounted(() => {
   if (!mapParams) return;
   initMap(mapParams);
 });
+
 // 自定义框选弹框
 const onClickBoxSelection = (selectionFeatures: any[]) => {
   emits("getClickBoxSelection", selectionFeatures, gisStore?.relationMap);
@@ -778,9 +784,11 @@ const customSearchDialog = (inputValue: string) => {
 const getMapElement = () => {
   return exportMap.value;
 };
+
 const panToFeature = (featureCode: string | number, isFeatureClick: boolean) => {
   labelOnSelect(exportMap.value, featureCode, isFeatureClick);
 };
+
 const getRelationMap = () => {
   return gisStore?.relationMap;
 };

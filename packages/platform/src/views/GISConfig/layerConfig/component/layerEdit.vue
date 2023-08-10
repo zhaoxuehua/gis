@@ -13,35 +13,54 @@
         <el-form-item label="图层编码" prop="code">
           <el-input placeholder="请输入..." v-model="form.code" :disabled="state.dialogType == 1" clearable />
         </el-form-item>
+
         <el-form-item label="图层名称" prop="name">
           <el-input placeholder="请输入..." v-model="form.name" clearable />
         </el-form-item>
+
         <el-form-item label="图层等级" prop="layerLevel">
           <el-input type="number" v-model="form.layerLevel" />
         </el-form-item>
+
         <el-form-item label="图层显示最低等级" prop="layerMinLevel">
           <el-input type="number" v-model="form.layerMinLevel" />
         </el-form-item>
+
         <el-form-item label="图层显示最高等级" prop="layerMaxLevel">
           <el-input type="number" v-model="form.layerMaxLevel" />
         </el-form-item>
-        <div></div>
-        <el-form-item prop="isTagAgg">
-          <template #label>
-            <span>标签聚合</span>
-            <el-tooltip effect="dark" content="目前只针对点类型标签生效" placement="top">
-              <Icon src="WarningFilled" :size="16" color="#e6a23c" class="iconItem"></Icon>
-            </el-tooltip>
-          </template>
-          <el-checkbox v-model="form.isTagAgg" />
-        </el-form-item>
-        <div></div>
-        <el-form-item v-if="form.isTagAgg" label="标签聚合距离" prop="tagAggDistance">
-          <el-input type="number" v-model="form.tagAggDistance" />
-        </el-form-item>
-        <el-form-item v-if="form.isTagAgg" label="轨迹聚合距离" prop="trackAggDistance">
-          <el-input type="number" v-model="form.trackAggDistance" />
-        </el-form-item>
+
+        <div>
+          <el-form-item prop="isTagAgg">
+            <template #label>
+              <span>标签聚合</span>
+              <el-tooltip effect="dark" content="目前只针对点类型标签生效" placement="top">
+                <Icon src="WarningFilled" :size="16" color="#e6a23c" class="iconItem"></Icon>
+              </el-tooltip>
+            </template>
+            <el-checkbox v-model="form.isTagAgg" />
+          </el-form-item>
+
+          <el-form-item v-if="form.isTagAgg" label="标签聚合距离(px)" prop="tagAggDistance" style="margin-left: 186px">
+            <el-input type="number" v-model="form.tagAggDistance" />
+          </el-form-item>
+        </div>
+
+        <div>
+          <el-form-item prop="isTrackDraw">
+            <template #label>
+              <span>轨迹</span>
+              <el-tooltip effect="dark" content="目前只针对点类型标签生效" placement="top">
+                <Icon src="WarningFilled" :size="16" color="#e6a23c" class="iconItem"></Icon>
+              </el-tooltip>
+            </template>
+            <el-checkbox v-model="form.isTrackDraw" />
+          </el-form-item>
+
+          <el-form-item v-if="form.isTrackDraw" label="轨迹聚合距离(px)" prop="trackAggDistance" style="margin-left: 186px">
+            <el-input type="number" v-model="form.trackAggDistance" />
+          </el-form-item>
+        </div>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -121,6 +140,7 @@ let form = ref<{
   layerMinLevel: number | null;
   layerMaxLevel: number | null;
   isTagAgg?: boolean | undefined;
+  isTrackDraw?: boolean | undefined;
   tagAggDistance?: number | null;
   trackAggDistance?: number | null;
 }>(defaultParam);
