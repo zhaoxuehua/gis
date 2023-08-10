@@ -306,8 +306,8 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   let layer = map?.get("layerMap")[labelInfo.refLayer?.code];
   const minZoom = Math.ceil(layer.getMinZoom()); // 图层最小层级
   const maxZoom = Math.floor(layer.getMaxZoom()); // 图层最大层级
-  const currentZoom = map.getView().getZoom();
-  let zoom = minZoom;
+  const currentZoom = map.getView().getZoom(); // 当前视图层级
+  let zoom = Math.ceil((maxZoom + minZoom) / 2);
   // 如果在当前视图的层级则显示
   if (minZoom <= currentZoom && currentZoom <= maxZoom) {
     zoom = currentZoom;
