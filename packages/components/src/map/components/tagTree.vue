@@ -43,7 +43,7 @@
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { VisualMap } from "../type";
-import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
+import { removeLabel, createLabel, labelOnSelect, clearSelectedFeature } from "../hooks/index";
 import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -99,15 +99,25 @@ const filterNode = (value: any, data: any) => {
   return data.name.indexOf(value) !== -1;
 };
 
-// 树节点点击
+// 树节点点击(定位+选中)
 const handleNodeClick = (node: any) => {
   labelOnSelect(props.map, node.code, false);
 };
 
+const timer: any = ref(null);
 // 编辑
 const onEdit = (node: { [key: string]: any }, data: { [key: string]: any }) => {
   getParentNode(node);
   emits("onEditLabel", data.code);
+  timer.value = setTimeout(() => {
+    labelOnSelect(props.map, data.code, false);
+    clearTimeout(timer);
+  }, 100);
+  // 清空选中状态
+  timer.value = setTimeout(() => {
+    clearSelectedFeature(props.map);
+    clearTimeout(timer);
+  }, 3000);
 };
 
 // 删除
