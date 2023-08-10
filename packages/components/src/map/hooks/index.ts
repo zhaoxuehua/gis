@@ -2,8 +2,6 @@ import { addLabel, deleteLabel } from "../../api/visconfig";
 import { ElMessage } from "element-plus";
 import Draw, { DrawEvent, createBox } from "ol/interaction/Draw";
 import type { Type } from "ol/geom/Geometry";
-import { toLonLat } from "ol/proj";
-import type { Coordinate } from "ol/coordinate";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Circle } from "ol/geom";
@@ -11,7 +9,7 @@ import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
 import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
-import { MAP_DATA_TYPE, multiArray, getGeometryCenter, getCoordinate } from "./createGeometry.js";
+import { MAP_DATA_TYPE, getGeometryCenter, getCoordinate, getLonLatCoordinate } from "./createGeometry.js";
 import { createStyle, clusterLayerStyle, selectBoxStyle } from "./styleFunction.js";
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
@@ -89,18 +87,9 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
       featureCoordinates = geometry.getCenter();
       radius = geometry.getRadius();
     }
-
-    // 坐标转换：EPSG:3857转为EPSG:4326
-    const deep = multiArray(featureCoordinates);
+    // 坐标转换：EPSG:3857转为EPSG:4326(绘制时投影=>经纬度)
     if (!featureCoordinates) return;
-    if (deep === 3) {
-      featureCoordinates = featureCoordinates.map((item: any) => item.map((coord: Coordinate) => toLonLat(coord)));
-    } else if (deep === 2) {
-      featureCoordinates = featureCoordinates.map((coord: any) => toLonLat(coord));
-    } else {
-      featureCoordinates = toLonLat(featureCoordinates);
-    }
-
+    featureCoordinates = getLonLatCoordinate(featureCoordinates);
     // 要保存的标签数据，包括地理信息和图形信息(图层根据labelDate生成样式)
     let labelData: LabelData = {
       coordinates: featureCoordinates,

@@ -202,9 +202,12 @@
 import { reactive, ref, computed, onBeforeUnmount, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { cloneDeep } from "lodash";
+import { Modify, Translate } from "ol/interaction";
+import Collection from "ol/Collection";
+import { Circle } from "ol/geom";
 import type { LabelForm, LabelInfoData } from "../type";
 
-import { MAP_DATA_TYPE } from "../hooks/createGeometry.js";
+import { MAP_DATA_TYPE, getLonLatCoordinate } from "../hooks/createGeometry.js";
 import { featureUpdate, getFeature } from "../hooks/index.js";
 import { editLabel } from "../../api/visconfig";
 import type { VisualMap } from "../type";
@@ -394,14 +397,21 @@ const form = ref<LabelForm>({
   }
 });
 
-// 自己逻辑实现
 const originEditLabel = ref(); // 编辑前的原始数据
 const hasEdit = ref(false); // 是否编辑过数据
 const isEditSuccess = ref(false); // 是否编辑成功（即是否需要恢复原来的数据）
 
+// 编辑地图要素（点的话就是平移）
+const modifyFeature = ref(); // 编辑的要素
+const modify = ref(); // 编辑交互器
+
+// 平移地图要素
+const translation = ref(); // 平移交互器
+
 // 打开标签编辑
 const onOpen = (labelCode: string) => {
   if (labelCode) {
+    clearModify();
     const editLabel = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
     if (!editLabel) {
       // 从标签信息中找不到（可能别的应用绘制了但是有的应用没有配置对应的类型所以地图上没有）
@@ -439,13 +449,57 @@ const onOpen = (labelCode: string) => {
     // 更新表单
     form.value = editLabel;
     state.isShow = true;
+
+    // 增加平移功能
+    translation.value = new Translate({
+      hitTolerance: 30,
+      filter: function (allFeature) {
+        return allFeature?.get("code") == labelCode;
+      }
+    });
+    props.map?.addInteraction(translation.value); // 给地图增加平移要素几何的交互
+    translation.value.on("translating", function (event: any) {
+      const feature = event.features?.getArray()[0];
+      let featureCoordinates = feature.getGeometry()?.getCoordinates(); // 坐标集合
+      // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
+      if (feature.getGeometry() instanceof Circle) {
+        // 平移时圆只有中心点变化
+        featureCoordinates = feature.getGeometry().getCenter();
+      }
+      featureCoordinates = getLonLatCoordinate(featureCoordinates);
+      // 根据平移坐标
+      form.value.labelData.coordinates = featureCoordinates;
+    });
+
+    // 标签元素进入编辑状态（点1、文本6不需要编辑交互只需要平移）
+    const { dataType } = editLabel?.labelType;
+    if (dataType != "1" && dataType !== "6") {
+      modifyFeature.value = feature;
+      modify.value = new Modify({ features: new Collection([modifyFeature.value]) });
+      props.map?.addInteraction(modify.value); // 给地图增加修改要素几何的交互
+      modify.value.on("modifyend", function (event: any) {
+        const feature = event.features.getArray()[0];
+        let featureCoordinates = feature.getGeometry().getCoordinates(); // 坐标集合
+        let radius = null; // 圆的半径
+        if (feature.getGeometry() instanceof Circle) {
+          // 编辑圆时只有半径变化
+          featureCoordinates = feature.getGeometry().getCenter();
+          radius = feature.getGeometry().getRadius();
+        }
+        // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
+        featureCoordinates = getLonLatCoordinate(featureCoordinates);
+        // 根据拖拽更新表单中圆半径及坐标
+        form.value.labelData.coordinates = featureCoordinates;
+        form.value.labelData.radius = radius;
+      });
+    }
   }
 };
 
 // 关闭标签编辑
 const onClose = () => {
   state.isShow = false;
-  clearModify();
+  clearModify(); // 恢复原数据
 };
 
 // 编辑坐标（线、面、矩形、环）
@@ -510,6 +564,15 @@ const onConfirm = () => {
 
 // 恢复原来的标签样式
 const clearModify = () => {
+  if (modify.value) {
+    props.map?.removeInteraction(modify.value);
+  }
+  if (translation.value) {
+    props.map?.removeInteraction(translation.value);
+  }
+  modifyFeature.value = null;
+  modify.value = null;
+  translation.value = null;
   if (hasEdit.value && !isEditSuccess.value) {
     if (originEditLabel.value) {
       labelInfoMap.value[originEditLabel.value?.code] = originEditLabel.value;
