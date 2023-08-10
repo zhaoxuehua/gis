@@ -27,16 +27,12 @@
           <el-input
             placeholder="请输入..."
             v-model="form.labelData.coordinates"
-            :disabled="form.labelType.dataType != '1' && form.labelType.dataType != '6' && form.labelType.dataType != '4'"
+            disabled
             :class="{
-              showEditIcon: form.labelType.dataType != '1' && form.labelType.dataType != '6' && form.labelType.dataType != '4'
+              showEditIcon: true
             }"
           />
-          <div
-            class="editIcon"
-            v-show="form.labelType.dataType != '1' && form.labelType.dataType != '6' && form.labelType.dataType != '4'"
-            @click.stop="showEditPosition"
-          >
+          <div class="editIcon" @click.stop="showEditPosition">
             <Icon src="Edit" :size="14" class="icon"></Icon>
           </div>
         </el-form-item>
@@ -470,13 +466,6 @@ const applyModify = (data: any) => {
   if (data && data.labelData && data.labelData.radius) {
     data.labelData.radius = Number(data.labelData.radius);
   }
-  // 坐标更改(点、文本、圆的数据结构及类型)
-  if (data && data.labelData && data.labelData.coordinates) {
-    if (typeof data.labelData.coordinates == "string") {
-      let arr = data.labelData.coordinates.split(",");
-      data.labelData.coordinates = arr.map((num: string) => Number(num));
-    }
-  }
   featureUpdate(data, props.map);
 };
 
@@ -585,7 +574,7 @@ watch(
   padding: 20px 20px 0;
   overflow-y: auto;
   .showEditIcon {
-    width: 165px !important;
+    width: 170px !important;
   }
   .editIcon {
     width: 32px;

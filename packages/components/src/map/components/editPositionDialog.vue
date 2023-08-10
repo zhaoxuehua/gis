@@ -16,11 +16,11 @@
             <el-input type="number" v-model="state.coordinates[index][0]" class="input-box" />
             <label class="label-box"> 纬度 </label>
             <el-input type="number" v-model="state.coordinates[index][1]" class="input-box" />
-            <!-- 编辑区域 -->
-            <div class="editIcon">
+            <!-- 编辑区域(点文本圆不需要编辑) -->
+            <div class="editIcon" v-if="state.dataType != '1' && state.dataType != '4' && state.dataType != '6'">
               <Icon src="Plus" :size="14" class="icon" @click.stop="onAdd(index)"></Icon>
             </div>
-            <div class="editIcon">
+            <div class="editIcon" v-if="state.dataType != '1' && state.dataType != '4' && state.dataType != '6'">
               <Icon src="Delete" :size="14" class="icon" @click.stop="onDelete(index)"></Icon>
             </div>
           </div>
@@ -53,9 +53,12 @@ const openDialog = (coordinates: any, dataType: string) => {
     // 处理线、环的坐标数组 [[,][,]] 最少2个点
     if (dataType == "2" || dataType == "7") {
       state.coordinates = coordinates;
-    } else {
+    } else if (dataType == "3" || dataType == "5") {
       // 处理面、矩形的坐标数组 [[[,],[,],[,]]]  // 首尾必须一致，面坐标点不能少于3个
       state.coordinates = coordinates[0];
+    } else {
+      // 点 文本、圆 [,]=>[[,]] 1 4 6
+      state.coordinates = [coordinates];
     }
     open.value = true;
   }
@@ -93,7 +96,7 @@ const onDelete = (idx: number) => {
 };
 
 const onConfirm = () => {
-  if (!state.coordinates || state.coordinates?.length < 2) {
+  if (!state.coordinates || !state.coordinates?.length) {
     return;
   }
   // 坐标值不能为空的校验
@@ -123,6 +126,9 @@ const onConfirm = () => {
       state.coordinates.push(first);
     }
     newCoordinates = [state.coordinates];
+  }
+  if (state.dataType == "1" || state.dataType == "4" || state.dataType == "6") {
+    newCoordinates = state.coordinates[0];
   }
   emits("successAdd", newCoordinates);
   onClose();
