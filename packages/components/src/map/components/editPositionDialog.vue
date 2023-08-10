@@ -13,9 +13,19 @@
         <div v-for="(item, index) in state.coordinates" :key="index">
           <div class="position-box">
             <label> 经度 </label>
-            <el-input type="number" v-model="state.coordinates[index][0]" class="input-box" />
+            <el-input
+              type="text"
+              @blur="validateInput(state.coordinates[index][0], index, 0)"
+              v-model="state.coordinates[index][0]"
+              class="input-box"
+            />
             <label class="label-box"> 纬度 </label>
-            <el-input type="number" v-model="state.coordinates[index][1]" class="input-box" />
+            <el-input
+              type="text"
+              @blur="validateInput(state.coordinates[index][1], index, 1)"
+              v-model="state.coordinates[index][1]"
+              class="input-box"
+            />
             <!-- 编辑区域(点文本圆不需要编辑) -->
             <div class="editIcon" v-if="state.dataType != '1' && state.dataType != '4' && state.dataType != '6'">
               <Icon src="Plus" :size="14" class="icon" @click.stop="onAdd(index)"></Icon>
@@ -46,6 +56,17 @@ const state: { coordinates: any[]; dataType: string } = reactive({
   coordinates: [],
   dataType: ""
 });
+
+const validateInput = (inputValue: any, index: number, lonIdx: number) => {
+  if (!inputValue) {
+    ElMessage.warning("坐标值不能为空！");
+  } else {
+    if (!/^\d+(\.\d+)?$/.test(inputValue)) {
+      ElMessage.warning("输入无效，请重新输入浮点数！");
+      state.coordinates[index][lonIdx] = "";
+    }
+  }
+};
 
 const openDialog = (coordinates: any, dataType: string) => {
   if (coordinates && coordinates?.length && dataType) {
@@ -108,7 +129,7 @@ const onConfirm = () => {
     }
   }
   if (hasEmpty) {
-    ElMessage.warning("坐标值不能为空");
+    ElMessage.warning("坐标值不能为空！");
     return;
   }
   // 处理类型转换
