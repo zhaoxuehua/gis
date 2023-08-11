@@ -472,27 +472,27 @@ const onOpen = (labelCode: string) => {
     });
 
     // 标签元素进入编辑状态（点1、文本6不需要编辑交互只需要平移）
-    const { dataType } = editLabel?.labelType;
-    if (dataType != "1" && dataType !== "6") {
-      modifyFeature.value = feature;
-      modify.value = new Modify({ features: new Collection([modifyFeature.value]) });
-      props.map?.addInteraction(modify.value); // 给地图增加修改要素几何的交互
-      modify.value.on("modifyend", function (event: any) {
-        const feature = event.features.getArray()[0];
-        let featureCoordinates = feature.getGeometry().getCoordinates(); // 坐标集合
-        let radius = null; // 圆的半径
-        if (feature.getGeometry() instanceof Circle) {
-          // 编辑圆时只有半径变化
-          featureCoordinates = feature.getGeometry().getCenter();
-          radius = feature.getGeometry().getRadius();
-        }
-        // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
-        featureCoordinates = getLonLatCoordinate(featureCoordinates);
-        // 根据拖拽更新表单中圆半径及坐标
-        form.value.labelData.coordinates = featureCoordinates;
-        form.value.labelData.radius = radius;
-      });
-    }
+    // const { dataType } = editLabel?.labelType;
+    // if (dataType != "1" && dataType !== "6") {
+    modifyFeature.value = feature;
+    modify.value = new Modify({ features: new Collection([modifyFeature.value]) });
+    props.map?.addInteraction(modify.value); // 给地图增加修改要素几何的交互
+    modify.value.on("modifyend", function (event: any) {
+      const feature = event.features.getArray()[0];
+      let featureCoordinates = feature.getGeometry().getCoordinates(); // 坐标集合
+      let radius = null; // 圆的半径
+      if (feature.getGeometry() instanceof Circle) {
+        // 编辑圆时只有半径变化
+        featureCoordinates = feature.getGeometry().getCenter();
+        radius = feature.getGeometry().getRadius();
+      }
+      // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
+      featureCoordinates = getLonLatCoordinate(featureCoordinates);
+      // 根据拖拽更新表单中圆半径及坐标
+      form.value.labelData.coordinates = featureCoordinates;
+      form.value.labelData.radius = radius;
+    });
+    // }
   }
 };
 
@@ -547,11 +547,11 @@ const onConfirm = () => {
             props.map.set("labelInfoMap", labelInfoMap.value);
             isEditSuccess.value = true;
             ElMessage.success("保存成功");
+            onClose();
           } else {
             console.warn(res.msg);
             ElMessage.error("接口异常");
           }
-          state.isShow = false;
         },
         (err: any) => {
           console.error(err);
@@ -587,7 +587,8 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({
-  onOpen
+  onOpen,
+  onClose
 });
 
 watch(

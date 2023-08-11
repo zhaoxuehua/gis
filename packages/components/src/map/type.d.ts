@@ -40,6 +40,7 @@ export type LabelType = {
   backGroundColor: string;
   iconUrl?: string;
   animationSetting?: any;
+  isHang?: boolean; // 是否挂载标签树
 };
 
 // 标签信息
