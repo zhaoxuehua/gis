@@ -641,7 +641,7 @@ const initMap = async (mapId: string | number) => {
         { hitTolerance: 5 } // 设置捏合度为 5 像素
       );
       if (feature) {
-        // 点击地图上的要素
+        // 点击地图上的要素(需要考虑穿透逻辑)
         const featureCode = feature.get("code");
         const featureName = feature.get("name");
         if (featureCode) {
@@ -708,17 +708,16 @@ const initMap = async (mapId: string | number) => {
       const features = map.getFeaturesAtPixel(pixel, { hitTolerance: 5 });
       if (features && features.length > 0) {
         let feature: any = null;
-        let clickedFeature = features[0];
+        let clickedFeature = features[0]; // 点击第一个
         // 判断是否聚合要素
         if (clickedFeature?.get("features")) {
           const originalFeatures = clickedFeature.get("features");
-          feature = originalFeatures[0];
+          feature = originalFeatures[0]; // 聚合图层中聚合要素包含的原始要素的第一个
         } else if (clickedFeature instanceof Feature) {
           feature = clickedFeature;
         }
         if (feature) {
           const featureCode = feature?.getId();
-          console.log(evt.offsetX, evt.offsetY);
           emits("onOpenRightMenu", {
             featureCode,
             relationMap: gisStore?.relationMap,

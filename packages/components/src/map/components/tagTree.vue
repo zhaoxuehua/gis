@@ -74,19 +74,22 @@ const tagTreeData = computed(() => {
   const labelInfoMap = props.map?.get("labelInfoMap") || {};
   let tree: any = [];
   Object.entries(labelTypeMap)?.forEach(([key, object]: any) => {
-    const node = {
-      ...object,
-      pId: 0,
-      isParent: true,
-      children: []
-    };
-    Object.entries(labelInfoMap)?.forEach((labelInfo: any) => {
-      let item = labelInfo[1];
-      if (item?.labelType?.code == key) {
-        node.children.push(item);
-      }
-    });
-    tree.push(node);
+    // 过滤是否挂载标签树的逻辑
+    if (object.isHang) {
+      const node = {
+        ...object,
+        pId: 0,
+        isParent: true,
+        children: []
+      };
+      Object.entries(labelInfoMap)?.forEach((labelInfo: any) => {
+        let item = labelInfo[1];
+        if (item?.labelType?.code == key) {
+          node.children.push(item);
+        }
+      });
+      tree.push(node);
+    }
   });
   return tree;
 });

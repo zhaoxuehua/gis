@@ -34,15 +34,15 @@
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
-        <!-- <el-form-item label="对应要素" prop="factor">
-          <el-input placeholder="请输入..." v-model="form.factor" clearable :disabled="state.dialogType == 2" />
-        </el-form-item> -->
         <el-form-item label="默认显示标签名称" prop="isDefaultDisplayLabelName">
           <el-checkbox
             v-model="form.isDefaultDisplayLabelName"
             :disabled="state.dialogType == 2"
             style="width: 200px"
           ></el-checkbox>
+        </el-form-item>
+        <el-form-item label="默认挂载标签树" prop="isHang">
+          <el-checkbox v-model="form.isHang" :disabled="state.dialogType == 2" style="width: 200px"></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
           <el-select
@@ -312,7 +312,8 @@ const defaultParam = {
 
   referenceObject: null, // 配置的关联对象
 
-  isDefaultDisplayLabelName: false,
+  isDefaultDisplayLabelName: false, // 默认展示标签名称
+  isHang: true, // 是否挂载标签树
   labelLegendImagePath: "", // 标签图例
   labelLegendImageAllPath: "",
   dataType: "1",
@@ -426,6 +427,7 @@ const onConfirm = () => {
       const { isBold, isDefaultDisplayLabelName, lineVectorPath } = param;
       param.isBold = Boolean(isBold);
       param.isDefaultDisplayLabelName = Boolean(isDefaultDisplayLabelName);
+
       param.lineVectorPath = lineVectorPath || "";
 
       // 数据类型点且轨迹设置时 拼接trackLineStyle
