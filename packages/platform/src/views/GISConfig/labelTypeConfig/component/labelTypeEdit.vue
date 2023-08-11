@@ -121,10 +121,15 @@
           <el-form-item label="线宽" prop="lineWidth">
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="线色" prop="lineColor" style="width: 350px">
+          <el-form-item
+            label="线色"
+            prop="lineColor"
+            style="width: 350px"
+            v-if="['2', '3', '4', '5', '7'].includes(form.dataType)"
+          >
             <el-color-picker v-model="form.lineColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="线型" prop="lineType">
+          <el-form-item label="线型" prop="lineType" v-if="['2', '3', '4', '5', '7'].includes(form.dataType)">
             <el-select v-model="form.lineType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
@@ -433,9 +438,7 @@ const onConfirm = () => {
       // 数据类型点且轨迹设置时 拼接trackLineStyle
       if (param.dataType == "1" && param?.isTrackSetting) {
         param.trackLineStyle = {
-          lineWidth: param?.lineWidth,
-          lineColor: param?.lineColor,
-          lineType: param?.lineType
+          lineWidth: param?.lineWidth
         };
       } else {
         // 清除轨迹模式及轨迹线样式

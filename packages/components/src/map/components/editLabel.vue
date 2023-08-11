@@ -472,8 +472,6 @@ const onOpen = (labelCode: string) => {
     });
 
     // 标签元素进入编辑状态（点1、文本6不需要编辑交互只需要平移）
-    // const { dataType } = editLabel?.labelType;
-    // if (dataType != "1" && dataType !== "6") {
     modifyFeature.value = feature;
     modify.value = new Modify({ features: new Collection([modifyFeature.value]) });
     props.map?.addInteraction(modify.value); // 给地图增加修改要素几何的交互
@@ -492,7 +490,6 @@ const onOpen = (labelCode: string) => {
       form.value.labelData.coordinates = featureCoordinates;
       form.value.labelData.radius = radius;
     });
-    // }
   }
 };
 
