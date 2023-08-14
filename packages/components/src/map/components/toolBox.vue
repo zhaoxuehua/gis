@@ -10,6 +10,7 @@
       <el-tabs v-model="state.activeIndex">
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
+        <el-tab-pane name="3" label="实时标签样式"></el-tab-pane>
       </el-tabs>
 
       <!-- 展示内容区 -->
@@ -100,6 +101,14 @@
               </div>
             </el-tab-pane>
           </el-tabs>
+        </div>
+      </div>
+
+      <!-- 实时标签样式 -->
+      <div class="measuring-tools" v-show="state.activeIndex == '3'">
+        <div class="coordinate-position-box">
+          <label> 纬度 </label>
+          <el-input type="number" v-model="state.latDegree" />
         </div>
       </div>
     </div>
