@@ -10,11 +10,11 @@
       :destroy-on-close="true"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
-        <el-form-item label="应用名称" prop="appName">
-          <el-input placeholder="请输入..." v-model="form.appName" clearable />
-        </el-form-item>
         <el-form-item label="应用编码" prop="appCode">
           <el-input placeholder="请输入..." v-model="form.appCode" clearable />
+        </el-form-item>
+        <el-form-item label="应用名称" prop="appName">
+          <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 350px">
           <el-radio-group v-model="form.displayMode">
