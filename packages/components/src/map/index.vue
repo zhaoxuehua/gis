@@ -33,6 +33,7 @@
     </Popup>
   </div>
 </template>
+
 <script lang="ts" setup>
 import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch } from "vue";
 import { ElMessage } from "element-plus";
@@ -55,7 +56,7 @@ import { useGisStore } from "../stores/modules/gis";
 import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
-import { createdTrackLayer } from "./hooks/createdTrackLayer.js";
+import { createdTrackData } from "./hooks/createdTrackData.js";
 import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
@@ -384,19 +385,24 @@ const initMap = async (mapId: string | number) => {
         constrainResolution: true
       })
     }) as VisualMap;
+
+    gisStore.setMapCase(map);
+
     // 缓存配置
     map.defaultOptions = defaultOptions;
 
     // 根据图层配置信息创建图层
     const layerMap: { [key: string]: any } = {};
     let clusterLayerCodes: any = [];
+
     defaultOptions.layers.forEach((item: { [key: string]: any }) => {
       let options: { [key: string]: any };
+
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
         let sourceVector = new VectorSource();
         let clusterSource = new Cluster({
-          distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 20, // 图层上标签聚合距离
+          distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 0, // 图层上标签聚合距离
           source: sourceVector
         });
         options = {
@@ -404,32 +410,34 @@ const initMap = async (mapId: string | number) => {
           zIndex: item?.layerLevel,
           minZoom: item?.layerMinLevel - 0.000000000000005,
           maxZoom: item?.layerMaxLevel,
-          trackAggDistance: item.trackAggDistance ? Number(item?.trackAggDistance) : 120, // 聚合图层上轨迹聚合距离
+          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
           name: item?.name,
           code: item?.code,
           isTagAgg: item?.isTagAgg,
+          isTrackDraw: item?.isTrackDraw,
           style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
         };
-        createdTrackLayer(item); // 是否设置对应改图的要素有轨迹
       } else {
         options = {
           source: new VectorSource({ wrapX: false }),
           zIndex: item?.layerLevel,
           minZoom: item?.layerMinLevel - 0.000000000000005,
           maxZoom: item?.layerMaxLevel,
+          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
           name: item.name,
           code: item?.code,
           isTagAgg: item?.isTagAgg,
+          isTrackDraw: item?.isTrackDraw,
           style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
         };
       }
+
       layerMap[item.code] = new VectorLayer(options);
       if (item?.isTagAgg) {
         clusterLayerCodes.push(item.code);
       }
       map.addLayer(layerMap[item.code]);
     });
-    console.log(defaultOptions, "............defaultOptions...........");
 
     /**********************************************************************/
 
@@ -797,6 +805,7 @@ defineExpose({
   getRelationMap,
   createdFeature,
   createGeometry,
+  createdTrackData,
   createLabel,
   removeLabel,
   getFeature,
@@ -828,6 +837,7 @@ watch(
   }
 );
 </script>
+
 <style lang="scss" scoped>
 .component-box {
   position: relative;

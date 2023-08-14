@@ -166,10 +166,10 @@ const onConfirm = () => {
     if (valid) {
       let param: { [key: string]: any } = { ...form.value };
       // 标签非聚合时清除聚合距离
-      if (!param?.isTagAgg) {
-        delete param.tagAggDistance;
-        delete param.trackAggDistance;
-      }
+      // if (!param?.isTagAgg) {
+      //   delete param.tagAggDistance;
+      //   delete param.trackAggDistance;
+      // }
       if (state.dialogType == 0) {
         // 添加
         const res: { [key: string]: any } = await addLayer(param);

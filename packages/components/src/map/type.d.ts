@@ -1,6 +1,7 @@
 import { Draw } from "ol/interaction";
 import { Geometry } from "ol/geom";
 import { Feature } from "ol";
+import { Style } from "ol/style.js";
 import Point from "ol/geom/Point.js";
 export type VisualMap = Map & { defaultOptions: { [key: string]: any }; popupInfo: function; closePopup: function };
 // 标签类型
@@ -124,3 +125,23 @@ interface createdFeatureArgType {
 }
 
 export type createdFeatureType = (data: createdFeatureArgType) => Feature;
+
+// 创建轨迹回放
+export interface trackLayerParamType {
+  id: number | string;
+  color: string;
+  layerConfig: {
+    code: string | number;
+    name: string;
+    layerLevel: number;
+    layerMaxLevel: number;
+    layerMinLevel: number;
+    trackAggDistance: number;
+  };
+  data: any[];
+}
+
+// 轨迹要素
+export interface cashFeatureStyleType {
+  [key: string]: Style;
+}
