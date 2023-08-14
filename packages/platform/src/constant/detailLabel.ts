@@ -26,6 +26,11 @@ export const GIS_LAYER_DETAIL = [
     name: "tagAggDistance"
   },
   {
+    label: "轨迹聚合",
+    name: "isTrackDraw",
+    slot: true
+  },
+  {
     label: "轨迹聚合距离",
     name: "trackAggDistance"
   }
@@ -60,12 +65,12 @@ export const GIS_LABEL_DETAIL = [
 //地图参数配置详情
 export const GIS_MAPPARAMS_DETAIL = [
   {
-    label: "应用名称",
-    name: "appName"
-  },
-  {
     label: "应用编码",
     name: "appCode"
+  },
+  {
+    label: "应用名称",
+    name: "appName"
   },
   {
     label: "默认显示模式",

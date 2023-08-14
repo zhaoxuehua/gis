@@ -21,6 +21,7 @@ export type LabelType = {
   equipType: { [key: string]: any } | null;
   equipTypeId: number;
   isDefaultDisplayLabelName: boolean;
+  isHang?: boolean;
   factor?: string | null;
   labelLegendImagePath: string | null;
   labelLegendImageAllPath: string | null;

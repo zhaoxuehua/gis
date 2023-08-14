@@ -87,6 +87,9 @@
       <template #isTagAgg="scope">
         {{ scope.row?.isTagAgg ? "是" : "否" }}
       </template>
+      <template #isTrackDraw="scope">
+        {{ scope.row?.isTrackDraw ? "是" : "否" }}
+      </template>
     </DetailDialog>
   </div>
 </template>

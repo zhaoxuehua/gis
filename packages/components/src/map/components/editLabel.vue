@@ -8,7 +8,7 @@
     <div class="content">
       <el-form :inline="false" :model="form" label-width="100px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="标签编码" prop="code">
-          <el-input placeholder="请输入..." v-model="form.code" readonly />
+          <el-input placeholder="请输入..." v-model="form.code" disabled />
         </el-form-item>
 
         <el-form-item label="标签名称" prop="name">
@@ -16,25 +16,29 @@
         </el-form-item>
 
         <el-form-item label="所属图层" prop="refLayer.name">
-          <el-input placeholder="请输入..." v-model="form.refLayer.name" readonly />
+          <el-input placeholder="请输入..." v-model="form.refLayer.name" disabled />
         </el-form-item>
 
         <el-form-item label="数据类型" prop="labelType.name">
-          <el-input placeholder="请输入..." v-model="labelDataType" readonly />
+          <el-input placeholder="请输入..." v-model="labelDataType" disabled />
         </el-form-item>
 
         <el-form-item label="坐标点" prop="labelData.coordinates">
-          <!-- <div class="form-coordinate"> -->
-          <el-input placeholder="请输入..." v-model="form.labelData.coordinates" readonly />
-          <!-- </div> -->
+          <el-input
+            placeholder="请输入..."
+            v-model="form.labelData.coordinates"
+            disabled
+            :class="{
+              showEditIcon: true
+            }"
+          />
+          <div class="editIcon" @click.stop="showEditPosition">
+            <Icon src="Edit" :size="14" class="icon"></Icon>
+          </div>
         </el-form-item>
 
         <!-- 点 -->
         <template v-if="['1'].includes(form.labelType.dataType)">
-          <!-- <el-form-item label="标签图片" prop="labelData.style.icon.src">
-            <el-input placeholder="请输入..." v-model="form.labelData.style.icon.src" clearable />
-          </el-form-item> -->
-
           <el-form-item label="显示比例" prop="labelData.style.icon.scale">
             <el-input placeholder="请输入..." v-model="form.labelData.style.icon.scale" clearable />
           </el-form-item>
@@ -72,7 +76,7 @@
         <!-- 线 -->
         <template v-if="['2'].includes(form.labelType.dataType)">
           <el-form-item label="矢量路径" prop="labelData.style.lineVector.path">
-            <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.path" clearable readonly />
+            <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.path" clearable disabled />
           </el-form-item>
 
           <el-form-item label="矢量宽度" prop="labelData.style.lineVector.width">
@@ -190,6 +194,7 @@
         <el-button type="primary" @click="onConfirm">确认</el-button>
       </span>
     </div>
+    <EditPositionDialog ref="editPositionRef" @success-add="savePosition"></EditPositionDialog>
   </div>
 </template>
 
@@ -197,14 +202,17 @@
 import { reactive, ref, computed, onBeforeUnmount, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { cloneDeep } from "lodash";
+import { Modify, Translate } from "ol/interaction";
+import Collection from "ol/Collection";
 import { Circle } from "ol/geom";
 import type { LabelForm, LabelInfoData } from "../type";
 
-import { MAP_DATA_TYPE } from "../hooks/createGeometry.js";
+import { MAP_DATA_TYPE, getLonLatCoordinate } from "../hooks/createGeometry.js";
 import { featureUpdate, getFeature } from "../hooks/index.js";
 import { editLabel } from "../../api/visconfig";
 import type { VisualMap } from "../type";
 import Icon from "./Icon.vue";
+import EditPositionDialog from "./editPositionDialog.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null }>(), {
   map: () => null
@@ -366,6 +374,7 @@ const labelDataType = computed(() => {
   }
 });
 
+const editPositionRef = ref();
 const refForm = ref();
 const form = ref<LabelForm>({
   id: "",
@@ -388,14 +397,21 @@ const form = ref<LabelForm>({
   }
 });
 
-// 自己逻辑实现
 const originEditLabel = ref(); // 编辑前的原始数据
 const hasEdit = ref(false); // 是否编辑过数据
 const isEditSuccess = ref(false); // 是否编辑成功（即是否需要恢复原来的数据）
 
+// 编辑地图要素（点的话就是平移）
+const modifyFeature = ref(); // 编辑的要素
+const modify = ref(); // 编辑交互器
+
+// 平移地图要素
+const translation = ref(); // 平移交互器
+
 // 打开标签编辑
 const onOpen = (labelCode: string) => {
   if (labelCode) {
+    clearModify();
     const editLabel = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
     if (!editLabel) {
       // 从标签信息中找不到（可能别的应用绘制了但是有的应用没有配置对应的类型所以地图上没有）
@@ -432,22 +448,64 @@ const onOpen = (labelCode: string) => {
     }
     // 更新表单
     form.value = editLabel;
-    let featureCoordinates = feature?.getGeometry()?.getCoordinates(); // 坐标集合
-    let radius = null; // 圆的半径
-    if (feature?.getGeometry() instanceof Circle) {
-      featureCoordinates = feature.getGeometry().getCenter();
-      radius = feature.getGeometry().getRadius();
-    }
-    form.value.labelData.coordinates = featureCoordinates;
-    form.value.labelData.radius = radius;
     state.isShow = true;
+
+    // 增加平移功能
+    translation.value = new Translate({
+      hitTolerance: 30,
+      filter: function (allFeature) {
+        return allFeature?.get("code") == labelCode;
+      }
+    });
+    props.map?.addInteraction(translation.value); // 给地图增加平移要素几何的交互
+    translation.value.on("translating", function (event: any) {
+      const feature = event.features?.getArray()[0];
+      let featureCoordinates = feature.getGeometry()?.getCoordinates(); // 坐标集合
+      // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
+      if (feature.getGeometry() instanceof Circle) {
+        // 平移时圆只有中心点变化
+        featureCoordinates = feature.getGeometry().getCenter();
+      }
+      featureCoordinates = getLonLatCoordinate(featureCoordinates);
+      // 根据平移坐标
+      form.value.labelData.coordinates = featureCoordinates;
+    });
+
+    // 标签元素进入编辑状态（点1、文本6不需要编辑交互只需要平移）
+    modifyFeature.value = feature;
+    modify.value = new Modify({ features: new Collection([modifyFeature.value]) });
+    props.map?.addInteraction(modify.value); // 给地图增加修改要素几何的交互
+    modify.value.on("modifyend", function (event: any) {
+      const feature = event.features.getArray()[0];
+      let featureCoordinates = feature.getGeometry().getCoordinates(); // 坐标集合
+      let radius = null; // 圆的半径
+      if (feature.getGeometry() instanceof Circle) {
+        // 编辑圆时只有半径变化
+        featureCoordinates = feature.getGeometry().getCenter();
+        radius = feature.getGeometry().getRadius();
+      }
+      // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
+      featureCoordinates = getLonLatCoordinate(featureCoordinates);
+      // 根据拖拽更新表单中圆半径及坐标
+      form.value.labelData.coordinates = featureCoordinates;
+      form.value.labelData.radius = radius;
+    });
   }
 };
 
 // 关闭标签编辑
 const onClose = () => {
   state.isShow = false;
-  clearModify();
+  clearModify(); // 恢复原数据
+};
+
+// 编辑坐标（线、面、矩形、环）
+const showEditPosition = () => {
+  editPositionRef.value?.openDialog(cloneDeep(form.value.labelData.coordinates), form.value.labelType.dataType);
+};
+// 坐标更改后的回调
+const savePosition = (coordinates: any[]) => {
+  form.value.labelData.coordinates = coordinates;
 };
 
 // 新表单数据变化应用到地图上
@@ -486,11 +544,11 @@ const onConfirm = () => {
             props.map.set("labelInfoMap", labelInfoMap.value);
             isEditSuccess.value = true;
             ElMessage.success("保存成功");
+            onClose();
           } else {
             console.warn(res.msg);
             ElMessage.error("接口异常");
           }
-          state.isShow = false;
         },
         (err: any) => {
           console.error(err);
@@ -503,6 +561,15 @@ const onConfirm = () => {
 
 // 恢复原来的标签样式
 const clearModify = () => {
+  if (modify.value) {
+    props.map?.removeInteraction(modify.value);
+  }
+  if (translation.value) {
+    props.map?.removeInteraction(translation.value);
+  }
+  modifyFeature.value = null;
+  modify.value = null;
+  translation.value = null;
   if (hasEdit.value && !isEditSuccess.value) {
     if (originEditLabel.value) {
       labelInfoMap.value[originEditLabel.value?.code] = originEditLabel.value;
@@ -517,7 +584,8 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({
-  onOpen
+  onOpen,
+  onClose
 });
 
 watch(
@@ -566,13 +634,21 @@ watch(
   height: calc(100% - 110px);
   padding: 20px 20px 0;
   overflow-y: auto;
-}
-.form-coordinate {
-  display: flex;
-  align-items: center;
-}
-.form-coordinate i {
-  margin-left: 8px;
+  .showEditIcon {
+    width: 170px !important;
+  }
+  .editIcon {
+    width: 32px;
+    height: 32px;
+    margin-left: 5px;
+    line-height: 32px;
+    color: #ffffff;
+    text-align: center;
+    cursor: pointer;
+    background: var(--el-color-primary);
+    border: 1px solid #dddddd;
+    border-radius: 50%;
+  }
 }
 .footer {
   display: flex;

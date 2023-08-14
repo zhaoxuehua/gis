@@ -10,11 +10,11 @@
       :destroy-on-close="true"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
-        <el-form-item label="应用名称" prop="appName">
-          <el-input placeholder="请输入..." v-model="form.appName" clearable />
-        </el-form-item>
         <el-form-item label="应用编码" prop="appCode">
           <el-input placeholder="请输入..." v-model="form.appCode" clearable />
+        </el-form-item>
+        <el-form-item label="应用名称" prop="appName">
+          <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 350px">
           <el-radio-group v-model="form.displayMode">
@@ -47,6 +47,18 @@
             :disabled="state.dialogType == 2"
           >
             <el-option v-for="(item, index) in labelTypeList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="显示搜索类型" prop="displaySearchIds">
+          <el-select
+            v-model="form.displaySearchIds"
+            multiple
+            clearable
+            placeholder="请选择..."
+            :disabled="state.dialogType == 2"
+            filterable
+          >
+            <el-option v-for="(item, index) in searchTypeList" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="显示图层" prop="displayLayerIds">
@@ -122,7 +134,7 @@
 </template>
 
 <script lang="ts" setup name="MapParamsEdit">
-import { reactive, onMounted, ref, unref } from "vue";
+import { reactive, onMounted, ref, unref, computed } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
@@ -141,6 +153,7 @@ interface MapParamsForm {
   defaultCenterPointLongitude: number | null;
   displayLabelInfoIds: number[] | string;
   displayLayerIds: number[] | string;
+  displaySearchIds: number[] | string;
   displayControlIds: any;
   displayLegendIds: number[] | string;
   normalUrl: string;
@@ -238,6 +251,7 @@ const defaultParam = {
 
   displayLabelInfoIds: [],
   displayLayerIds: [],
+  displaySearchIds: [], // 搜索类型
   displayControlIds: [], // 控件列表
   displayLegendIds: [], // 图例列表
   normalUrl: "",
@@ -259,6 +273,8 @@ const openDialog = (row?: { [key: string]: any }) => {
       : [];
     // 图层
     form.value.displayLayerIds = row.displayLayerIds ? row.displayLayerIds.split(",").map((id: string) => Number(id)) : [];
+    // 搜索类型
+    form.value.displaySearchIds = row.displaySearchIds ? row.displaySearchIds.split(",").map((id: string) => Number(id)) : [];
     // 控件
     form.value.displayControlIds = row.displayControlIds ? row.displayControlIds.split(",") : [];
     // 图例
@@ -285,6 +301,10 @@ const onConfirm = () => {
       // 图层参数处理
       if (Array.isArray(param.displayLayerIds)) {
         param.displayLayerIds = param.displayLayerIds.join(",");
+      }
+      // 图层参数处理
+      if (Array.isArray(param.displaySearchIds)) {
+        param.displaySearchIds = param.displaySearchIds.join(",");
       }
       // 控件参数处理
       if (Array.isArray(param.displayControlIds)) {
@@ -395,6 +415,15 @@ const labelTypeList = ref<{
       ElMessage.error("接口异常");
     }
   }
+});
+
+// 搜索类型列表
+const searchTypeList = computed(() => {
+  return labelTypeList.value.data?.filter(item => {
+    if (Array.isArray(form.value.displayLabelInfoIds)) {
+      return form.value.displayLabelInfoIds?.includes(item.id);
+    }
+  });
 });
 
 onMounted(() => {
