@@ -96,11 +96,13 @@ const onEdit = async (data: NavigationTreeNodeData) => {
   timer.value = setTimeout(() => {
     labelOnSelect(props.map, data.associationInfo?.associationObjectCode, false);
     clearTimeout(timer);
-  }, 100);
+    timer.value = null;
+  }, 200);
   // 清空选中状态
   timer.value = setTimeout(() => {
     clearSelectedFeature(props.map);
     clearTimeout(timer);
+    timer.value = null;
   }, 3000);
 };
 

@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog
-      :title="['创建地图参数', '编辑地图参数'][state.dialogType]"
+      :title="['创建应用场景', '编辑应用场景'][state.dialogType]"
       v-model="state.open"
       width="900px"
       :close-on-click-modal="false"
@@ -10,10 +10,10 @@
       :destroy-on-close="true"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
-        <el-form-item label="应用编码" prop="appCode">
+        <el-form-item label="场景编码" prop="appCode">
           <el-input placeholder="请输入..." v-model="form.appCode" clearable />
         </el-form-item>
-        <el-form-item label="应用名称" prop="appName">
+        <el-form-item label="场景名称" prop="appName">
           <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 350px">

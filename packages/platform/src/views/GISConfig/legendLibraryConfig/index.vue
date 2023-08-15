@@ -4,7 +4,7 @@
       <el-form :model="query.params">
         <el-row :gutter="20">
           <el-col :span="6">
-            <el-form-item label="图例名称：">
+            <el-form-item label="素材名称：">
               <el-autocomplete
                 class="inline-input"
                 v-model="query.params.legendName"
@@ -30,10 +30,10 @@
     </div>
     <div class="table-card">
       <div class="option">
-        <div class="title">图例库</div>
+        <div class="title">素材库</div>
         <div class="btn">
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_ADD">
-            <el-button type="primary" @click="onAdd"><Icon src="Upload"></Icon>{{ "上传图例" }}</el-button>
+            <el-button type="primary" @click="onAdd"><Icon src="Upload"></Icon>{{ "上传素材" }}</el-button>
           </Auth>
         </div>
       </div>
@@ -67,7 +67,7 @@ import { TableList } from "../type";
 const createEditLegend = ref();
 // 查询条件
 const defaultParams = {
-  legendName: "", // 图例名称
+  legendName: "", // 素材名称
   orderByColumn: "",
   isAsc: "",
   pageNumber: 1,

@@ -115,11 +115,13 @@ const onEdit = (node: { [key: string]: any }, data: { [key: string]: any }) => {
   timer.value = setTimeout(() => {
     labelOnSelect(props.map, data.code, false);
     clearTimeout(timer);
-  }, 100);
+    timer.value = null;
+  }, 200);
   // 清空选中状态
   timer.value = setTimeout(() => {
     clearSelectedFeature(props.map);
     clearTimeout(timer);
+    timer.value = null;
   }, 3000);
 };
 
