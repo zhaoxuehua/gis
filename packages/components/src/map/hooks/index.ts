@@ -508,7 +508,18 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
   boxSelectionDrawInteraction = new Draw({
     source: boxSelectionSource,
     type: value,
-    geometryFunction: value === "Circle" ? createBox() : undefined,
+    geometryFunction: value === "Circle" ? createBox() : undefined, // 矩形
+    condition: event => {
+      // 鼠标右键:停止 当前操作  右击不开始绘制新的框选
+      if (event.originalEvent && event.originalEvent.button === 2) {
+        if (boxSelectionDrawInteraction) {
+          boxSelectionDrawInteraction.finishDrawing();
+          boxSelectionDrawInteraction.removeLastPoint();
+        }
+        return false;
+      }
+      return true;
+    },
     style: selectBoxStyle
   });
   map.addInteraction(boxSelectionDrawInteraction);
