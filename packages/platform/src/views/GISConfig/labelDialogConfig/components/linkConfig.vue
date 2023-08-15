@@ -19,10 +19,14 @@
 <script setup lang="ts" name="labelDialog">
 import { ref, reactive } from "vue";
 import Table from "@/components/Table/index.vue";
+import { getUnBindLinkApi, deleteBindAttrApi } from "../../../../api/modules/labelDialogConfig";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const emit = defineEmits(["update:link"]);
-const props = withDefaults(defineProps<{ link: any[] }>(), {
-  link: () => []
+const props = defineProps({
+  link: Array,
+  equipTypeId: Number,
+  currentType: String
 });
 const state = reactive({
   loading: false,
@@ -65,8 +69,15 @@ const tableColumns = [
 const handleSelectionChange = (val: any) => {
   state.selectedList = val;
 };
+const getUnBindLink = async () => {
+  const res: any = await getUnBindLinkApi(props.equipTypeId!, props.currentType!);
+  if (res.code === 200) {
+    linkData.value = res.data;
+  }
+};
 const onOpen = () => {
   state.dialogVisible = true;
+  getUnBindLink();
 };
 
 const onClose = () => {
@@ -76,8 +87,20 @@ const onConfirm = () => {
   state.dialogVisible = false;
   emit("update:link", state.selectedList);
 };
-const onDelete = (id: number) => {
-  console.log(id);
+const onDelete = async (id: number) => {
+  ElMessageBox.confirm("确定要删除吗", "警告", {
+    type: "warning",
+    confirmButtonText: "确定"
+  }).then(async () => {
+    const res: any = await deleteBindAttrApi({
+      equipTypeId: props.equipTypeId,
+      currentType: props.currentType,
+      attributeId: id
+    });
+    if (res.code === 200) {
+      ElMessage.success("删除成功");
+    }
+  });
 };
 defineExpose({
   onOpen

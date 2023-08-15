@@ -10,6 +10,7 @@
       <el-tabs v-model="state.activeIndex">
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
+        <el-tab-pane name="3" label="实时标签样式"></el-tab-pane>
       </el-tabs>
 
       <!-- 展示内容区 -->
@@ -102,11 +103,30 @@
           </el-tabs>
         </div>
       </div>
+
+      <!-- 实时标签样式 -->
+      <div class="measuring-tools" v-show="state.activeIndex == '3'">
+        <div class="coordinate-position-box">
+          <el-form-item label="船首线" label-width="110">
+            <el-checkbox v-model="state.shipHeadLine"></el-checkbox>
+          </el-form-item>
+
+          <el-form-item label="轨迹回放隐藏船" label-width="110">
+            <el-checkbox v-model="state.shipShowHideByTrack"></el-checkbox>
+          </el-form-item>
+
+          <el-form-item label="轨迹回放动画" label-width="110">
+            <el-select v-model="state.trackSpeed">
+              <el-option v-for="item in trackSpeedOption" :key="item.name" :label="item.name" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import { Feature } from "ol";
 import { fromLonLat } from "ol/proj";
 import { Draw } from "ol/interaction";
@@ -121,6 +141,8 @@ import { measureStyle } from "../hooks/styleFunction";
 import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
+// 辅助函数，设置地图中心点
+import { setToMapCenter } from "../hooks/setToMapCenter";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -143,8 +165,29 @@ const state = reactive({
   lonSeconds: "", // 经度-秒
   latDegree: "", // 纬度-度
   latMin: "", // 纬度-分
-  latSeconds: "" // 纬度-秒
+  latSeconds: "", // 纬度-秒
+
+  // 实时标签样式
+  shipHeadLine: false,
+  shipShowHideByTrack: true,
+  trackSpeed: ""
 });
+
+// 轨迹回放动画
+const trackSpeedOption = ref([
+  {
+    name: "快",
+    value: "0.1"
+  },
+  {
+    name: "慢",
+    value: "1"
+  },
+  {
+    name: "无",
+    value: ""
+  }
+]);
 
 //测量
 const measureMode = ref<Array<any>>([]); // 测量的数据数组
@@ -358,15 +401,28 @@ const toMapCenter = () => {
   }
   let defaultOptions = props.map?.defaultOptions;
   let zoom = defaultOptions?.defaultZoom;
-  let center = fromLonLat([defaultOptions?.center.lon, defaultOptions?.center.lat]);
-  props.map?.getView().animate({
-    center: center,
+  setToMapCenter({
+    lon: defaultOptions?.center.lon,
+    lat: defaultOptions?.center.lat,
     zoom: zoom,
     duration: 500
   });
 };
 
 onMounted(() => {});
+
+// 实时标签样式:存入浏览器
+watch([() => state.shipHeadLine, () => state.shipShowHideByTrack, () => state.trackSpeed], function (n) {
+  localStorage.setItem("shipTags", JSON.stringify(n));
+});
+//页面加载浏览器数据
+let shipTagsData: string | null = localStorage.getItem("shipTags");
+if (shipTagsData) {
+  let [shipHeadLine, shipShowHideByTrack, trackSpeed] = JSON.parse(shipTagsData);
+  state.shipHeadLine = shipHeadLine;
+  state.shipShowHideByTrack = shipShowHideByTrack;
+  state.trackSpeed = trackSpeed;
+}
 </script>
 
 <style lang="scss" scoped>

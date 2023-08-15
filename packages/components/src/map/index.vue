@@ -33,6 +33,7 @@
     </Popup>
   </div>
 </template>
+
 <script lang="ts" setup>
 import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch } from "vue";
 import { ElMessage } from "element-plus";
@@ -55,6 +56,7 @@ import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunctio
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
 import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature, getSelectedFeature } from "./hooks/index";
+import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -391,19 +393,24 @@ const initMap = async (mapId: string | number) => {
         constrainResolution: true
       })
     }) as VisualMap;
+
+    gisStore.setMapCase(map);
+
     // 缓存配置
     map.defaultOptions = defaultOptions;
 
     // 根据图层配置信息创建图层
     const layerMap: { [key: string]: any } = {};
     let clusterLayerCodes: any = [];
+
     defaultOptions.layers.forEach((item: { [key: string]: any }) => {
       let options: { [key: string]: any };
+
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
         let sourceVector = new VectorSource();
         let clusterSource = new Cluster({
-          distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 20, // 图层上标签聚合距离
+          distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 0, // 图层上标签聚合距离
           source: sourceVector
         });
         options = {
@@ -411,32 +418,34 @@ const initMap = async (mapId: string | number) => {
           zIndex: item?.layerLevel,
           minZoom: item?.layerMinLevel - 0.000000000000005,
           maxZoom: item?.layerMaxLevel,
-          trackAggDistance: item.trackAggDistance ? Number(item?.trackAggDistance) : 120, // 聚合图层上轨迹聚合距离
+          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
           name: item?.name,
           code: item?.code,
           isTagAgg: item?.isTagAgg,
+          isTrackDraw: item?.isTrackDraw,
           style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
         };
-        // createdTrackLayer(item); // 是否设置对应改图的要素有轨迹
       } else {
         options = {
           source: new VectorSource({ wrapX: false }),
           zIndex: item?.layerLevel,
           minZoom: item?.layerMinLevel - 0.000000000000005,
           maxZoom: item?.layerMaxLevel,
+          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
           name: item.name,
           code: item?.code,
           isTagAgg: item?.isTagAgg,
+          isTrackDraw: item?.isTrackDraw,
           style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
         };
       }
+
       layerMap[item.code] = new VectorLayer(options);
       if (item?.isTagAgg) {
         clusterLayerCodes.push(item.code);
       }
       map.addLayer(layerMap[item.code]);
     });
-    console.log(defaultOptions, "............defaultOptions...........");
 
     /**********************************************************************/
 
@@ -650,6 +659,11 @@ const initMap = async (mapId: string | number) => {
         const labelTypeCode = currentSelectFeature?.get("labelTypeCode");
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
+          // 获取船的数据
+          const trackInfoMap = map.get("trackInfoMap") || [];
+          const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+          // 点击弹窗 获取左键配置信息
+          popupRef.value?.getLabelDialogConfigInfo(gisStore?.relationMap[featureCode] || currentTrack);
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
@@ -754,18 +768,29 @@ const getRelationMap = () => {
   return gisStore?.relationMap;
 };
 
+// 获取船的数据  如果是船 必须调用
+const setTrackInfoMap = (data: any) => {
+  gisStore.setTrackInfoMap(data);
+};
+
 defineExpose({
   getMapElement,
   panToFeature,
   getRelationMap,
   createdFeature,
   createGeometry,
+
+  createdTrackData,
+  showHideTrackData,
+  delTrackData,
+
   createLabel,
   removeLabel,
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter
+  getGeometryCenter,
+  setTrackInfoMap
 });
 
 // 监听外部树节点点击
@@ -791,6 +816,7 @@ watch(
   }
 );
 </script>
+
 <style lang="scss" scoped>
 .component-box {
   position: relative;
