@@ -56,7 +56,7 @@ import { useGisStore } from "../stores/modules/gis";
 import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
-import { createdTrackData } from "./hooks/createdTrackData.js";
+import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
 import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
@@ -882,7 +882,11 @@ defineExpose({
   getRelationMap,
   createdFeature,
   createGeometry,
+
   createdTrackData,
+  showHideTrackData,
+  delTrackData,
+
   createLabel,
   removeLabel,
   getFeature,

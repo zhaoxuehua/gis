@@ -1,5 +1,8 @@
+// ⤵ type
 type colorArrType = string[];
 type createdCanvasShipType = (flag: boolean, colorArr: colorArrType) => HTMLCanvasElement | undefined;
+
+/******************************************************************************************************/
 
 const createdCanvasShip: createdCanvasShipType = function (flag, [fillColor, circleColor]) {
   // 船

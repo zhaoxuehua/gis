@@ -4,6 +4,7 @@ import { Feature } from "ol";
 import { Style } from "ol/style.js";
 import Point from "ol/geom/Point.js";
 export type VisualMap = Map & { defaultOptions: { [key: string]: any }; popupInfo: function; closePopup: function };
+
 // 标签类型
 export type LabelType = {
   id?: number | null;
@@ -142,7 +143,25 @@ export interface trackLayerParamType {
   data: any[];
 }
 
+// 显示隐藏轨迹
+export type showHideTrackDataType = (id: number | string, isTrue: boolean) => void;
+
+// 删除轨迹
+export type delTrackDataType = (id: number | string) => void;
+
 // 轨迹要素
 export interface cashFeatureStyleType {
   [key: string]: Style;
 }
+
+//设置地图中心点
+export interface setToMapCenterType {
+  lon: number;
+  lat: number;
+  duration?: number;
+  zoom?: number;
+  callBack?: () => void;
+}
+
+// 返回多个要素的中心
+export type backCenterByFeaturesType = (Features: Feature[]) => number[];

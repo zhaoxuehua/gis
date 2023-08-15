@@ -1,41 +1,164 @@
-// ol库
-import { Vector as VectorSource, Cluster } from "ol/source";
-import { Vector as VectorLayer } from "ol/layer";
+// ⤵ ol库
+import Feature from "ol/Feature";
 import * as olProj from "ol/proj";
 import { LineString, Point } from "ol/geom";
-import Feature from "ol/Feature";
+import { Vector as VectorLayer } from "ol/layer";
+import BaseLayer from "ol/layer/Base.js";
+
+import { Vector as VectorSource, Cluster } from "ol/source";
 import { Style, Stroke, Fill, Circle, Icon, Text } from "ol/style.js";
 
-// type
+// ⤵ type
 import type { FeatureLike } from "ol/Feature";
-import type { trackLayerParamType } from "../type";
-import type { cashFeatureStyleType } from "../type";
+import type { trackLayerParamType, cashFeatureStyleType, showHideTrackDataType, delTrackDataType } from "../type";
 
-// store
+// ⤵ store
 import { useGisStore } from "../../stores/modules/gis";
 
-// 辅助函数
+// ⤵ 辅助函数
 import { createdCanvasShip } from "./createdCanvasShip"; // 绘制船只
 import { backTwoPointCenter } from "./backTwoPointCenter"; // 两点中心点
+import { backCenterByFeatures } from "./backCenterByFeatures"; // 一组要素中心点
+import { setToMapCenter } from "./setToMapCenter"; // 设置地图中心点
 import arrow from "../img/arrow.png";
+
+/******************************************************************************************************/
 
 // 缓存样式
 const cashFeatureStyle: cashFeatureStyleType = {};
 
-// 创建轨迹回放
+// 轨迹动画时长
+const shipTags = localStorage.getItem("shipTags");
+const animationTime = shipTags && JSON.parse(shipTags)[2];
+let setNumArr: any[] = []; // 定时器指针(清除动画)
+
+// 轨迹回放
 const createdTrackData = function (param: trackLayerParamType) {
   const { data, id, color } = param;
   const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = param.layerConfig;
 
-  // mapCase地图实例 : 轨迹回放layer映射
-  const gisStore = useGisStore();
-  const mapCase = gisStore.mapCase;
-  const mapTackListMap = mapCase.get("tackListMap");
-  mapTackListMap[id] = {};
+  // 创建要素
+  const strategyTime = 10 * 60 * 1000; //分钟(策略时间，用于是否绘制虚线)
+  const trackLineFeatureArr: Feature[] = [];
+  const trackLineCircleFeatureArr: Feature[] = [];
+  const trackLineLabelFeatureArr: Feature[] = [];
+  for (let i = 0; i < data.length; i++) {
+    if (!data[i + 1]) {
+      break; // 下一个数据
+    }
+
+    const currData = data[i];
+    const nextData = data[i + 1];
+    const {
+      labelInfo: { time: currDataTime, speed: currDataSpeed },
+      posInfo: { lon: currDataLon, lat: currDataLat },
+      detailInfo: currDataDetailInfo
+    } = currData;
+    const {
+      labelInfo: { time: nextDataTime, speed: nextDataSpeed },
+      posInfo: { lon: nextDataLon, lat: nextDataLat }
+    } = nextData;
+
+    const dotted = +new Date(nextDataTime) - +new Date(currDataTime) >= strategyTime; // 是否大于策略时间
+    const currDataLonLat = olProj.fromLonLat([Number(currDataLon), Number(currDataLat)]);
+    const nextDataLonLat = olProj.fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
+    const extendsData = {
+      labelInfo: currData.labelInfo,
+      detailInfo: currDataDetailInfo,
+      color,
+      dotted // true:虚线  false:实线
+    };
+
+    // 加速 || 减速
+    if (currDataSpeed > nextDataSpeed) {
+      nextData._speed = "slow"; // 下个的速度,小于当前的,则下一个是减速
+    } else if (currDataSpeed == nextDataSpeed) {
+      nextData._speed = "normal";
+    } else {
+      nextData._speed = "faster";
+    }
+
+    // ☆ 第一个点
+    i === 0 && (currData._speed = "normal");
+
+    // ☆ 虚线第二个点
+    dotted && (nextData._speed = "normal");
+
+    // 绘制线
+    const lineFeature = new Feature({
+      geometry: new LineString([currDataLonLat, nextDataLonLat]),
+      extendsData,
+      type: "trackLine"
+    });
+    trackLineFeatureArr.push(lineFeature);
+
+    // 绘制圆圈
+    const circleFeature = new Feature({
+      geometry: new Point(currDataLonLat),
+      extendsData,
+      type: "trackPoint"
+    });
+    trackLineCircleFeatureArr.push(circleFeature);
+
+    // 绘制Label
+    const labelFeature = new Feature({
+      geometry: new Point(currDataLonLat),
+      extendsData,
+      speed: currData._speed,
+      type: "trackLabel"
+    });
+    trackLineLabelFeatureArr.push(labelFeature);
+  }
+
+  // 创建船(绘制在轨迹线图层)
+  const shipData = data[data.length - 1];
+  const {
+    name: shipName,
+    posInfo: { lon: shipLon, lat: shipLat }
+  } = shipData;
+  const shipLonLat = olProj.fromLonLat([Number(shipLon), Number(shipLat)]);
+  const shipFeature = new Feature({
+    name: shipName,
+    geometry: new Point(shipLonLat),
+    type: "trackShip",
+    extendsData: {
+      ...shipData,
+      color
+    }
+  });
+  trackLineFeatureArr.push(shipFeature);
+
+  // 移动地图中心点(线取平均值)
+  const zoom = Math.floor((layerMinLevel + 1 + layerMaxLevel) / 2);
+  const center = backCenterByFeatures(trackLineLabelFeatureArr);
+  setToMapCenter({
+    lon: center[0],
+    lat: center[1],
+    zoom: zoom,
+    duration: 50,
+    callBack: function () {
+      if (mapTackListMap[id]) {
+        // 已存在,移除layer,在重新创建
+        setNumArr.forEach(setId => {
+          clearTimeout(setId);
+        });
+        removerLayer();
+        createdLayer();
+        drawFeature();
+      } else {
+        createdLayer();
+        drawFeature();
+      }
+    }
+  });
 
   /********************************************************************************************
     图层名字 (轨迹回放(01:绘制线layer, 02:绘制线上圆圈(聚合)layer,03:绘制显示的文字(聚合)layer)) 
   *****************************************************************************************/
+  // mapCase地图实例
+  const gisStore = useGisStore();
+  const mapCase = gisStore.mapCase;
+  const mapTackListMap = mapCase.get("tackListMap");
   const layerManageData = {
     trackLine: {
       name: name + "_轨迹线",
@@ -196,131 +319,104 @@ const createdTrackData = function (param: trackLayerParamType) {
     }
   };
 
-  // 生成图层
-  Object.values(layerManageData).forEach(info => {
-    const { name, code, isCluster, vector, distance, styleFunction } = info;
-    let source = null;
-    switch (isCluster) {
-      case false: // 非聚合
-        source = vector;
-        break;
-      case true: // 聚合
-        source = new Cluster({
-          distance,
-          source: vector
-        });
-        break;
-    }
-    let LayerOption = {
-      source: source,
-      zIndex: layerLevel,
-      minZoom: layerMinLevel - 0.000000000000005,
-      maxZoom: layerMaxLevel,
-      name: name,
-      code: code,
-      style: styleFunction
-    };
-    let layer = new VectorLayer(LayerOption);
-    mapCase.addLayer(layer);
-    mapTackListMap[id][code] = layer;
-  });
-
-  // 创建绘制要素
-  // const setNumArr = []; // 定时器指针(清除动画)
-  const strategyTime = 10 * 60 * 1000; //分钟(策略时间，用于是否绘制虚线)
-  const trackLineFeatureArr = [];
-  const trackLineCircleFeatureArr = [];
-  const trackLineLabelFeatureArr = [];
-  for (let i = 0; i < data.length; i++) {
-    if (!data[i + 1]) {
-      break; // 下一个数据
-    }
-
-    const currData = data[i];
-    const nextData = data[i + 1];
-    const {
-      labelInfo: { time: currDataTime, speed: currDataSpeed },
-      posInfo: { lon: currDataLon, lat: currDataLat },
-      detailInfo: currDataDetailInfo
-    } = currData;
-    const {
-      labelInfo: { time: nextDataTime, speed: nextDataSpeed },
-      posInfo: { lon: nextDataLon, lat: nextDataLat }
-    } = nextData;
-
-    const dotted = nextDataTime - currDataTime >= strategyTime; // 是否大于策略时间
-    const currDataLonLat = olProj.fromLonLat([Number(currDataLon), Number(currDataLat)]);
-    const nextDataLonLat = olProj.fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
-    const extendsData = {
-      labelInfo: currData.labelInfo,
-      detailInfo: currDataDetailInfo,
-      color,
-      dotted // true:虚线  false:实线
-    };
-
-    // 加速 || 减速
-    if (currDataSpeed > nextDataSpeed) {
-      nextData._speed = "slow"; // 下个的速度,小于当前的,则下一个是减速
-    } else if (currDataSpeed == nextDataSpeed) {
-      nextData._speed = "normal";
-    } else {
-      nextData._speed = "faster";
-    }
-
-    // ☆ 第一个点
-    i === 0 && (currData._speed = "normal");
-
-    // ☆ 虚线第二个点
-    dotted && (nextData._speed = "normal");
-
-    // 绘制线
-    const lineFeature = new Feature({
-      geometry: new LineString([currDataLonLat, nextDataLonLat]),
-      extendsData,
-      type: "trackLine"
+  // 删除layer
+  function removerLayer() {
+    Object.values(mapTackListMap[id]).forEach(layer => {
+      mapCase.removeLayer(layer);
     });
-    trackLineFeatureArr.push(lineFeature);
-
-    // 绘制圆圈
-    const circleFeature = new Feature({
-      geometry: new Point(currDataLonLat),
-      extendsData,
-      type: "trackPoint"
-    });
-    trackLineCircleFeatureArr.push(circleFeature);
-
-    // 绘制Label
-    const labelFeature = new Feature({
-      geometry: new Point(currDataLonLat),
-      extendsData,
-      speed: currData._speed,
-      type: "trackLabel"
-    });
-    trackLineLabelFeatureArr.push(labelFeature);
+    delete mapTackListMap[id];
   }
 
-  // 绘制船(绘制在轨迹线图层)
-  const shipData = data[data.length - 1];
-  const {
-    name: shipName,
-    posInfo: { lon: shipLon, lat: shipLat }
-  } = shipData;
-  const shipLonLat = olProj.fromLonLat([Number(shipLon), Number(shipLat)]);
-  const shipFeature = new Feature({
-    name: shipName,
-    geometry: new Point(shipLonLat),
-    type: "trackShip",
-    extendsData: {
-      ...shipData,
-      color
-    }
-  });
-  trackLineFeatureArr.push(shipFeature);
+  //创建layer
+  function createdLayer() {
+    // 清空映射,重新创建layer
+    mapTackListMap[id] = {}; // 轨迹回放layer映射
+    Object.values(layerManageData).forEach(info => {
+      const { name, code, isCluster, vector, distance, styleFunction } = info;
+      let source = null;
+      switch (isCluster) {
+        case false: // 非聚合
+          source = vector;
+          break;
+        case true: // 聚合
+          source = new Cluster({
+            distance,
+            source: vector
+          });
+          break;
+      }
+      let LayerOption = {
+        source: source,
+        zIndex: layerLevel,
+        minZoom: layerMinLevel - 0.000000000000005,
+        maxZoom: layerMaxLevel,
+        name: name,
+        code: code,
+        style: styleFunction
+      };
+      let layer = new VectorLayer(LayerOption);
+      mapCase.addLayer(layer);
+      mapTackListMap[id][code] = layer;
+    });
+  }
 
-  // 要素添加到layer
-  layerManageData.trackLine.vector.addFeatures(trackLineFeatureArr);
-  layerManageData.trackLineLabel.vector.addFeatures(trackLineLabelFeatureArr);
-  layerManageData.trackLineCircle.vector.addFeatures(trackLineCircleFeatureArr);
+  //绘制要素
+  function drawFeature() {
+    // 线
+    trackLineFeatureArr.forEach((val, index) => {
+      drawAnimation(val, index, "trackLine");
+    });
+
+    // label
+    trackLineLabelFeatureArr.forEach((val, index) => {
+      drawAnimation(val, index, "trackLineLabel");
+    });
+
+    // circle
+    trackLineLabelFeatureArr.forEach((val, index) => {
+      drawAnimation(val, index, "trackLineCircle");
+    });
+  }
+
+  // 动画
+  function drawAnimation(val: Feature, index: number, type: "trackLine" | "trackLineLabel" | "trackLineCircle") {
+    if (!animationTime) {
+      // 无动画
+      layerManageData[type].vector.addFeature(val);
+    } else {
+      const timerId = setTimeout(() => {
+        layerManageData[type].vector.addFeature(val);
+      }, Number(animationTime) * 1000 * index);
+      setNumArr.push(timerId);
+    }
+  }
 };
 
-export { createdTrackData };
+// 显示隐藏轨迹
+const showHideTrackData: showHideTrackDataType = function (id, isTrue) {
+  // mapCase地图实例
+  const gisStore = useGisStore();
+  const mapCase = gisStore.mapCase;
+  const mapTackListMap = mapCase.get("tackListMap");
+  if (!mapTackListMap[id]) {
+    console.info(id + "映射不存在！");
+    return;
+  }
+  Object.values(mapTackListMap[id]).forEach(layer => {
+    (layer as BaseLayer).setVisible(isTrue);
+  });
+};
+
+// 删除轨迹
+const delTrackData: delTrackDataType = function (id) {
+  // mapCase地图实例
+  const gisStore = useGisStore();
+  const mapCase = gisStore.mapCase;
+  const mapTackListMap = mapCase.get("tackListMap");
+  Object.values(mapTackListMap[id]).forEach(layer => {
+    mapCase.removeLayer(layer);
+  });
+  delete mapTackListMap[id];
+};
+
+export { createdTrackData, showHideTrackData, delTrackData };
