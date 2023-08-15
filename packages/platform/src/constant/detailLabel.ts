@@ -62,14 +62,14 @@ export const GIS_LABEL_DETAIL = [
   }
 ];
 
-//地图参数配置详情
+//应用场景配置详情
 export const GIS_MAPPARAMS_DETAIL = [
   {
-    label: "应用编码",
+    label: "场景编码",
     name: "appCode"
   },
   {
-    label: "应用名称",
+    label: "场景名称",
     name: "appName"
   },
   {

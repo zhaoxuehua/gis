@@ -710,24 +710,28 @@ const initMap = async (mapId: string | number) => {
           currentSelectFeature = typeMap.other[0];
         }
         // 对选则的要素做弹框弹出及选中样式、编辑弹框
-        const featureCode = currentSelectFeature.get("code");
-        const featureName = currentSelectFeature.get("name");
-        const labelTypeCode = currentSelectFeature.get("labelTypeCode");
+        const featureCode = currentSelectFeature?.get("code");
+        const featureName = currentSelectFeature?.get("name");
+        const labelTypeCode = currentSelectFeature?.get("labelTypeCode");
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
-            editLabelRef.value?.onOpen(featureCode);
-            timer.value = setTimeout(() => {
-              labelOnSelect(exportMap.value, featureCode, true);
-              clearTimeout(timer);
-            }, 100);
-            // 清空选中状态
-            timer.value = setTimeout(() => {
-              clearSelectedFeature(exportMap.value);
-              clearTimeout(timer);
-            }, 3000);
+            if (map?.get("labelInfoMap")[featureCode]) {
+              editLabelRef.value?.onOpen(featureCode);
+              timer.value = setTimeout(() => {
+                labelOnSelect(exportMap.value, featureCode, true);
+                clearTimeout(timer);
+                timer.value = null;
+              }, 200);
+              // 清空选中状态
+              timer.value = setTimeout(() => {
+                clearSelectedFeature(exportMap.value);
+                clearTimeout(timer);
+                timer.value = null;
+              }, 3000);
+            }
           } else {
             labelOnSelect(exportMap.value, featureCode, true);
           }
