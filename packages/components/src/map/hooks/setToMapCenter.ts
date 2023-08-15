@@ -1,7 +1,7 @@
 // ⤵ ol库
 import * as olProj from "ol/proj";
 
-// ⤵ ol库
+// ⤵ Store
 import { useGisStore } from "../../stores/modules/gis";
 
 // ⤵ type
