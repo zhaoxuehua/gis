@@ -715,6 +715,11 @@ const initMap = async (mapId: string | number) => {
         const labelTypeCode = currentSelectFeature.get("labelTypeCode");
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
+          // 获取船的数据
+          const trackInfoMap = map.get("trackInfoMap") || [];
+          const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+          // 点击弹窗 获取左键配置信息
+          popupRef.value?.getLabelDialogConfigInfo(gisStore?.relationMap[featureCode] || currentTrack);
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
@@ -868,6 +873,11 @@ const getRelationMap = () => {
   return gisStore?.relationMap;
 };
 
+// 获取船的数据  如果是船 必须调用
+const setTrackInfoMap = (data: any) => {
+  gisStore.setTrackInfoMap(data);
+};
+
 defineExpose({
   getMapElement,
   panToFeature,
@@ -879,7 +889,8 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter
+  getGeometryCenter,
+  setTrackInfoMap
 });
 
 // 监听外部树节点点击

@@ -6,12 +6,12 @@
     </el-tabs>
     <el-button class="add-btn" type="primary" @click="onAttrConfigAdd">添加</el-button>
   </div>
-  <addAttr ref="addAttrRef" @change="handleAddAttr" />
+  <addAttr ref="addAttrRef" :type="state.activeAttr" :equipTypeId="props.equipTypeId" @change="handleAddAttr" />
   <div class="attr-config">
     <Table class="attr-table" title="" v-loading="state.loading" :data="tableData" :columns="tableColumns" :is-pageable="false">
       <template #action="scope">
         <el-button v-if="scope.row.isJSONBody" type="primary" text @click="onJsonEdit">编辑</el-button>
-        <el-button type="primary" text @click="onDelete">删除</el-button>
+        <el-button type="primary" text @click="onDelete(scope.row.id)">删除</el-button>
       </template>
     </Table>
   </div>
@@ -30,14 +30,14 @@ import { reactive, ref } from "vue";
 import Table from "@/components/Table/index.vue";
 import addAttr from "./addAttr.vue";
 import { JsonBodyData } from "./mock";
+import { deleteBindAttrApi } from "../../../../api/modules/labelDialogConfig";
+import { ElMessage, ElMessageBox } from "element-plus";
 
-interface Props {
-  static: any[];
-  monitor: any[];
-}
-const props = withDefaults(defineProps<Props>(), {
-  static: () => [],
-  monitor: () => []
+const props = defineProps({
+  static: Array,
+  monitor: Array,
+  equipTypeId: Number,
+  currentType: String
 });
 const emit = defineEmits(["update:static", "update:monitor"]);
 
@@ -106,7 +106,21 @@ const onAttrConfigAdd = () => {
 const onJsonEdit = () => {
   state.dialogVisible = true;
 };
-const onDelete = () => {};
+const onDelete = (id: number) => {
+  ElMessageBox.confirm("确定要删除吗", "警告", {
+    type: "warning",
+    confirmButtonText: "确定"
+  }).then(async () => {
+    const res: any = await deleteBindAttrApi({
+      equipTypeId: props.equipTypeId,
+      currentType: props.currentType,
+      attributeId: id
+    });
+    if (res.code === 200) {
+      ElMessage.success("删除成功");
+    }
+  });
+};
 const handleSelectionChange = (val: any) => {
   console.log(val);
 };

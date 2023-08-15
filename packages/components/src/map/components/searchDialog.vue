@@ -48,13 +48,17 @@ const table: any = ref({
       return;
     }
     const labelInfoMap = mapInstance?.get("labelInfoMap") || {};
+    console.log(labelInfoMap);
+    const trackInfoMap = mapInstance?.get("trackInfoMap") || [];
+    console.log(trackInfoMap);
     const displaySearchIds = mapInstance.defaultOptions.displaySearchIds?.split(",")?.map((item: string) => Number(item));
     let labelInfoArr: any = Object.values(labelInfoMap) || [];
-    if (!labelInfoArr || labelInfoArr.length === 0) {
+    const labelAllData = [...labelInfoArr, ...trackInfoMap];
+    if (!labelAllData || labelAllData.length === 0) {
       table.value.data = [];
       return;
     }
-    let filteredData = labelInfoArr.filter((item: any) => {
+    let filteredData = labelAllData.filter((item: any) => {
       if (displaySearchIds.includes(item.labelType.id)) {
         return true;
       }

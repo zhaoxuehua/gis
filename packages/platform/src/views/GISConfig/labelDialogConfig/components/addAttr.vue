@@ -25,8 +25,14 @@
 <script setup lang="ts" name="addAttr">
 import { reactive, ref } from "vue";
 import Table from "@/components/Table/index.vue";
+import { getUnBindStaticAttrApi, getUnBindMonitorAttrApi, bindAttrApi } from "../../../../api/modules/labelDialogConfig";
+import { ElMessage } from "element-plus";
 
 const emit = defineEmits(["change"]);
+const props = defineProps({
+  type: String,
+  equipTypeId: Number
+});
 const state = reactive({
   loading: false,
   dislogVisible: false,
@@ -85,8 +91,40 @@ const pagination = reactive({
   page: 1,
   pageSize: 10
 });
+const getUnBindStaticAttr = async () => {
+  const res: any = await getUnBindStaticAttrApi({
+    equipTypeId: props.equipTypeId, // 设备类型id
+    visitObjectTypeId: "", // 外部对象类型id
+    attributeCategorys: "", //  功能类型id列表
+    name: "", // 名称
+    attributeCategory: "",
+    attributeType: "",
+    enable: ""
+  });
+  if (res.code === 200) {
+    tableData.value = res.data;
+  }
+};
+const getUnBindMonitorAttr = async () => {
+  const res: any = await getUnBindMonitorAttrApi({
+    equipTypeId: props.equipTypeId, // 设备类型id
+    visitObjectTypeId: "", // 外部对象类型id
+    attributeCategorys: "", //  功能类型id列表
+    name: "", // 名称
+    attributeCategory: "",
+    attributeType: "",
+    enable: ""
+  });
+  if (res.code === 200) {
+    tableData.value = res.data;
+  }
+};
 const getTableData = () => {
-  console.log(1);
+  if (props.type === "static") {
+    getUnBindStaticAttr();
+  } else if (props.type === "monitor") {
+    getUnBindMonitorAttr();
+  }
 };
 const handleSelectionChange = (val: any) => {
   state.selectedList = val;
@@ -107,9 +145,18 @@ const onOpen = () => {
 const onClose = () => {
   state.dislogVisible = false;
 };
-const onConfirm = () => {
-  emit("change", state.selectedList);
-  state.dislogVisible = false;
+const onConfirm = async () => {
+  const res: any = await bindAttrApi({
+    equipTypeId: props.equipTypeId, // 设备类型Id
+    visitObjectTypeId: "", // 外部对象类型Id
+    attributeIds: state.ids, // 属性id列表
+    isStatic: props.type === "static" ? true : false // 是否是静态属性
+  });
+  if (res.code === 200) {
+    ElMessage.success("绑定成功");
+    emit("change", state.selectedList);
+    state.dislogVisible = false;
+  }
 };
 defineExpose({
   onOpen
