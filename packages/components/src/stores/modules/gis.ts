@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import { cloneDeep } from "lodash";
 import { ElMessage } from "element-plus";
-import piniaPersistConfig from "../../config/piniaPersist";
-import { getGisCustomTree } from "../../api/gis";
+import piniaPersistConfig from "@/config/piniaPersist";
+import { getGisCustomTree } from "@/api/gis";
+import type { VisualMap } from "@/map/type";
 
 export const useGisStore = defineStore({
   id: "gis",
@@ -12,7 +13,9 @@ export const useGisStore = defineStore({
     sourceCode: "",
     isDynamicLine: false, // 线环闪烁维护字段
     imgIndex: 0, // 动画点图片索引
-    isEdit: false // 地图编辑
+    isEdit: false, // 地图编辑
+    mapCase: {}, // 地图实例
+    trackColor: ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"] // 轨迹回放的颜色
   }),
   actions: {
     // 导航树及关联关系
@@ -34,7 +37,6 @@ export const useGisStore = defineStore({
         }
       );
     },
-
     // 存储导航树的sourceCode
     setSourceCode(sourceCode: string = "") {
       this.sourceCode = sourceCode;
@@ -47,6 +49,16 @@ export const useGisStore = defineStore({
     },
     setIsEdit(isEdit: boolean) {
       this.isEdit = isEdit;
+    },
+    // 设置导航树数据及关联关系为空
+    setNavTreeAndRelation() {
+      this.navigationTree = [];
+      this.relationMap = {};
+    },
+    // 设置地图实例
+    setMapCase(data: VisualMap) {
+      this.mapCase = data;
+      this.mapCase.set("tackListMap", {});
     }
   },
   persist: piniaPersistConfig("gis")

@@ -1,5 +1,35 @@
 # @adm-gis-ui/components
 
+## 1.0.32
+
+### Patch Changes
+
+- feature :轨迹回放
+
+## 1.0.31
+
+### Patch Changes
+
+- z 创建要素函数 增减扩展属性字段
+
+## 1.0.30
+
+### Patch Changes
+
+- 增加导出方法
+
+## 1.0.29
+
+### Patch Changes
+
+- 测试翻页样式
+
+## 1.0.28
+
+### Patch Changes
+
+- 测试样式
+
 ## 1.0.27
 
 ### Patch Changes

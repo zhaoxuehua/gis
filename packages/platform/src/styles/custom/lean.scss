@@ -95,11 +95,16 @@
   }
 }
 .pagination-container {
+  position: relative;
   padding: 0 !important;
   margin-top: 20px;
   .el-pagination__sizes {
     margin-left: 16px;
   }
+}
+.pagination-container .el-pagination {
+  position: absolute;
+  right: 0;
 }
 .config-form {
   display: flex;
@@ -184,28 +189,6 @@
 .status .el-checkbox__inner {
   border-radius: 0;
 }
-
-// el-tab样式
-
-// .el-tabs{
-//     .el-tabs__header{
-//         height: 32px;
-//         margin: 0px;
-//     }
-//     .el-tabs__nav-scroll{
-//         height: 32px;
-//         .el-tabs__nav{
-//             height: 32px;
-//             display: flex;
-//             .el-tabs__item{
-//                 height: 32px;
-//                 display: flex;
-//                 align-items: center;
-//                 justify-content: center;
-//             }
-//         }
-//     }
-// }
 .el-tabs {
   .el-tabs__header {
     margin: 0;
@@ -219,18 +202,11 @@
 .el-popover.el-popper {
   background-color: var(--color-whites);
 }
-.el-popper {
-  // background-color: var(--color-whites) !important;
-}
 .editor-content-cfg {
   .el-tabs {
     .el-tabs__item {
       color: var(--color-whites);
     }
-
-    // .is-active{
-    //     color: var(--color-primary);
-    // }
   }
 }
 
@@ -277,8 +253,6 @@ div.jsoneditor-outer {
   padding: 0 !important;
   margin: 0 !important;
 }
-
-// global-delete-message
 
 // primary
 .global-delete-message .el-button--primary {

@@ -1,6 +1,6 @@
 <!-- 导航树部分（点击、编辑、新增、删除） -->
 <template>
-  <div class="nav-tree">
+  <div class="nav-tree" @click.stop>
     <div class="title">
       <span>导航树</span>
       <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
@@ -25,7 +25,7 @@
           <template #default="{ data }">
             <span class="custom-tree-node" :class="{ active: !!data.associationInfo }">
               <span>{{ data.name }}</span>
-              <span v-if="isEditShow && data.equipNodeFlag">
+              <span v-if="isEditShow && data.equipNodeFlag" @click.stop>
                 <Icon src="Plus" :size="14" @click="onAdd(data)" v-if="!data.associationInfo"></Icon>
                 <Icon src="EditPen" :size="14" v-if="data.associationInfo" @click.stop="onEdit(data)"></Icon>
                 <Icon src="Delete" :size="14" v-if="data.associationInfo" @click.stop="onDelete(data)"></Icon>
@@ -45,7 +45,7 @@ import { getLabelInfoByEquipId, addAssociation } from "../../api/gis.js";
 import { cloneDeep } from "lodash";
 
 import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
-import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
+import { removeLabel, createLabel, labelOnSelect, clearSelectedFeature } from "../hooks/index";
 import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -90,8 +90,20 @@ const handleNodeClick = (data: NavigationTreeNodeData) => {
 };
 
 // 编辑
+const timer: any = ref(null);
 const onEdit = async (data: NavigationTreeNodeData) => {
   emits("onEditLabel", data.associationInfo?.associationObjectCode);
+  timer.value = setTimeout(() => {
+    labelOnSelect(props.map, data.associationInfo?.associationObjectCode, false);
+    clearTimeout(timer);
+    timer.value = null;
+  }, 200);
+  // 清空选中状态
+  timer.value = setTimeout(() => {
+    clearSelectedFeature(props.map);
+    clearTimeout(timer);
+    timer.value = null;
+  }, 3000);
 };
 
 // 删除
@@ -201,7 +213,7 @@ watch(
 
 onMounted(() => {
   // 获取并更新导航树
-  gisStore.fetchNavigationTree();
+  // gisStore.fetchNavigationTree();
 });
 </script>
 

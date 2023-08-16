@@ -75,7 +75,7 @@ export const authMenuList = [
         component: "/GISConfig/legendLibraryConfig/index",
         meta: {
           icon: "Menu",
-          title: "图例库",
+          title: "素材库",
           isLink: "",
           isHide: false,
           isFull: false,
@@ -89,7 +89,21 @@ export const authMenuList = [
         component: "/GISConfig/mapParamsConfig/index",
         meta: {
           icon: "Menu",
-          title: "地图参数配置",
+          title: "应用场景配置",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true
+        }
+      },
+      {
+        path: "/GISConfig/labelDialogConfig",
+        name: "labelDialogConfig",
+        component: "/GISConfig/labelDialogConfig/index",
+        meta: {
+          icon: "Menu",
+          title: "标签弹窗信息配置",
           isLink: "",
           isHide: false,
           isFull: false,

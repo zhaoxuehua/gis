@@ -1,60 +1,17 @@
 <template>
-  <div>
-    <el-dialog
-      title="标签信息"
-      v-model="open"
-      width="1150px"
-      :close-on-click-modal="false"
-      append-to-body
-      @close="onClose"
-      :destroy-on-close="true"
-    >
-      <el-table
-        :data="table.data"
-        v-loading="table.loading"
-        highlight-current-row
-        empty-text="暂无数据"
-        :row-style="{ height: 32 + 'px' }"
-        :cell-style="{ padding: '0px' }"
-        max-height="320"
-        stripe
-        border
-      >
-        <el-table-column label="序号" type="index" width="60"></el-table-column>
-        <el-table-column label="标签编码" prop="code" width="250"> </el-table-column>
-        <el-table-column label="标签名称" prop="name"> </el-table-column>
-        <el-table-column label="标签类型">
-          <template #default="scope">
-            {{ scope.row.labelType?.name || "" }}
-          </template>
-        </el-table-column>
-        <el-table-column label="所属图层">
-          <template #default="scope">
-            {{ scope.row.refLayer?.name || "" }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="path" label="操作" width="100">
-          <template #default="scope">
-            <el-link class="my-el-link" type="primary" :underline="false" @click="table.panToFeature(scope.row)">
-              {{ "定位" }}</el-link
-            >
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-container" v-if="table.data?.length">
-        <el-pagination
-          :background="true"
-          v-model:current-page="query.params.pageNumber"
-          v-model:page-size="query.params.pageSize"
-          :page-sizes="[5, 10, 20, 30, 50, 100]"
-          layout="total, prev, pager, next, sizes"
-          :total="table.total"
-          :small="true"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-dialog>
+  <div class="search-label-box">
+    <el-input v-model="inputParam" placeholder="请输入标签名称" clearable @input="search" @focus="search">
+      <template #append>
+        <el-button @click.stop="search"><Icon src="Search"></Icon></el-button>
+      </template>
+    </el-input>
+    <el-scrollbar>
+      <ul class="label-select" v-if="open">
+        <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item.code)">
+          {{ item.name }}
+        </li>
+      </ul>
+    </el-scrollbar>
   </div>
 </template>
 
@@ -62,96 +19,94 @@
 import { ref } from "vue";
 import type { VisualMap } from "../type";
 import { labelOnSelect } from "../hooks/index";
+import Icon from "./Icon.vue";
 
-const emits = defineEmits(["onEquipDetail"]);
+const emits = defineEmits(["onEquipDetail", "change"]);
+const props = withDefaults(defineProps<{ map: any }>(), {
+  map: () => ({})
+});
 let mapInstance: VisualMap;
 const open = ref<boolean>(false);
 
-const openDialog = (map: any, inputParam: any) => {
+const inputParam = ref("");
+
+const search = () => {
+  if (!inputParam.value) return (table.value.data = []);
+  openDialog(props.map);
+};
+
+const openDialog = (map: any) => {
   mapInstance = map;
   open.value = true;
-  query.value.params.name = inputParam;
   table.value.getTableData();
 };
 
-const onClose = () => {
-  open.value = false;
-};
-
-// 查询条件
-const defaultParams = {
-  name: "", // 标签code||name
-  pageNumber: 1,
-  pageSize: 5
-};
-
-const query = ref({
-  params: { ...defaultParams },
-  getPagination: (obj: any) => {
-    query.value.params.pageNumber = obj.page;
-    query.value.params.pageSize = obj.limit;
-    query.value.onQuery();
-  },
-  onQuery: () => {
-    table.value.getTableData();
-  }
-});
-
-const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
-};
-
-const table = ref({
-  loading: false,
-  total: 0,
+const table: any = ref({
   data: [],
   getTableData: async () => {
-    table.value.loading = true;
     if (!mapInstance) {
       return;
     }
     const labelInfoMap = mapInstance?.get("labelInfoMap") || {};
+    console.log(labelInfoMap);
+    const trackInfoMap = mapInstance?.get("trackInfoMap") || [];
+    console.log(trackInfoMap);
+    const displaySearchIds = mapInstance.defaultOptions.displaySearchIds?.split(",")?.map((item: string) => Number(item));
     let labelInfoArr: any = Object.values(labelInfoMap) || [];
-    if (!labelInfoArr || labelInfoArr.length === 0) {
+    const labelAllData = [...labelInfoArr, ...trackInfoMap];
+    if (!labelAllData || labelAllData.length === 0) {
       table.value.data = [];
-      table.value.total = 0;
       return;
     }
-    let filteredData = labelInfoArr;
-    if (query.value.params.name) {
+    let filteredData = labelAllData.filter((item: any) => {
+      if (displaySearchIds.includes(item.labelType.id)) {
+        return true;
+      }
+      return false;
+    });
+    if (inputParam.value) {
       // 根据标签name及code过滤数据
-      filteredData = labelInfoArr.filter((item: { [ket: string]: any }) => {
-        return item?.name.includes(query.value.params.name) || item?.code.includes(query.value.params.name);
+      filteredData = filteredData.filter((item: { [ket: string]: any }) => {
+        return item?.name.includes(inputParam.value) || item?.code.includes(inputParam.value);
       });
     }
-    const start = (query.value.params.pageNumber - 1) * query.value.params.pageSize;
-    const end = start + query.value.params.pageSize;
-    table.value.data = filteredData.slice(start, end);
-    table.value.total = filteredData?.length;
-    table.value.loading = false;
+    table.value.data = filteredData;
   },
-  panToFeature: (row: { [key: string]: any }) => {
+  panToFeature: (code: any) => {
+    inputParam.value = code;
+    open.value = false;
     // 定位到标签位置
-    labelOnSelect(mapInstance, row.code, false);
+    labelOnSelect(mapInstance, code, false);
   },
   showDetails: (row: any) => {
     emits("onEquipDetail", row);
   }
 });
-
-defineExpose({
-  openDialog
-});
 </script>
 
 <style lang="scss" scoped>
-.pagination-container {
+.label-select {
   padding: 0;
   margin: 0;
-  margin-top: 20px;
+  margin-top: 4px;
+  list-style: none;
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+  .label-select-item {
+    height: 34px;
+    padding: 0 32px 0 20px;
+    overflow: hidden;
+    font-size: var(--el-font-size-base);
+    line-height: 34px;
+    color: var(--el-text-color-regular);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    &:hover {
+      background-color: var(--el-fill-color-light);
+    }
+  }
 }
 </style>

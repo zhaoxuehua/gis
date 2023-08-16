@@ -30,10 +30,10 @@ const router = useRouter();
 
 onMounted(() => {
   if (window.__POWERED_BY_WUJIE__) {
-    window.$wujie.bus.$on(window.$wujie.props.appId + "-router-change", path => {
+    window.$wujie.bus.$on(window.$wujie?.props?.appId + "-router-change", (path: string) => {
       router.push(path);
     });
-    changePrimary(window.$wujie.props.theme);
+    changePrimary(window.$wujie?.props?.theme);
   }
 
   const language = globalStore.language ?? getBrowserLang();

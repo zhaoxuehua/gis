@@ -26,6 +26,7 @@
             v-if="item.isShow"
             :map="props.map"
             :index="index"
+            :isShow="item.isShow"
             @on-close="leftBoxClick"
             @on-edit-label="onEditLabel"
           ></component>
@@ -33,21 +34,13 @@
       </div>
     </div>
     <!-- 标签搜索框 -->
-    <el-input
-      class="action-search"
-      v-model="inputParam"
-      :style="{ left: searchLeft + 'px' }"
-      placeholder="请输入标签名称"
-      clearable
-      @keyup.enter.stop="search"
+    <SearchDialog
       v-if="deviceSearchVisible"
-    >
-      <template #append>
-        <el-button @click.stop="search"><Icon src="Search"></Icon></el-button>
-      </template>
-    </el-input>
+      class="action-search"
+      :style="{ left: searchLeft + 'px' }"
+      :map="props.map"
+    ></SearchDialog>
   </div>
-  <SearchDialog ref="searchDialogRef"></SearchDialog>
 </template>
 
 <script lang="ts" setup>
@@ -55,7 +48,6 @@ import { computed, ref, watch, nextTick } from "vue";
 import { useGisStore } from "../../stores/modules/gis";
 import type { VisualMap, leftBoxData as boxData } from "../type";
 import SearchDialog from "./searchDialog.vue";
-import Icon from "./Icon.vue";
 
 const gisStore = useGisStore();
 const props = withDefaults(
@@ -73,13 +65,12 @@ const props = withDefaults(
   }
 );
 const emits = defineEmits(["leftBoxDataChange", "onEditLabel", "isEditChangeHidden", "customSearchDialog"]);
-const searchDialogRef = ref<InstanceType<typeof SearchDialog>>();
+
 const isEditShow = computed(() => {
   return gisStore.isEdit;
 });
 
 const searchLeft = ref();
-const inputParam = ref("");
 
 // 左侧控件导航点击
 const leftBoxClick = (index: number) => {
@@ -89,16 +80,6 @@ const leftBoxClick = (index: number) => {
 // 编辑标签
 const onEditLabel = (labelCode: any) => {
   emits("onEditLabel", labelCode);
-};
-
-const search = () => {
-  console.log(props.isCustomSearchDialog, 7666);
-  if (props.isCustomSearchDialog) {
-    // 自定义弹框内容
-    emits("customSearchDialog", inputParam.value);
-  } else {
-    searchDialogRef.value?.openDialog(props.map, inputParam.value);
-  }
 };
 
 watch(
@@ -185,7 +166,7 @@ watch(
 .action-search {
   position: absolute;
   top: 15px;
-  width: 200px;
+  width: 240px;
   margin-left: 10px;
   ::v-deep(.el-input__inner) {
     height: 39px;

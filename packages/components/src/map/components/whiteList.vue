@@ -51,7 +51,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <div class="pagination-container" v-if="table.data?.length">
+        <div class="pagination-container-gis" v-if="table.data?.length">
           <el-pagination
             :background="true"
             v-model:current-page="query.params.pageNumber"
@@ -82,7 +82,6 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
   map: () => null,
   index: () => 0
 });
-console.log(props, 7766);
 const emits = defineEmits(["onClose"]);
 
 const whiteListEditRef = ref<InstanceType<typeof WhiteListEdit>>();
@@ -237,10 +236,21 @@ onMounted(() => {
         margin-right: 12px !important;
       }
     }
-    .pagination-container {
+    .pagination-container-gis {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
       padding: 0;
       margin: 0;
       margin-top: 20px;
+      .el-pagination__sizes {
+        margin: 0 0 0 16px !important;
+      }
+      .pagination-container-gis .el-pagination {
+        position: absolute;
+        right: 0;
+      }
     }
   }
 }

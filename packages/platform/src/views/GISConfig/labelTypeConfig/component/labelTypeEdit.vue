@@ -34,15 +34,15 @@
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
-        <!-- <el-form-item label="对应要素" prop="factor">
-          <el-input placeholder="请输入..." v-model="form.factor" clearable :disabled="state.dialogType == 2" />
-        </el-form-item> -->
         <el-form-item label="默认显示标签名称" prop="isDefaultDisplayLabelName">
           <el-checkbox
             v-model="form.isDefaultDisplayLabelName"
             :disabled="state.dialogType == 2"
             style="width: 200px"
           ></el-checkbox>
+        </el-form-item>
+        <el-form-item label="默认挂载标签树" prop="isHang">
+          <el-checkbox v-model="form.isHang" :disabled="state.dialogType == 2" style="width: 200px"></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
           <el-select
@@ -98,16 +98,6 @@
           <el-form-item label="轨迹设置" prop="isTrackSetting">
             <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" style="width: 200px" />
           </el-form-item>
-          <el-form-item label="轨迹模式" prop="trackMode" v-if="form.isTrackSetting">
-            <el-select v-model="form.trackMode" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
-              <el-option
-                v-for="(item, index) in trackModeList.data"
-                :key="index"
-                :label="item.name"
-                :value="item.code"
-              ></el-option>
-            </el-select>
-          </el-form-item>
           <div></div>
           <el-form-item v-if="form.isTrackSetting">
             <template #label>
@@ -121,10 +111,15 @@
           <el-form-item label="线宽" prop="lineWidth">
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="线色" prop="lineColor" style="width: 350px">
+          <el-form-item
+            label="线色"
+            prop="lineColor"
+            style="width: 350px"
+            v-if="['2', '3', '4', '5', '7'].includes(form.dataType)"
+          >
             <el-color-picker v-model="form.lineColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="线型" prop="lineType">
+          <el-form-item label="线型" prop="lineType" v-if="['2', '3', '4', '5', '7'].includes(form.dataType)">
             <el-select v-model="form.lineType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
@@ -288,8 +283,7 @@ const state = reactive({
     fontSize: [
       { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
       { validator: fontSizeVerification, trigger: ["blur", "change"] }
-    ],
-    trackMode: [{ required: true, message: "请选择轨迹模式", trigger: ["blur", "change"] }]
+    ]
   }
 });
 
@@ -312,7 +306,8 @@ const defaultParam = {
 
   referenceObject: null, // 配置的关联对象
 
-  isDefaultDisplayLabelName: false,
+  isDefaultDisplayLabelName: false, // 默认展示标签名称
+  isHang: true, // 是否挂载标签树
   labelLegendImagePath: "", // 标签图例
   labelLegendImageAllPath: "",
   dataType: "1",
@@ -336,7 +331,6 @@ const defaultParam = {
   borderColor: "rgba(0,0,0,1)",
   backGroundColor: "rgba(0,0,0,0.3)",
   isTrackSetting: false, // 轨迹设置
-  trackMode: "", // 轨迹模式
   animationSetting: "", // 动画设置
   trackLineStyle: null // 轨迹线样式
 };
@@ -347,7 +341,6 @@ let form = ref<
     referenceValue: string;
     referenceValueReal: any;
     isTrackSetting: any;
-    trackMode: any;
     labelLegendImagePath: any;
     animationSetting: string;
     referenceObject: any;
@@ -426,22 +419,18 @@ const onConfirm = () => {
       const { isBold, isDefaultDisplayLabelName, lineVectorPath } = param;
       param.isBold = Boolean(isBold);
       param.isDefaultDisplayLabelName = Boolean(isDefaultDisplayLabelName);
+
       param.lineVectorPath = lineVectorPath || "";
 
       // 数据类型点且轨迹设置时 拼接trackLineStyle
       if (param.dataType == "1" && param?.isTrackSetting) {
         param.trackLineStyle = {
-          lineWidth: param?.lineWidth,
-          lineColor: param?.lineColor,
-          lineType: param?.lineType
+          lineWidth: param?.lineWidth
         };
       } else {
         // 清除轨迹模式及轨迹线样式
         if (param.trackLineStyle) {
           delete param.trackLineStyle;
-        }
-        if (param.trackMode) {
-          delete param.trackMode;
         }
       }
       // 点数据时标签类型图片
@@ -591,24 +580,6 @@ const layerList = ref<{
       ElMessage.error("接口异常");
     }
   }
-});
-
-const trackModeList = ref<{
-  data: Array<{
-    code: string;
-    name: string;
-  }>;
-}>({
-  data: [
-    {
-      code: "dynamic",
-      name: "动态延展轨迹线"
-    },
-    {
-      code: "fixed",
-      name: "固定轨迹线"
-    }
-  ]
 });
 
 // 动画配置

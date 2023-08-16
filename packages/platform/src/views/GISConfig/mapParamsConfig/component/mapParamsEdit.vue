@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog
-      :title="['创建地图参数', '编辑地图参数'][state.dialogType]"
+      :title="['创建应用场景', '编辑应用场景'][state.dialogType]"
       v-model="state.open"
       width="900px"
       :close-on-click-modal="false"
@@ -10,11 +10,11 @@
       :destroy-on-close="true"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
-        <el-form-item label="应用名称" prop="appName">
-          <el-input placeholder="请输入..." v-model="form.appName" clearable />
-        </el-form-item>
-        <el-form-item label="应用编码" prop="appCode">
+        <el-form-item label="场景编码" prop="appCode">
           <el-input placeholder="请输入..." v-model="form.appCode" clearable />
+        </el-form-item>
+        <el-form-item label="场景名称" prop="appName">
+          <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 350px">
           <el-radio-group v-model="form.displayMode">
@@ -47,6 +47,18 @@
             :disabled="state.dialogType == 2"
           >
             <el-option v-for="(item, index) in labelTypeList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="显示搜索类型" prop="displaySearchIds">
+          <el-select
+            v-model="form.displaySearchIds"
+            multiple
+            clearable
+            placeholder="请选择..."
+            :disabled="state.dialogType == 2"
+            filterable
+          >
+            <el-option v-for="(item, index) in searchTypeList" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="显示图层" prop="displayLayerIds">
@@ -90,6 +102,16 @@
             ></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="比例尺单位" prop="scaleLineUnit" v-if="form.displayControlIds.includes('scaleLine')">
+          <el-select v-model="form.scaleLineUnit" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+            <el-option
+              v-for="(item, index) in scaleLineUnitList.data"
+              :key="index"
+              :label="item.name"
+              :value="item.code"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item
           label="电子地图URL"
           prop="normalUrl"
@@ -122,7 +144,7 @@
 </template>
 
 <script lang="ts" setup name="MapParamsEdit">
-import { reactive, onMounted, ref, unref } from "vue";
+import { reactive, onMounted, ref, unref, computed } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
@@ -141,11 +163,13 @@ interface MapParamsForm {
   defaultCenterPointLongitude: number | null;
   displayLabelInfoIds: number[] | string;
   displayLayerIds: number[] | string;
+  displaySearchIds: number[] | string;
   displayControlIds: any;
   displayLegendIds: number[] | string;
   normalUrl: string;
   sateUrl: string;
   overlayUrl: string;
+  scaleLineUnit?: string;
   isEdit: boolean;
 }
 const emit = defineEmits(["successAdd"]);
@@ -210,6 +234,7 @@ const state = reactive({
     ],
     displayLabelInfoIds: [{ required: true, message: "请选择显示标签类型", trigger: ["blur", "change"] }],
     displayLayerIds: [{ required: true, message: "请选择显示图层", trigger: ["blur", "change"] }],
+    scaleLineUnit: [{ required: true, message: "请选择比例尺单位", trigger: ["blur", "change"] }],
     normalUrl: [
       { required: true, message: "电子地图URL不能为空", trigger: ["blur", "change"] },
       { max: 500, message: "电子地图URL长度不能大于500", trigger: ["blur", "change"] }
@@ -238,11 +263,13 @@ const defaultParam = {
 
   displayLabelInfoIds: [],
   displayLayerIds: [],
+  displaySearchIds: [], // 搜索类型
   displayControlIds: [], // 控件列表
   displayLegendIds: [], // 图例列表
   normalUrl: "",
   sateUrl: "",
   overlayUrl: "",
+  scaleLineUnit: "metric", // 比例尺单位
   isEdit: false // 是否可编辑
 };
 
@@ -259,6 +286,8 @@ const openDialog = (row?: { [key: string]: any }) => {
       : [];
     // 图层
     form.value.displayLayerIds = row.displayLayerIds ? row.displayLayerIds.split(",").map((id: string) => Number(id)) : [];
+    // 搜索类型
+    form.value.displaySearchIds = row.displaySearchIds ? row.displaySearchIds.split(",").map((id: string) => Number(id)) : [];
     // 控件
     form.value.displayControlIds = row.displayControlIds ? row.displayControlIds.split(",") : [];
     // 图例
@@ -285,6 +314,10 @@ const onConfirm = () => {
       // 图层参数处理
       if (Array.isArray(param.displayLayerIds)) {
         param.displayLayerIds = param.displayLayerIds.join(",");
+      }
+      // 图层参数处理
+      if (Array.isArray(param.displaySearchIds)) {
+        param.displaySearchIds = param.displaySearchIds.join(",");
       }
       // 控件参数处理
       if (Array.isArray(param.displayControlIds)) {
@@ -334,6 +367,25 @@ const controlList = ref<{
   }>;
 }>({
   data: GIS_CONTROLS
+});
+
+// 比例尺单位配置列表
+const scaleLineUnitList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "metric",
+      name: "米（千米）"
+    },
+    {
+      code: "nautical",
+      name: "海里"
+    }
+  ]
 });
 
 // 图例列表
@@ -395,6 +447,15 @@ const labelTypeList = ref<{
       ElMessage.error("接口异常");
     }
   }
+});
+
+// 搜索类型列表
+const searchTypeList = computed(() => {
+  return labelTypeList.value.data?.filter(item => {
+    if (Array.isArray(form.value.displayLabelInfoIds)) {
+      return form.value.displayLabelInfoIds?.includes(item.id);
+    }
+  });
 });
 
 onMounted(() => {

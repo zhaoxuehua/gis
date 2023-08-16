@@ -76,19 +76,6 @@
   color: #6379bb;
   border-bottom: 1px solid #dddddd;
 }
-
-/** 表格布局 **/
-.pagination-container {
-  position: relative;
-  height: 25px;
-  padding: 0 20px !important;
-  margin-top: 15px;
-  margin-bottom: 10px;
-}
-.pagination-container .el-pagination {
-  position: absolute;
-  right: 0;
-}
 .el-table .fixed-width .el-button--mini {
   width: inherit;
   padding-right: 0;

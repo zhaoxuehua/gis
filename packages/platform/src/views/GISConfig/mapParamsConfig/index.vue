@@ -4,7 +4,7 @@
       <el-form :model="query.params">
         <el-row :gutter="20">
           <el-col :span="6">
-            <el-form-item label="应用名称：">
+            <el-form-item label="场景名称：">
               <el-autocomplete
                 class="inline-input"
                 v-model="query.params.appName"
@@ -31,7 +31,7 @@
 
     <div class="table-card">
       <div class="option">
-        <div class="title">地图参数配置</div>
+        <div class="title">应用场景配置</div>
         <div class="btn">
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_DELETE">
             <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
@@ -56,8 +56,8 @@
       >
         <el-table-column type="selection"></el-table-column>
         <el-table-column label="序号" type="index" min-width="60"></el-table-column>
-        <el-table-column label="应用名称" prop="appName" min-width="120" sortable="custom"></el-table-column>
-        <el-table-column label="应用编码" prop="appCode" min-width="120" sortable="custom"></el-table-column>
+        <el-table-column label="场景编码" prop="appCode" min-width="120" sortable="custom"></el-table-column>
+        <el-table-column label="场景名称" prop="appName" min-width="120" sortable="custom"></el-table-column>
         <el-table-column label="显示模式" prop="displayMode" min-width="120" sortable="custom">
           <template #default="scope">
             {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
@@ -103,7 +103,7 @@
 
     <MapParamsEdit ref="mapParamsEditRef" @success-add="query.onQuery"></MapParamsEdit>
 
-    <DetailDialog ref="detailDialogRef" :constant="'GIS_MAPPARAMS_DETAIL'" :title="'地图参数详情'" :width="900">
+    <DetailDialog ref="detailDialogRef" :constant="'GIS_MAPPARAMS_DETAIL'" :title="'应用场景详情'" :width="900">
       <template #displayMode="scope">
         {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
       </template>
@@ -118,6 +118,9 @@
       </template>
       <template #displayLegend="scope">
         {{ scope.row.displayLegend?.map((item: any) => item?.legendName).join(",") }}
+      </template>
+      <template #scaleLineUnit="scope">
+        {{ scope.row.scaleLineUnit == "metric" ? "米（千米）" : "海里" }}
       </template>
       <template #isEdit="scope">
         {{ scope.row.isEdit ? "是" : "否" }}
