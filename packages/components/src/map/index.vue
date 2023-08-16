@@ -727,7 +727,9 @@ const initMap = async (mapId: string | number) => {
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           // 点击弹窗 获取左键配置信息
-          popupRef.value?.getLabelDialogConfigInfo(gisStore?.relationMap[featureCode] || currentTrack);
+          popupRef.value?.getLabelDialogConfigInfo(
+            gisStore?.relationMap[featureCode] || (currentTrack ? { ...currentTrack, isVisitObject: true } : {})
+          );
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {

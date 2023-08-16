@@ -27,5 +27,5 @@ export function lineRealTimeCurveApi(params: object) {
 
 // 左键弹窗 查看配置属性
 export function labelDetailAttr(equipTypeId: number, currentType: string) {
-  return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
+  return request.get(`/api/gis-service-zhk/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
 }

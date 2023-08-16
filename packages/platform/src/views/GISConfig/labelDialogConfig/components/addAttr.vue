@@ -1,6 +1,14 @@
 <template>
   <div class="add-attr">
     <el-dialog class="el-dialog-default" title="添加属性" v-model="state.dislogVisible" :destroy-on-close="true">
+      <el-form :model="searchForm" class="flx-align-center">
+        <el-form-item label="属性名称">
+          <el-input v-model="searchForm.name" placeholder="请输入..." clearable @input="getTableData"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="getTableData">搜索</el-button>
+        </el-form-item>
+      </el-form>
       <Table
         class="attr-table"
         title=""
@@ -31,40 +39,34 @@ import { ElMessage } from "element-plus";
 const emit = defineEmits(["change"]);
 const props = defineProps({
   type: String,
-  equipTypeId: Number
+  equipTypeId: Number,
+  visitObjectTypeId: Number
 });
 const state = reactive({
   loading: false,
   dislogVisible: false,
   ids: [],
-  selectedList: []
+  selectedList: [],
+  funTypeOption: [
+    {
+      label: "说明",
+      value: "6"
+    },
+    {
+      label: "遥测",
+      value: "1"
+    },
+    {
+      label: "遥信",
+      value: "2"
+    }
+  ]
 });
-const tableData = ref([
-  {
-    attributeCode: "aaa",
-    attributeName: "aaa",
-    attributeCategoryName: "说明",
-    attributeTypeName: "浮点型"
-  },
-  {
-    attributeCode: "bbb",
-    attributeName: "bbb",
-    attributeCategoryName: "说明",
-    attributeTypeName: "浮点型"
-  },
-  {
-    attributeCode: "ccc",
-    attributeName: "ccc",
-    attributeCategoryName: "说明",
-    attributeTypeName: "浮点型"
-  },
-  {
-    attributeCode: "ddd",
-    attributeName: "ddd",
-    attributeCategoryName: "说明",
-    attributeTypeName: "浮点型"
-  }
-]);
+const searchForm = reactive({
+  name: ""
+});
+
+const tableData = ref([]);
 const columns = ref([
   {
     type: "selection"
@@ -79,45 +81,59 @@ const columns = ref([
   },
   {
     label: "功能类型",
-    prop: "attributeCategoryName"
+    prop: "attributeCategory",
+    render(val: number) {
+      return state.funTypeOption.find(item => Number(item.value) === val)?.label || "";
+    }
   },
   {
     label: "数据类型",
     prop: "attributeTypeName"
   }
 ]);
+
 const pagination = reactive({
   total: 0,
   page: 1,
   pageSize: 10
 });
 const getUnBindStaticAttr = async () => {
-  const res: any = await getUnBindStaticAttrApi({
-    equipTypeId: props.equipTypeId, // 设备类型id
-    visitObjectTypeId: "", // 外部对象类型id
-    attributeCategorys: "", //  功能类型id列表
-    name: "", // 名称
-    attributeCategory: "",
-    attributeType: "",
-    enable: ""
-  });
-  if (res.code === 200) {
-    tableData.value = res.data;
-  }
+  state.loading = true;
+  const res: any = await getUnBindStaticAttrApi(
+    {
+      equipTypeId: props.equipTypeId, // 设备类型id
+      visitObjectTypeId: props.visitObjectTypeId,
+      ...searchForm
+    },
+    {
+      params: {
+        pageSize: pagination.pageSize,
+        pageNumber: pagination.page
+      }
+    }
+  );
+  pagination.total = res.totalNum;
+  tableData.value = res.items;
+  state.loading = false;
 };
 const getUnBindMonitorAttr = async () => {
-  const res: any = await getUnBindMonitorAttrApi({
-    equipTypeId: props.equipTypeId, // 设备类型id
-    visitObjectTypeId: "", // 外部对象类型id
-    attributeCategorys: "", //  功能类型id列表
-    name: "", // 名称
-    attributeCategory: "",
-    attributeType: "",
-    enable: ""
-  });
-  if (res.code === 200) {
-    tableData.value = res.data;
-  }
+  state.loading = true;
+  const res: any = await getUnBindMonitorAttrApi(
+    {
+      equipTypeId: props.equipTypeId, // 设备类型id
+      visitObjectTypeId: props.visitObjectTypeId,
+      ...searchForm
+    },
+    {
+      params: {
+        pageSize: pagination.pageSize,
+        pageNumber: pagination.page
+      }
+    }
+  );
+  pagination.total = res.totalNum;
+  tableData.value = res.items;
+  state.loading = false;
 };
 const getTableData = () => {
   if (props.type === "static") {
@@ -128,7 +144,11 @@ const getTableData = () => {
 };
 const handleSelectionChange = (val: any) => {
   state.selectedList = val;
-  state.ids = val.map((col: any) => col.id);
+  state.ids = val.map((col: any) => {
+    return {
+      attribute: col.attributeId
+    };
+  });
 };
 const handleCurrentChange = (val: number) => {
   pagination.page = val;
@@ -148,7 +168,7 @@ const onClose = () => {
 const onConfirm = async () => {
   const res: any = await bindAttrApi({
     equipTypeId: props.equipTypeId, // 设备类型Id
-    visitObjectTypeId: "", // 外部对象类型Id
+    visitObjectTypeId: props.visitObjectTypeId, // 外部对象类型Id
     attributeIds: state.ids, // 属性id列表
     isStatic: props.type === "static" ? true : false // 是否是静态属性
   });
@@ -162,3 +182,13 @@ defineExpose({
   onOpen
 });
 </script>
+<style lang="scss" scoped>
+.attr-table {
+  height: 400px;
+}
+.flx-align-center {
+  .el-button {
+    margin-left: 10px;
+  }
+}
+</style>
