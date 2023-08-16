@@ -5,6 +5,7 @@ import type { Type } from "ol/geom/Geometry";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Circle } from "ol/geom";
+import type { FeatureLike } from "ol/Feature";
 import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
 import { deleteAssociation } from "../../api/gis";
@@ -571,4 +572,78 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
     // 调用方法将要素抛出去应用实现逻辑
     callback(selectionFeatures);
   });
+}
+
+// 地图穿透选择标签(左击、右击) map及像素点 要素需要存type
+export function getSelectedFeature(map: VisualMap, pixel: any) {
+  if (!map || !pixel) return;
+  let typeMap: any = {
+    alarmPoint: [], // 报警点  取第一个
+    point: [], // 1 6  (船也是点)  取第一个
+    line: [], // 2  7 线（环） 取第一个
+    polygon: [], // 3 4 5  面（圆、矩形、面）  分取最小的面
+    other: [] // 其他
+  };
+  map?.forEachFeatureAtPixel(
+    pixel,
+    function (feature: FeatureLike) {
+      // 选中的各个要素
+      let targetFeature: any;
+      const { features } = feature?.getProperties(); // 针对聚合要素，聚合要素的话features是数组
+      if (features && features.length) {
+        targetFeature = features[0]; // 取聚合要素的第一个原始要素
+      } else {
+        targetFeature = feature;
+      }
+      if (targetFeature) {
+        const type = targetFeature.get("type");
+        if (type == "alarmPoint") {
+          typeMap["alarmPoint"].push(targetFeature);
+        } else if (type == "1" || type == "6") {
+          typeMap["point"].push(targetFeature);
+        } else if (type == "2" || type == "7") {
+          typeMap["line"].push(targetFeature);
+        } else if (type == "3" || type == "4" || type == "5") {
+          typeMap["polygon"].push(targetFeature);
+        } else {
+          typeMap["other"].push(targetFeature);
+        }
+      }
+    },
+    { hitTolerance: 5 } // 设置捏合度为 20 像素
+  );
+  // 判断类型下要素优先级看选哪个
+  let currentSelectFeature = null;
+  if (typeMap.alarmPoint.length) {
+    // 如果有报警点: 使用第一个
+    currentSelectFeature = typeMap.alarmPoint[0];
+  } else if (typeMap.point.length) {
+    // 如果有点 使用第一个
+    currentSelectFeature = typeMap.point[0];
+  } else if (typeMap.line.length) {
+    // 如果有线: 使用第一个
+    currentSelectFeature = typeMap.line[0];
+  } else if (typeMap.polygon.length) {
+    // 面和面叠加，找出最小面积的面
+    let polygonArr: any[] = [];
+    typeMap.polygon.forEach((polygonFeature: any) => {
+      const polygonType = polygonFeature.get("type");
+      const geometry = polygonFeature?.getGeometry();
+      let area;
+      if (polygonType == "3" || polygonType == "5") {
+        area = geometry.getArea();
+        polygonArr.push({ val: polygonFeature, area: area });
+      } else {
+        // 圆的面积的计算
+        const radius = geometry?.getRadius();
+        area = Math.PI * Math.pow(radius, 2);
+        polygonArr.push({ val: polygonFeature, area: area });
+      }
+    });
+    polygonArr.sort((a, b) => a.area - b.area);
+    currentSelectFeature = polygonArr[0].val;
+  } else {
+    currentSelectFeature = typeMap.other[0];
+  }
+  return currentSelectFeature;
 }

@@ -26,6 +26,7 @@
             v-if="item.isShow"
             :map="props.map"
             :index="index"
+            :isShow="item.isShow"
             @on-close="leftBoxClick"
             @on-edit-label="onEditLabel"
           ></component>

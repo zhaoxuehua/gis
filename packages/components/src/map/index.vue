@@ -44,7 +44,6 @@ import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { XYZ, Vector as VectorSource, Cluster } from "ol/source";
 import type { FeatureLike } from "ol/Feature";
 import { fromLonLat } from "ol/proj";
-// import { Select } from "ol/interaction";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
@@ -56,8 +55,8 @@ import { useGisStore } from "../stores/modules/gis";
 import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
+import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature, getSelectedFeature } from "./hooks/index";
 import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
-import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature } from "./hooks/index";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -107,6 +106,13 @@ const state = reactive({
       isShow: false,
       visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
+    },
+    {
+      icon: "iconfont icon-history",
+      label: "轨迹回放",
+      isShow: false,
+      visible: false,
+      component: shallowRef(defineAsyncComponent(() => import("./components/trackPlayBack.vue")))
     }
   ],
   rightBoxData: [
@@ -172,6 +178,9 @@ const getLeftData = computed(() => {
         break;
       case "快速创建":
         item.visible = !!controlList.value.includes("quickCreate");
+        break;
+      case "轨迹回放":
+        item.visible = !!controlList.value.includes("trackPlayBack");
         break;
 
       default:
@@ -327,15 +336,20 @@ const initMap = async (mapId: string | number) => {
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
       scaleLine: controls.includes("scaleLine"), // 比例尺控件  scaleLine
+      scaleLineUnit: originalData?.scaleLineUnit, // 比例尺单位
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
-      displayLegend: originalData.displayLegend // 图例[]
+      displayLegend: originalData.displayLegend, // 图例[]
+      trackSearchId: originalData.trackSearchId // 轨迹搜索类型
     };
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
     // 比例尺控件
-    const scaleLine = new ScaleLine({ className: "control-scaleLine" });
+    const scaleLine = new ScaleLine({
+      className: "control-scaleLine",
+      units: defaultOptions.scaleLineUnit || "metric"
+    });
     // 控件列表(是否显示全屏缩放控件)
     const controlsList = [];
     if (defaultOptions.fullScreen) {
@@ -649,74 +663,7 @@ const initMap = async (mapId: string | number) => {
         hitTolerance: 5
       }); // 当前点击处是否有要素
       if (hit) {
-        let typeMap: any = {
-          alarmPoint: [], // 报警点  取第一个
-          point: [], // 1 6  (船也是点)  取第一个
-          line: [], // 2  7 线（环） 取第一个
-          polygon: [], // 3 4 5  面（圆、矩形、面）  分取最小的面
-          other: [] // 其他
-        };
-        map.forEachFeatureAtPixel(
-          evt.pixel,
-          function (feature: FeatureLike) {
-            // 选中的各个要素
-            let targetFeature: any;
-            const { features } = feature?.getProperties(); // 针对聚合要素，聚合要素的话features是数组
-            if (features && features.length) {
-              targetFeature = features[0]; // 取聚合要素的第一个原始要素
-            } else {
-              targetFeature = feature;
-            }
-            if (targetFeature) {
-              const type = targetFeature.get("type");
-              if (type == "alarmPoint") {
-                typeMap["alarmPoint"].push(targetFeature);
-              } else if (type == "1" || type == "6") {
-                typeMap["point"].push(targetFeature);
-              } else if (type == "2" || type == "7") {
-                typeMap["line"].push(targetFeature);
-              } else if (type == "3" || type == "4" || type == "5") {
-                typeMap["polygon"].push(targetFeature);
-              } else {
-                typeMap["other"].push(targetFeature);
-              }
-            }
-          },
-          { hitTolerance: 5 } // 设置捏合度为 20 像素
-        );
-        // 判断类型下要素优先级看选哪个
-        let currentSelectFeature = null;
-        if (typeMap.alarmPoint.length) {
-          // 如果有报警点: 使用第一个
-          currentSelectFeature = typeMap.alarmPoint[0];
-        } else if (typeMap.point.length) {
-          // 如果有点 使用第一个
-          currentSelectFeature = typeMap.point[0];
-        } else if (typeMap.line.length) {
-          // 如果有线: 使用第一个
-          currentSelectFeature = typeMap.line[0];
-        } else if (typeMap.polygon.length) {
-          // 面和面叠加，找出最小面积的面
-          let polygonArr: any[] = [];
-          typeMap.polygon.forEach((polygonFeature: any) => {
-            const polygonType = polygonFeature.get("type");
-            const geometry = polygonFeature?.getGeometry();
-            let area;
-            if (polygonType == "3" || polygonType == "5") {
-              area = geometry.getArea();
-              polygonArr.push({ val: polygonFeature, area: area });
-            } else {
-              // 圆的面积的计算
-              const radius = geometry?.getRadius();
-              area = Math.PI * Math.pow(radius, 2);
-              polygonArr.push({ val: polygonFeature, area: area });
-            }
-          });
-          polygonArr.sort((a, b) => a.area - b.area);
-          currentSelectFeature = polygonArr[0].val;
-        } else {
-          currentSelectFeature = typeMap.other[0];
-        }
+        let currentSelectFeature = getSelectedFeature(map, pixel);
         // 对选则的要素做弹框弹出及选中样式、编辑弹框
         const featureCode = currentSelectFeature?.get("code");
         const featureName = currentSelectFeature?.get("name");
@@ -754,75 +701,22 @@ const initMap = async (mapId: string | number) => {
       }
     });
 
-    // 聚合图层选中事件（通过交互控件实现）
-    // if (clusterLayerCodes?.length) {
-    //   let selectInteraction = new Select({
-    //     condition: function (event) {
-    //       return event.type == "click" || event.type == "singleclick";
-    //     },
-    //     layers: clusterLayerCodes.map((code: string) => layerMap[code])
-    //   });
-    //   map.addInteraction(selectInteraction);
-    //   selectInteraction.on("select", function (e) {
-    //     emits("onCloseRightMenu");
-    //     if (e.selected?.length > 0) {
-    //       let originalFeatureList: any = [];
-    //       // let propertiesList=[]
-    //       e.selected.forEach(function (clusterFeature) {
-    //         // 根据选中状态切换要素的样式
-    //         clusterFeature.setStyle(feature => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, true));
-    //         clusterFeature.get("features").forEach(function (originalFeature: FeatureLike) {
-    //           // propertiesList.push(originalFeature.getProperties()); // 原始要素的属性
-    //           originalFeatureList.push(originalFeature);
-    //         });
-    //       });
-    //       // 实现业务是获取到选中要素的唯一标识进行以后的逻辑
-    //       let orgFeature;
-    //       if (originalFeatureList && originalFeatureList?.length) {
-    //         orgFeature = originalFeatureList[0];
-    //         const featureCode = orgFeature.get("code");
-    //         const featureName = orgFeature.get("name");
-    //         let center = getCenter(orgFeature?.getGeometry()?.getExtent());
-    //         map.popupInfo({ featureCode, featureName, center});
-    //       }
-    //     }
-    //     if (e.deselected?.length > 0) {
-    //       e.deselected.forEach(function (clusterFeature) {
-    //         // 取消选中
-    //         clusterFeature.setStyle(feature => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false));
-    //       });
-    //     }
-    //   });
-    //   map.set("selectInteraction", selectInteraction);
-    // }
-
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
-      let pixel = map.getEventPixel(evt);
-      const features = map.getFeaturesAtPixel(pixel, { hitTolerance: 5 });
-      if (features && features.length > 0) {
-        let feature: any = null;
-        let clickedFeature = features[0]; // 点击第一个
-        // 判断是否聚合要素
-        if (clickedFeature?.get("features")) {
-          const originalFeatures = clickedFeature.get("features");
-          feature = originalFeatures[0]; // 聚合图层中聚合要素包含的原始要素的第一个
-        } else if (clickedFeature instanceof Feature) {
-          feature = clickedFeature;
-        }
-        if (feature) {
-          const featureCode = feature?.getId();
-          emits("onOpenRightMenu", {
-            featureCode,
-            relationMap: gisStore?.relationMap,
-            offsetX: evt.offsetX,
-            offsetY: evt.offsetY
-          });
-        }
+      let pixel = map?.getEventPixel(evt);
+      let currentSelectFeature = getSelectedFeature(map, pixel);
+      if (currentSelectFeature) {
+        const featureCode = currentSelectFeature?.get("code");
+        emits("onOpenRightMenu", {
+          featureCode,
+          relationMap: gisStore?.relationMap,
+          offsetX: evt.offsetX,
+          offsetY: evt.offsetY
+        });
       }
     };
-
+    // 初始化完成
     exportMap.value = map;
     emits("getInitMapExportData", exportMap.value); // 应用获取初始化地图实例
   } else {

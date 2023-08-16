@@ -119,6 +119,9 @@
       <template #displayLegend="scope">
         {{ scope.row.displayLegend?.map((item: any) => item?.legendName).join(",") }}
       </template>
+      <template #scaleLineUnit="scope">
+        {{ scope.row.scaleLineUnit == "metric" ? "米（千米）" : "海里" }}
+      </template>
       <template #isEdit="scope">
         {{ scope.row.isEdit ? "是" : "否" }}
       </template>

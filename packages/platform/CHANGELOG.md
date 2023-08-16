@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.32
+
+### Patch Changes
+
+- feature :轨迹回放
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.32
+
 ## 1.0.31
 
 ### Patch Changes

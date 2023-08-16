@@ -114,8 +114,8 @@ export type TableList = {
   ids: Array<number>;
   data: Array<any>;
   getTableData: Function;
-  onSelectionChange: Function;
-  onEdit: Function;
+  onSelectionChange?: Function;
+  onEdit?: Function;
 };
 
 // 创建要素

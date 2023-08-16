@@ -98,16 +98,6 @@
           <el-form-item label="轨迹设置" prop="isTrackSetting">
             <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" style="width: 200px" />
           </el-form-item>
-          <el-form-item label="轨迹模式" prop="trackMode" v-if="form.isTrackSetting">
-            <el-select v-model="form.trackMode" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
-              <el-option
-                v-for="(item, index) in trackModeList.data"
-                :key="index"
-                :label="item.name"
-                :value="item.code"
-              ></el-option>
-            </el-select>
-          </el-form-item>
           <div></div>
           <el-form-item v-if="form.isTrackSetting">
             <template #label>
@@ -293,8 +283,7 @@ const state = reactive({
     fontSize: [
       { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
       { validator: fontSizeVerification, trigger: ["blur", "change"] }
-    ],
-    trackMode: [{ required: true, message: "请选择轨迹模式", trigger: ["blur", "change"] }]
+    ]
   }
 });
 
@@ -342,7 +331,6 @@ const defaultParam = {
   borderColor: "rgba(0,0,0,1)",
   backGroundColor: "rgba(0,0,0,0.3)",
   isTrackSetting: false, // 轨迹设置
-  trackMode: "", // 轨迹模式
   animationSetting: "", // 动画设置
   trackLineStyle: null // 轨迹线样式
 };
@@ -353,7 +341,6 @@ let form = ref<
     referenceValue: string;
     referenceValueReal: any;
     isTrackSetting: any;
-    trackMode: any;
     labelLegendImagePath: any;
     animationSetting: string;
     referenceObject: any;
@@ -444,9 +431,6 @@ const onConfirm = () => {
         // 清除轨迹模式及轨迹线样式
         if (param.trackLineStyle) {
           delete param.trackLineStyle;
-        }
-        if (param.trackMode) {
-          delete param.trackMode;
         }
       }
       // 点数据时标签类型图片
@@ -596,24 +580,6 @@ const layerList = ref<{
       ElMessage.error("接口异常");
     }
   }
-});
-
-const trackModeList = ref<{
-  data: Array<{
-    code: string;
-    name: string;
-  }>;
-}>({
-  data: [
-    {
-      code: "dynamic",
-      name: "动态延展轨迹线"
-    },
-    {
-      code: "fixed",
-      name: "固定轨迹线"
-    }
-  ]
 });
 
 // 动画配置

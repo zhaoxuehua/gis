@@ -49,7 +49,7 @@
             <el-option v-for="(item, index) in labelTypeList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="显示搜索类型" prop="displaySearchIds">
+        <el-form-item label="搜索标签类型" prop="displaySearchIds">
           <el-select
             v-model="form.displaySearchIds"
             multiple
@@ -102,6 +102,26 @@
             ></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="轨迹搜索类型" prop="trackSearchId">
+          <el-select v-model="form.trackSearchId" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+            <el-option
+              v-for="(item, index) in trackSearchList.data"
+              :key="index"
+              :label="item.name"
+              :value="item.code"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="比例尺单位" prop="scaleLineUnit" v-if="form.displayControlIds.includes('scaleLine')">
+          <el-select v-model="form.scaleLineUnit" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+            <el-option
+              v-for="(item, index) in scaleLineUnitList.data"
+              :key="index"
+              :label="item.name"
+              :value="item.code"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item
           label="电子地图URL"
           prop="normalUrl"
@@ -139,6 +159,7 @@ import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
 import { addMapParams, editMapParams, getLayerList, getLabelTypeList, getLegendConfigList } from "@/api/visconfig.js";
+import { objTypeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
 
 interface MapParamsForm {
@@ -159,6 +180,8 @@ interface MapParamsForm {
   normalUrl: string;
   sateUrl: string;
   overlayUrl: string;
+  scaleLineUnit?: string;
+  trackSearchId?: string | Number;
   isEdit: boolean;
 }
 const emit = defineEmits(["successAdd"]);
@@ -223,6 +246,7 @@ const state = reactive({
     ],
     displayLabelInfoIds: [{ required: true, message: "请选择显示标签类型", trigger: ["blur", "change"] }],
     displayLayerIds: [{ required: true, message: "请选择显示图层", trigger: ["blur", "change"] }],
+    scaleLineUnit: [{ required: true, message: "请选择比例尺单位", trigger: ["blur", "change"] }],
     normalUrl: [
       { required: true, message: "电子地图URL不能为空", trigger: ["blur", "change"] },
       { max: 500, message: "电子地图URL长度不能大于500", trigger: ["blur", "change"] }
@@ -257,6 +281,8 @@ const defaultParam = {
   normalUrl: "",
   sateUrl: "",
   overlayUrl: "",
+  scaleLineUnit: "metric", // 比例尺单位
+  trackSearchId: "", // 轨迹搜索类型
   isEdit: false // 是否可编辑
 };
 
@@ -356,6 +382,25 @@ const controlList = ref<{
   data: GIS_CONTROLS
 });
 
+// 比例尺单位配置列表
+const scaleLineUnitList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "metric",
+      name: "米（千米）"
+    },
+    {
+      code: "nautical",
+      name: "海里"
+    }
+  ]
+});
+
 // 图例列表
 const legendIdsList = ref<{
   data: Array<{
@@ -417,6 +462,28 @@ const labelTypeList = ref<{
   }
 });
 
+// 轨迹搜索类型
+const trackSearchList = ref<{
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await objTypeList(
+      ...(handleParam({ pageNumber: 1, pageSize: 10000, orderByColumn: "", isAsc: "" }) as [string, object])
+    );
+    if (res.items) {
+      trackSearchList.value.data = res.items;
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
 // 搜索类型列表
 const searchTypeList = computed(() => {
   return labelTypeList.value.data?.filter(item => {
@@ -430,6 +497,7 @@ onMounted(() => {
   labelTypeList.value.fetchData();
   layerList.value.fetchData();
   legendIdsList.value.fetchData();
+  trackSearchList.value.fetchData();
 });
 
 defineExpose({

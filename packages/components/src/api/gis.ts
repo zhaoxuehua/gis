@@ -81,3 +81,8 @@ export function whiteListAdd(params: object) {
 export function whiteListDelete(id: number) {
   return request.delete(`/api/equipment-service/equip/equip/${id}`);
 }
+
+// 轨迹回放
+export function gisTrackList(queryString: string, params: object) {
+  return request.post(`/api/gis-service/equip/2DGis/label/equip${queryString}`, params);
+}
