@@ -17,12 +17,19 @@
             </el-date-picker>
           </el-form-item>
           <el-form-item label="查询模式" prop="selectMode">
-            <el-select v-model="query.params.selectMode" clearable placeholder="请选择..." filterable style="width: 200px">
+            <el-select
+              v-model="query.params.selectMode"
+              clearable
+              placeholder="请选择..."
+              @change="selectModeChange"
+              filterable
+              style="width: 200px"
+            >
               <el-option
                 v-for="(optionItem, idx) in state.selectModeList"
                 :key="idx"
-                :label="optionItem.label"
-                :value="optionItem.value"
+                :label="optionItem.name"
+                :value="optionItem.code"
               ></el-option>
             </el-select>
           </el-form-item>
@@ -32,6 +39,21 @@
               <el-radio label="Circle">矩形</el-radio>
               <el-radio label="Polygon">多边形</el-radio>
             </el-radio-group>
+          </el-form-item>
+          <!-- 查询模式是面标签类型（选择该类型下的标签） -->
+          <el-form-item
+            :label="state.selectLabelTypeName"
+            prop="selectLabel"
+            v-if="query.params.selectMode && query.params.selectMode != 'shape'"
+          >
+            <el-select v-model="query.params.selectLabel" clearable placeholder="请选择..." filterable style="width: 200px">
+              <el-option
+                v-for="(optionItem, idx) in state.selectLabelList"
+                :key="idx"
+                :label="optionItem.name"
+                :value="optionItem.code"
+              ></el-option>
+            </el-select>
           </el-form-item>
         </el-form>
       </div>
@@ -79,7 +101,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, onMounted, watch, toRefs, computed } from "vue";
 import { ElMessage } from "element-plus";
 import moment from "moment";
 import { handleParam } from "@/utils/common.js";
@@ -93,20 +115,24 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; i
   isShow: () => false
 });
 const emits = defineEmits(["onEditLabel", "onClose"]);
+const { map, isShow, index } = toRefs(props);
 
 // 关闭轨迹回放
 const onClose = () => {
-  emits("onClose", props.index);
+  emits("onClose", index.value);
 };
 
-const state: { selectModeList: any[]; rulesForm: any } = reactive({
+const state: { selectModeList: any[]; selectLabelList: any[]; selectLabelTypeName: string; rulesForm: any } = reactive({
   selectModeList: [], // 查询模式列表
+  selectLabelList: [],
+  selectLabelTypeName: "",
   // 弹窗表单验证
   rulesForm: {
     startTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
     endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
     selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
-    boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }]
+    boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }],
+    selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }]
   }
 });
 const refForm: any = ref();
@@ -117,6 +143,7 @@ const query = ref({
     endTime: moment().format("YYYY-MM-DD HH:mm:ss"),
     selectMode: "shape", // 查询模式
     boxSelectMode: "", // 框选模式（查询模式是图形时）
+    selectLabel: "all", // 选择的标签
     pageNumber: 1,
     pageSize: 10
   },
@@ -148,6 +175,26 @@ const table = ref<TableList>({
       if (valid) {
         table.value.loading = true;
         const [queryString, params] = handleParam(query.value.params);
+        // 处理请求的传参（查询模式是图形是传的框选范围  查询模式是标签类型时传选择的标签坐标）
+        if (params.selectMode == "shape") {
+          params.range = [];
+        } else {
+          // 标签类型（看是全选还是单选）
+          if (params.selectLabel == "all") {
+            let selectLabelCoordinates: any[] = [];
+            state.selectLabelList.forEach((item: { [key: string]: any }) => {
+              if (item.code != "all") {
+                selectLabelCoordinates.push(item?.coordinates);
+              }
+            });
+            params.coordinates = selectLabelCoordinates;
+          } else {
+            // 选择一个标签的坐标
+            let selectLabelObj = state.selectLabelList.find((item: { [key: string]: any }) => item.code == params.selectLabel);
+            params.coordinates = selectLabelObj.coordinates;
+          }
+        }
+
         const res: { [key: string]: any } = await gisTrackList(queryString, params);
         if (res.items) {
           table.value.data = res.items || [];
@@ -161,6 +208,33 @@ const table = ref<TableList>({
   }
 });
 
+const selectModeChange = (value: string) => {
+  // 获取类型name
+  let selectType: { [key: string]: any } = state.selectModeList.find(
+    (item: { [key: string]: any }) => `${item.code}` == `${value}`
+  );
+  state.selectLabelTypeName = selectType?.name;
+  // 标签类型下的标签列表
+  let labelArr: any[] = [
+    {
+      name: "全部",
+      code: "all"
+    }
+  ];
+  labelList.value.forEach((item: { [key: string]: any }) => {
+    if (item?.labelType?.code == value) {
+      labelArr.push({
+        code: item.code,
+        name: item.name,
+        id: item.id,
+        coordinates: item?.labelData?.coordinates
+      });
+    }
+  });
+  state.selectLabelList = labelArr;
+  console.log(selectType, labelList, 766666655);
+};
+
 const toLocation = (row: { [key: string]: any }) => {
   console.log(row, 1);
 };
@@ -170,6 +244,46 @@ const trackPlayBack = (row: { [key: string]: any }) => {
 const downloadTrackInfo = (row: { [key: string]: any }) => {
   console.log(row, 3);
 };
+
+const labelTypeMap = map.value?.get("labelTypeMap") || {};
+// 标签类型
+const labelList: any = computed(() => {
+  let labelTypeMap = map.value?.get("labelInfoMap") || {};
+  return Object.values(labelTypeMap);
+});
+
+// 筛选出标签类型是面的
+watch(
+  () => isShow.value,
+  isShowVal => {
+    if (isShowVal) {
+      // 筛选出标签类型是面的
+      let labelTypeArr: any = [
+        {
+          name: "图形",
+          code: "shape"
+        }
+      ];
+      Object.values(labelTypeMap)?.forEach((obj: any) => {
+        // 过滤出标签类型是面的 面 圆 矩形
+        if (obj?.dataType == "3" || obj?.dataType == "4" || obj?.dataType == "5") {
+          labelTypeArr.push({
+            code: obj.code,
+            name: obj.name
+          });
+        }
+      });
+      state.selectModeList = labelTypeArr;
+      console.log(labelTypeMap, 7666555);
+    } else {
+      console.log(1);
+    }
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+);
 
 onMounted(() => {});
 </script>
