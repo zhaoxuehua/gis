@@ -118,6 +118,11 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
+    label: "轨迹搜索类型",
+    name: "trackSearchName"
+  },
+
+  {
     label: "电子地图URL",
     name: "normalUrl"
   },

@@ -339,7 +339,8 @@ const initMap = async (mapId: string | number) => {
       scaleLineUnit: originalData?.scaleLineUnit, // 比例尺单位
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
-      displayLegend: originalData.displayLegend // 图例[]
+      displayLegend: originalData.displayLegend, // 图例[]
+      trackSearchId: originalData.trackSearchId // 轨迹搜索类型
     };
 
     // 全屏控件

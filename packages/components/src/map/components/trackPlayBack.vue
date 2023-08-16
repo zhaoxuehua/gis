@@ -55,6 +55,20 @@
               ></el-option>
             </el-select>
           </el-form-item>
+          <el-form-item
+            label="告警"
+            prop="alarmLevel"
+            v-if="query.params.selectMode && query.params.selectMode != 'shape' && trackSearchId"
+          >
+            <el-select v-model="query.params.alarmLevel" clearable placeholder="请选择..." filterable style="width: 200px">
+              <el-option
+                v-for="(optionItem, idx) in state.alarmList"
+                :key="idx"
+                :label="optionItem.name"
+                :value="optionItem.code"
+              ></el-option>
+            </el-select>
+          </el-form-item>
         </el-form>
       </div>
 
@@ -73,7 +87,6 @@
           stripe
           border
         >
-          <el-table-column label="编码" prop="code"></el-table-column>
           <el-table-column label="名称" prop="name"></el-table-column>
           <el-table-column label="操作" width="120">
             <template #default="scope">
@@ -106,6 +119,7 @@ import { ElMessage } from "element-plus";
 import moment from "moment";
 import { handleParam } from "@/utils/common.js";
 import { gisTrackList } from "../../api/gis";
+import { eventListByObjType } from "../../api/device";
 import type { VisualMap, TableList } from "../type";
 import Icon from "./Icon.vue";
 
@@ -122,19 +136,36 @@ const onClose = () => {
   emits("onClose", index.value);
 };
 
-const state: { selectModeList: any[]; selectLabelList: any[]; selectLabelTypeName: string; rulesForm: any } = reactive({
-  selectModeList: [], // 查询模式列表
-  selectLabelList: [],
-  selectLabelTypeName: "",
-  // 弹窗表单验证
-  rulesForm: {
-    startTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
-    endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
-    selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
-    boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }],
-    selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }]
-  }
+// 标签类型
+const labelTypeMap = map.value?.get("labelTypeMap") || {};
+const labelList: any = computed(() => {
+  let labelInfoMap = map.value?.get("labelInfoMap") || {};
+  return Object.values(labelInfoMap);
 });
+
+const defaultOptions = computed(() => {
+  let defaultOptions = map.value?.defaultOptions;
+  return defaultOptions;
+});
+
+const trackSearchId = ref(defaultOptions.value?.trackSearchId);
+const trackSearchCode = ref(defaultOptions.value?.trackSearchCode);
+
+const state: { selectModeList: any[]; selectLabelList: any[]; selectLabelTypeName: string; alarmList: any[]; rulesForm: any } =
+  reactive({
+    selectModeList: [], // 查询模式列表
+    selectLabelList: [], // 标签类型下的标签列表
+    selectLabelTypeName: "", // 选择的标签类型名
+    alarmList: [], // 外部对象的告警列表
+    // 弹窗表单验证
+    rulesForm: {
+      startTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
+      endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
+      selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
+      boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }],
+      selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }]
+    }
+  });
 const refForm: any = ref();
 
 const query = ref({
@@ -144,6 +175,7 @@ const query = ref({
     selectMode: "shape", // 查询模式
     boxSelectMode: "", // 框选模式（查询模式是图形时）
     selectLabel: "all", // 选择的标签
+    alarmLevel: "", // 告警等级（只有配置了外部对象及查询模式不是图形时显示）
     pageNumber: 1,
     pageSize: 10
   },
@@ -177,7 +209,7 @@ const table = ref<TableList>({
         const [queryString, params] = handleParam(query.value.params);
         // 处理请求的传参（查询模式是图形是传的框选范围  查询模式是标签类型时传选择的标签坐标）
         if (params.selectMode == "shape") {
-          params.range = [];
+          params.coordinates = [];
         } else {
           // 标签类型（看是全选还是单选）
           if (params.selectLabel == "all") {
@@ -193,8 +225,14 @@ const table = ref<TableList>({
             let selectLabelObj = state.selectLabelList.find((item: { [key: string]: any }) => item.code == params.selectLabel);
             params.coordinates = selectLabelObj.coordinates;
           }
+          // 如果有外部对象 则传告警
+          if (trackSearchCode.value) {
+            params.outsideObj = trackSearchCode.value;
+          } else {
+            delete params.alarmLevel;
+          }
         }
-
+        delete params.boxSelectMode;
         const res: { [key: string]: any } = await gisTrackList(queryString, params);
         if (res.items) {
           table.value.data = res.items || [];
@@ -209,6 +247,9 @@ const table = ref<TableList>({
 });
 
 const selectModeChange = (value: string) => {
+  query.value.params.boxSelectMode = "";
+  query.value.params.selectLabel = "all";
+  query.value.params.alarmLevel = "";
   // 获取类型name
   let selectType: { [key: string]: any } = state.selectModeList.find(
     (item: { [key: string]: any }) => `${item.code}` == `${value}`
@@ -232,7 +273,6 @@ const selectModeChange = (value: string) => {
     }
   });
   state.selectLabelList = labelArr;
-  console.log(selectType, labelList, 766666655);
 };
 
 const toLocation = (row: { [key: string]: any }) => {
@@ -244,13 +284,6 @@ const trackPlayBack = (row: { [key: string]: any }) => {
 const downloadTrackInfo = (row: { [key: string]: any }) => {
   console.log(row, 3);
 };
-
-const labelTypeMap = map.value?.get("labelTypeMap") || {};
-// 标签类型
-const labelList: any = computed(() => {
-  let labelTypeMap = map.value?.get("labelInfoMap") || {};
-  return Object.values(labelTypeMap);
-});
 
 // 筛选出标签类型是面的
 watch(
@@ -274,9 +307,35 @@ watch(
         }
       });
       state.selectModeList = labelTypeArr;
-      console.log(labelTypeMap, 7666555);
-    } else {
-      console.log(1);
+    }
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+);
+
+watch(
+  () => trackSearchId.value,
+  async value => {
+    if (value) {
+      // 筛选出告警列表（根据对象类型获取事件列表）
+      const res: { [key: string]: any } = await eventListByObjType(value);
+      if (res.code == 200) {
+        // 过滤出告警 eventType  "hidden_alarm"  以alarm结尾
+        let alarmArr: any[] = [];
+        res.data.forEach((item: { [key: string]: any }) => {
+          let arr = item.eventType.split("_");
+          if (arr && arr?.length && arr.length > 1 && arr[1] == "alarm") {
+            alarmArr.push({
+              ...item
+            });
+          }
+        });
+        state.alarmList = alarmArr;
+      } else {
+        ElMessage.error("接口异常");
+      }
     }
   },
   {
@@ -322,7 +381,7 @@ onMounted(() => {});
 
     // 表格块
     .table-box {
-      height: 400px;
+      height: 350px;
       overflow-y: auto;
     }
   }
