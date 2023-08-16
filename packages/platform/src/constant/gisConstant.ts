@@ -29,12 +29,16 @@ export const GIS_CONTROLS = [
     name: "显示标签树控件"
   },
   {
-    code: "search",
-    name: "显示搜索控件"
-  },
-  {
     code: "quickCreate",
     name: "显示快速绘制控件"
+  },
+  {
+    code: "trackPlayBack",
+    name: "显示轨迹回放控件"
+  },
+  {
+    code: "search",
+    name: "显示搜索控件"
   },
   {
     code: "boxSelection",

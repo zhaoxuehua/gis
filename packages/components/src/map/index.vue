@@ -106,6 +106,13 @@ const state = reactive({
       isShow: false,
       visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
+    },
+    {
+      icon: "iconfont icon-history",
+      label: "轨迹回放",
+      isShow: false,
+      visible: false,
+      component: shallowRef(defineAsyncComponent(() => import("./components/trackPlayBack.vue")))
     }
   ],
   rightBoxData: [
@@ -171,6 +178,9 @@ const getLeftData = computed(() => {
         break;
       case "快速创建":
         item.visible = !!controlList.value.includes("quickCreate");
+        break;
+      case "轨迹回放":
+        item.visible = !!controlList.value.includes("trackPlayBack");
         break;
 
       default:
