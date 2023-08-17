@@ -65,7 +65,7 @@ const createdTrackData = function (param: trackLayerParamType) {
     const extendsData = {
       labelInfo: currData.labelInfo,
       detailInfo: currDataDetailInfo,
-      titleInfo: currData.labelInfo,
+      titleInfo: currData.titleInfo,
       color,
       dotted // true:虚线  false:实线
     };
