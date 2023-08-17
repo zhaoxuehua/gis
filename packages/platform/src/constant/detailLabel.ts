@@ -103,6 +103,12 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
+    label: "搜索标签类型",
+    name: "displaySearchIds",
+    slot: true
+  },
+
+  {
     label: "显示图层",
     name: "displayLayerIds",
     slot: true
@@ -121,7 +127,16 @@ export const GIS_MAPPARAMS_DETAIL = [
     label: "轨迹搜索类型",
     name: "trackSearchName"
   },
-
+  {
+    label: "比例尺单位",
+    name: "scaleLineUnit",
+    slot: true
+  },
+  {
+    label: "是否可编辑",
+    name: "isEdit",
+    slot: true
+  },
   {
     label: "电子地图URL",
     name: "normalUrl"
@@ -133,11 +148,6 @@ export const GIS_MAPPARAMS_DETAIL = [
   {
     label: "路网叠加层URL",
     name: "overlayUrl"
-  },
-  {
-    label: "是否可编辑",
-    name: "isEdit",
-    slot: true
   }
 ];
 

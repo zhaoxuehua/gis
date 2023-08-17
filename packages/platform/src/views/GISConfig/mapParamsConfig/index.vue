@@ -110,6 +110,9 @@
       <template #displayLabelInfoIds="scope">
         {{ scope.row.displayLabelInfo?.map((item: any) => item.name).join(",") }}
       </template>
+      <template #displaySearchIds="scope">
+        {{ scope.row.displaySearch?.map((item: any) => item.name).join(",") }}
+      </template>
       <template #displayLayerIds="scope">
         {{ scope.row.displayLayer?.map((item: any) => item?.name).join(",") }}
       </template>
