@@ -385,6 +385,21 @@ onMounted(() => {});
     .table-box {
       height: 350px;
       overflow-y: auto;
+      .pagination-container-gis {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0;
+        margin: 0;
+        .el-pagination__sizes {
+          margin: 0 0 0 16px !important;
+        }
+        .pagination-container-gis .el-pagination {
+          position: absolute;
+          right: 0;
+        }
+      }
     }
   }
   .operate-icon {
