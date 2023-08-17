@@ -46,7 +46,7 @@ export function updateLabel(params: object) {
 
 // 修改结构体
 export function updateJSONBody(params: any) {
-  return request.put(`/api/gis-service-zhk/equip/gisLabelPopupInfo/setAttributeJsonConfig`, params);
+  return request.post(`/api/gis-service-zhk/equip/gisLabelPopupInfo/setAttributeJsonConfig`, params);
 }
 
 // 删除绑定的属性
