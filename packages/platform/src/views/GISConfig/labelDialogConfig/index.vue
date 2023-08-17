@@ -13,6 +13,7 @@
         v-model:monitor="params.monitorAttribute"
         ref="attrConfigRef"
         :equipTypeId="equipTypeId"
+        :visitObjectTypeId="visitObjectTypeId"
         :currentType="currentType"
       />
       <div class="flx-justify-between title-box">
@@ -28,16 +29,20 @@ import { ref, onMounted } from "vue";
 import TreeFilter from "@/components/TreeFilter/index.vue";
 import AttrConfig from "./components/attrConfig.vue";
 import linkConfig from "./components/linkConfig.vue";
-import { TreeData } from "./components/mock";
 import { equipTypeTreeApi, labelDetailAttr, updateLabel } from "../../../api/modules/labelDialogConfig";
 import { ElMessage } from "element-plus";
 
-const treeFilterData = ref(TreeData);
+const treeFilterData = ref();
 const equipTypeId = ref();
+const visitObjectTypeId = ref();
 const currentType = ref(); // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
 const changeTreeFilter = (id: number, data: any) => {
-  equipTypeId.value = id;
   currentType.value = data.currentType;
+  if (data.currentType === "VisitObjectType") {
+    visitObjectTypeId.value = id;
+  } else {
+    equipTypeId.value = id;
+  }
   getDetail(id);
 };
 
@@ -56,8 +61,8 @@ const getDetail = async (id: number) => {
   const res: any = await labelDetailAttr(id, currentType.value);
   if (res.code === 200) {
     params.value = res.data;
+    attrConfigRef.value.handleTabChange("static");
   }
-  attrConfigRef.value.handleTabChange("static");
 };
 
 const linkConfigRef = ref();
@@ -73,7 +78,11 @@ const getTree = async () => {
   }
 };
 const editTitle = async () => {
-  const res: any = await updateLabel(params.value.label);
+  const res: any = await updateLabel({
+    equipType: equipTypeId.value,
+    currentType: currentType.value,
+    label: params.value.label
+  });
   if (res.code === 200) {
     ElMessage.success("修改标题成功");
   }

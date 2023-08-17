@@ -1,6 +1,6 @@
 <template>
   <div class="map-popup" ref="popupRef">
-    <div :class="[isRelationBody ? 'popup-custom-box' : 'popup-box']">
+    <div :class="['popup-box', isRelationBody ? 'popup-custom-box' : '']">
       <div v-if="props?.data?.featureCode">
         <div class="map-popup-header">
           <span>{{ configInfo?.label || "标签信息" }} </span>
@@ -14,41 +14,54 @@
         </div>
         <div v-else class="map-popup-body">
           <ul class="static-data" v-if="attrData.staticData.length">
-            <li v-for="item in attrData.staticData" :key="item.label" class="list-item">
-              <span class="label">{{ item.label }}</span>
+            <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
+              <span class="label">{{ item.name }}</span>
               <span class="value">{{ item.value }}</span>
             </li>
           </ul>
-          <!-- v-if="attrData.monitorSequenceData.length" -->
-          <div class="monitor-sequence-data">
+          <div class="monitor-sequence-data" v-if="attrData.monitorSequenceData.length">
             <ul class="list">
-              <li v-for="item in 6" :key="item" class="list-item">
-                <span class="label">温度（℃）</span>
-                <span class="value">35</span>
+              <li v-for="item in attrData.monitorSequenceData" :key="item.code" class="list-item">
+                <span class="label">{{ item.name }}{{ item.unit ? `(${item.unit})` : "" }}</span>
+                <span class="value">{{ item.value }}</span>
                 <span class="time">2023-08-05 16:23:12</span>
               </li>
             </ul>
           </div>
-          <div class="monitor-curve-data"></div>
-          <div class="monitor-jsonbody-data"></div>
+          <lineChart class="monitor-curve-data" ref="lineChartRef" v-if="attrData.monitorLineAttr.length"></lineChart>
+          <div class="monitor-jsonbody-data">
+            <div v-for="item in attrData.monitorJSONbodyData" :key="item.code">
+              <el-descriptions class="desc-list" :title="item.name" v-if="item.valueType === 'object'" :column="2" :border="true">
+                <el-descriptions-item
+                  v-for="(value, key) in item.value"
+                  :key="key"
+                  :label="key + ''"
+                  class-name="desc-item"
+                  label-class-name="desc-label-item"
+                >
+                  {{ value }}
+                </el-descriptions-item>
+              </el-descriptions>
+              <span v-else> {{ item.value }}</span>
+            </div>
+          </div>
           <div class="link-config">
-            <el-button v-for="btn in attrData.linkData" :key="btn.label" type="primary">{{ btn.label }}</el-button>
+            <el-button v-for="btn in attrData.linkData" :key="btn.name" type="primary" @click="onAction(btn.buttonType)">{{
+              btn.name
+            }}</el-button>
           </div>
         </div>
       </div>
     </div>
-    <!-- 自定义内容插槽 -->
-    <!-- <template v-else> -->
-    <!-- <slot name="customContent"></slot> -->
-    <!-- </template> -->
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, nextTick } from "vue";
 import Icon from "./Icon.vue";
 import { getEquipData, lineRealTimeCurveApi, labelDetailAttr } from "../../api/device";
 import dayjs from "dayjs";
+import lineChart from "./lineChart.vue";
 
 const props = withDefaults(defineProps<{ data: { [key: string]: any } }>(), {
   data: () => ({})
@@ -71,42 +84,20 @@ const isRelationBody = ref(false);
 const configInfo = ref();
 const attrData: any = reactive({
   // 静态属性数据
-  staticData: [
-    {
-      label: "Username",
-      value: "kooriookami"
-    },
-    {
-      label: "Telephone",
-      value: "18100000000"
-    },
-    {
-      label: "Place",
-      value: "Suzhou"
-    },
-    {
-      label: "Address",
-      value: "No.1188, Wuzhong Avenue, Wuzhong"
-    }
-  ],
+  staticData: [],
   monitorSequenceData: [], // 监测散点数据
-  monitorLineData: [], //监测线性数据
+  monitorLineAttr: [], //监测线性属性code
   monitorJSONbodyData: [], // 监测结构体数据
-  linkData: [
-    {
-      label: "关注"
-    },
-    {
-      label: "定位"
-    },
-    {
-      label: "轨迹"
-    },
-    {
-      label: "备注"
-    }
-  ]
+  linkData: []
 });
+
+// 左键选择的设备信息
+const equipInfo = ref({
+  equipType: 0,
+  code: "",
+  isVisitObject: false
+});
+
 // 获取设备数据
 const getDataFromAttr = (equipCodes: string, attributes: string) => {
   return new Promise(async (resolve, reject) => {
@@ -120,7 +111,7 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
       tenantId: 1 // 租户
     });
     if (res.code === 200) {
-      resolve(res.data);
+      resolve(res);
     } else {
       reject(res);
     }
@@ -155,6 +146,8 @@ const getDiffAttrCode = () => {
   };
 };
 
+const lineChartRef = ref();
+
 // 获取左键配置信息
 const getLabelDialogConfigInfo = async (relationMap: any) => {
   if (!relationMap) {
@@ -163,102 +156,87 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   isRelationBody.value = true;
   console.log(relationMap);
-  const { equipType, code } = relationMap || {};
-  // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
-  const currentType = "EquipType";
-  const detailRes: any = await labelDetailAttr(equipType, currentType);
-  if (detailRes.code !== 200) return;
-  // configInfo.value = detailRes.data
-  configInfo.value = {
-    title: "ais" + equipType,
-    staticAttribute: [
-      {
-        attributeId: 2431,
-        attributeCode: "AENDPO",
-        attributeName: "A相结束位置"
-      },
-      {
-        attributeId: 2430,
-        attributeCode: "ASTARTPO",
-        attributeName: "A相起始位置"
-      },
-      {
-        attributeId: 2433,
-        attributeCode: "BENDPO",
-        attributeName: "B相结束位置"
-      },
-      {
-        attributeId: 2432,
-        attributeCode: "BSTARTPO",
-        attributeName: "B相起始位置"
-      }
-    ],
-    monitorAttribute: [
-      {
-        attributeCode: "AOT",
-        attributeId: 2047,
-        attributeName: "A相缆表温度",
-        attributeType: "91"
-      },
-      {
-        attributeCode: "AMAXOT",
-        attributeId: 2051,
-        attributeName: "A相最高缆表温度",
-        attributeType: "2"
-      },
-      {
-        attributeCode: "BOT",
-        attributeId: 2048,
-        attributeName: "B相缆表温度",
-        attributeType: "91"
-      },
-      {
-        attributeCode: "BMAXOT",
-        attributeId: 2052,
-        attributeName: "B相最高缆表温度",
-        attributeType: "2"
-      }
-    ],
-    linkConfig: [
-      {
-        equipType: 769,
-        buttonType: 2,
-        name: "关注",
-        action: "focus", // 动作
-        createdBy: "",
-        createdOn: "",
-        updatedBy: "",
-        updatedOn: ""
-      }
-    ]
+  const { equipType, code, isVisitObject = false } = relationMap || {};
+  equipInfo.value = {
+    equipType,
+    code,
+    isVisitObject
   };
+  // equipInfo.value = {
+  //   equipType: 761,
+  //   code: "tunnel01",
+  //   isVisitObject
+  // };
+  // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
+  const currentType = isVisitObject ? "VisitObjectType" : "EquipType";
+  // 获取配置的绑定属性
+  const detailRes: any = await labelDetailAttr(equipInfo.value.equipType, currentType);
+  if (detailRes.code !== 200) return;
+  configInfo.value = detailRes.data;
   attrData.linkData = configInfo.value?.linkConfig || [];
+  // 获取不同属性的code
   const { staticAttr, monitorSeqAttr, monitorLineAttr, monitorJSONbodyAttr } = getDiffAttrCode();
+  attrData.monitorLineAttr = monitorLineAttr;
   // 获取静态属性数据 监测散点/结构体数据
-  const res: any = await getDataFromAttr(code, staticAttr.concat(monitorSeqAttr, monitorJSONbodyAttr).join(","));
+  const res: any = await getDataFromAttr(equipInfo.value.code, staticAttr.concat(monitorSeqAttr, monitorJSONbodyAttr).join(","));
   if (res.code === 200) {
-    let telemetryData = res.data.telemetry; //监测的
-    let descriptionsData = res.data.descriptions; //静态的
+    const data = res.data.items[0];
+    let telemetryData = data.telemetry; //监测的
+    let descriptionsData = data.descriptions; //静态的
     attrData.staticData = descriptionsData;
-    attrData.monitorSequenceData = [];
-    attrData.monitorJSONbodyData = [];
+    attrData.monitorSequenceData = []; // 监测散点的
+    attrData.monitorJSONbodyData = []; // 监测结构体的
     telemetryData.forEach((item: any) => {
       if (monitorSeqAttr.includes(item.code)) {
         attrData.monitorSequenceData.push(item);
       }
       if (monitorJSONbodyAttr.includes(item.code)) {
+        item.value = '{"name":"张三","age":12}';
+        try {
+          item.value = JSON.parse(item.value);
+          item.valueType = "object";
+        } catch (error) {
+          item.value = item.value;
+          item.valueType = "string";
+        }
         attrData.monitorJSONbodyData.push(item);
       }
     });
   }
   // 获取监测线性数据
+  getMonitorLine();
+};
+
+// 获取监测线性数据
+const getMonitorLine = async () => {
+  if (!attrData.monitorLineAttr.length) return;
   const lineRes: any = await lineRealTimeCurveApi({
-    equipCode: code,
-    attributes: monitorLineAttr.join(",")
+    equipCode: equipInfo.value.code,
+    attributes: attrData.monitorLineAttr.join(",")
   });
   if (lineRes.code === 200) {
-    attrData.monitorLineData = lineRes.data;
+    let data = lineRes.data;
+    nextTick(() => {
+      lineChartRef.value.setOption({
+        xAxis: {
+          name: data.curves[0]?.name || "时间"
+        },
+        yAxis: {
+          name: ""
+        },
+        series: [
+          {
+            data: data.curves[0]?.values || []
+          }
+        ]
+      });
+    });
   }
+};
+
+// 不同动作所做的事情
+const onAction = (actionType: number) => {
+  console.log(actionType);
 };
 
 defineExpose({
@@ -332,6 +310,7 @@ defineExpose({
       font-size: 14px;
       .list-item {
         display: flex;
+        width: 46%;
         padding-bottom: 12px;
         line-height: 23px;
         .label {
@@ -339,7 +318,7 @@ defineExpose({
           color: var(--el-text-color-regular);
         }
         .value {
-          width: 300px;
+          width: 40%;
           margin-left: 10px;
           color: var(--el-text-color-primary);
         }
@@ -382,20 +361,33 @@ defineExpose({
       }
     }
     .monitor-curve-data {
+      height: 400px;
       margin-top: 10px;
     }
     .monitor-jsonbody-data {
       margin-top: 10px;
+      .desc-list {
+        width: 88%;
+        margin-top: 10px;
+      }
+      ::v-deep(.desc-item) {
+        font-size: 14px;
+      }
+      ::v-deep(.desc-label-item) {
+        width: 100px;
+        font-size: 14px;
+      }
     }
     .link-config {
       margin-top: 10px;
     }
   }
 }
-.popup-custom-box {
-  width: 860px;
-}
 .popup-box {
   width: 450px;
+}
+.popup-custom-box {
+  width: 800px;
+  min-height: 400px;
 }
 </style>
