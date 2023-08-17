@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.33
+
+### Patch Changes
+
+- f 修复归轨迹回放 圈数据
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.33
+
 ## 1.0.32
 
 ### Patch Changes
