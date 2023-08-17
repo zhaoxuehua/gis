@@ -104,12 +104,7 @@
         </el-form-item>
         <el-form-item label="轨迹搜索类型" prop="trackSearchId">
           <el-select v-model="form.trackSearchId" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
-            <el-option
-              v-for="(item, index) in trackSearchList.data"
-              :key="index"
-              :label="item.name"
-              :value="item.code"
-            ></el-option>
+            <el-option v-for="(item, index) in trackSearchList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="比例尺单位" prop="scaleLineUnit" v-if="form.displayControlIds.includes('scaleLine')">
@@ -121,6 +116,9 @@
               :value="item.code"
             ></el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="是否可编辑" prop="isEdit">
+          <el-checkbox v-model="form.isEdit" style="width: 200px"></el-checkbox>
         </el-form-item>
         <el-form-item
           label="电子地图URL"
@@ -138,9 +136,6 @@
         </el-form-item>
         <el-form-item label="路网叠加层URL" prop="overlayUrl" v-if="form.displayControlIds.includes('showOverlay')">
           <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
-        </el-form-item>
-        <el-form-item label="是否可编辑" prop="isEdit">
-          <el-checkbox v-model="form.isEdit" style="width: 200px"></el-checkbox>
         </el-form-item>
       </el-form>
       <template #footer>

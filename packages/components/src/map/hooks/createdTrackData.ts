@@ -65,6 +65,7 @@ const createdTrackData = function (param: trackLayerParamType) {
     const extendsData = {
       labelInfo: currData.labelInfo,
       detailInfo: currDataDetailInfo,
+      titleInfo: currData.titleInfo,
       color,
       dotted // true:虚线  false:实线
     };
@@ -373,7 +374,7 @@ const createdTrackData = function (param: trackLayerParamType) {
     });
 
     // circle
-    trackLineLabelFeatureArr.forEach((val, index) => {
+    trackLineCircleFeatureArr.forEach((val, index) => {
       drawAnimation(val, index, "trackLineCircle");
     });
   }

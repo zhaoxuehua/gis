@@ -33,6 +33,7 @@
               ></el-option>
             </el-select>
           </el-form-item>
+
           <!-- 查询模式是图形时才有框选模式 -->
           <el-form-item label="框选模式" prop="boxSelectMode" v-if="query.params.selectMode == 'shape'">
             <el-radio-group v-model="query.params.boxSelectMode">
@@ -40,6 +41,7 @@
               <el-radio label="Polygon">多边形</el-radio>
             </el-radio-group>
           </el-form-item>
+
           <!-- 查询模式是面标签类型（选择该类型下的标签） -->
           <el-form-item
             :label="state.selectLabelTypeName"
@@ -383,6 +385,21 @@ onMounted(() => {});
     .table-box {
       height: 350px;
       overflow-y: auto;
+      .pagination-container-gis {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0;
+        margin: 0;
+        .el-pagination__sizes {
+          margin: 0 0 0 16px !important;
+        }
+        .pagination-container-gis .el-pagination {
+          position: absolute;
+          right: 0;
+        }
+      }
     }
   }
   .operate-icon {
