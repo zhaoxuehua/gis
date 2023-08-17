@@ -1,10 +1,18 @@
 # adm-gis-platform
 
+## 1.0.34
+
+### Patch Changes
+
+- 轨迹回放要素增加扩展字段
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.34
+
 ## 1.0.33
 
 ### Patch Changes
 
-- 增加轨迹配置+弹框
+- f 修复归轨迹回放 圈数据
 - Updated dependencies
   - @adm-gis-ui/components@1.0.33
 
