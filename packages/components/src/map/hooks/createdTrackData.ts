@@ -373,7 +373,7 @@ const createdTrackData = function (param: trackLayerParamType) {
     });
 
     // circle
-    trackLineLabelFeatureArr.forEach((val, index) => {
+    trackLineCircleFeatureArr.forEach((val, index) => {
       drawAnimation(val, index, "trackLineCircle");
     });
   }
