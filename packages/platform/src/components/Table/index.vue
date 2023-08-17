@@ -10,6 +10,7 @@
         </div>
       </div>
       <el-table
+        ref="tableRef"
         border
         stripe
         highlight-current-row
@@ -75,7 +76,7 @@
   </div>
 </template>
 <script setup lang="ts" name="Table">
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { ColumnItem, Pagination } from "./interface/index";
 interface Props {
   data: any[];
@@ -129,6 +130,9 @@ const state = reactive({
   currentPage: initPagination.page,
   currentPageSize: initPagination.pageSize
 });
+
+const tableRef = ref();
+
 const handleSelectionChange = (val: any[]) => {
   emit("selectionChange", val);
 };
@@ -147,6 +151,14 @@ const handleTableCurrentChange = (currentRow: any, oldCurrentRow: any) => {
 const handleCellClick = (row: any, column: any, cell: any, event: any) => {
   emit("cellClick", row, column, cell, event);
 };
+
+const toggleRowSelection = (row: any, selected: any) => {
+  tableRef.value.toggleRowSelection(row, selected);
+};
+
+defineExpose({
+  toggleRowSelection
+});
 </script>
 <style lang="scss" scoped>
 .table {

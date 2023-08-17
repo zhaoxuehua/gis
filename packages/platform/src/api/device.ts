@@ -24,3 +24,7 @@ export function getTreeData(params: any) {
 export function deviceEquipList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
 }
+
+export function objTypeList(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/equip/visitObjectType/list${queryString}`, params);
+}

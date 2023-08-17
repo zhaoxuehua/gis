@@ -10,6 +10,10 @@ export function deviceEquipList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
 }
 
+export function eventListByObjType(id: number | string) {
+  return request.get(`/api/equipment-service/equip/visitObject/events/${id}`);
+}
+
 // 左键弹窗 获取设备数据
 export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);
@@ -27,5 +31,5 @@ export function lineRealTimeCurveApi(params: object) {
 
 // 左键弹窗 查看配置属性
 export function labelDetailAttr(equipTypeId: number, currentType: string) {
-  return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
+  return request.get(`/api/gis-service-zhk/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
 }
