@@ -277,11 +277,7 @@ importers:
   packages/platform:
     dependencies:
       '@adm-gis-ui/components':
-<<<<<<< HEAD
-        specifier: workspace:^1.0.33
-=======
-        specifier: workspace:^1.0.34
->>>>>>> 08d94223bf771d72ba141d349f2748d21857c933
+        specifier: workspace:^1.0.35
         version: link:../components
       '@element-plus/icons-vue':
         specifier: ^2.1.0
