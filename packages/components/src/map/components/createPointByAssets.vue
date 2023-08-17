@@ -105,7 +105,7 @@ const query = ref({
   }
 });
 const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: query.value.params.pageNumber, limit: val });
+  query.value.getPagination({ page: 1, limit: val });
 };
 
 const handleCurrentChange = (val: any) => {

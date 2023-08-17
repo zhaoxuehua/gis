@@ -94,7 +94,7 @@
             <template #default="scope">
               <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)"></Icon>
               <Icon src="Switch" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)"></Icon>
-              <Icon src="Download" :size="14" class="operate-icon" @click="downloadTrackInfo(scope.row)"></Icon>
+              <!-- <Icon src="Download" :size="14" class="operate-icon" @click="downloadTrackInfo(scope.row)"></Icon> -->
             </template>
           </el-table-column>
         </el-table>
@@ -191,7 +191,7 @@ const query = ref({
   }
 });
 const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: query.value.params.pageNumber, limit: val });
+  query.value.getPagination({ page: 1, limit: val });
 };
 
 const handleCurrentChange = (val: any) => {
@@ -283,9 +283,9 @@ const toLocation = (row: { [key: string]: any }) => {
 const trackPlayBack = (row: { [key: string]: any }) => {
   console.log(row, 2);
 };
-const downloadTrackInfo = (row: { [key: string]: any }) => {
-  console.log(row, 3);
-};
+// const downloadTrackInfo = (row: { [key: string]: any }) => {
+//   console.log(row, 3);
+// };
 
 // 筛选出标签类型是面的
 watch(
