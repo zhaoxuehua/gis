@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.33
+
+### Patch Changes
+
+- 增加轨迹配置+弹框
+
 ## 1.0.32
 
 ### Patch Changes
