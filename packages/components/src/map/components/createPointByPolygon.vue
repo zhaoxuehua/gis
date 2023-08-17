@@ -202,7 +202,7 @@ const query = ref<{ [key: string]: any }>({
 });
 
 const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: query.value.pageNo, limit: val });
+  query.value.getPagination({ page: 1, limit: val });
 };
 
 const handleCurrentChange = (val: any) => {

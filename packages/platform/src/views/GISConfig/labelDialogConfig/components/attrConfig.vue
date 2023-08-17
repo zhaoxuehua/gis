@@ -16,9 +16,14 @@
   <div class="attr-config">
     <Table class="attr-table" title="" v-loading="state.loading" :data="tableData" :columns="tableColumns" :is-pageable="false">
       <template #action="scope">
-        <el-button v-if="scope.row.attributeType === 10" type="primary" text @click="onJsonEdit(scope.row.attributeId)"
-          >编辑</el-button
+        <el-button
+          v-if="scope.row.attributeType === 10"
+          type="primary"
+          text
+          @click="onJsonEdit(scope.row.attributeId, scope.$index)"
         >
+          编辑
+        </el-button>
         <el-button type="primary" text @click="onDelete(scope.row.attributeId, scope.$index)">删除</el-button>
       </template>
     </Table>
@@ -27,6 +32,7 @@
     <Table
       ref="jsonTableRef"
       class="json-table"
+      row-key="tempId"
       :data="state.JsonBodyData"
       :columns="jsonBodyColumns"
       default-expand-all
@@ -62,7 +68,8 @@ const state = reactive({
   activeAttr: "static",
   dialogVisible: false,
   selectJSONBody: [],
-  JsonBodyData: []
+  JsonBodyData: [],
+  editJSONbodyIndex: 0
 });
 
 const tableData: any = ref([]);
@@ -125,13 +132,28 @@ const onAttrConfigAdd = () => {
   addAttrRef.value.onOpen();
 };
 
-const onJsonEdit = async (id: number) => {
+const onJsonEdit = async (id: number, index: number) => {
   state.dialogVisible = true;
-
+  state.editJSONbodyIndex = index;
   const res: any = await getAllJSONbodyApi(id);
   if (res.code === 200) {
     state.JsonBodyData = res.data;
-    jsonTableRef.value?.toggleRowSelection(state.JsonBodyData[0], true);
+    nextTick(() => {
+      // 没选属性  根元素必选
+      const checkedConfig = tableData.value[state.editJSONbodyIndex]?.attributeJsonConfig;
+      console.log(checkedConfig);
+      console.log(state.JsonBodyData);
+      const root: any = state.JsonBodyData.filter((item: any) => item.field === "root")?.[0] || {};
+      jsonTableRef.value?.toggleRowSelection(root, true);
+      root.children?.forEach((item: any) => {
+        jsonTableRef.value?.toggleRowSelection(item, false);
+      });
+      const checkedroot: any = checkedConfig.filter((item: any) => item.field === "root")?.[0] || {};
+      checkedroot.children?.forEach((item: any) => {
+        const sameChild = root.children.find((rchild: any) => rchild.tempId === item.tempId);
+        sameChild && jsonTableRef.value?.toggleRowSelection(sameChild, true);
+      });
+    });
   }
 };
 
@@ -153,16 +175,28 @@ const onDelete = (id: number, index: number) => {
 };
 const handleSelectionChange = (val: any) => {
   console.log(val);
-  state.selectJSONBody = val;
+  const getTree: any = (list: any[], parent: any) => {
+    let children = list.filter(item => (item.parent || null) === parent);
+    return children.map((item: any) => {
+      return {
+        ...item,
+        children: getTree(list, item.tempId)
+      };
+    });
+  };
+  const tree = getTree(val, null);
+  console.log(tree);
+  state.selectJSONBody = tree;
 };
 const onClose = () => {
   state.dialogVisible = false;
 };
 const onConfirm = async () => {
-  return;
   const res: any = await updateJSONBody(state.selectJSONBody);
   if (res.code === 200) {
     state.dialogVisible = false;
+    ElMessage.success("结构体配置成功");
+    tableData.value[state.editJSONbodyIndex].attributeJsonConfig = state.selectJSONBody;
   }
 };
 defineExpose({

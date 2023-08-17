@@ -24,14 +24,15 @@
               <li v-for="item in attrData.monitorSequenceData" :key="item.code" class="list-item">
                 <span class="label">{{ item.name }}{{ item.unit ? `(${item.unit})` : "" }}</span>
                 <span class="value">{{ item.value }}</span>
-                <span class="time">2023-08-05 16:23:12</span>
+                <span class="time">{{ currentTime }}</span>
               </li>
             </ul>
           </div>
           <lineChart class="monitor-curve-data" ref="lineChartRef" v-if="attrData.monitorLineAttr.length"></lineChart>
           <div class="monitor-jsonbody-data">
             <div v-for="item in attrData.monitorJSONbodyData" :key="item.code">
-              <el-descriptions class="desc-list" :title="item.name" v-if="item.valueType === 'object'" :column="2" :border="true">
+              <div class="title">{{ item.name }}</div>
+              <el-descriptions class="desc-list" title="" :column="2" :border="true" v-if="item.valueType === 'object'">
                 <el-descriptions-item
                   v-for="(value, key) in item.value"
                   :key="key"
@@ -98,6 +99,8 @@ const equipInfo = ref({
   isVisitObject: false
 });
 
+const currentTime = ref("");
+
 // 获取设备数据
 const getDataFromAttr = (equipCodes: string, attributes: string) => {
   return new Promise(async (resolve, reject) => {
@@ -105,9 +108,9 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
       equipCodes, // 设备编码集合
       attributes,
       isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
-      isVisitObject: false, // 是否是外部对象（船）
+      isVisitObject: equipInfo.value.isVisitObject, // 是否是外部对象（船）
       isLineData: false, // 是否线性数据--数据类型
-      dataTime: dayjs().format("YYYY-MM-DD HH:mm:ss"), //数据时间，针对具体时间
+      dataTime: currentTime.value, //数据时间，针对具体时间
       tenantId: 1 // 租户
     });
     if (res.code === 200) {
@@ -150,12 +153,13 @@ const lineChartRef = ref();
 
 // 获取左键配置信息
 const getLabelDialogConfigInfo = async (relationMap: any) => {
-  if (!relationMap) {
+  if (!Object.keys(relationMap || {}).length) {
     isRelationBody.value = false;
     return;
   }
   isRelationBody.value = true;
   console.log(relationMap);
+  currentTime.value = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { equipType, code, isVisitObject = false } = relationMap || {};
   equipInfo.value = {
     equipType,
@@ -191,12 +195,12 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
         attrData.monitorSequenceData.push(item);
       }
       if (monitorJSONbodyAttr.includes(item.code)) {
-        item.value = '{"name":"张三","age":12}';
+        item.value = '[{"name":"张三","age":12}]';
         try {
           item.value = JSON.parse(item.value);
           item.valueType = "object";
         } catch (error) {
-          item.value = item.value;
+          // item.value = item.value;
           item.valueType = "string";
         }
         attrData.monitorJSONbodyData.push(item);
@@ -219,16 +223,17 @@ const getMonitorLine = async () => {
     nextTick(() => {
       lineChartRef.value.setOption({
         xAxis: {
-          name: data.curves[0]?.name || "时间"
+          name: data.curves[0]?.name
         },
         yAxis: {
           name: ""
         },
-        series: [
-          {
-            data: data.curves[0]?.values || []
-          }
-        ]
+        series: data.curves.map((item: any) => {
+          return {
+            ...item,
+            data: item.values
+          };
+        })
       });
     });
   }
@@ -310,7 +315,7 @@ defineExpose({
       font-size: 14px;
       .list-item {
         display: flex;
-        width: 46%;
+        width: 33%;
         padding-bottom: 12px;
         line-height: 23px;
         .label {
@@ -379,7 +384,7 @@ defineExpose({
       }
     }
     .link-config {
-      margin-top: 10px;
+      margin-top: 20px;
     }
   }
 }

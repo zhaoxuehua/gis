@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- 纠错扩展（）轨迹回放取错字段
+- 修复翻页问题
 - Updated dependencies
   - @adm-gis-ui/components@1.0.35
 
