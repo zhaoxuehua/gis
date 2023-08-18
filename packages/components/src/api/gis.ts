@@ -68,14 +68,14 @@ export function gisTrackList(queryString: string, params: object) {
 
 // 点击关注
 export function addAttentionApi(params: object) {
-  return request.post(`/api/gis-service/object/attentionList`, params);
+  return request.post(`/api/equipment-service/object/attentionList`, params);
 }
 
 // 关注列表
 export function getAttentionList(params: object) {
-  return request.post(`/api/gis-service/object/attentionList/list`, params);
+  return request.post(`/api/equipment-service/object/attentionList/list`, params);
 }
 // 取消关注
 export function deleteAttentionApi(ids: string) {
-  return request.delete(`/api/gis-service/object/attentionList/remove/${ids}`);
+  return request.delete(`/api/equipment-service/object/attentionList/remove/${ids}`);
 }

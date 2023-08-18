@@ -61,11 +61,11 @@ const columns = [
     type: "selection"
   },
   {
-    label: "MMSI号",
+    label: "对象编码",
     prop: "code"
   },
   {
-    label: "船名",
+    label: "对象名称",
     prop: "name"
   },
   {
@@ -126,7 +126,6 @@ watch(
   height: 500px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-
   .title-box {
     display: flex;
     align-items: center;
@@ -143,10 +142,10 @@ watch(
     }
   }
   .content-box {
-    flex: 1;
-    padding: 20px;
     display: flex;
+    flex: 1;
     flex-direction: column;
+    padding: 20px;
   }
   .attention-table {
     flex: 1;
