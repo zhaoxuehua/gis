@@ -102,7 +102,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="轨迹搜索类型" prop="trackSearchId">
+        <el-form-item label="显示外部对象类型" prop="trackSearchId">
           <el-select v-model="form.trackSearchId" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
             <el-option v-for="(item, index) in trackSearchList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>

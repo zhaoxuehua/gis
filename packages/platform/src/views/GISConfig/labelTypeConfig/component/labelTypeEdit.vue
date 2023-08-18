@@ -297,14 +297,20 @@ const defaultParam = {
   name: "",
   layerConfigId: "",
 
-  attribute: null, // 关联属性
-  attributeId: 0, // 关联属性id
+  // 物理、逻辑的设备类型及属性传参
   equipType: null, // 设备类型 {}
   equipTypeId: 0, // 设备类型id 1441
-  referenceValue: "", //  json string  属性类型及选择值
-  referenceValueReal: "", // 属性值
 
-  referenceObject: null, // 配置的关联对象
+  attribute: null, // 关联属性对象
+  attributeId: 0, // 关联属性id（取值attribute中的extendAttribute）
+  referenceValue: "", //  json string  属性类型及选择值（type为select是需要该字段）
+  referenceValueReal: "", // 属性值（属性绑定的值即用户输入的值）
+
+  // 外部对象的传参
+  isVisitObject: null,
+
+  // 其他关联对象的传参数
+  referenceObject: null, // 配置的关联对象（自定义的关联对象，例如除设备关联外的其他 是一个表格行数据）
 
   isDefaultDisplayLabelName: false, // 默认展示标签名称
   isHang: true, // 是否挂载标签树
@@ -345,6 +351,7 @@ let form = ref<
     animationSetting: string;
     referenceObject: any;
     trackLineStyle: any;
+    isVisitObject?: any;
   }
 >(defaultParam);
 
@@ -490,12 +497,21 @@ const onRefrenceClick = () => {
   }
 };
 
-// 确认关联回调
-const onReferenceChange = (equipType: { [key: string]: any }, equipAttribute: { [key: string]: any }) => {
+// 确认关联回调（设备类型行（一定有） 设备属性行（不一定）  是物理逻辑还是外部）
+const onReferenceChange = (
+  equipType: { [key: string]: any },
+  equipAttribute: { [key: string]: any },
+  isLogical?: number | string
+) => {
+  if (isLogical == 3) {
+    form.value.isVisitObject = true;
+  } else {
+    form.value.isVisitObject = false;
+  }
   form.value.equipType = { ...equipType };
   form.value.equipTypeId = equipType.id;
 
-  // 如果有设备属性
+  // 如果有设备属性对象
   if (equipAttribute) {
     const { type, bindValue, option, extendAttribute } = equipAttribute;
     let selectedValue = bindValue;

@@ -64,7 +64,7 @@ export function gisDeviceEquipList(queryString: string, params: object) {
 // 白名单
 // 获取白名单列表
 export function getWhiteList(queryString: string, params: object) {
-  return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
+  return request.post(`/api/gis-service/object/whitelist/list${queryString}`, params);
 }
 
 // 编辑白名单
@@ -79,7 +79,7 @@ export function whiteListAdd(params: object) {
 
 // 删除白名单
 export function whiteListDelete(id: number) {
-  return request.delete(`/api/equipment-service/equip/equip/${id}`);
+  return request.delete(`/api/gis-service/object/whitelist/remove/${id}`);
 }
 
 // 轨迹回放
