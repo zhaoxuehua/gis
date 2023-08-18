@@ -187,6 +187,14 @@ watch(currentEquipTypeId, newVal => {
   }
 });
 
+// 变更左侧tab清空属性列表
+watch(
+  () => props.isLogical,
+  () => {
+    attributeList.value.data = [];
+  }
+);
+
 defineExpose({
   getSelectAttribute
 });

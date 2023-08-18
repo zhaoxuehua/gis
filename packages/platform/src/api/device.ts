@@ -17,7 +17,7 @@ export function objTypeList(queryString: string, params: object) {
 }
 // 根据外部对象获取属性接口
 export function getBindAttributeByObjType(params: string | number) {
-  return request.get(`/api/equipment-service/equip/visitObjectType/getBindAttribute/description/${params}`);
+  return request.get(`/api/equipment-service/equip/visitObject/description/${params}/true`);
 }
 
 // 关联对象配置查询接口
