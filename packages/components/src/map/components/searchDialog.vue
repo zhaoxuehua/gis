@@ -7,7 +7,7 @@
     </el-input>
     <el-scrollbar>
       <ul class="label-select" v-if="open">
-        <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item.code)">
+        <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
           {{ item.name }}
         </li>
       </ul>
@@ -59,7 +59,7 @@ const table: any = ref({
       return;
     }
     let filteredData = labelAllData.filter((item: any) => {
-      if (displaySearchIds.includes(item.labelType.id)) {
+      if (displaySearchIds.includes(item.labelTypeId)) {
         return true;
       }
       return false;
@@ -67,16 +67,16 @@ const table: any = ref({
     if (inputParam.value) {
       // 根据标签name及code过滤数据
       filteredData = filteredData.filter((item: { [ket: string]: any }) => {
-        return item?.name.includes(inputParam.value) || item?.code.includes(inputParam.value);
+        return item?.name.includes(inputParam.value) || String(item?.code).includes(inputParam.value);
       });
     }
     table.value.data = filteredData;
   },
-  panToFeature: (code: any) => {
+  panToFeature: ({ code, isVisitObject = false }: any) => {
     inputParam.value = code;
     open.value = false;
     // 定位到标签位置
-    labelOnSelect(mapInstance, code, false);
+    labelOnSelect(mapInstance, code, false, isVisitObject);
   },
   showDetails: (row: any) => {
     emits("onEquipDetail", row);

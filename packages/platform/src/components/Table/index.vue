@@ -156,8 +156,13 @@ const toggleRowSelection = (row: any, selected: any) => {
   tableRef.value.toggleRowSelection(row, selected);
 };
 
+const clearSelection = () => {
+  tableRef.value.clearSelection();
+};
+
 defineExpose({
-  toggleRowSelection
+  toggleRowSelection,
+  clearSelection
 });
 </script>
 <style lang="scss" scoped>

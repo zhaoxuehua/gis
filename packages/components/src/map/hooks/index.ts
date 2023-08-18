@@ -12,6 +12,7 @@ import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, getGeometryCenter, getCoordinate, getLonLatCoordinate } from "./createGeometry.js";
 import { createStyle, clusterLayerStyle, selectBoxStyle } from "./styleFunction.js";
+import { fromLonLat } from "ol/proj";
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
 export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: Function) {
@@ -293,18 +294,32 @@ export function transformLabelType(originalData: LabelType) {
 }
 
 // 标签树、导航树选中label(是标签树或导航树的点击还是地图上的点击)
-export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean) {
+export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isVisitObject?: boolean) {
   if (!map || !featureCode) {
     return;
   }
   let gisStore = useGisStore();
-  let labelInfoMap = map?.get("labelInfoMap") || {};
-  let labelInfo = labelInfoMap[featureCode];
+
+  let labelInfo: any;
+  if (!isVisitObject) {
+    let labelInfoMap = map?.get("labelInfoMap") || {};
+    labelInfo = labelInfoMap[featureCode];
+  } else {
+    let labelInfoMap = map?.get("trackInfoMap") || [];
+    labelInfo = labelInfoMap.filter((item: any) => item.code === featureCode)?.[0] || {};
+  }
+
   // 点击的不是要绘制节点
   if (!labelInfo) {
     return;
   }
-  let layer = map?.get("layerMap")[labelInfo.refLayer?.code];
+  let layer = null;
+  if (!isVisitObject) {
+    layer = map?.get("layerMap")[labelInfo.refLayer?.code];
+  } else {
+    layer = map?.get("layerMap")[labelInfo.layerCode];
+  }
+
   const minZoom = Math.ceil(layer.getMinZoom()); // 图层最小层级
   const maxZoom = Math.floor(layer.getMaxZoom()); // 图层最大层级
   const currentZoom = map.getView().getZoom(); // 当前视图层级
@@ -313,9 +328,15 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   if (minZoom <= currentZoom && currentZoom <= maxZoom) {
     zoom = currentZoom;
   }
+
   let center = null;
-  const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
-  center = getGeometryCenter(labelData);
+  if (!isVisitObject) {
+    const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
+    center = getGeometryCenter(labelData);
+  } else {
+    center = fromLonLat([labelInfo.lon, labelInfo.lat]);
+  }
+
   // 对标签、导航树要素定位
   if (!isFeatureClick) {
     map.getView().animate({
