@@ -115,10 +115,11 @@
 <script lang="ts" setup name="ReferenceAttribute">
 import { onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
-import { getBindAttributeByEquipType } from "@/api/device.js";
+import { getBindAttributeByEquipType, getBindAttributeByObjType } from "@/api/device.js";
 
 const props = defineProps({
-  equipTypeList: Array<any>
+  equipTypeList: Array<any>,
+  isLogical: Number
 });
 
 const currentEquipTypeId = ref();
@@ -135,11 +136,22 @@ const attributeList = ref({
   // 根据选择的类型查询属性列表
   fetchData: async () => {
     attributeList.value.loading = true;
-    const res: { [key: string]: any } = await getBindAttributeByEquipType(currentEquipTypeId.value);
-    if (res.code === 200 && res.data) {
-      attributeList.value.data = res.data;
+
+    if (props.isLogical == 1 || props.isLogical == 2) {
+      const res: { [key: string]: any } = await getBindAttributeByEquipType(currentEquipTypeId.value);
+      if (res.code === 200 && res.data) {
+        attributeList.value.data = res.data;
+      } else {
+        ElMessage.error("接口异常");
+      }
     } else {
-      ElMessage.error("接口异常");
+      // 根据外部对象获取属性
+      const res: { [key: string]: any } = await getBindAttributeByObjType(currentEquipTypeId.value);
+      if (res.code === 200 && res.data) {
+        attributeList.value.data = res.data;
+      } else {
+        ElMessage.error("接口异常");
+      }
     }
     attributeList.value.loading = false;
   },

@@ -505,6 +505,7 @@ const initMap = async (mapId: string | number) => {
       }
     });
     map.set("labelTypeMap", labelTypeMap);
+    map.set("featureTypeGroup", featureTypeGroup);
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
       ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])

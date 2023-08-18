@@ -287,7 +287,7 @@ const trackPlayBack = (row: { [key: string]: any }) => {
 //   console.log(row, 3);
 // };
 
-// 筛选出标签类型是面的
+// 筛选出标签类型是面的(面 矩形)
 watch(
   () => isShow.value,
   isShowVal => {
@@ -300,8 +300,8 @@ watch(
         }
       ];
       Object.values(labelTypeMap)?.forEach((obj: any) => {
-        // 过滤出标签类型是面的 面 圆 矩形
-        if (obj?.dataType == "3" || obj?.dataType == "4" || obj?.dataType == "5") {
+        // 过滤出标签类型是面的 面  矩形
+        if (obj?.dataType == "3" || obj?.dataType == "5") {
           labelTypeArr.push({
             code: obj.code,
             name: obj.name

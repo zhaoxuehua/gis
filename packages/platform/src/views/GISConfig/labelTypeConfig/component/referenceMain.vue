@@ -49,6 +49,7 @@
             <el-tab-pane :label="isLogical == 1 || isLogical == 2 ? '设备属性' : '对象属性'" name="equipAttribute">
               <ReferenceAttribute
                 ref="referenceAttributeRef"
+                :isLogical="isLogical"
                 :equip-type-list="equipTypeList.data"
                 @attribute-change="onAttributeChange"
               ></ReferenceAttribute>
@@ -68,7 +69,7 @@ import { deviceTypeList, objTypeList } from "@/api/device.js";
 import ReferenceAttribute from "./referenceAttribute.vue";
 
 const emit = defineEmits(["referenceChange"]);
-// 物理设备 or 逻辑设备
+// 物理设备 or 逻辑设备 or 外部对象
 const isLogical = ref<number>(1);
 
 const logicalChange = (value: number) => {

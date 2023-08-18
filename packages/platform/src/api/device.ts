@@ -11,6 +11,15 @@ export function getBindAttributeByEquipType(params: string | number) {
   return request.get(`/api/equipment-service/equip/equip/description/getByType/${params}/true`);
 }
 
+// 外部对象类型列表
+export function objTypeList(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/equip/visitObjectType/list${queryString}`, params);
+}
+// 根据外部对象获取属性接口
+export function getBindAttributeByObjType(params: string | number) {
+  return request.get(`/api/equipment-service/equip/visitObjectType/getBindAttribute/description/${params}`);
+}
+
 // 关联对象配置查询接口
 // 查询动态表单数据
 export function queryDynamicForm(params: any) {
@@ -28,8 +37,4 @@ export function getTreeData(params: any) {
 
 export function deviceEquipList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
-}
-
-export function objTypeList(queryString: string, params: object) {
-  return request.post(`/api/equipment-service/equip/visitObjectType/list${queryString}`, params);
 }
