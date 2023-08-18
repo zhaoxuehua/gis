@@ -44,7 +44,7 @@
 <script lang="ts" setup name="jsonBody">
 import { reactive, watch } from "vue";
 // import { jsonbodyData, jsonbodyMap } from "./popupmock";
-import Table from "../../../../../platform/src/components/Table/index.vue";
+import Table from "../Table/index.vue";
 
 const props = defineProps({
   jsonbodyData: Array<any>,
