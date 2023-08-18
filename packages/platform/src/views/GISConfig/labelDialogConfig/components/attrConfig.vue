@@ -29,6 +29,11 @@
     </Table>
   </div>
   <el-dialog title="编辑" v-model="state.dialogVisible" class="el-dialog-default">
+    <span class="label">展示方式</span>
+    <el-select v-model="state.tile">
+      <el-option label="平铺展示" :value="true" key="flat"></el-option>
+      <el-option label="表格展示" :value="false" key="table"></el-option>
+    </el-select>
     <Table
       ref="jsonTableRef"
       class="json-table"
@@ -69,7 +74,8 @@ const state = reactive({
   dialogVisible: false,
   selectJSONBody: [],
   JsonBodyData: [],
-  editJSONbodyIndex: 0
+  editJSONbodyIndex: 0,
+  tile: true
 });
 
 const tableData: any = ref([]);
@@ -141,8 +147,7 @@ const onJsonEdit = async (id: number, index: number) => {
     nextTick(() => {
       // 没选属性  根元素必选
       const checkedConfig = tableData.value[state.editJSONbodyIndex]?.attributeJsonConfig;
-      console.log(checkedConfig);
-      console.log(state.JsonBodyData);
+      state.tile = checkedConfig?.tile || true;
       const root: any = state.JsonBodyData.filter((item: any) => item.field === "root")?.[0] || {};
       jsonTableRef.value?.toggleRowSelection(root, true);
       root.children?.forEach((item: any) => {
@@ -174,29 +179,28 @@ const onDelete = (id: number, index: number) => {
   });
 };
 const handleSelectionChange = (val: any) => {
-  console.log(val);
-  const getTree: any = (list: any[], parent: any) => {
-    let children = list.filter(item => (item.parent || null) === parent);
-    return children.map((item: any) => {
-      return {
-        ...item,
-        children: getTree(list, item.tempId)
-      };
-    });
-  };
-  const tree = getTree(val, null);
-  console.log(tree);
-  state.selectJSONBody = tree;
+  state.selectJSONBody = val;
 };
 const onClose = () => {
   state.dialogVisible = false;
 };
+const getTree: any = (list: any[], parent: any) => {
+  let children = list.filter(item => (item.parent || null) === parent);
+  return children.map((item: any) => {
+    return {
+      ...item,
+      tile: state.tile,
+      children: getTree(list, item.tempId)
+    };
+  });
+};
 const onConfirm = async () => {
-  const res: any = await updateJSONBody(state.selectJSONBody);
+  const tree = getTree(state.selectJSONBody, null);
+  const res: any = await updateJSONBody(tree);
   if (res.code === 200) {
     state.dialogVisible = false;
     ElMessage.success("结构体配置成功");
-    tableData.value[state.editJSONbodyIndex].attributeJsonConfig = state.selectJSONBody;
+    tableData.value[state.editJSONbodyIndex].attributeJsonConfig = tree;
   }
 };
 defineExpose({
@@ -219,5 +223,9 @@ defineExpose({
 }
 .json-table {
   height: 300px;
+}
+.label {
+  display: inline-block;
+  margin-right: 10px;
 }
 </style>

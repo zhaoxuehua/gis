@@ -5,13 +5,11 @@
         <el-button @click.stop="search"><Icon src="Search"></Icon></el-button>
       </template>
     </el-input>
-    <el-scrollbar>
-      <ul class="label-select" v-if="open">
-        <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
-          {{ item.name }}
-        </li>
-      </ul>
-    </el-scrollbar>
+    <ul class="label-select" v-if="open && table.data.length">
+      <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
+        {{ item.name }}
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -70,6 +68,7 @@ const table: any = ref({
         return item?.name.includes(inputParam.value) || String(item?.code).includes(inputParam.value);
       });
     }
+    console.log(filteredData);
     table.value.data = filteredData;
   },
   panToFeature: ({ code, isVisitObject = false }: any) => {
@@ -94,6 +93,8 @@ const table: any = ref({
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--el-border-radius-base);
   box-shadow: var(--el-box-shadow-light);
+  max-height: 260px;
+  overflow: scroll;
   .label-select-item {
     height: 34px;
     padding: 0 32px 0 20px;
