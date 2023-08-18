@@ -152,6 +152,13 @@ const state = reactive({
       component: shallowRef(defineAsyncComponent(() => import("./components/imgLegend.vue")))
     },
     {
+      icon: "iconfont icon-img",
+      label: "关注列表",
+      isShow: false,
+      visible: false,
+      component: shallowRef(defineAsyncComponent(() => import("./components/attentionList.vue")))
+    },
+    {
       icon: "iconfont icon-complex-device",
       label: "白名单",
       isShow: false,
@@ -222,6 +229,9 @@ const getRightData = computed(() => {
         break;
       case "图例":
         item.visible = !!controlList.value.includes("imgLegend");
+        break;
+      case "关注列表":
+        item.visible = !!controlList.value.includes("attentionList");
         break;
       case "白名单":
         item.visible = !!controlList.value.includes("whiteList");
@@ -340,7 +350,8 @@ const initMap = async (mapId: string | number) => {
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
-      trackSearchId: originalData.trackSearchId // 轨迹搜索类型
+      trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
+      trackSearchCode: originalData.trackSearchId // 轨迹搜索类型code
     };
 
     // 全屏控件
@@ -494,6 +505,7 @@ const initMap = async (mapId: string | number) => {
       }
     });
     map.set("labelTypeMap", labelTypeMap);
+    map.set("featureTypeGroup", featureTypeGroup);
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
       ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
