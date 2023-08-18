@@ -26,7 +26,14 @@
     >
     </RightActionBox>
     <!-- 地图点击弹框 -->
-    <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
+    <Popup
+      :data="popupData"
+      @on-close="onScadaClose"
+      ref="popupRef"
+      @scada="handlePopLink"
+      @view="handlePopLink"
+      @track="handlePopLink"
+    >
       <template #customContent v-if="customContent">
         <component :is="customContent"></component>
       </template>
@@ -60,7 +67,7 @@ import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/creat
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
-import Popup from "./components/popup.vue";
+import Popup from "./components/popup/index.vue";
 
 defineOptions({ name: "AgMap" });
 
@@ -78,7 +85,10 @@ const emits = defineEmits([
   "onCloseRightMenu",
   "getClickBoxSelection",
   "getCustomSearchContent",
-  "getInitMapExportData"
+  "getInitMapExportData",
+  "scada",
+  "view",
+  "track"
 ]);
 
 const exportMap = ref<VisualMap>();
@@ -686,9 +696,16 @@ const initMap = async (mapId: string | number) => {
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           // 点击弹窗 获取左键配置信息
-          popupRef.value?.getLabelDialogConfigInfo(
-            gisStore?.relationMap[featureCode] || (currentTrack ? { ...currentTrack, isVisitObject: true } : {})
-          );
+          // popupRef.value?.getLabelDialogConfigInfo({
+          //   code: 4132378,
+          //   lat: 31.361245,
+          //   lon: 120.781788,
+          //   name: "海缆段0001",
+          //   labelTypeId: 54,
+          //   equipType: 16,
+          //   isVisitObject: true
+          // });
+          popupRef.value?.getLabelDialogConfigInfo(gisStore?.relationMap[featureCode] || currentTrack);
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
@@ -793,9 +810,8 @@ const getRelationMap = () => {
   return gisStore?.relationMap;
 };
 
-// 获取船的数据  如果是船 必须调用
-const setTrackInfoMap = (data: any) => {
-  gisStore.setTrackInfoMap(data);
+const handlePopLink = (type: any, option: any) => {
+  emits(type, option);
 };
 
 defineExpose({
@@ -814,8 +830,7 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter,
-  setTrackInfoMap
+  getGeometryCenter
 });
 
 // 监听外部树节点点击

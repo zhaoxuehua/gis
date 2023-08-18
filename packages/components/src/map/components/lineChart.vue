@@ -3,11 +3,11 @@
 </template>
 <script setup lang="ts" name="lineChart">
 import * as echarts from "echarts";
-import { onMounted, ref, nextTick } from "vue";
+import { onMounted, ref } from "vue";
 
 const lineChartRef = ref();
 let myChart: any = null;
-const initOption = () => {
+const initOption = (chartData?: any) => {
   let option = {
     tooltip: {
       trigger: "axis",
@@ -17,13 +17,16 @@ const initOption = () => {
     },
     title: {
       left: "center",
-      text: ""
+      text: chartData?.ordinateName
     },
+    legend: {},
     xAxis: {
-      type: "category",
+      name: chartData?.xAxisName || "",
+      type: chartData?.xAxisType || "category",
       boundaryGap: false
     },
     yAxis: {
+      name: chartData?.yAxisName || "",
       type: "value",
       boundaryGap: [0, "100%"]
     },
@@ -48,28 +51,26 @@ const initOption = () => {
         moveOnMouseMove: true // 鼠标移动能触发数据窗口平移
       }
     ],
-    series: [
-      {
-        name: "Fake Data",
-        type: "line",
-        smooth: true,
-        symbol: "none",
-        areaStyle: {},
-        data: []
-      }
-    ]
+    series:
+      chartData?.data?.map((item: any) => {
+        return {
+          name: item.name,
+          type: "line",
+          data: item.data,
+          smooth: true,
+          symbol: "none"
+        };
+      }) || []
   };
   option && myChart.setOption(option);
 };
-const setOption = (option: any) => {
-  option && myChart.setOption(option);
+const setOption = (chartData: any) => {
+  chartData && initOption(chartData);
 };
 
 onMounted(() => {
   myChart = echarts.init(lineChartRef.value);
-  nextTick(() => {
-    initOption();
-  });
+  initOption();
 });
 defineExpose({
   setOption
