@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.36
+
+### Patch Changes
+
+- q 对接基础组件 s 搜索功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.36
+
 ## 1.0.35
 
 ### Patch Changes
