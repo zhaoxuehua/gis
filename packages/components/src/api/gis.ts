@@ -61,27 +61,6 @@ export function gisDeviceEquipList(queryString: string, params: object) {
   return request.get(`/api/gis-service/equip/2DGis/label/equip${queryString}`, params);
 }
 
-// 白名单
-// 获取白名单列表
-export function getWhiteList(queryString: string, params: object) {
-  return request.post(`/api/gis-service/object/whitelist/list${queryString}`, params);
-}
-
-// 编辑白名单
-export function whiteListEdit(params: object) {
-  return request.put(`/api/equipment-service/equip/equip`, params);
-}
-
-// 新增白名单
-export function whiteListAdd(params: object) {
-  return request.post(`/api/equipment-service/equip/equip`, params);
-}
-
-// 删除白名单
-export function whiteListDelete(id: number) {
-  return request.delete(`/api/gis-service/object/whitelist/remove/${id}`);
-}
-
 // 轨迹回放
 export function gisTrackList(queryString: string, params: object) {
   return request.post(`/api/gis-service/equip/2DGis/label/equip${queryString}`, params);

@@ -29,12 +29,3 @@ export function queryDynamicForm(params: any) {
 export function dynamicTableList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
 }
-
-// 快速创建
-export function getTreeData(params: any) {
-  return request.get(`/api/equipment-service/view/custom/tree/get/${params}`);
-}
-
-export function deviceEquipList(queryString: string, params: object) {
-  return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
-}

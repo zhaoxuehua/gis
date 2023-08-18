@@ -399,6 +399,7 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
     const res: { [key: string]: any } = await getLabelTypeDetail(row.id);
     if (res.code === 200 && res.data) {
       form.value = JSON.parse(JSON.stringify(res.data));
+      form.value.isVisitObject = !!res.data?.reference.includes("VisitObject");
     }
     form.value.id = row.id;
   } else {
