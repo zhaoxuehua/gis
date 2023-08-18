@@ -496,7 +496,7 @@ export function clearSelectedFeature(map: VisualMap) {
 }
 
 // 实现框选
-export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function) {
+export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function, isTrue?: boolean) {
   let boxSelectionSource: any = map?.get("boxSelectionSource");
   let boxSelectionVectorLayer = map?.get("boxSelectionSource");
   let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
@@ -584,14 +584,15 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
           source = layer.getSource();
           if (source instanceof VectorSource) {
             const features = layer.getSource().getFeaturesInExtent(extent);
-
             selectionFeatures.push(...features);
           }
         }
       }
     }
     // 调用方法将要素抛出去应用实现逻辑
-    callback(selectionFeatures);
+    !isTrue && callback(selectionFeatures);
+    isTrue && callback((polygon as any).getCoordinates());
+    boxSelectionDrawInteraction.setActive(false);
   });
 }
 
