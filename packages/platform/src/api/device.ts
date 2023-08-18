@@ -6,6 +6,11 @@ export function deviceTypeList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equipType/list${queryString}`, params);
 }
 
+// 根据设备类型获取属性列表
+export function getBindAttributeByEquipType(params: string | number) {
+  return request.get(`/api/equipment-service/equip/equip/description/getByType/${params}/true`);
+}
+
 // 关联对象配置查询接口
 // 查询动态表单数据
 export function queryDynamicForm(params: any) {

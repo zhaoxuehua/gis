@@ -100,8 +100,8 @@
                 style="width: 200px"
                 :prop="scope.row.name ? scope.row.name : ''"
                 :step="scope.row.step ? scope.row.step : 1"
-                :min="scope.row.minValue ? scope.row.minValue : '-Infinity'"
-                :max="scope.row.maxValue ? scope.row.maxValue : 'Infinity'"
+                :min="scope.row.minValue ? scope.row.minValue : -Infinity"
+                :max="scope.row.maxValue ? scope.row.maxValue : Infinity"
               >
               </el-input-number>
             </template>
@@ -115,13 +115,14 @@
 <script lang="ts" setup name="ReferenceAttribute">
 import { onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
-import { getBindAttributeByEquipType } from "@/api/visconfig.js";
+import { getBindAttributeByEquipType } from "@/api/device.js";
 
 const props = defineProps({
   equipTypeList: Array<any>
 });
 
 const currentEquipTypeId = ref();
+// 选择设备类型(会根据设备类型查对应的属性列表)
 const onEquipTypeChange = (equipType: any) => {
   currentEquipTypeId.value = equipType.id;
 };
@@ -131,6 +132,7 @@ const attributeList = ref({
   loading: false,
   data: [],
   ids: [],
+  // 根据选择的类型查询属性列表
   fetchData: async () => {
     attributeList.value.loading = true;
     const res: { [key: string]: any } = await getBindAttributeByEquipType(currentEquipTypeId.value);
@@ -146,13 +148,13 @@ const attributeList = ref({
       let del_row = selection.shift();
       attributeTableRef.value.toggleRowSelection(del_row, false); // 用于多选表格，切换某一行的选中状态，如果使用了第二个参数，则是设置这一行选中与否（selected 为 true 则选中）
     }
-    attributeList.value.ids = selection.map((item: any) => item.id);
+    attributeList.value.ids = selection.map((item: any) => item.extendAttribute);
   }
 });
 
 const getSelectAttribute = () => {
   if (attributeList.value.ids.length > 0) {
-    const selectionRow: any = attributeList.value.data.find((item: any) => item.id === attributeList.value.ids[0]);
+    const selectionRow: any = attributeList.value.data.find((item: any) => item.extendAttribute === attributeList.value.ids[0]);
 
     if (selectionRow?.bindValue) {
       const equipType = props.equipTypeList?.find((item: any) => item.id === currentEquipTypeId.value);
