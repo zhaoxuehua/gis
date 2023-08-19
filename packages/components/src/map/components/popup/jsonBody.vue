@@ -42,7 +42,7 @@
       </template>
       <template v-else>
         <div class="title">{{ table.name }}</div>
-        <el-empty description="无数据" :image-size="100" />
+        <el-empty description="无数据" :image-size="200" />
       </template>
     </div>
   </div>
@@ -60,6 +60,7 @@ const state = reactive({
   tableBodyData: [] as any
 });
 const handleBodyValue = () => {
+  state.tableBodyData = [];
   props.jsonbodyData?.forEach((item: any) => {
     try {
       item.value = JSON.parse(item.value);

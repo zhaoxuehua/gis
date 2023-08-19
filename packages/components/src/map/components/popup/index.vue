@@ -45,6 +45,7 @@
             <el-button v-for="btn in attrData.linkData" :key="btn.name" type="primary" @click="onAction(btn.buttonType)">{{
               btn.name
             }}</el-button>
+            <el-button v-if="attrData.hasFocusBtn" type="primary" @click="handleFocus">{{ focusMap[focusType] }}</el-button>
           </div>
         </el-scrollbar>
       </div>
@@ -53,16 +54,20 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, nextTick } from "vue";
+import { ref, reactive, nextTick, computed } from "vue";
 import Icon from "../Icon.vue";
 import { getEquipData, lineRealTimeCurveApi, labelDetailAttr } from "../../../api/device";
 import dayjs from "dayjs";
 import lineChart from "../lineChart.vue";
 import jsonBody from "./jsonBody.vue";
+import { ElMessage } from "element-plus";
+import { addAttentionApi, getAttentionList, deleteDialogAttentionApi } from "../../../api/gis.js";
+import type { VisualMap } from "../../type";
 // import { chartData } from "./popupmock";
 
-const props = withDefaults(defineProps<{ data: { [key: string]: any } }>(), {
-  data: () => ({})
+const props = withDefaults(defineProps<{ map: VisualMap | null; data: { [key: string]: any } }>(), {
+  data: () => ({}),
+  map: () => null
 });
 
 const emits = defineEmits(["onClose", "scada", "view", "track"]);
@@ -85,6 +90,7 @@ const attrData: any = reactive({
   monitorLineAttr: [], //监测线性属性code
   monitorJSONbodyData: [], // 监测结构体数据
   linkData: [],
+  hasFocusBtn: false,
   monitorJSONbodyMap: {}
 });
 
@@ -161,12 +167,12 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   console.log(relationMap);
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
-  equipInfo.value = relationMap;
-  // equipInfo.value = {
-  //   equipType: 761,
-  //   code: "tunnel01",
-  //   isVisitObject
-  // };
+  // equipInfo.value = relationMap;
+  equipInfo.value = {
+    equipType: 761,
+    code: "tunnel01",
+    isVisitObject
+  };
   // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
   const currentType = isVisitObject ? "VisitObjectType" : "EquipType";
   // 获取配置的绑定属性
@@ -174,6 +180,11 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   if (detailRes.code !== 200) return;
   configInfo.value = detailRes.data;
   attrData.linkData = configInfo.value?.linkConfig || [];
+  attrData.hasFocusBtn = !!attrData.linkData.find((item: any) => item.buttonType === 3);
+  if (attrData.hasFocusBtn) {
+    attrData.linkData = attrData.linkData.filter((item: any) => item.buttonType !== 3);
+    getFocusStatus();
+  }
   // 获取不同属性的code
   const { staticAttr, monitorSeqAttr, monitorLineAttr, monitorJSONbodyMap } = getDiffAttrCode();
   attrData.monitorLineAttr = monitorLineAttr;
@@ -185,8 +196,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   );
   if (res.code === 200) {
     const data = res.data.items[0];
-    let telemetryData = data.telemetry; //监测的
-    let descriptionsData = data.descriptions; //静态的
+    let telemetryData = data?.telemetry || []; //监测的
+    let descriptionsData = data?.descriptions || []; //静态的
     attrData.staticData = descriptionsData;
     attrData.monitorSequenceData = []; // 监测散点的
     attrData.monitorJSONbodyData = []; // 监测结构体的
@@ -238,13 +249,15 @@ const getMonitorLine = async () => {
 
 // 不同动作所做的事情
 const onAction = (actionType: number) => {
-  console.log(actionType);
   const actionMap: { [key: number]: any } = {
     1: "scada", // 进入组态
-    2: "view", // 全景
-    4: "track" // 轨迹
+    2: "view" // 全景
+    // 4: "track" // 轨迹
   };
-  if (actionType !== 3) {
+  if (actionType === 4) {
+    // 4 // 轨迹
+    onTrack();
+  } else {
     let option = {
       ...equipInfo.value,
       equip: {
@@ -253,13 +266,66 @@ const onAction = (actionType: number) => {
       }
     };
     emits(actionMap[actionType], actionMap[actionType], option);
-  } else {
-    handleFocus();
+  }
+};
+
+const onTrack = () => {};
+
+const focusType = ref(1);
+const focusMap: { [key: string]: string } = {
+  1: "关注",
+  2: "取消关注"
+};
+const trackSearchCode = computed(() => props.map?.defaultOptions.trackSearchCode);
+const getFocusStatus = async () => {
+  const res: any = await getAttentionList(
+    {
+      objectCode: equipInfo.value.code,
+      objectTypeCode: trackSearchCode.value
+    },
+    {
+      params: {
+        pageSize: 1,
+        pageNumber: 100000
+      }
+    }
+  );
+  if (res.code === 200) {
+    focusType.value = res.data.items.length ? 2 : 1;
+  }
+};
+
+const handleFocus = () => {
+  if (focusType.value === 1) {
+    onFocus();
+  }
+  if (focusType.value === 2) {
+    cancelFocus();
   }
 };
 
 // 关注
-const handleFocus = () => {};
+const onFocus = async () => {
+  const res: any = await addAttentionApi({
+    objectCode: equipInfo.value.code,
+    objectTypeCode: trackSearchCode.value
+  });
+  if (res.code === 200) {
+    ElMessage.success("关注成功");
+    focusType.value = 2;
+  }
+};
+// 取消关注
+const cancelFocus = async () => {
+  const res: any = await deleteDialogAttentionApi({
+    objectCode: equipInfo.value.code,
+    objectType: trackSearchCode.value
+  });
+  if (res.code === 200) {
+    ElMessage.success("取消关注成功");
+    focusType.value = 1;
+  }
+};
 
 defineExpose({
   getDOMElement,

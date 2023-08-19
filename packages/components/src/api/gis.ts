@@ -81,3 +81,8 @@ export function getAttentionList(params: object, queryString: object) {
 export function deleteAttentionApi(ids: string) {
   return request.delete(`/api/equipment-service/object/attentionList/remove/${ids}`);
 }
+
+// 弹窗里面的取消关注
+export function deleteDialogAttentionApi({ objectCode, objectType }: any) {
+  return request.delete(`/api/equipment-service/object/attentionList/remove/${objectCode}/${objectType}`);
+}

@@ -27,12 +27,12 @@
     </RightActionBox>
     <!-- 地图点击弹框 -->
     <Popup
+      :map="exportMap"
       :data="popupData"
       @on-close="onScadaClose"
       ref="popupRef"
       @scada="handlePopLink"
       @view="handlePopLink"
-      @track="handlePopLink"
     >
       <template #customContent v-if="customContent">
         <component :is="customContent"></component>
@@ -665,6 +665,20 @@ const initMap = async (mapId: string | number) => {
       if (gisStore?.isEdit) {
         return;
       }
+      // 获取船的数据
+      // const trackInfoMap = map.get("trackInfoMap") || [];
+      // const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+      // 点击弹窗 获取左键配置信息
+      // popupRef.value?.getLabelDialogConfigInfo({
+      //   code: 4132378,
+      //   lat: 31.361245,
+      //   lon: 120.781788,
+      //   name: "海缆段0001",
+      //   labelTypeId: 54,
+      //   equipType: 16,
+      //   isVisitObject: true
+      // });
+      // popupRef.value?.getLabelDialogConfigInfo(gisStore?.relationMap[featureCode] || currentTrack);
       // 需要自定义弹框更新数据时使用此交互，默认true走默认弹框
       const result: any = await props?.onClickFeaturePopup({ featureCode, featureName, relationMap: gisStore?.relationMap });
       if (result) {
