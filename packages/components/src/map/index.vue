@@ -455,7 +455,7 @@ const initMap = async (mapId: string | number) => {
           code: item?.code,
           isTagAgg: item?.isTagAgg,
           isTrackDraw: item?.isTrackDraw,
-          style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
+          style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value) // 是否选中（因为聚合图层的选中单独处理）
         };
       } else {
         options = {
@@ -730,12 +730,6 @@ const initMap = async (mapId: string | number) => {
                 clearTimeout(timer);
                 timer.value = null;
               }, 200);
-              // 清空选中状态
-              timer.value = setTimeout(() => {
-                clearSelectedFeature(exportMap.value);
-                clearTimeout(timer);
-                timer.value = null;
-              }, 3000);
             }
           } else {
             labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isVisitObject); // 选中（还需要判断是否外部对象的选中）

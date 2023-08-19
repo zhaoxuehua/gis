@@ -2,6 +2,7 @@ import { addLabel, deleteLabel } from "../../api/visconfig";
 import { ElMessage } from "element-plus";
 import Draw, { DrawEvent, createBox } from "ol/interaction/Draw";
 import type { Type } from "ol/geom/Geometry";
+import { ref } from "vue";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Circle } from "ol/geom";
@@ -203,7 +204,7 @@ export function removeLabel(label: LabelInfoData, map: any) {
         }
         const feature = source.getFeatureById(label.code);
         source.removeFeature(feature); // 从地图上移除要素
-
+        // 删除标签时编辑弹框需要处于关闭状态，否则删了再关闭会报错（后期优化）
         let labelInfoMap = map?.get("labelInfoMap") || {};
         delete labelInfoMap[label.code];
         map.set("labelInfoMap", labelInfoMap);
@@ -293,6 +294,7 @@ export function transformLabelType(originalData: LabelType) {
   };
 }
 
+const clearSelectFeatureTimer = ref<number>();
 // 标签树、导航树选中label(是标签树或导航树的点击还是地图上的点击)
 export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isVisitObject?: boolean) {
   if (!map || !featureCode) {
@@ -313,7 +315,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   if (!labelInfo) {
     return;
   }
-  let layer = null;
+  let layer: any = null;
   if (!isVisitObject) {
     layer = map?.get("layerMap")[labelInfo.refLayer?.code];
   } else {
@@ -353,27 +355,44 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     clusterDataSource.getFeatures().forEach(function (clusterFeature: any) {
       clusterFeature.get("features").forEach(function (originalFeature: any) {
         if (originalFeature.get("code") === featureCode) {
-          // 设置原始要素的样式以示选中
-          clusterFeature.setStyle((feature: any) => clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, true));
-          clusterFeature.changed();
-          map.set("clusterSelectFeature", clusterFeature);
+          // 分是否外部对象
+          if (isVisitObject) {
+            // 思路获取图层的样式将feature传过去
+            layer?.getStyleFunction()(clusterFeature);
+            console.log("设置外部对象要素选中状态");
+          } else {
+            // 设置原始要素的样式以示选中(这里是给聚合要素设置的样式)
+            clusterFeature.setStyle((feature: any) =>
+              clusterLayerStyle(feature, gisStore.isDynamicLine, gisStore.imgIndex, true)
+            );
+            clusterFeature.changed();
+            map.set("clusterSelectFeature", clusterFeature);
+          }
         }
       });
     });
-    // 清除原非聚合图层的选中
   } else {
     let source = layer.getSource();
-    const selectFeature = source.getFeatureById(featureCode);
+    const selectFeature = source?.getFeatureById(featureCode);
     if (selectFeature) {
-      selectFeature.set("selected", true); // 非聚合图层的可以这样实现
-      selectFeature.changed();
-      map.set("featureSelect", selectFeature);
+      if (isVisitObject) {
+        layer?.getStyleFunction()(selectFeature);
+        console.log("设置外部对象要素选中状态");
+      } else {
+        selectFeature.set("selected", true); // 非聚合图层的可以这样实现
+        selectFeature.changed();
+        map.set("featureSelect", selectFeature);
+      }
     } else {
       console.log("未找到匹配的要素");
     }
   }
   let featureName = labelInfo?.name;
   map.popupInfo({ featureCode, featureName, center });
+
+  clearSelectFeatureTimer.value = window.setTimeout(function () {
+    clearSelectedFeature(map);
+  }, 3000);
 }
 
 // 根据labelData数据更新要素
@@ -475,6 +494,7 @@ export function getTypeStatsByLabelType(labelType: any, dataType: any) {
 
 // 清空聚合图层与非聚合图层的选中
 export function clearSelectedFeature(map: VisualMap) {
+  clearSelectFeatureTimer.value && clearTimeout(clearSelectFeatureTimer.value);
   let gisStore = useGisStore();
   // 处理非聚合图层的选中状态
   let hasSelectFeature = map?.get("featureSelect");
