@@ -15,6 +15,7 @@
         <div class="right-operate">
           <span>对象编码</span>
           <el-input
+            clearable
             placeholder="请输入"
             style="width: 200px; margin-right: 12px"
             v-model="query.params.objectCode"
@@ -39,19 +40,21 @@
         >
           <el-table-column label="对象编码" prop="objectCode"></el-table-column>
           <el-table-column label="对象名称" prop="objectName"></el-table-column>
-          <el-table-column label="开始免监控时间" prop="beginTime" width="150"> </el-table-column>
-          <el-table-column label="结束免监控时间" prop="endTime" width="150"> </el-table-column>
+          <el-table-column label="开始免监控时间" prop="beginTime" width="180"> </el-table-column>
+          <el-table-column label="结束免监控时间" prop="endTime" width="180"> </el-table-column>
           <el-table-column label="状态" prop="status" width="100">
             <template #default="scope">
               {{ displayStatus(scope.row.beginTime, scope.row.endTime) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200">
+          <el-table-column label="操作" width="150">
             <template #default="scope">
-              <el-link type="primary" class="my-el-link" :underline="false" @click="onEditListRow(scope.row, 'edit')"
-                >编辑</el-link
-              >
-              <el-link type="primary" :underline="false" @click="onEditListRow(scope.row, 'delete')">删除</el-link>
+              <el-link type="primary" class="my-el-link" title="编辑" :underline="false" @click="onEditListRow(scope.row, 'edit')"
+                ><el-icon :size="14"><Edit /></el-icon
+              ></el-link>
+              <el-link type="primary" :underline="false" title="删除" @click="onEditListRow(scope.row, 'delete')"
+                ><el-icon :size="14"><Delete /></el-icon
+              ></el-link>
             </template>
           </el-table-column>
         </el-table>
