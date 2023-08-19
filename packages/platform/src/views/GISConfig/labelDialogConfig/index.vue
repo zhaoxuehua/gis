@@ -49,8 +49,10 @@ const changeTreeFilter = (id: number, data: any) => {
   currentType.value = data.currentType;
   if (data.currentType === "VisitObjectType") {
     visitObjectTypeId.value = id;
+    equipTypeId.value = undefined;
   } else {
     equipTypeId.value = id;
+    visitObjectTypeId.value = undefined;
   }
   getDetail(id);
 };

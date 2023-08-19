@@ -45,7 +45,7 @@ import { getLabelInfoByEquipId, addAssociation } from "../../api/gis.js";
 import { cloneDeep } from "lodash";
 
 import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
-import { removeLabel, createLabel, labelOnSelect, clearSelectedFeature } from "../hooks/index";
+import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -98,12 +98,6 @@ const onEdit = async (data: NavigationTreeNodeData) => {
     clearTimeout(timer);
     timer.value = null;
   }, 200);
-  // 清空选中状态
-  timer.value = setTimeout(() => {
-    clearSelectedFeature(props.map);
-    clearTimeout(timer);
-    timer.value = null;
-  }, 3000);
 };
 
 // 删除

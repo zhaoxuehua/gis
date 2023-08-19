@@ -26,7 +26,14 @@
     >
     </RightActionBox>
     <!-- 地图点击弹框 -->
-    <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
+    <Popup
+      :data="popupData"
+      @on-close="onScadaClose"
+      ref="popupRef"
+      @scada="handlePopLink"
+      @view="handlePopLink"
+      @track="handlePopLink"
+    >
       <template #customContent v-if="customContent">
         <component :is="customContent"></component>
       </template>
@@ -60,7 +67,7 @@ import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/creat
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
-import Popup from "./components/popup.vue";
+import Popup from "./components/popup/index.vue";
 
 defineOptions({ name: "AgMap" });
 
@@ -78,7 +85,10 @@ const emits = defineEmits([
   "onCloseRightMenu",
   "getClickBoxSelection",
   "getCustomSearchContent",
-  "getInitMapExportData"
+  "getInitMapExportData",
+  "scada",
+  "view",
+  "track"
 ]);
 
 const exportMap = ref<VisualMap>();
@@ -351,7 +361,7 @@ const initMap = async (mapId: string | number) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
       trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
-      trackSearchCode: originalData.trackSearchId // 轨迹搜索类型code
+      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
     };
 
     // 全屏控件
@@ -445,7 +455,7 @@ const initMap = async (mapId: string | number) => {
           code: item?.code,
           isTagAgg: item?.isTagAgg,
           isTrackDraw: item?.isTrackDraw,
-          style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
+          style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value) // 是否选中（因为聚合图层的选中单独处理）
         };
       } else {
         options = {
@@ -686,9 +696,16 @@ const initMap = async (mapId: string | number) => {
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           // 点击弹窗 获取左键配置信息
-          popupRef.value?.getLabelDialogConfigInfo(
-            gisStore?.relationMap[featureCode] || (currentTrack ? { ...currentTrack, isVisitObject: true } : {})
-          );
+          // popupRef.value?.getLabelDialogConfigInfo({
+          //   code: 4132378,
+          //   lat: 31.361245,
+          //   lon: 120.781788,
+          //   name: "海缆段0001",
+          //   labelTypeId: 54,
+          //   equipType: 16,
+          //   isVisitObject: true
+          // });
+          popupRef.value?.getLabelDialogConfigInfo(gisStore?.relationMap[featureCode] || currentTrack);
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
@@ -699,15 +716,9 @@ const initMap = async (mapId: string | number) => {
                 clearTimeout(timer);
                 timer.value = null;
               }, 200);
-              // 清空选中状态
-              timer.value = setTimeout(() => {
-                clearSelectedFeature(exportMap.value);
-                clearTimeout(timer);
-                timer.value = null;
-              }, 3000);
             }
           } else {
-            labelOnSelect(exportMap.value, featureCode, true);
+            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isVisitObject); // 选中（还需要判断是否外部对象的选中）
           }
         }
       }
@@ -793,9 +804,8 @@ const getRelationMap = () => {
   return gisStore?.relationMap;
 };
 
-// 获取船的数据  如果是船 必须调用
-const setTrackInfoMap = (data: any) => {
-  gisStore.setTrackInfoMap(data);
+const handlePopLink = (type: any, option: any) => {
+  emits(type, option);
 };
 
 defineExpose({
@@ -814,8 +824,7 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter,
-  setTrackInfoMap
+  getGeometryCenter
 });
 
 // 监听外部树节点点击

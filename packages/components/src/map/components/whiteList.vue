@@ -17,7 +17,7 @@
           <el-input
             placeholder="请输入"
             style="width: 200px; margin-right: 12px"
-            v-model="query.params.code"
+            v-model="query.params.objectCode"
             @keyup.enter.stop="querySearch"
             @clear="querySearch"
           >
@@ -37,11 +37,15 @@
           stripe
           border
         >
-          <el-table-column label="对象编码" prop="name"></el-table-column>
-          <el-table-column label="对象名称" prop="code"></el-table-column>
-          <el-table-column label="开始免监控时间" prop="startTime" width="150"> </el-table-column>
+          <el-table-column label="对象编码" prop="objectCode"></el-table-column>
+          <el-table-column label="对象名称" prop="objectName"></el-table-column>
+          <el-table-column label="开始免监控时间" prop="beginTime" width="150"> </el-table-column>
           <el-table-column label="结束免监控时间" prop="endTime" width="150"> </el-table-column>
-          <el-table-column label="状态" prop="status" width="100"> </el-table-column>
+          <el-table-column label="状态" prop="status" width="100">
+            <template #default="scope">
+              {{ displayStatus(scope.row.beginTime, scope.row.endTime) }}
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="200">
             <template #default="scope">
               <el-link type="primary" class="my-el-link" :underline="false" @click="onEditListRow(scope.row, 'edit')"
@@ -75,7 +79,8 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { handleParam } from "@/utils/common.js";
 import type { VisualMap, TableList } from "../type";
 import WhiteListEdit from "./whiteListEdit.vue";
-import { getWhiteList, whiteListDelete } from "../../api/gis.js";
+import moment from "moment";
+import { getWhiteList, whiteListDelete } from "../../api/device";
 import Icon from "./Icon.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -91,9 +96,21 @@ const onClose = () => {
   emits("onClose", props.index);
 };
 
+const displayStatus = (beginTime: string, endTime: string) => {
+  let currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+  if (
+    moment(beginTime).format("YYYY-MM-DD HH:mm:ss") <= currentTime &&
+    moment(endTime).format("YYYY-MM-DD HH:mm:ss") >= currentTime
+  ) {
+    return "生效";
+  } else {
+    return "已过期";
+  }
+};
+
 const query = ref({
   params: {
-    code: "", // 对象编码
+    objectCode: "", // 对象编码
     orderByColumn: "",
     isAsc: "",
     pageNumber: 1,
@@ -118,7 +135,7 @@ const handleCurrentChange = (val: any) => {
 };
 
 const onRefresh = () => {
-  query.value.params.code = "";
+  query.value.params.objectCode = "";
   querySearch();
 };
 
@@ -130,9 +147,11 @@ const table = ref<TableList>({
   getTableData: async () => {
     table.value.loading = true;
     const res: { [key: string]: any } = await getWhiteList(...(handleParam(query.value.params) as [string, object]));
-    if (res.items) {
-      table.value.data = res.items;
-      table.value.total = res.totalNum;
+    if (res.code == 200) {
+      if (res?.data?.items) {
+        table.value.data = res?.data?.items || [];
+        table.value.total = res?.data?.totalNum;
+      }
     } else {
       ElMessage.error("接口异常");
     }

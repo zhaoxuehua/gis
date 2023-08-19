@@ -10,11 +10,11 @@
       :destroy-on-close="true"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
-        <el-form-item label="对象编码" prop="code">
-          <el-input placeholder="请输入..." v-model="form.code" clearable style="width: 230px" />
+        <el-form-item label="对象编码" prop="objectCode">
+          <el-input placeholder="请输入..." v-model="form.objectCode" clearable style="width: 230px" />
         </el-form-item>
-        <el-form-item label="开始时间" prop="startTime">
-          <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" style="width: 230px">
+        <el-form-item label="开始时间" prop="beginTime">
+          <el-date-picker v-model="form.beginTime" type="datetime" placeholder="选择开始时间" style="width: 230px">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="结束时间" prop="endTime">
@@ -39,7 +39,7 @@
 import { reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import moment from "moment";
-import { whiteListAdd, whiteListEdit } from "../../api/gis.js";
+import { whiteListEdit, whiteListAdd } from "../../api/device";
 
 const emit = defineEmits(["successAdd"]);
 
@@ -48,24 +48,24 @@ const state = reactive({
   open: false,
   // 弹窗表单验证
   rulesForm: {
-    code: [{ required: true, message: "对象编码不能为空", trigger: ["blur", "change"] }],
-    startTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
+    objectCode: [{ required: true, message: "对象编码不能为空", trigger: ["blur", "change"] }],
+    beginTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
     endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }]
   }
 });
 const refForm: any = ref();
 
 const defaultParam = {
-  code: "",
-  startTime: moment().format("YYYY-MM-DD HH:mm:ss"),
+  objectCode: "",
+  beginTime: moment().format("YYYY-MM-DD HH:mm:ss"),
   endTime: moment().endOf("day").format("YYYY-MM-DD HH:mm:ss"),
   remark: ""
 };
 
 let form = ref<{
   id?: number;
-  code: string;
-  startTime: string;
+  objectCode: string;
+  beginTime: string;
   endTime: string;
   remark: string;
 }>(defaultParam);
@@ -75,8 +75,8 @@ const openDialog = (row?: { [key: string]: any }) => {
     state.dialogType = 1;
     form.value = JSON.parse(JSON.stringify(row));
     // 返回毫秒时间戳的处理
-    form.value.startTime = form.value.startTime
-      ? moment(form.value.startTime).format("YYYY-MM-DD HH:mm:ss")
+    form.value.beginTime = form.value.beginTime
+      ? moment(form.value.beginTime).format("YYYY-MM-DD HH:mm:ss")
       : moment().format("YYYY-MM-DD HH:mm:ss");
     form.value.endTime = form.value.endTime
       ? moment(form.value.endTime).format("YYYY-MM-DD HH:mm:ss")
@@ -97,8 +97,10 @@ const onConfirm = () => {
   refForm.value?.validate(async (valid: any) => {
     if (valid) {
       let param: { [key: string]: any } = { ...form.value };
+      param.beginTime = moment(param.beginTime).format("YYYY-MM-DD HH:mm:ss");
+      param.endTime = moment(param.endTime).format("YYYY-MM-DD HH:mm:ss");
       // 校验时间大小（结束>开始）
-      if (moment(param.startTime) >= moment(param.endTime)) {
+      if (param.beginTime >= param.endTime) {
         ElMessage.warning("结束时间需大于开始时间！");
         return;
       }
@@ -114,8 +116,7 @@ const onConfirm = () => {
             message: res.msg
           });
         }
-      } else if (state.dialogType == 1) {
-        // 编辑
+      } else {
         const res: { [key: string]: any } = await whiteListEdit(param);
         if (res.code == 200) {
           ElMessage.success("编辑成功");
