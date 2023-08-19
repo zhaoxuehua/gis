@@ -97,15 +97,17 @@ const onConfirm = () => {
   refForm.value?.validate(async (valid: any) => {
     if (valid) {
       let param: { [key: string]: any } = { ...form.value };
+      param.beginTime = moment(param.beginTime).format("YYYY-MM-DD HH:mm:ss");
+      param.endTime = moment(param.endTime).format("YYYY-MM-DD HH:mm:ss");
       // 校验时间大小（结束>开始）
-      if (moment(param.beginTime) >= moment(param.endTime)) {
+      if (param.beginTime >= param.endTime) {
         ElMessage.warning("结束时间需大于开始时间！");
         return;
       }
       if (state.dialogType == 0) {
         const res: { [key: string]: any } = await whiteListAdd(param);
         if (res.code == 200) {
-          ElMessage.success(`${state.dialogType == 0 ? "创建成功" : "编辑成功"}`);
+          ElMessage.success("创建成功");
           emit("successAdd");
           state.open = false;
         } else {
@@ -117,7 +119,7 @@ const onConfirm = () => {
       } else {
         const res: { [key: string]: any } = await whiteListEdit(param);
         if (res.code == 200) {
-          ElMessage.success(`${state.dialogType == 0 ? "创建成功" : "编辑成功"}`);
+          ElMessage.success("编辑成功");
           emit("successAdd");
           state.open = false;
         } else {
