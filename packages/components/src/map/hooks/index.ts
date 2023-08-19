@@ -2,6 +2,7 @@ import { addLabel, deleteLabel } from "../../api/visconfig";
 import { ElMessage } from "element-plus";
 import Draw, { DrawEvent, createBox } from "ol/interaction/Draw";
 import type { Type } from "ol/geom/Geometry";
+import { ref } from "vue";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Circle } from "ol/geom";
@@ -293,6 +294,7 @@ export function transformLabelType(originalData: LabelType) {
   };
 }
 
+const clearSelectFeatureTimer = ref<number>();
 // 标签树、导航树选中label(是标签树或导航树的点击还是地图上的点击)
 export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isVisitObject?: boolean) {
   if (!map || !featureCode) {
@@ -387,6 +389,10 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   }
   let featureName = labelInfo?.name;
   map.popupInfo({ featureCode, featureName, center });
+
+  clearSelectFeatureTimer.value = window.setTimeout(function () {
+    clearSelectedFeature(map);
+  }, 3000);
 }
 
 // 根据labelData数据更新要素
@@ -488,6 +494,7 @@ export function getTypeStatsByLabelType(labelType: any, dataType: any) {
 
 // 清空聚合图层与非聚合图层的选中
 export function clearSelectedFeature(map: VisualMap) {
+  clearSelectFeatureTimer.value && clearTimeout(clearSelectFeatureTimer.value);
   let gisStore = useGisStore();
   // 处理非聚合图层的选中状态
   let hasSelectFeature = map?.get("featureSelect");
