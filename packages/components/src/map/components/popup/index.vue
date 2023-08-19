@@ -54,7 +54,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, nextTick, computed } from "vue";
+import { ref, reactive, nextTick, computed, watch } from "vue";
 import Icon from "../Icon.vue";
 import { getEquipData, lineRealTimeCurveApi, labelDetailAttr } from "../../../api/device";
 import dayjs from "dayjs";
@@ -63,6 +63,7 @@ import jsonBody from "./jsonBody.vue";
 import { ElMessage } from "element-plus";
 import { addAttentionApi, getAttentionList, deleteDialogAttentionApi } from "../../../api/gis.js";
 import type { VisualMap } from "../../type";
+
 // import { chartData } from "./popupmock";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; data: { [key: string]: any } }>(), {
@@ -167,12 +168,12 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   console.log(relationMap);
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
-  // equipInfo.value = relationMap;
-  equipInfo.value = {
-    equipType: 761,
-    code: "tunnel01",
-    isVisitObject
-  };
+  equipInfo.value = relationMap;
+  // equipInfo.value = {
+  //   equipType: 761,
+  //   code: "tunnel01",
+  //   isVisitObject
+  // };
   // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
   const currentType = isVisitObject ? "VisitObjectType" : "EquipType";
   // 获取配置的绑定属性
@@ -327,9 +328,16 @@ const cancelFocus = async () => {
   }
 };
 
+watch(
+  () => props.data.featureCode,
+  () => {
+    getLabelDialogConfigInfo(props.data.relationMap);
+  }
+);
+
 defineExpose({
-  getDOMElement,
-  getLabelDialogConfigInfo
+  getDOMElement
+  // getLabelDialogConfigInfo
 });
 </script>
 

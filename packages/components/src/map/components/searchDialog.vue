@@ -1,20 +1,20 @@
 <template>
   <div class="search-label-box">
-    <el-input v-model="inputParam" placeholder="请输入标签名称" clearable @input="search" @focus="search">
+    <el-input v-model="inputParam" :placeholder="'请输入' + placeholderText + '...'" clearable @input="search" @focus="search">
       <template #append>
         <el-button @click.stop="search"><Icon src="Search"></Icon></el-button>
       </template>
     </el-input>
     <ul class="label-select" v-if="open && table.data.length">
       <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
-        {{ item.name }}
+        {{ item.name || item.code }}
       </li>
     </ul>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { VisualMap } from "../type";
 import { labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
@@ -27,6 +27,9 @@ let mapInstance: VisualMap;
 const open = ref<boolean>(false);
 
 const inputParam = ref("");
+const placeholderText = computed(() =>
+  (props.map?.defaultOptions?.displaySearch?.map((item: any) => item.name) || []).join(",").slice(0, 10)
+);
 
 const search = () => {
   if (!inputParam.value) return (table.value.data = []);
