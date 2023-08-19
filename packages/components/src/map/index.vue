@@ -27,12 +27,12 @@
     </RightActionBox>
     <!-- 地图点击弹框 -->
     <Popup
+      :map="exportMap"
       :data="popupData"
       @on-close="onScadaClose"
       ref="popupRef"
       @scada="handlePopLink"
       @view="handlePopLink"
-      @track="handlePopLink"
     >
       <template #customContent v-if="customContent">
         <component :is="customContent"></component>
@@ -303,7 +303,6 @@ const initMap = async (mapId: string | number) => {
   const res: { [key: string]: any } = await getMapParamsDetail(mapId);
   if (res.code === 200 && res.data) {
     const originalData = JSON.parse(JSON.stringify(res.data));
-    originalData.displaySearchIds = "3,55,54,53,52,51,50,1,7";
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
     if (props?.config?.bigScreenControls) {
       let newControls = [];
@@ -352,6 +351,7 @@ const initMap = async (mapId: string | number) => {
       layers: originalData.displayLayer, // 显示图层  object[]
       layersIds: originalData.displayLayerIds, // 图层id string
       displaySearchIds: originalData.displaySearchIds, // 搜索类型id
+      displaySearch: originalData.displaySearch, // 搜索类型 []
 
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
@@ -655,6 +655,7 @@ const initMap = async (mapId: string | number) => {
       overlay && overlay.setPosition(undefined);
       popupData.featureCode = "";
       popupData.featureName = "";
+      popupData.relationMap = null;
       // 移除选中状态
       clearSelectedFeature(map);
     };
@@ -665,13 +666,13 @@ const initMap = async (mapId: string | number) => {
       if (gisStore?.isEdit) {
         return;
       }
-      // 需要自定义弹框更新数据时使用此交互，默认true走默认弹框
-      const result: any = await props?.onClickFeaturePopup({ featureCode, featureName, relationMap: gisStore?.relationMap });
-      if (result) {
-        popupData.featureCode = featureCode;
-        popupData.featureName = featureName;
-        overlay.setPosition(center);
-      }
+      // 获取船的数据
+      const trackInfoMap = map.get("trackInfoMap") || [];
+      const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+      popupData.featureCode = featureCode;
+      popupData.featureName = featureName;
+      popupData.relationMap = gisStore?.relationMap[featureCode] || currentTrack;
+      overlay.setPosition(center);
     };
 
     // 鼠标点击事件
@@ -695,17 +696,6 @@ const initMap = async (mapId: string | number) => {
           // 获取船的数据
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
-          // 点击弹窗 获取左键配置信息
-          // popupRef.value?.getLabelDialogConfigInfo({
-          //   code: 4132378,
-          //   lat: 31.361245,
-          //   lon: 120.781788,
-          //   name: "海缆段0001",
-          //   labelTypeId: 54,
-          //   equipType: 16,
-          //   isVisitObject: true
-          // });
-          popupRef.value?.getLabelDialogConfigInfo(gisStore?.relationMap[featureCode] || currentTrack);
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {

@@ -30,14 +30,14 @@
         @selection-change="handleSelectionChange"
       >
         <template #action="scope">
-          <el-button title="当前定位" type="primary" text>
+          <el-button title="当前定位" type="primary" text @click="labelOnSelect(props.map, scope.row.objectCode, false, true)">
             <el-icon :size="16"><Location /></el-icon>
           </el-button>
           <el-button title="轨迹回放" type="primary" text>
             <el-icon :size="16"><Refresh /></el-icon>
           </el-button>
-          <el-button title="取消关注" type="primary" text>
-            <el-icon :size="16" @click="deleteAttention([scope.row.id])"><CircleClose /></el-icon>
+          <el-button title="取消关注" type="primary" text @click="deleteAttention([scope.row.id])">
+            <el-icon :size="16"><CircleClose /></el-icon>
           </el-button>
         </template>
       </Table>
@@ -50,6 +50,7 @@ import { ref, reactive, computed, watch } from "vue";
 import { addAttentionApi, getAttentionList, deleteAttentionApi } from "../../api/gis.js";
 import { ElMessage } from "element-plus";
 import type { VisualMap } from "../type";
+import { labelOnSelect } from "../hooks/index";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -78,7 +79,8 @@ const columns = [
   },
   {
     label: "操作",
-    scope: "action"
+    scope: "action",
+    width: 120
   }
 ];
 const pagination = reactive({
@@ -108,7 +110,7 @@ const getTableData = async () => {
   );
   if (res.code === 200) {
     tableData.value = res.data.items;
-    pagination.total = res.data.totalPage;
+    pagination.total = res.data.totalNum;
   }
   loading.value = false;
 };
@@ -116,7 +118,7 @@ const getTableData = async () => {
 const addAttention = async () => {
   if (!form.value.objectCode) return ElMessage.error("MMSI号不能为空");
   const res: any = await addAttentionApi({
-    objectCode: form.value.objectCode
+    ...form.value
   });
   if (res.code === 200) {
     ElMessage.success("关注成功");
