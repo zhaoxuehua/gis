@@ -118,7 +118,7 @@ const state = reactive({
       component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
     },
     {
-      icon: "iconfont icon-history",
+      icon: "iconfont icon-retweet1",
       label: "轨迹回放",
       isShow: false,
       visible: false,
@@ -162,7 +162,7 @@ const state = reactive({
       component: shallowRef(defineAsyncComponent(() => import("./components/imgLegend.vue")))
     },
     {
-      icon: "iconfont icon-img",
+      icon: "iconfont icon-list-ol-solid",
       label: "关注列表",
       isShow: false,
       visible: false,
