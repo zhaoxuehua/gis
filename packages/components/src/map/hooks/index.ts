@@ -476,10 +476,6 @@ export function getTypeStatsByLabelType(labelType: any, dataType: any) {
 // 清空聚合图层与非聚合图层的选中
 export function clearSelectedFeature(map: VisualMap) {
   let gisStore = useGisStore();
-  let selectInteraction = map?.get("selectInteraction");
-  if (selectInteraction) {
-    selectInteraction.getFeatures().clear();
-  }
   // 处理非聚合图层的选中状态
   let hasSelectFeature = map?.get("featureSelect");
   if (hasSelectFeature) {

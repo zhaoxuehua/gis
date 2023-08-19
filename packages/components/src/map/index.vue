@@ -361,7 +361,7 @@ const initMap = async (mapId: string | number) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
       trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
-      trackSearchCode: originalData.trackSearchId // 轨迹搜索类型code
+      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
     };
 
     // 全屏控件
@@ -724,7 +724,7 @@ const initMap = async (mapId: string | number) => {
               }, 3000);
             }
           } else {
-            labelOnSelect(exportMap.value, featureCode, true);
+            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isVisitObject); // 选中（还需要判断是否外部对象的选中）
           }
         }
       }
