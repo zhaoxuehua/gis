@@ -72,8 +72,10 @@ export function addAttentionApi(params: object) {
 }
 
 // 关注列表
-export function getAttentionList(params: object) {
-  return request.post(`/api/equipment-service/object/attentionList/list`, params);
+export function getAttentionList(params: object, queryString: object) {
+  return request.post(`/api/equipment-service/object/attentionList/list`, params, {
+    ...queryString
+  });
 }
 // 取消关注
 export function deleteAttentionApi(ids: string) {

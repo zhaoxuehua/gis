@@ -1,43 +1,49 @@
 <template>
   <div class="monitor-jsonbody-data">
     <div v-for="(table, index) in state.tableBodyData" :key="table.code">
-      <div class="title-box">
-        <div class="title">{{ table.name }}</div>
-        <el-button v-if="table.tile" type="primary" :disabled="table.currentDescIndex === 0" @click="onSwitch('prev', table)"
-          >上一条</el-button
-        >
-        <el-button
-          v-if="table.tile"
-          type="primary"
-          :disabled="table.currentDescIndex === table.data.length - 1"
-          @click="onSwitch('next', table)"
-          >下一条</el-button
-        >
-      </div>
-      <div class="desc-box" v-if="table.tile">
-        <div v-for="(data, dataIndex) in table.data" :key="dataIndex">
-          <el-descriptions class="desc-list" title="" :column="2" :border="true" v-show="table.currentDescIndex === dataIndex">
-            <el-descriptions-item
-              v-for="column in table.columns"
-              :key="column.prop"
-              :label="column.label"
-              class-name="desc-item"
-              label-class-name="desc-label-item"
-            >
-              {{ data[column.prop] }}
-            </el-descriptions-item>
-          </el-descriptions>
+      <template v-if="table.data.length">
+        <div class="title-box">
+          <div class="title">{{ table.name }}</div>
+          <el-button v-if="table.tile" type="primary" :disabled="table.currentDescIndex === 0" @click="onSwitch('prev', table)"
+            >上一条</el-button
+          >
+          <el-button
+            v-if="table.tile"
+            type="primary"
+            :disabled="table.currentDescIndex === table.data.length - 1"
+            @click="onSwitch('next', table)"
+            >下一条</el-button
+          >
         </div>
-      </div>
-      <Table
-        v-else
-        :data="table.pageData"
-        :columns="table.columns"
-        layout="total, prev, pager, next"
-        :class="['json-body-table', table.data.length ? '' : 'no-data-table', table.data.length >= 5 ? 'data-table' : '']"
-        :pagination="table.data.length ? table.pagination : false"
-        @page-current-change="val => handleCurrentChange(val, index)"
-      ></Table>
+        <div class="desc-box" v-if="table.tile">
+          <div v-for="(data, dataIndex) in table.data" :key="dataIndex">
+            <el-descriptions class="desc-list" title="" :column="2" :border="true" v-show="table.currentDescIndex === dataIndex">
+              <el-descriptions-item
+                v-for="column in table.columns"
+                :key="column.prop"
+                :label="column.label"
+                class-name="desc-item"
+                label-class-name="desc-label-item"
+              >
+                {{ data[column.prop] }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </div>
+        </div>
+        <Table
+          v-else
+          :data="table.pageData"
+          :columns="table.columns"
+          layout="total, prev, pager, next"
+          :class="['json-body-table', table.data.length ? '' : 'no-data-table', table.data.length >= 5 ? 'data-table' : '']"
+          :pagination="table.data.length ? table.pagination : false"
+          @page-current-change="val => handleCurrentChange(val, index)"
+        ></Table>
+      </template>
+      <template v-else>
+        <div class="title">{{ table.name }}</div>
+        <el-empty description="无数据" :image-size="100" />
+      </template>
     </div>
   </div>
 </template>
@@ -57,20 +63,20 @@ const handleBodyValue = () => {
   props.jsonbodyData?.forEach((item: any) => {
     try {
       item.value = JSON.parse(item.value);
-      item.valueType = Array.isArray(item.value) ? "array" : "object";
+      // item.valueType = Array.isArray(item.value) ? "array" : "object";
     } catch (error) {
       item.value = "";
-      item.valueType = "string";
+      // item.valueType = "string";
     }
-    let fieldList = props.jsonbodyMap?.[item.code][0].children;
-    let tableColumn = fieldList.map((val: any) => {
+    let fieldList = props.jsonbodyMap?.[item.code][0]?.children;
+    let tableColumn = fieldList?.map((val: any) => {
       return {
         prop: val.field,
         label: val.remark
       };
     });
     let tableBodyItem = {
-      tile: item.tile,
+      tile: props.jsonbodyMap?.[item.code][0]?.tile,
       name: item.name,
       code: item.code,
       columns: tableColumn,
@@ -89,6 +95,7 @@ const handleBodyValue = () => {
       tableBodyItem.pagination.page * tableBodyItem.pagination.pageSize
     );
     state.tableBodyData.push(tableBodyItem);
+    console.log(state.tableBodyData);
   });
 };
 const handleCurrentChange = (val: number, index: number) => {
@@ -98,7 +105,6 @@ const handleCurrentChange = (val: number, index: number) => {
     (current.pagination.page - 1) * current.pagination.pageSize,
     current.pagination.page * current.pagination.pageSize
   );
-  console.log(current.pageData);
 };
 const onSwitch = (type: string, table: any) => {
   if (type === "prev") {
@@ -111,6 +117,8 @@ const onSwitch = (type: string, table: any) => {
 watch(
   () => props.jsonbodyData,
   () => {
+    console.log(props.jsonbodyData);
+    console.log(props.jsonbodyMap);
     handleBodyValue();
   }
 );

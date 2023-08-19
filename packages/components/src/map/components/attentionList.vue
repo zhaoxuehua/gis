@@ -7,7 +7,13 @@
     <div class="content-box">
       <el-form :model="form" inline>
         <el-form-item label="MMSI">
-          <el-input v-model="form.objectCode" placeholder="请输入..."></el-input>
+          <el-input
+            class="mmsi-input"
+            v-model="form.objectCode"
+            placeholder="请输入..."
+            clearable
+            @input="getTableData"
+          ></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="addAttention">添加</el-button>
@@ -19,13 +25,20 @@
         :columns="columns"
         :data="tableData"
         :pagination="pagination"
+        :loading="loading"
         class="attention-table"
         @selection-change="handleSelectionChange"
       >
         <template #action="scope">
-          <span>当前定位</span>
-          <span>轨迹回放</span>
-          <span @click="deleteAttention([scope.row.id])">取消关注</span>
+          <el-button title="当前定位" type="primary" text>
+            <el-icon :size="16"><Location /></el-icon>
+          </el-button>
+          <el-button title="轨迹回放" type="primary" text>
+            <el-icon :size="16"><Refresh /></el-icon>
+          </el-button>
+          <el-button title="取消关注" type="primary" text>
+            <el-icon :size="16" @click="deleteAttention([scope.row.id])"><CircleClose /></el-icon>
+          </el-button>
         </template>
       </Table>
     </div>
@@ -48,25 +61,20 @@ const form = ref({
   objectCode: "",
   objectTypeCode: computed(() => props.map?.defaultOptions.trackSearchCode)
 });
-const tableData = ref([
-  {
-    code: "1",
-    name: "船1",
-    id: 1
-  }
-]);
+const tableData = ref([]);
 const ids = ref<number[]>([]);
+const loading = ref(false);
 const columns = [
   {
     type: "selection"
   },
   {
     label: "对象编码",
-    prop: "code"
+    prop: "objectCode"
   },
   {
     label: "对象名称",
-    prop: "name"
+    prop: "objectName"
   },
   {
     label: "操作",
@@ -76,7 +84,7 @@ const columns = [
 const pagination = reactive({
   total: 0,
   page: 1,
-  pageSize: 5
+  pageSize: 10
 });
 const onClose = () => {
   emits("onClose", props.index);
@@ -86,12 +94,23 @@ const handleSelectionChange = (val: any) => {
   ids.value = val.map((item: any) => item.id);
 };
 const getTableData = async () => {
-  const res: any = await getAttentionList({
-    ...form.value
-  });
+  loading.value = true;
+  const res: any = await getAttentionList(
+    {
+      ...form.value
+    },
+    {
+      params: {
+        pageSize: pagination.pageSize,
+        pageNumber: pagination.page
+      }
+    }
+  );
   if (res.code === 200) {
-    tableData.value = res.data;
+    tableData.value = res.data.items;
+    pagination.total = res.data.totalPage;
   }
+  loading.value = false;
 };
 
 const addAttention = async () => {
@@ -108,6 +127,7 @@ const deleteAttention = async (id?: number[]) => {
   const res: any = await deleteAttentionApi((id || ids.value).join(","));
   if (res.code === 200) {
     ElMessage.success("取消关注成功");
+    getTableData();
   }
 };
 
@@ -122,7 +142,7 @@ watch(
 .attention-list {
   display: flex;
   flex-direction: column;
-  width: 650px;
+  width: 580px;
   height: 500px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
@@ -146,6 +166,9 @@ watch(
     flex: 1;
     flex-direction: column;
     padding: 20px;
+    .mmsi-input {
+      width: 210px;
+    }
   }
   .attention-table {
     flex: 1;
