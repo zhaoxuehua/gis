@@ -167,7 +167,7 @@ export interface setToMapCenterType {
 export interface selectModeListType {
   code: string;
   name: string;
-  coordinates?: any;
+  coordinates?: any[];
   id?: number | string;
 }
 // 返回多个要素的中心

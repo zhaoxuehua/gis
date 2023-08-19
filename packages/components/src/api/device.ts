@@ -14,6 +14,11 @@ export function eventListByObjType(id: number | string) {
   return request.get(`/api/equipment-service/equip/visitObject/events/${id}`);
 }
 
+// 轨迹回放
+export function getShipTrackData(params: object) {
+  return request.post(`/api/adm-service/view/common/getObjectByRegion`, params);
+}
+
 // 左键弹窗 获取设备数据
 export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);

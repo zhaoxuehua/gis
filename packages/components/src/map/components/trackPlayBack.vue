@@ -62,7 +62,7 @@
           <el-form-item
             label="告警"
             prop="alarmLevel"
-            v-if="formData.selectMode && formData.selectMode != 'shape' && trackSearchId"
+            v-if="formData.selectMode && formData.selectMode != 'shape' && defaultOptions.trackSearchId"
           >
             <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable style="width: 200px">
               <el-option
@@ -76,6 +76,7 @@
         </el-form>
       </div>
 
+      <!-- table-box -->
       <div class="table-box">
         <div style="padding-left: 80px; margin-bottom: 20px">
           <el-button type="primary" @click="searchForm()"><Icon src="Search"></Icon>搜索</el-button>
@@ -97,7 +98,6 @@
             <template #default="scope">
               <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)"></Icon>
               <Icon src="Switch" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)"></Icon>
-              <!-- <Icon src="Download" :size="14" class="operate-icon" @click="downloadTrackInfo(scope.row)"></Icon> -->
             </template>
           </el-table-column>
         </el-table>
@@ -119,13 +119,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { reactive, ref, onMounted, watch, toRefs, Ref } from "vue";
+import { reactive, ref, onMounted, watch, toRefs, Ref, computed } from "vue";
 import { ElMessage } from "element-plus";
-import moment from "moment";
-import { handleParam } from "@/utils/common.js";
-import { gisTrackList } from "../../api/gis";
-import { eventListByObjType } from "../../api/device";
 import Icon from "./Icon.vue";
+import moment from "moment";
+
+// ⤵ 接口 getShipTrackData
+import { eventListByObjType } from "../../api/device";
 
 // ⤵ type
 import type { VisualMap, TableList, selectModeListType } from "../type";
@@ -154,9 +154,6 @@ const onClose = () => {
 // 标签类型
 const labelTypeMap = map.value?.get("labelTypeMap") || {};
 const labelList: any[] = Object.values(map.value?.get("labelInfoMap"));
-const defaultOptions = map.value?.defaultOptions;
-const trackSearchId = ref(defaultOptions.value?.trackSearchId);
-const trackSearchCode = ref(defaultOptions.value?.trackSearchCode);
 
 /***************************************
               查询表单数据
@@ -170,10 +167,11 @@ const formData = reactive({
   selectLabel: "", // 选择的标签
   alarmLevel: "", // 告警等级（只有配置了外部对象及查询模式不是图形时显示）
   pageNumber: 1,
-  pageSize: 10
+  pageSize: 10,
+  coordinateArr: [] as number[] // 坐标点集合
 });
 
-// 弹窗表单验证
+// 表单验证
 let rulesForm: any = {
   startTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
   endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
@@ -203,38 +201,6 @@ Object.values(labelTypeMap)?.forEach((obj: any) => {
   }
 });
 
-//
-watch(
-  () => trackSearchId.value,
-  async value => {
-    if (value) {
-      // 筛选出告警列表（根据对象类型获取事件列表）
-      const res: { [key: string]: any } = await eventListByObjType(value);
-      if (res.code == 200) {
-        // 过滤出告警 eventType  "hidden_alarm"  以alarm结尾
-        let alarmArr: any[] = [];
-        res.data.forEach((item: { [key: string]: any }) => {
-          let arr = item.eventType.split("_");
-          if (arr && arr?.length && arr.length > 1 && arr[1] == "alarm") {
-            alarmArr.push({
-              ...item
-            });
-          }
-        });
-        console.log(alarmArr);
-        alarmList.value = alarmArr;
-      } else {
-        ElMessage.error("接口异常");
-      }
-    }
-  },
-  {
-    immediate: true,
-    deep: true
-  }
-);
-
-// 查询模式
 const selectModeChange = (value: string) => {
   // 数据reset
   formData.boxSelectMode = "";
@@ -267,6 +233,33 @@ const selectModeChange = (value: string) => {
   selectLabelList.value = labelArr;
 };
 
+// 地图上的默认参数
+const defaultOptions = computed(() => {
+  const mapDefaultOptions = map.value?.defaultOptions;
+  if (mapDefaultOptions.trackSearchId || mapDefaultOptions.trackSearchId === 0) {
+    getAlarmListOptions(mapDefaultOptions.trackSearchId);
+  }
+  return mapDefaultOptions;
+});
+
+// 获取告警options
+async function getAlarmListOptions(id: number) {
+  const { code, data } = await eventListByObjType(id);
+  if (Number(code) == 200) {
+    // 过滤出告警 eventType  "hidden_alarm"  以alarm结尾
+    (data as []).forEach((item: { [key: string]: any }) => {
+      let arr = item.eventType.split("_");
+      if (arr && arr?.length && arr.length > 1 && arr[1] == "alarm") {
+        alarmList.value.push({
+          ...item
+        });
+      }
+    });
+  } else {
+    ElMessage.error("接口异常");
+  }
+}
+
 /****************************************
       查询模式 : 框选模式
 *****************************************/
@@ -281,6 +274,7 @@ watch(
       map.value,
       n,
       (coordinates: any[]) => {
+        formData.coordinateArr = coordinates;
         console.log("回调。。。", coordinates);
       },
       true
@@ -289,18 +283,43 @@ watch(
 );
 
 /****************************************
- 查询模式 : 根据标签类型 => 选择的标签对应的坐标集合
+      查询模式 : 标签类型模式
 *****************************************/
-// function getCoordinatesByLabelType() {
-//   console.log(formData.selectLabel);
-// }
+function getCoordinateArrByLabelType() {
+  if (formData.selectMode == "shape") {
+    return formData.coordinateArr; // 框选模式,直接返回
+  }
+  if (formData.selectLabel === "all") {
+    // 如果选的全部，收集该类型下所有数据
+    let target = selectLabelList.value.filter(val => val.code !== "all");
+    let tempArr: any[] = [];
+    target.forEach(val => {
+      if (val.coordinates) {
+        val.coordinates[0].forEach((item: number[]) => {
+          tempArr.push(item);
+        });
+      }
+    });
+    return tempArr;
+  } else {
+    // 单个
+    const target = selectLabelList.value.filter(val => val.code === formData.selectLabel);
+    return target[0].coordinates;
+  }
+}
 
 /****************************************
                   搜索
 *****************************************/
 const searchForm = function () {
-  // getCoordinatesByLabelType();
-  table.value.getTableData();
+  // 校验必填项
+  refForm.value?.validate(async (valid: boolean) => {
+    if (valid) {
+      const coordinateArr = getCoordinateArrByLabelType();
+      console.log(coordinateArr);
+      table.value.getTableData();
+    }
+  });
 };
 
 /****************************************
@@ -333,49 +352,12 @@ const table = ref<TableList>({
   loading: false,
   total: 0,
   ids: [],
-  data: [{}],
+  data: [],
   getTableData: async () => {
-    // 校验必填项
-    refForm.value?.validate(async (valid: any) => {
-      if (valid) {
-        table.value.loading = true;
-        const [queryString, params] = handleParam(formData);
-        // 处理请求的传参（查询模式是图形是传的框选范围  查询模式是标签类型时传选择的标签坐标）
-        if (params.selectMode == "shape") {
-          params.coordinates = [];
-        } else {
-          // 标签类型（看是全选还是单选）
-          if (params.selectLabel == "all") {
-            let selectLabelCoordinates: any[] = [];
-            selectLabelList.value.forEach((item: { [key: string]: any }) => {
-              if (item.code != "all") {
-                selectLabelCoordinates.push(item?.coordinates);
-              }
-            });
-            params.coordinates = selectLabelCoordinates;
-          } else {
-            // 选择一个标签的坐标
-            let selectLabelObj = selectLabelList.value.find((item: { [key: string]: any }) => item.code == params.selectLabel);
-            params.coordinates = selectLabelObj.coordinates;
-          }
-          // 如果有外部对象 则传告警
-          if (trackSearchCode.value) {
-            params.outsideObj = trackSearchCode.value;
-          } else {
-            delete params.alarmLevel;
-          }
-        }
-        delete params.boxSelectMode;
-        const res: { [key: string]: any } = await gisTrackList(queryString, params);
-        if (res.items) {
-          table.value.data = res.items || [];
-          table.value.total = res.totalNum;
-        } else {
-          ElMessage.error("接口异常");
-        }
-        table.value.loading = false;
-      }
-    });
+    console.log("数据列表", formData);
+    // const res = await getShipTrackData(id);
+    const tempData = [{}];
+    table.value.data = tempData;
   }
 });
 
