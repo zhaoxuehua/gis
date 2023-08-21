@@ -105,7 +105,7 @@
       </div>
 
       <!-- 实时标签样式 -->
-      <div class="measuring-tools" v-show="state.activeIndex == '3'">
+      <div class="measuring-tools" v-show="state.activeIndex == '3'" @click.stop>
         <div class="coordinate-position-box">
           <el-form-item label="船首线" label-width="110">
             <el-checkbox v-model="state.shipHeadLine"></el-checkbox>
