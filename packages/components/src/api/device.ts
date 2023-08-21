@@ -33,6 +33,11 @@ export function whiteListDelete(id: number) {
   return request.delete(`/api/equipment-service/object/whitelist/remove/${id}`);
 }
 
+// 获取水深
+export function getDepthWater(params: object) {
+  return request.post(`/api/equipment-service/object/whitelist`, params);
+}
+
 // 左键弹窗 获取设备数据
 export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);
