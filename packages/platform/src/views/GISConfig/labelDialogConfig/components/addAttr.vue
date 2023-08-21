@@ -32,7 +32,8 @@
 </template>
 <script setup lang="ts" name="addAttr">
 import { reactive, ref } from "vue";
-import Table from "@/components/Table/index.vue";
+import Table from "../../../../../../components/src/map/components/Table/index.vue";
+// import Table from "@/components/Table/index.vue";
 import { getUnBindStaticAttrApi, getUnBindMonitorAttrApi, bindAttrApi } from "../../../../api/modules/labelDialogConfig";
 import { ElMessage } from "element-plus";
 

@@ -54,7 +54,7 @@
 </template>
 <script setup lang="ts" name="labelDialog">
 import { reactive, ref, nextTick } from "vue";
-import Table from "../../../../components/Table/index.vue";
+import Table from "../../../../../../components/src/map/components/Table/index.vue";
 import addAttr from "./addAttr.vue";
 import { deleteBindAttrApi, updateJSONBody, getAllJSONbodyApi } from "../../../../api/modules/labelDialogConfig";
 import { ElMessage, ElMessageBox } from "element-plus";

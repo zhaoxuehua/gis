@@ -14,10 +14,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import type { VisualMap } from "../type";
 import { labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
+import { useGisStore } from "../../stores/modules/gis";
+
+const gisStore = useGisStore();
 
 const emits = defineEmits(["onEquipDetail", "change"]);
 const props = withDefaults(defineProps<{ map: any }>(), {
@@ -30,6 +33,7 @@ const inputParam = ref("");
 const placeholderText = computed(() =>
   (props.map?.defaultOptions?.displaySearch?.map((item: any) => item.name) || []).join(",").slice(0, 10)
 );
+const searchData: any = ref([]);
 
 const search = () => {
   if (!inputParam.value) return (table.value.data = []);
@@ -48,31 +52,20 @@ const table: any = ref({
     if (!mapInstance) {
       return;
     }
-    const labelInfoMap = mapInstance?.get("labelInfoMap") || {};
-    console.log(labelInfoMap);
-    const trackInfoMap = mapInstance?.get("trackInfoMap") || [];
-    console.log(trackInfoMap);
-    const displaySearchIds = mapInstance.defaultOptions.displaySearchIds?.split(",")?.map((item: string) => Number(item));
-    let labelInfoArr: any = Object.values(labelInfoMap) || [];
-    const labelAllData = [...labelInfoArr, ...trackInfoMap];
-    if (!labelAllData || labelAllData.length === 0) {
-      table.value.data = [];
-      return;
-    }
-    let filteredData = labelAllData.filter((item: any) => {
-      if (displaySearchIds.includes(item.labelTypeId)) {
-        return true;
-      }
-      return false;
-    });
+    getFilterALLData();
     if (inputParam.value) {
-      // 根据标签name及code过滤数据
-      filteredData = filteredData.filter((item: { [ket: string]: any }) => {
-        return item?.name.includes(inputParam.value) || String(item?.code).includes(inputParam.value);
+      // 根据标签name及code过滤数据  还有关联设备的code和name
+      searchData.value = searchData.value.filter((item: { [ket: string]: any }) => {
+        const status = [
+          item?.name?.includes(inputParam.value),
+          String(item?.code).includes(inputParam.value),
+          item?.relationEquipName?.includes(inputParam.value),
+          item?.relationEquipCode?.includes(inputParam.value)
+        ];
+        return status.some(item => item);
       });
     }
-    console.log(filteredData);
-    table.value.data = filteredData;
+    table.value.data = searchData.value;
   },
   panToFeature: ({ code, isVisitObject = false }: any) => {
     inputParam.value = code;
@@ -84,6 +77,41 @@ const table: any = ref({
     emits("onEquipDetail", row);
   }
 });
+
+const getFilterALLData = () => {
+  let mapInstance = props.map;
+  const labelInfoMap = mapInstance?.get("labelInfoMap") || {};
+  const trackInfoMap = mapInstance?.get("trackInfoMap") || [];
+  const displaySearchIds = mapInstance.defaultOptions.displaySearchIds?.split(",")?.map((item: string) => Number(item));
+  let labelInfoArr: any = Object.values(labelInfoMap) || [];
+  const relationMap = gisStore?.relationMap;
+  const labelAllData = [...labelInfoArr, ...trackInfoMap];
+  if (!labelAllData || labelAllData.length === 0) {
+    table.value.data = [];
+    return;
+  }
+  let filteredData = labelAllData.filter((item: any) => {
+    if (displaySearchIds.includes(item.labelTypeId)) {
+      return true;
+    }
+    return false;
+  });
+  filteredData = filteredData.map(item => {
+    if (relationMap[item.code]) {
+      item.relationEquipCode = relationMap[item.code].code;
+      item.relationEquipName = relationMap[item.code].name;
+    }
+    return item;
+  });
+  searchData.value = filteredData;
+};
+
+watch(
+  () => gisStore.relationMap,
+  () => {
+    getFilterALLData();
+  }
+);
 </script>
 
 <style lang="scss" scoped>

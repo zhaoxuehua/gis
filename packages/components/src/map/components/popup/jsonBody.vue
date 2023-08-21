@@ -4,11 +4,15 @@
       <template v-if="table.data.length">
         <div class="title-box">
           <div class="title">{{ table.name }}</div>
-          <el-button v-if="table.tile" type="primary" :disabled="table.currentDescIndex === 0" @click="onSwitch('prev', table)"
+          <el-button
+            v-if="table.tile && table.data.length"
+            type="primary"
+            :disabled="table.currentDescIndex === 0"
+            @click="onSwitch('prev', table)"
             >上一条</el-button
           >
           <el-button
-            v-if="table.tile"
+            v-if="table.tile && table.data.length"
             type="primary"
             :disabled="table.currentDescIndex === table.data.length - 1"
             @click="onSwitch('next', table)"

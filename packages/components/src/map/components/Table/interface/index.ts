@@ -1,4 +1,4 @@
-export interface ColumnItem {
+export interface TColumnItem {
   type?: string;
   label?: string;
   prop?: string;
@@ -7,7 +7,7 @@ export interface ColumnItem {
   render?: (param: any) => any;
   [key: string]: any;
 }
-export interface Pagination {
+export interface TPagination {
   total?: number;
   page?: number;
   pageSize?: number;
