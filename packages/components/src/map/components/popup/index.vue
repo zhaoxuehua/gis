@@ -56,13 +56,14 @@
 <script lang="ts" setup>
 import { ref, reactive, nextTick, computed, watch } from "vue";
 import Icon from "../Icon.vue";
-import { getEquipData, lineRealTimeCurveApi, labelDetailAttr } from "../../../api/device";
+import { getEquipData, lineRealTimeCurveApi } from "../../../api/device";
 import dayjs from "dayjs";
 import lineChart from "../lineChart.vue";
 import jsonBody from "./jsonBody.vue";
 import { ElMessage } from "element-plus";
 import { addAttentionApi, getAttentionList, deleteDialogAttentionApi } from "../../../api/gis.js";
 import type { VisualMap } from "../../type";
+import { useJSONBody } from "../../hooks/useJSONBody";
 
 // import { chartData } from "./popupmock";
 
@@ -82,8 +83,10 @@ const getDOMElement = () => {
   return popupRef.value;
 };
 
+const { configInfo, staticAttr, linkData, monitorSeqAttr, monitorLineAttr, monitorJSONbodyMap, getBindAttr } = useJSONBody();
+
 // 左键配置信息
-const configInfo = ref();
+// const configInfo = ref();
 const attrData: any = reactive({
   // 静态属性数据
   staticData: [],
@@ -128,34 +131,6 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
   });
 };
 
-const getDiffAttrCode = () => {
-  // 散点类型
-  const sequenceType = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  // 线性类型
-  const lineType = [91, 92, 93];
-  let staticAttr = configInfo.value.staticAttribute.map((item: any) => item.attributeCode);
-  let monitorSeqAttr: string[] = [];
-  let monitorLineAttr: string[] = [];
-  let monitorJSONbodyMap: any = {};
-  configInfo.value.monitorAttribute.forEach((item: any) => {
-    if (lineType.includes(Number(item.attributeType))) {
-      monitorLineAttr.push(item.attributeCode);
-    }
-    if (sequenceType.includes(Number(item.attributeType))) {
-      monitorSeqAttr.push(item.attributeCode);
-    }
-    if ([10].includes(Number(item.attributeType))) {
-      monitorJSONbodyMap[item.attributeCode] = item.attributeJsonConfig;
-    }
-  });
-  return {
-    staticAttr,
-    monitorSeqAttr,
-    monitorLineAttr,
-    monitorJSONbodyMap
-  };
-};
-
 const lineChartRef = ref();
 
 // 获取左键配置信息
@@ -168,32 +143,25 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   console.log(relationMap);
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
-  equipInfo.value = relationMap;
-  // equipInfo.value = {
-  //   equipType: 761,
-  //   code: "tunnel01",
-  //   isVisitObject
-  // };
-  // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
-  const currentType = isVisitObject ? "VisitObjectType" : "EquipType";
-  // 获取配置的绑定属性
-  const detailRes: any = await labelDetailAttr(equipInfo.value.equipType, currentType);
-  if (detailRes.code !== 200) return;
-  configInfo.value = detailRes.data;
-  attrData.linkData = configInfo.value?.linkConfig || [];
-  attrData.hasFocusBtn = !!attrData.linkData.find((item: any) => item.buttonType === 3);
+  // equipInfo.value = relationMap;
+  equipInfo.value = {
+    equipType: 761,
+    code: "tunnel01",
+    isVisitObject
+  };
+  // 获取绑定的属性
+  await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject });
+  attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3);
   if (attrData.hasFocusBtn) {
-    attrData.linkData = attrData.linkData.filter((item: any) => item.buttonType !== 3);
+    attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3);
     getFocusStatus();
   }
-  // 获取不同属性的code
-  const { staticAttr, monitorSeqAttr, monitorLineAttr, monitorJSONbodyMap } = getDiffAttrCode();
-  attrData.monitorLineAttr = monitorLineAttr;
-  attrData.monitorJSONbodyMap = monitorJSONbodyMap;
+  attrData.monitorLineAttr = monitorLineAttr.value;
+  attrData.monitorJSONbodyMap = monitorJSONbodyMap.value;
   // 获取静态属性数据 监测散点/结构体数据
   const res: any = await getDataFromAttr(
     String(equipInfo.value.code),
-    staticAttr.concat(monitorSeqAttr, Object.keys(monitorJSONbodyMap)).join(",")
+    staticAttr.value.concat(monitorSeqAttr.value, Object.keys(monitorJSONbodyMap.value)).join(",")
   );
   if (res.code === 200) {
     const data = res.data.items[0];
@@ -203,10 +171,10 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     attrData.monitorSequenceData = []; // 监测散点的
     attrData.monitorJSONbodyData = []; // 监测结构体的
     telemetryData.forEach((item: any) => {
-      if (monitorSeqAttr.includes(item.code)) {
+      if (monitorSeqAttr.value.includes(item.code)) {
         attrData.monitorSequenceData.push(item);
       }
-      if (Object.keys(monitorJSONbodyMap).includes(item.code)) {
+      if (Object.keys(monitorJSONbodyMap.value).includes(item.code)) {
         attrData.monitorJSONbodyData.push(item);
       }
     });

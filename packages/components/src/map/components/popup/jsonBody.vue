@@ -1,6 +1,6 @@
 <template>
   <div class="monitor-jsonbody-data">
-    <div v-for="(table, index) in state.tableBodyData" :key="table.code">
+    <div v-for="(table, index) in tableBodyData" :key="table.code">
       <template v-if="table.data.length">
         <div class="title-box">
           <div class="title">{{ table.name }}</div>
@@ -52,59 +52,20 @@
   </div>
 </template>
 <script lang="ts" setup name="jsonBody">
-import { reactive, watch } from "vue";
+import { watch } from "vue";
 // import { jsonbodyData, jsonbodyMap } from "./popupmock";
 import Table from "../Table/index.vue";
+import { useJSONBody } from "../../hooks/useJSONBody";
 
 const props = defineProps({
   jsonbodyData: Array<any>,
   jsonbodyMap: Object
 });
-const state = reactive({
-  tableBodyData: [] as any
-});
-const handleBodyValue = () => {
-  state.tableBodyData = [];
-  props.jsonbodyData?.forEach((item: any) => {
-    try {
-      item.value = JSON.parse(item.value);
-      // item.valueType = Array.isArray(item.value) ? "array" : "object";
-    } catch (error) {
-      item.value = "";
-      // item.valueType = "string";
-    }
-    let fieldList = props.jsonbodyMap?.[item.code][0]?.children;
-    let tableColumn = fieldList?.map((val: any) => {
-      return {
-        prop: val.field,
-        label: val.remark
-      };
-    });
-    let tableBodyItem = {
-      tile: props.jsonbodyMap?.[item.code][0]?.tile,
-      name: item.name,
-      code: item.code,
-      columns: tableColumn,
-      data: Array.isArray(item.value) ? item.value : item.value ? [item.value] : [],
-      pagination: {
-        total: 0,
-        page: 1,
-        pageSize: 5
-      },
-      pageData: null,
-      currentDescIndex: 0
-    };
-    tableBodyItem.pagination.total = tableBodyItem.data.length;
-    tableBodyItem.pageData = tableBodyItem.data.slice(
-      (tableBodyItem.pagination.page - 1) * tableBodyItem.pagination.pageSize,
-      tableBodyItem.pagination.page * tableBodyItem.pagination.pageSize
-    );
-    state.tableBodyData.push(tableBodyItem);
-    console.log(state.tableBodyData);
-  });
-};
+
+const { tableBodyData, handleBodyValue } = useJSONBody();
+
 const handleCurrentChange = (val: number, index: number) => {
-  const current = state.tableBodyData[index];
+  const current = tableBodyData.value[index];
   current.pagination.page = val;
   current.pageData = current.data.slice(
     (current.pagination.page - 1) * current.pagination.pageSize,
@@ -124,7 +85,7 @@ watch(
   () => {
     console.log(props.jsonbodyData);
     console.log(props.jsonbodyMap);
-    handleBodyValue();
+    handleBodyValue(props.jsonbodyData!, props.jsonbodyMap);
   }
 );
 </script>
