@@ -63,7 +63,7 @@ const state = reactive({
   filterText: "" // 树搜索字段
 });
 
-// 关闭标签树
+// 关闭导航树
 const onClose = () => {
   emits("onClose", props.index);
 };
@@ -106,6 +106,10 @@ const onDelete = (data: NavigationTreeNodeData) => {
   const label = labelInfoMap[data.associationInfo?.associationObjectCode];
   if (!label) {
     ElMessage.warning("标签不存在或已删除");
+    return;
+  }
+  if (gisStore.isShowEditLabel) {
+    ElMessage.warning("请先关闭编辑标签弹框");
     return;
   }
   ElMessageBox.confirm("确定删除该标签吗？", "提示", {

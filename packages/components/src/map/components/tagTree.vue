@@ -42,10 +42,12 @@
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useGisStore } from "../../stores/modules/gis";
 import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 
+const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
   index: () => 0
@@ -128,6 +130,12 @@ const onDelete = (node: { [key: string]: any }, data: { [key: string]: any }) =>
     ElMessage.warning("标签不存在");
     return;
   }
+
+  if (gisStore.isShowEditLabel) {
+    ElMessage.warning("请先关闭编辑标签弹框");
+    return;
+  }
+
   ElMessageBox.confirm("确定删除该标签吗？", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",

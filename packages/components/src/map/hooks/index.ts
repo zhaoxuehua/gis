@@ -204,7 +204,6 @@ export function removeLabel(label: LabelInfoData, map: any) {
         }
         const feature = source.getFeatureById(label.code);
         source.removeFeature(feature); // 从地图上移除要素
-        // 删除标签时编辑弹框需要处于关闭状态，否则删了再关闭会报错（后期优化）
         let labelInfoMap = map?.get("labelInfoMap") || {};
         delete labelInfoMap[label.code];
         map.set("labelInfoMap", labelInfoMap);
@@ -410,6 +409,9 @@ export function featureUpdate(labelData: any, map: VisualMap) {
   let feature = source.getFeatureById(labelData.code);
   let dataType = labelData.labelType?.dataType;
   let geo = feature?.getGeometry();
+  if (!geo) {
+    return;
+  }
   // 考虑坐标点的编辑(替换为新的经度和纬度值)
   // 如果是圆的话特殊处理
   if (dataType === "4") {
