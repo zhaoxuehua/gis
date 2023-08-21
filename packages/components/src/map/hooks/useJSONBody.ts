@@ -3,13 +3,13 @@ import { labelDetailAttr } from "../../api/device";
 
 export const useJSONBody = () => {
   const state = reactive({
-    tableBodyData: [] as any,
-    configInfo: {} as any,
+    tableBodyData: [] as any, // 结构体数据
+    configInfo: {} as any, // 标签配置信息
     monitorLineAttr: [] as any, //监测线性属性code
-    monitorJSONbodyMap: {},
-    staticAttr: [] as any,
-    monitorSeqAttr: [] as any,
-    linkData: [] as any
+    monitorJSONbodyMap: {}, // 绑定的结构体
+    staticAttr: [] as any, // 静态属性
+    monitorSeqAttr: [] as any, // 监测散点属性
+    linkData: [] as any // 链接数据
   });
 
   const getDiffAttrCode = () => {
