@@ -263,7 +263,8 @@ const onAction = (actionType: number) => {
       ...equipInfo.value,
       equip: {
         id: equipInfo.value.associationInfo.assetId,
-        model: equipInfo.value.associationInfo.assetModel
+        model: equipInfo.value.associationInfo.assetModel,
+        name: equipInfo.value.name
       }
     };
     emits(actionMap[actionType], actionMap[actionType], option);
