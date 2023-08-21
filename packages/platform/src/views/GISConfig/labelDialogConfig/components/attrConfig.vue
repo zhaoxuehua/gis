@@ -16,17 +16,28 @@
   <div class="attr-config">
     <Table class="attr-table" title="" v-loading="state.loading" :data="tableData" :columns="tableColumns" :is-pageable="false">
       <template #action="scope">
-        <el-button v-if="scope.row.attributeType === 10" type="primary" text @click="onJsonEdit(scope.row.attributeId)"
-          >编辑</el-button
+        <el-button
+          v-if="scope.row.attributeType === 10"
+          type="primary"
+          text
+          @click="onJsonEdit(scope.row.attributeId, scope.$index)"
         >
+          编辑
+        </el-button>
         <el-button type="primary" text @click="onDelete(scope.row.attributeId, scope.$index)">删除</el-button>
       </template>
     </Table>
   </div>
   <el-dialog title="编辑" v-model="state.dialogVisible" class="el-dialog-default">
+    <span class="label">展示方式</span>
+    <el-select v-model="state.tile">
+      <el-option label="平铺展示" :value="true" key="flat"></el-option>
+      <el-option label="表格展示" :value="false" key="table"></el-option>
+    </el-select>
     <Table
       ref="jsonTableRef"
       class="json-table"
+      row-key="tempId"
       :data="state.JsonBodyData"
       :columns="jsonBodyColumns"
       default-expand-all
@@ -43,7 +54,7 @@
 </template>
 <script setup lang="ts" name="labelDialog">
 import { reactive, ref, nextTick } from "vue";
-import Table from "../../../../components/Table/index.vue";
+import Table from "../../../../../../components/src/map/components/Table/index.vue";
 import addAttr from "./addAttr.vue";
 import { deleteBindAttrApi, updateJSONBody, getAllJSONbodyApi } from "../../../../api/modules/labelDialogConfig";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -62,7 +73,9 @@ const state = reactive({
   activeAttr: "static",
   dialogVisible: false,
   selectJSONBody: [],
-  JsonBodyData: []
+  JsonBodyData: [],
+  editJSONbodyIndex: 0,
+  tile: true
 });
 
 const tableData: any = ref([]);
@@ -125,13 +138,27 @@ const onAttrConfigAdd = () => {
   addAttrRef.value.onOpen();
 };
 
-const onJsonEdit = async (id: number) => {
+const onJsonEdit = async (id: number, index: number) => {
   state.dialogVisible = true;
-
+  state.editJSONbodyIndex = index;
   const res: any = await getAllJSONbodyApi(id);
   if (res.code === 200) {
     state.JsonBodyData = res.data;
-    jsonTableRef.value?.toggleRowSelection(state.JsonBodyData[0], true);
+    nextTick(() => {
+      // 没选属性  根元素必选
+      const checkedConfig = tableData.value[state.editJSONbodyIndex]?.attributeJsonConfig;
+      state.tile = checkedConfig?.tile || true;
+      const root: any = state.JsonBodyData.filter((item: any) => item.field === "root")?.[0] || {};
+      jsonTableRef.value?.toggleRowSelection(root, true);
+      root.children?.forEach((item: any) => {
+        jsonTableRef.value?.toggleRowSelection(item, false);
+      });
+      const checkedroot: any = checkedConfig.filter((item: any) => item.field === "root")?.[0] || {};
+      checkedroot.children?.forEach((item: any) => {
+        const sameChild = root.children.find((rchild: any) => rchild.tempId === item.tempId);
+        sameChild && jsonTableRef.value?.toggleRowSelection(sameChild, true);
+      });
+    });
   }
 };
 
@@ -152,17 +179,28 @@ const onDelete = (id: number, index: number) => {
   });
 };
 const handleSelectionChange = (val: any) => {
-  console.log(val);
   state.selectJSONBody = val;
 };
 const onClose = () => {
   state.dialogVisible = false;
 };
+const getTree: any = (list: any[], parent: any) => {
+  let children = list.filter(item => (item.parent || null) === parent);
+  return children.map((item: any) => {
+    return {
+      ...item,
+      tile: state.tile,
+      children: getTree(list, item.tempId)
+    };
+  });
+};
 const onConfirm = async () => {
-  return;
-  const res: any = await updateJSONBody(state.selectJSONBody);
+  const tree = getTree(state.selectJSONBody, null);
+  const res: any = await updateJSONBody(tree);
   if (res.code === 200) {
     state.dialogVisible = false;
+    ElMessage.success("结构体配置成功");
+    tableData.value[state.editJSONbodyIndex].attributeJsonConfig = tree;
   }
 };
 defineExpose({
@@ -184,6 +222,11 @@ defineExpose({
   margin-top: 10px;
 }
 .json-table {
+  margin-top: 10px;
   height: 300px;
+}
+.label {
+  display: inline-block;
+  margin-right: 10px;
 }
 </style>

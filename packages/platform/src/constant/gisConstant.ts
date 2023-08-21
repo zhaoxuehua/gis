@@ -57,6 +57,11 @@ export const GIS_CONTROLS = [
     name: "显示图例控件"
   },
   {
+    code: "attentionList",
+    name: "显示关注列表控件"
+  },
+
+  {
     code: "whiteList",
     name: "显示白名单控件"
   }

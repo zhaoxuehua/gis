@@ -13,11 +13,13 @@
         <el-aside class="reference-side-tab">
           <div class="reference-side-tab-item" :class="{ active: isLogical === 1 }" @click="logicalChange(1)">物理设备类型</div>
           <div class="reference-side-tab-item" :class="{ active: isLogical === 2 }" @click="logicalChange(2)">逻辑设备类型</div>
+          <div class="reference-side-tab-item" :class="{ active: isLogical === 3 }" @click="logicalChange(3)">外部对象类型</div>
         </el-aside>
         <el-main class="reference-main-content">
           <el-button class="confirm-button" type="primary" @click="onConfirm">确定关联</el-button>
           <el-tabs v-model="currentTab" @tab-click="onTabClick">
-            <el-tab-pane label="设备类型" name="equipType">
+            <el-tab-pane :label="isLogical == 1 || isLogical == 2 ? '设备类型' : '对象类型'" name="equipType">
+              <!-- 物理设备类型、逻辑设备类型列表、外部对象对象类型列表 -->
               <el-table
                 :data="equipTypeList.data"
                 v-loading="equipTypeList.loading"
@@ -33,14 +35,21 @@
               >
                 <el-table-column type="selection"></el-table-column>
                 <el-table-column label="序号" type="index" width="60"></el-table-column>
-                <el-table-column label="设备类型编码" prop="code"></el-table-column>
-                <el-table-column label="设备类型名称" prop="name"></el-table-column>
+                <el-table-column
+                  :label="isLogical == 1 || isLogical == 2 ? '设备类型编码' : '对象类型编码'"
+                  prop="code"
+                ></el-table-column>
+                <el-table-column
+                  :label="isLogical == 1 || isLogical == 2 ? '设备类型名称' : '对象类型名称'"
+                  prop="name"
+                ></el-table-column>
                 <el-table-column label="创建时间" prop="createdOn"></el-table-column>
               </el-table>
             </el-tab-pane>
-            <el-tab-pane label="设备属性" name="equipAttribute">
+            <el-tab-pane :label="isLogical == 1 || isLogical == 2 ? '设备属性' : '对象属性'" name="equipAttribute">
               <ReferenceAttribute
                 ref="referenceAttributeRef"
+                :isLogical="isLogical"
                 :equip-type-list="equipTypeList.data"
                 @attribute-change="onAttributeChange"
               ></ReferenceAttribute>
@@ -56,11 +65,11 @@
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElTable } from "element-plus";
 import { handleParam } from "@/utils/common.js";
-import { deviceTypeList } from "@/api/device.js";
+import { deviceTypeList, objTypeList } from "@/api/device.js";
 import ReferenceAttribute from "./referenceAttribute.vue";
 
 const emit = defineEmits(["referenceChange"]);
-// 物理设备 or 逻辑设备
+// 物理设备 or 逻辑设备 or 外部对象
 const isLogical = ref<number>(1);
 
 const logicalChange = (value: number) => {
@@ -96,16 +105,29 @@ const equipTypeList = ref({
   ids: [],
   fetchData: async () => {
     equipTypeList.value.loading = true;
-    const res: { [key: string]: any } = await deviceTypeList(
-      ...(handleParam({ pageNumber: 1, pageSize: 1000, isLogical: isLogical.value, orderByColumn: "", isAsc: "" }) as [
-        string,
-        object
-      ])
-    );
-    if (res.items) {
-      equipTypeList.value.data = res.items;
+    // 物理设备类型、逻辑设备类型
+    if (isLogical.value == 1 || isLogical.value == 2) {
+      const res: { [key: string]: any } = await deviceTypeList(
+        ...(handleParam({ pageNumber: 1, pageSize: 1000, isLogical: isLogical.value, orderByColumn: "", isAsc: "" }) as [
+          string,
+          object
+        ])
+      );
+      if (res.items) {
+        equipTypeList.value.data = res.items;
+      } else {
+        ElMessage.error("接口异常");
+      }
     } else {
-      ElMessage.error("接口异常");
+      // 外部对象的对象类型（设备类型）
+      const res: { [key: string]: any } = await objTypeList(
+        ...(handleParam({ pageNumber: 1, pageSize: 10000, orderByColumn: "", isAsc: "" }) as [string, object])
+      );
+      if (res.items) {
+        equipTypeList.value.data = res.items;
+      } else {
+        ElMessage.error("接口异常");
+      }
     }
     equipTypeList.value.loading = false;
   },
@@ -135,13 +157,13 @@ const onConfirm = () => {
       return;
     }
 
-    const selectionRow = equipTypeList.value.data.find((item: any) => item.id === equipTypeList.value.ids[0]);
-    emit("referenceChange", selectionRow);
+    const selectionRow = equipTypeList.value.data.find((item: any) => item.id === equipTypeList.value.ids[0]); // 设备类型选择行
+    emit("referenceChange", selectionRow, null, isLogical.value);
   }
 
   // 关联设备属性
   if (currentTab.value === "equipAttribute") {
-    const selectionRow = referenceAttributeRef.value?.getSelectAttribute();
+    const selectionRow = referenceAttributeRef.value?.getSelectAttribute(); // 设备类型行+属性选择行
 
     if (!selectionRow) {
       ElMessage.warning("请选择设备属性及属性值");
@@ -149,7 +171,8 @@ const onConfirm = () => {
     }
 
     const { equipType, equipAttribute } = selectionRow;
-    emit("referenceChange", equipType, equipAttribute);
+
+    emit("referenceChange", equipType, equipAttribute, isLogical.value);
   }
 
   open.value = false;

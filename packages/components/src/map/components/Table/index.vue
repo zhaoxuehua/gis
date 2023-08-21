@@ -64,7 +64,7 @@
         v-if="Object.keys(props.pagination).length"
         :background="initPagination.background"
         :total="props.pagination.total"
-        :layout="initPagination.layout"
+        :layout="props.layout"
         :page-sizes="initPagination.pageSizes"
         v-model:current-page="state.currentPage"
         v-model:page-size="state.currentPageSize"
@@ -77,16 +77,16 @@
 </template>
 <script setup lang="ts" name="Table">
 import { reactive, ref } from "vue";
-import { ColumnItem, Pagination } from "./interface/index";
 interface Props {
   data: any[];
-  columns: ColumnItem[];
-  pagination?: Pagination;
+  columns: any[];
+  pagination?: any;
   isPageable?: boolean;
   isSearch?: boolean;
   type?: string;
   title?: string;
   rowKey?: string;
+  layout?: string;
 }
 interface Emits {
   (e: "selectionChange", value?: any): void;
@@ -104,7 +104,8 @@ const props = withDefaults(defineProps<Props>(), {
   isSearch: true, //是否有搜索项
   type: "default", // 表格类型 是否是卡片包裹  card default
   title: "",
-  rowKey: "id"
+  rowKey: "id",
+  layout: "total, sizes, prev, pager, next, jumper"
 });
 const emit = defineEmits<Emits>();
 
@@ -156,8 +157,13 @@ const toggleRowSelection = (row: any, selected: any) => {
   tableRef.value.toggleRowSelection(row, selected);
 };
 
+const clearSelection = () => {
+  tableRef.value.clearSelection();
+};
+
 defineExpose({
-  toggleRowSelection
+  toggleRowSelection,
+  clearSelection
 });
 </script>
 <style lang="scss" scoped>

@@ -411,13 +411,13 @@ const translation = ref(); // 平移交互器
 // 打开标签编辑
 const onOpen = (labelCode: string) => {
   if (labelCode) {
-    clearModify(); // 恢复上条数据的信息
     const editLabel = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
     if (!editLabel) {
       // 从标签信息中找不到（可能别的应用绘制了但是有的应用没有配置对应的类型所以地图上没有）
       ElMessage.warning("标签不存在或已删除");
       return;
     }
+    clearModify(); // 恢复上条数据的信息
     originEditLabel.value = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
     // 文本标注默认样式
     const defaultTextStyle = {

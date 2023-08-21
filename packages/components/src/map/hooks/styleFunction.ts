@@ -319,7 +319,6 @@ export function layerStyle(feature: any, isDynamicLine: boolean = false, imgInde
   const isSelected = feature.get("selected"); // 是否选中
   let type = feature.get("type"); // 原标签类型
   const typeStats = feature.get("typeStats"); // 为了区分静态点、动态点、静态线、动态线、静态环、动态环增加的
-  // const name = feature.get("name");
 
   // 兼容type类型
   if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {

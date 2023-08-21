@@ -26,7 +26,14 @@
     >
     </RightActionBox>
     <!-- 地图点击弹框 -->
-    <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
+    <Popup
+      :map="exportMap"
+      :data="popupData"
+      @on-close="onScadaClose"
+      ref="popupRef"
+      @scada="handlePopLink"
+      @view="handlePopLink"
+    >
       <template #customContent v-if="customContent">
         <component :is="customContent"></component>
       </template>
@@ -60,7 +67,7 @@ import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/creat
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
-import Popup from "./components/popup.vue";
+import Popup from "./components/popup/index.vue";
 
 defineOptions({ name: "AgMap" });
 
@@ -78,7 +85,10 @@ const emits = defineEmits([
   "onCloseRightMenu",
   "getClickBoxSelection",
   "getCustomSearchContent",
-  "getInitMapExportData"
+  "getInitMapExportData",
+  "scada",
+  "view",
+  "track"
 ]);
 
 const exportMap = ref<VisualMap>();
@@ -108,7 +118,7 @@ const state = reactive({
       component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
     },
     {
-      icon: "iconfont icon-history",
+      icon: "iconfont icon-retweet1",
       label: "轨迹回放",
       isShow: false,
       visible: false,
@@ -150,6 +160,13 @@ const state = reactive({
       isShow: false,
       visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/imgLegend.vue")))
+    },
+    {
+      icon: "iconfont icon-list-ol-solid",
+      label: "关注列表",
+      isShow: false,
+      visible: false,
+      component: shallowRef(defineAsyncComponent(() => import("./components/attentionList.vue")))
     },
     {
       icon: "iconfont icon-complex-device",
@@ -223,6 +240,9 @@ const getRightData = computed(() => {
       case "图例":
         item.visible = !!controlList.value.includes("imgLegend");
         break;
+      case "关注列表":
+        item.visible = !!controlList.value.includes("attentionList");
+        break;
       case "白名单":
         item.visible = !!controlList.value.includes("whiteList");
         break;
@@ -283,7 +303,6 @@ const initMap = async (mapId: string | number) => {
   const res: { [key: string]: any } = await getMapParamsDetail(mapId);
   if (res.code === 200 && res.data) {
     const originalData = JSON.parse(JSON.stringify(res.data));
-    originalData.displaySearchIds = "3,55,54,53,52,51,50,1,7";
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
     if (props?.config?.bigScreenControls) {
       let newControls = [];
@@ -332,6 +351,7 @@ const initMap = async (mapId: string | number) => {
       layers: originalData.displayLayer, // 显示图层  object[]
       layersIds: originalData.displayLayerIds, // 图层id string
       displaySearchIds: originalData.displaySearchIds, // 搜索类型id
+      displaySearch: originalData.displaySearch, // 搜索类型 []
 
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
@@ -340,7 +360,8 @@ const initMap = async (mapId: string | number) => {
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
-      trackSearchId: originalData.trackSearchId // 轨迹搜索类型
+      trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
+      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
     };
 
     // 全屏控件
@@ -434,7 +455,7 @@ const initMap = async (mapId: string | number) => {
           code: item?.code,
           isTagAgg: item?.isTagAgg,
           isTrackDraw: item?.isTrackDraw,
-          style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
+          style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value) // 是否选中（因为聚合图层的选中单独处理）
         };
       } else {
         options = {
@@ -494,6 +515,7 @@ const initMap = async (mapId: string | number) => {
       }
     });
     map.set("labelTypeMap", labelTypeMap);
+    map.set("featureTypeGroup", featureTypeGroup);
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
       ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
@@ -633,6 +655,7 @@ const initMap = async (mapId: string | number) => {
       overlay && overlay.setPosition(undefined);
       popupData.featureCode = "";
       popupData.featureName = "";
+      popupData.relationMap = null;
       // 移除选中状态
       clearSelectedFeature(map);
     };
@@ -643,13 +666,13 @@ const initMap = async (mapId: string | number) => {
       if (gisStore?.isEdit) {
         return;
       }
-      // 需要自定义弹框更新数据时使用此交互，默认true走默认弹框
-      const result: any = await props?.onClickFeaturePopup({ featureCode, featureName, relationMap: gisStore?.relationMap });
-      if (result) {
-        popupData.featureCode = featureCode;
-        popupData.featureName = featureName;
-        overlay.setPosition(center);
-      }
+      // 获取船的数据
+      const trackInfoMap = map.get("trackInfoMap") || [];
+      const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+      popupData.featureCode = featureCode;
+      popupData.featureName = featureName;
+      popupData.relationMap = gisStore?.relationMap[featureCode] || currentTrack;
+      overlay.setPosition(center);
     };
 
     // 鼠标点击事件
@@ -673,10 +696,6 @@ const initMap = async (mapId: string | number) => {
           // 获取船的数据
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
-          // 点击弹窗 获取左键配置信息
-          popupRef.value?.getLabelDialogConfigInfo(
-            gisStore?.relationMap[featureCode] || (currentTrack ? { ...currentTrack, isVisitObject: true } : {})
-          );
           map.popupInfo({ featureCode, featureName, center });
           // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
@@ -687,15 +706,9 @@ const initMap = async (mapId: string | number) => {
                 clearTimeout(timer);
                 timer.value = null;
               }, 200);
-              // 清空选中状态
-              timer.value = setTimeout(() => {
-                clearSelectedFeature(exportMap.value);
-                clearTimeout(timer);
-                timer.value = null;
-              }, 3000);
             }
           } else {
-            labelOnSelect(exportMap.value, featureCode, true);
+            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isVisitObject); // 选中（还需要判断是否外部对象的选中）
           }
         }
       }
@@ -781,9 +794,8 @@ const getRelationMap = () => {
   return gisStore?.relationMap;
 };
 
-// 获取船的数据  如果是船 必须调用
-const setTrackInfoMap = (data: any) => {
-  gisStore.setTrackInfoMap(data);
+const handlePopLink = (type: any, option: any) => {
+  emits(type, option);
 };
 
 defineExpose({
@@ -802,8 +814,7 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter,
-  setTrackInfoMap
+  getGeometryCenter
 });
 
 // 监听外部树节点点击

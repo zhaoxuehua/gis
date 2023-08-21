@@ -1,6 +1,13 @@
 <template>
   <div class="label-dialog">
-    <TreeFilter class="tree-filter-select" label="name" title="" :data="treeFilterData" @change="changeTreeFilter" />
+    <TreeFilter
+      class="tree-filter-select"
+      label="name"
+      title=""
+      :data="treeFilterData"
+      :defaultValue="treeDefaultValue"
+      @change="changeTreeFilter"
+    />
     <div class="card table-main">
       <div class="flx-align-center">
         <span>标题名称</span>
@@ -33,15 +40,19 @@ import { equipTypeTreeApi, labelDetailAttr, updateLabel } from "../../../api/mod
 import { ElMessage } from "element-plus";
 
 const treeFilterData = ref();
+const treeDefaultValue = ref();
 const equipTypeId = ref();
 const visitObjectTypeId = ref();
 const currentType = ref(); // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
 const changeTreeFilter = (id: number, data: any) => {
+  if (!id || data.currentType === "EquipCategory") return;
   currentType.value = data.currentType;
   if (data.currentType === "VisitObjectType") {
     visitObjectTypeId.value = id;
+    equipTypeId.value = undefined;
   } else {
     equipTypeId.value = id;
+    visitObjectTypeId.value = undefined;
   }
   getDetail(id);
 };
@@ -75,6 +86,17 @@ const getTree = async () => {
   const res: any = await equipTypeTreeApi();
   if (res.code === 200) {
     treeFilterData.value = res.data;
+    let child: any;
+    const findFirstChild = (node: any) => {
+      if (node?.children?.length) {
+        findFirstChild(node.children[0]);
+      } else {
+        child = node;
+      }
+    };
+    findFirstChild(res.data[0] || []);
+    treeDefaultValue.value = child?.id + "";
+    changeTreeFilter(Number(treeDefaultValue.value), child);
   }
 };
 const editTitle = async () => {

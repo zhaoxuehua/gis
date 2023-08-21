@@ -94,7 +94,7 @@
             <template #default="scope">
               <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)"></Icon>
               <Icon src="Switch" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)"></Icon>
-              <Icon src="Download" :size="14" class="operate-icon" @click="downloadTrackInfo(scope.row)"></Icon>
+              <!-- <Icon src="Download" :size="14" class="operate-icon" @click="downloadTrackInfo(scope.row)"></Icon> -->
             </template>
           </el-table-column>
         </el-table>
@@ -191,7 +191,7 @@ const query = ref({
   }
 });
 const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: query.value.params.pageNumber, limit: val });
+  query.value.getPagination({ page: 1, limit: val });
 };
 
 const handleCurrentChange = (val: any) => {
@@ -283,11 +283,11 @@ const toLocation = (row: { [key: string]: any }) => {
 const trackPlayBack = (row: { [key: string]: any }) => {
   console.log(row, 2);
 };
-const downloadTrackInfo = (row: { [key: string]: any }) => {
-  console.log(row, 3);
-};
+// const downloadTrackInfo = (row: { [key: string]: any }) => {
+//   console.log(row, 3);
+// };
 
-// 筛选出标签类型是面的
+// 筛选出标签类型是面的(面 矩形)
 watch(
   () => isShow.value,
   isShowVal => {
@@ -300,8 +300,8 @@ watch(
         }
       ];
       Object.values(labelTypeMap)?.forEach((obj: any) => {
-        // 过滤出标签类型是面的 面 圆 矩形
-        if (obj?.dataType == "3" || obj?.dataType == "4" || obj?.dataType == "5") {
+        // 过滤出标签类型是面的 面  矩形
+        if (obj?.dataType == "3" || obj?.dataType == "5") {
           labelTypeArr.push({
             code: obj.code,
             name: obj.name

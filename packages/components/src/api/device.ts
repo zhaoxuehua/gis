@@ -14,6 +14,25 @@ export function eventListByObjType(id: number | string) {
   return request.get(`/api/equipment-service/equip/visitObject/events/${id}`);
 }
 
+// 白名单
+// 获取白名单列表
+export function getWhiteList(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/object/whitelist/list${queryString}`, params);
+}
+
+// 编辑白名单
+export function whiteListAdd(params: object) {
+  return request.post(`/api/equipment-service/object/whitelist`, params);
+}
+export function whiteListEdit(params: object) {
+  return request.put(`/api/equipment-service/object/whitelist`, params);
+}
+
+// 删除白名单
+export function whiteListDelete(id: number) {
+  return request.delete(`/api/equipment-service/object/whitelist/remove/${id}`);
+}
+
 // 左键弹窗 获取设备数据
 export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);
@@ -31,5 +50,5 @@ export function lineRealTimeCurveApi(params: object) {
 
 // 左键弹窗 查看配置属性
 export function labelDetailAttr(equipTypeId: number, currentType: string) {
-  return request.get(`/api/gis-service-zhk/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
+  return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
 }

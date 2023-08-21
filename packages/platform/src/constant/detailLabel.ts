@@ -124,7 +124,7 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
-    label: "轨迹搜索类型",
+    label: "显示外部对象类型",
     name: "trackSearchName"
   },
   {
