@@ -77,11 +77,10 @@
 </template>
 <script setup lang="ts" name="Table">
 import { reactive, ref } from "vue";
-import { ColumnItem, Pagination } from "./interface/index";
 interface Props {
   data: any[];
-  columns: ColumnItem[];
-  pagination?: Pagination;
+  columns: any[];
+  pagination?: any;
   isPageable?: boolean;
   isSearch?: boolean;
   type?: string;

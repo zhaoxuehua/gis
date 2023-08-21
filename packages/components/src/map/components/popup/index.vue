@@ -192,7 +192,7 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   attrData.monitorJSONbodyMap = monitorJSONbodyMap;
   // 获取静态属性数据 监测散点/结构体数据
   const res: any = await getDataFromAttr(
-    equipInfo.value.code,
+    String(equipInfo.value.code),
     staticAttr.concat(monitorSeqAttr, Object.keys(monitorJSONbodyMap)).join(",")
   );
   if (res.code === 200) {

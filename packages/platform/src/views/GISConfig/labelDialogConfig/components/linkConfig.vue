@@ -25,7 +25,7 @@
 </template>
 <script setup lang="ts" name="labelDialog">
 import { ref, reactive, watch } from "vue";
-import Table from "@/components/Table/index.vue";
+import Table from "../../../../../../components/src/map/components/Table/index.vue";
 import { getUnBindLinkApi, deleteLinkApi, bindLinkApi } from "../../../../api/modules/labelDialogConfig";
 import { ElMessage, ElMessageBox } from "element-plus";
 
