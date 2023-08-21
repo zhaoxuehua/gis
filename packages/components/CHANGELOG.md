@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.36
+
+### Patch Changes
+
+- 更新包增加白名单关注列表功能
+
 ## 1.0.35
 
 ### Patch Changes
