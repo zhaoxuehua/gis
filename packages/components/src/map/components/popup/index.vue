@@ -86,7 +86,6 @@ const getDOMElement = () => {
 const { configInfo, staticAttr, linkData, monitorSeqAttr, monitorLineAttr, monitorJSONbodyMap, getBindAttr } = useJSONBody();
 
 // 左键配置信息
-// const configInfo = ref();
 const attrData: any = reactive({
   // 静态属性数据
   staticData: [],
@@ -121,7 +120,7 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
       isVisitObject: equipInfo.value.isVisitObject, // 是否是外部对象（船）
       isLineData: false, // 是否线性数据--数据类型
       dataTime: state.currentTime, //数据时间，针对具体时间
-      tenantId: 1 // 租户
+      tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
     });
     if (res.code === 200) {
       resolve(res);
@@ -143,12 +142,12 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   console.log(relationMap);
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
-  // equipInfo.value = relationMap;
-  equipInfo.value = {
-    equipType: 761,
-    code: "tunnel01",
-    isVisitObject
-  };
+  equipInfo.value = relationMap;
+  // equipInfo.value = {
+  //   equipType: 761,
+  //   code: "tunnel01",
+  //   isVisitObject
+  // };
   // 获取绑定的属性
   await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject });
   attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3);
