@@ -131,7 +131,8 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { reactive, ref, onMounted, watch, toRefs, Ref, computed } from "vue";
+import { reactive, ref, onMounted, watch, toRefs, computed } from "vue";
+import type { Ref } from "vue";
 import { ElMessage } from "element-plus";
 import Icon from "./Icon.vue";
 import moment from "moment";
