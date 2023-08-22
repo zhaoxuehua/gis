@@ -1,4 +1,21 @@
 import request from "@/api";
+// ⤵ type
+import type {
+  trackDataByIdParamsType,
+  trackDataByIdResponseType,
+  trackListDataParamsType,
+  trackListDataResponseType
+} from "./interface";
+
+// 轨迹回放(列表)
+export function getTrackListData(params: trackListDataParamsType) {
+  return request.post<trackListDataResponseType>(`/api/adm-service/view/common/getObjectByRegion`, params);
+}
+
+// 轨迹回放(单个详情数据,每次请求前，需要查询轨迹列表数据，有没有超过5条数据，超过提示)
+export function getTrackDataById(params: trackDataByIdParamsType) {
+  return request.post<trackDataByIdResponseType>(`/api/adm-service/view/common/getEquipData`, params);
+}
 
 // 快速创建
 export function getTreeData(params: any) {

@@ -131,15 +131,16 @@ export type createdFeatureType = (data: createdFeatureArgType) => Feature;
 // 创建轨迹回放
 export interface trackLayerParamType {
   id: number | string;
-  color: string;
-  layerConfig: {
-    code: string | number;
-    name: string;
-    layerLevel: number;
-    layerMaxLevel: number;
-    layerMinLevel: number;
-    trackAggDistance: number;
-  };
+  name: string;
+  // color: string;
+  // layerConfig: {
+  //   code: string | number;
+  //   name: string;
+  //   layerLevel: number;
+  //   layerMaxLevel: number;
+  //   layerMinLevel: number;
+  //   trackAggDistance: number;
+  // };
   data: any[];
 }
 
@@ -163,5 +164,12 @@ export interface setToMapCenterType {
   callBack?: () => void;
 }
 
+// 轨迹回放选择模式
+export interface selectModeListType {
+  code: string;
+  name: string;
+  coordinates?: any[];
+  id?: number | string;
+}
 // 返回多个要素的中心
 export type backCenterByFeaturesType = (Features: Feature[]) => number[];
