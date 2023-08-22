@@ -97,7 +97,7 @@ const state = reactive({
     label: "name"
   },
   filterText: "",
-  treeCode: "tunneltree"
+  treeCode: "drawPointTree"
 });
 
 // 树实例

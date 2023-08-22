@@ -108,7 +108,7 @@ const state = reactive({
     label: "name"
   },
   filterText: "",
-  treeCode: "tunneltree"
+  treeCode: "drawSurfaceTree"
 });
 const styleDialogRef = ref();
 // 树实例
