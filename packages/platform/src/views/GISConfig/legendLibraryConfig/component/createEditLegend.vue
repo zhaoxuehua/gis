@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog
-      :title="['创建素材', '编辑素材'][state.dialogType]"
+      :title="['上传素材', '编辑素材'][state.dialogType]"
       v-model="state.open"
       width="560px"
       :close-on-click-modal="false"
@@ -50,10 +50,10 @@ const state = reactive({
   open: false,
   rulesForm: {
     legendName: [
-      { required: true, message: "图例名称不能为空", trigger: ["blur", "change"] },
-      { max: 50, message: "图例名称长度不能大于50", trigger: ["blur", "change"] }
+      { required: true, message: "素材名称不能为空", trigger: ["blur", "change"] },
+      { max: 50, message: "素材名称长度不能大于50", trigger: ["blur", "change"] }
     ],
-    legendPath: [{ required: true, message: "图例图片不能为空", trigger: ["blur", "change"] }]
+    legendPath: [{ required: true, message: "素材图片不能为空", trigger: ["blur", "change"] }]
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();

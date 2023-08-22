@@ -222,8 +222,8 @@ defineExpose({
   margin-top: 10px;
 }
 .json-table {
-  margin-top: 10px;
   height: 300px;
+  margin-top: 10px;
 }
 .label {
   display: inline-block;

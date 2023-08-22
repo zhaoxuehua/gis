@@ -204,7 +204,6 @@ export function removeLabel(label: LabelInfoData, map: any) {
         }
         const feature = source.getFeatureById(label.code);
         source.removeFeature(feature); // 从地图上移除要素
-        // 删除标签时编辑弹框需要处于关闭状态，否则删了再关闭会报错（后期优化）
         let labelInfoMap = map?.get("labelInfoMap") || {};
         delete labelInfoMap[label.code];
         map.set("labelInfoMap", labelInfoMap);
@@ -312,7 +311,8 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   }
 
   // 点击的不是要绘制节点
-  if (!labelInfo) {
+  if (Object.keys(labelInfo).length == 0) {
+    ElMessage.warning("当前目标不在地图上!");
     return;
   }
   let layer: any = null;
@@ -384,7 +384,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
         map.set("featureSelect", selectFeature);
       }
     } else {
-      console.log("未找到匹配的要素");
+      ElMessage.warning("当前目标不在地图上!");
     }
   }
   let featureName = labelInfo?.name;
@@ -410,6 +410,9 @@ export function featureUpdate(labelData: any, map: VisualMap) {
   let feature = source.getFeatureById(labelData.code);
   let dataType = labelData.labelType?.dataType;
   let geo = feature?.getGeometry();
+  if (!geo) {
+    return;
+  }
   // 考虑坐标点的编辑(替换为新的经度和纬度值)
   // 如果是圆的话特殊处理
   if (dataType === "4") {
@@ -512,7 +515,7 @@ export function clearSelectedFeature(map: VisualMap) {
 }
 
 // 实现框选
-export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function) {
+export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function, isTrue?: boolean) {
   let boxSelectionSource: any = map?.get("boxSelectionSource");
   let boxSelectionVectorLayer = map?.get("boxSelectionSource");
   let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
@@ -600,14 +603,15 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
           source = layer.getSource();
           if (source instanceof VectorSource) {
             const features = layer.getSource().getFeaturesInExtent(extent);
-
             selectionFeatures.push(...features);
           }
         }
       }
     }
     // 调用方法将要素抛出去应用实现逻辑
-    callback(selectionFeatures);
+    !isTrue && callback(selectionFeatures);
+    isTrue && callback((polygon as any).getCoordinates());
+    boxSelectionDrawInteraction.setActive(false);
   });
 }
 

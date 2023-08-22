@@ -1,5 +1,5 @@
 <template>
-  <div class="tag-edit-draw" v-if="state.isShow" @click.stop>
+  <div class="tag-edit-draw" v-if="isShowEditLabel" @click.stop>
     <div class="title">
       <span>编辑标签</span>
       <Icon src="Close" :size="14" @click="onClose"></Icon>
@@ -205,6 +205,7 @@ import { cloneDeep } from "lodash";
 import { Modify, Translate } from "ol/interaction";
 import Collection from "ol/Collection";
 import { Circle } from "ol/geom";
+import { useGisStore } from "../../stores/modules/gis";
 import type { LabelForm, LabelInfoData } from "../type";
 
 import { MAP_DATA_TYPE, getLonLatCoordinate } from "../hooks/createGeometry.js";
@@ -401,6 +402,11 @@ const originEditLabel = ref(); // 编辑前的原始数据
 const hasEdit = ref(false); // 是否编辑过数据
 const isEditSuccess = ref(false); // 是否编辑成功（即是否需要恢复原来的数据）
 
+const gisStore = useGisStore();
+const isShowEditLabel = computed(() => {
+  return gisStore.isShowEditLabel;
+});
+
 // 编辑地图要素（点的话就是平移）
 const modifyFeature = ref(); // 编辑的要素
 const modify = ref(); // 编辑交互器
@@ -448,7 +454,8 @@ const onOpen = (labelCode: string) => {
     }
     // 更新表单
     form.value = editLabel;
-    state.isShow = true;
+    // state.isShow = true;
+    gisStore?.setIsShowEditLabel(true);
 
     // 增加平移功能
     translation.value = new Translate({
@@ -495,7 +502,7 @@ const onOpen = (labelCode: string) => {
 
 // 关闭标签编辑
 const onClose = () => {
-  state.isShow = false;
+  gisStore?.setIsShowEditLabel(false);
   clearModify(); // 恢复原数据
 };
 
@@ -575,6 +582,7 @@ const clearModify = () => {
       labelInfoMap.value[originEditLabel.value?.code] = originEditLabel.value;
       props.map.set("labelInfoMap", labelInfoMap.value); // 更新标签树
       featureUpdate(originEditLabel.value, props.map);
+      originEditLabel.value = null;
     }
   }
 };

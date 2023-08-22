@@ -1,7 +1,7 @@
 <template>
   <div class="reference-main">
     <el-dialog
-      :title="'关联设备类型'"
+      :title="'关联对象'"
       v-model="open"
       width="900px"
       :close-on-click-modal="false"
@@ -11,8 +11,8 @@
     >
       <el-container>
         <el-aside class="reference-side-tab">
-          <div class="reference-side-tab-item" :class="{ active: isLogical === 1 }" @click="logicalChange(1)">物理设备类型</div>
-          <div class="reference-side-tab-item" :class="{ active: isLogical === 2 }" @click="logicalChange(2)">逻辑设备类型</div>
+          <div class="reference-side-tab-item" :class="{ active: isLogical === 2 }" @click="logicalChange(2)">物理设备类型</div>
+          <div class="reference-side-tab-item" :class="{ active: isLogical === 1 }" @click="logicalChange(1)">逻辑设备类型</div>
           <div class="reference-side-tab-item" :class="{ active: isLogical === 3 }" @click="logicalChange(3)">外部对象类型</div>
         </el-aside>
         <el-main class="reference-main-content">
@@ -69,8 +69,8 @@ import { deviceTypeList, objTypeList } from "@/api/device.js";
 import ReferenceAttribute from "./referenceAttribute.vue";
 
 const emit = defineEmits(["referenceChange"]);
-// 物理设备 or 逻辑设备 or 外部对象
-const isLogical = ref<number>(1);
+// 物理设备 or 逻辑设备 or 外部对象  1是逻辑 2是物理
+const isLogical = ref<number>(2);
 
 const logicalChange = (value: number) => {
   isLogical.value = value;
@@ -150,7 +150,7 @@ const referenceAttributeRef = ref<InstanceType<typeof ReferenceAttribute>>();
 
 // 确认关联按钮
 const onConfirm = () => {
-  // 关联设备类型
+  // 关联对象
   if (currentTab.value === "equipType") {
     if (equipTypeList.value.ids.length === 0) {
       ElMessage.warning("请选择设备类型");

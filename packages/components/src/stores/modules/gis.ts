@@ -14,6 +14,7 @@ export const useGisStore = defineStore({
     isDynamicLine: false, // 线环闪烁维护字段
     imgIndex: 0, // 动画点图片索引
     isEdit: false, // 地图编辑
+    isShowEditLabel: false, // 编辑标签弹框
     mapCase: {}, // 地图实例
     trackColor: ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"] // 轨迹回放的颜色
   }),
@@ -49,6 +50,9 @@ export const useGisStore = defineStore({
     },
     setIsEdit(isEdit: boolean) {
       this.isEdit = isEdit;
+    },
+    setIsShowEditLabel(isShowEditLabel: boolean) {
+      this.isShowEditLabel = isShowEditLabel;
     },
     // 设置导航树数据及关联关系为空
     setNavTreeAndRelation() {

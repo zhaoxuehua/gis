@@ -1,4 +1,21 @@
 import request from "@/api";
+// ⤵ type
+import type {
+  trackDataByIdParamsType,
+  trackDataByIdResponseType,
+  trackListDataParamsType,
+  trackListDataResponseType
+} from "./interface";
+
+// 轨迹回放(列表)
+export function getTrackListData(params: trackListDataParamsType) {
+  return request.post<trackListDataResponseType>(`/api/adm-service/view/common/getObjectByRegion`, params);
+}
+
+// 轨迹回放(单个详情数据,每次请求前，需要查询轨迹列表数据，有没有超过5条数据，超过提示)
+export function getTrackDataById(params: trackDataByIdParamsType) {
+  return request.post<trackDataByIdResponseType>(`/api/adm-service/view/common/getEquipData`, params);
+}
 
 // 快速创建
 export function getTreeData(params: any) {
@@ -31,6 +48,11 @@ export function whiteListEdit(params: object) {
 // 删除白名单
 export function whiteListDelete(id: number) {
   return request.delete(`/api/equipment-service/object/whitelist/remove/${id}`);
+}
+
+// 获取水深
+export function getDepthWater(params: object) {
+  return request.post(`/api/equipment-service/object/whitelist`, params);
 }
 
 // 左键弹窗 获取设备数据
