@@ -101,8 +101,8 @@ watch(
   margin-top: 10px;
   .title-box {
     display: flex;
-    margin-top: 10px;
     align-items: center;
+    margin-top: 10px;
     .title {
       margin-right: auto;
     }
@@ -117,8 +117,8 @@ watch(
   }
   ::v-deep(.desc-label-item) {
     width: 100px;
-    white-space: nowrap;
     font-size: 14px;
+    white-space: nowrap;
   }
 }
 </style>
