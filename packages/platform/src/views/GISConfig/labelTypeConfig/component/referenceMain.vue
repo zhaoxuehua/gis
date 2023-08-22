@@ -1,7 +1,7 @@
 <template>
   <div class="reference-main">
     <el-dialog
-      :title="'关联设备类型'"
+      :title="'关联对象'"
       v-model="open"
       width="900px"
       :close-on-click-modal="false"
@@ -150,7 +150,7 @@ const referenceAttributeRef = ref<InstanceType<typeof ReferenceAttribute>>();
 
 // 确认关联按钮
 const onConfirm = () => {
-  // 关联设备类型
+  // 关联对象
   if (currentTab.value === "equipType") {
     if (equipTypeList.value.ids.length === 0) {
       ElMessage.warning("请选择设备类型");

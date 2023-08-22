@@ -42,6 +42,7 @@
             filterable
             v-model="form.displayLabelInfoIds"
             multiple
+            collapse-tags
             clearable
             placeholder="请选择..."
             :disabled="state.dialogType == 2"
@@ -53,6 +54,7 @@
           <el-select
             v-model="form.displaySearchIds"
             multiple
+            collapse-tags
             clearable
             placeholder="请选择..."
             :disabled="state.dialogType == 2"
@@ -65,6 +67,7 @@
           <el-select
             v-model="form.displayLayerIds"
             multiple
+            collapse-tags
             clearable
             placeholder="请选择..."
             :disabled="state.dialogType == 2"
@@ -78,6 +81,7 @@
             filterable
             v-model="form.displayControlIds"
             multiple
+            collapse-tags
             clearable
             placeholder="请选择..."
             :disabled="state.dialogType == 2"
@@ -89,6 +93,7 @@
           <el-select
             v-model="form.displayLegendIds"
             multiple
+            collapse-tags
             clearable
             placeholder="请选择..."
             :disabled="state.dialogType == 2"
@@ -210,13 +215,13 @@ const state = reactive({
   // 弹窗表单验证
   rulesForm: {
     appName: [
-      { required: true, message: "应用名称不能为空", trigger: ["blur", "change"] },
-      { max: 50, message: "应用名称长度不能大于50", trigger: ["blur", "change"] }
+      { required: true, message: "场景名称不能为空", trigger: ["blur", "change"] },
+      { max: 50, message: "场景名称长度不能大于50", trigger: ["blur", "change"] }
     ],
     appCode: [
-      { required: true, message: "应用编码不能为空", trigger: ["blur", "change"] },
+      { required: true, message: "场景编码不能为空", trigger: ["blur", "change"] },
       { validator: codeVerification, trigger: ["blur", "change"] },
-      { max: 50, message: "应用编码长度不能大于50", trigger: ["blur", "change"] }
+      { max: 50, message: "场景编码长度不能大于50", trigger: ["blur", "change"] }
     ],
     displayMode: [{ required: true, message: "请选择默认显示模式", trigger: ["blur", "change"] }],
     defaultDisplayLevel: [
