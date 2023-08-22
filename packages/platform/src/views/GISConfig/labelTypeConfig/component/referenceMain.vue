@@ -11,8 +11,8 @@
     >
       <el-container>
         <el-aside class="reference-side-tab">
-          <div class="reference-side-tab-item" :class="{ active: isLogical === 1 }" @click="logicalChange(1)">物理设备类型</div>
-          <div class="reference-side-tab-item" :class="{ active: isLogical === 2 }" @click="logicalChange(2)">逻辑设备类型</div>
+          <div class="reference-side-tab-item" :class="{ active: isLogical === 2 }" @click="logicalChange(2)">物理设备类型</div>
+          <div class="reference-side-tab-item" :class="{ active: isLogical === 1 }" @click="logicalChange(1)">逻辑设备类型</div>
           <div class="reference-side-tab-item" :class="{ active: isLogical === 3 }" @click="logicalChange(3)">外部对象类型</div>
         </el-aside>
         <el-main class="reference-main-content">
@@ -69,8 +69,8 @@ import { deviceTypeList, objTypeList } from "@/api/device.js";
 import ReferenceAttribute from "./referenceAttribute.vue";
 
 const emit = defineEmits(["referenceChange"]);
-// 物理设备 or 逻辑设备 or 外部对象
-const isLogical = ref<number>(1);
+// 物理设备 or 逻辑设备 or 外部对象  1是逻辑 2是物理
+const isLogical = ref<number>(2);
 
 const logicalChange = (value: number) => {
   isLogical.value = value;
