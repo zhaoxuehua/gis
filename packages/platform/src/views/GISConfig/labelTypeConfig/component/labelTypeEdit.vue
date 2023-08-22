@@ -144,7 +144,7 @@
         </template>
         <!-- 面 圆 矩形 -->
         <template v-if="['3', '4', '5'].includes(form.dataType)">
-          <el-form-item label="面填充色" prop="polygonColor">
+          <el-form-item label="面填充色" prop="polygonColor" style="width: 350px">
             <el-color-picker v-model="form.polygonColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
         </template>
@@ -180,7 +180,7 @@
           <el-form-item label="字体大小" prop="fontSize">
             <el-input type="number" v-model="form.fontSize" :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="字体颜色" prop="fontColor">
+          <el-form-item label="字体颜色" prop="fontColor" style="width: 350px">
             <el-color-picker v-model="form.fontColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="边框线宽" prop="borderWidth">
@@ -189,7 +189,7 @@
           <el-form-item label="边框颜色" prop="borderColor" style="width: 350px">
             <el-color-picker v-model="form.borderColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="背景颜色" prop="backGroundColor">
+          <el-form-item label="背景颜色" prop="backGroundColor" style="width: 350px">
             <el-color-picker v-model="form.backGroundColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
         </template>
@@ -244,6 +244,15 @@ const fontSizeVerification = (rule: any, value: any, callback: Function) => {
   }
   callback();
 };
+
+// 线时 矢量宽 高 显示比例(非必填)            线宽增加正数校验
+const lineVectoVerification = (rule: any, value: any, callback: Function) => {
+  if (value && !Regular.verifyPositiveInteger.test(value)) {
+    return callback(new Error("只能为大于0的整数"));
+  }
+  callback();
+};
+
 // 是设备关联对象还是其他
 const referenceType = ref("");
 const state = reactive({
@@ -283,7 +292,11 @@ const state = reactive({
     fontSize: [
       { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
       { validator: fontSizeVerification, trigger: ["blur", "change"] }
-    ]
+    ],
+    lineVectorWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
+    lineVectorHeight: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
+    lineVectorProportion: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
+    borderWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }]
   }
 });
 
