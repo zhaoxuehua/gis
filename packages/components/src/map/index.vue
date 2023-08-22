@@ -38,11 +38,20 @@
         <component :is="customContent"></component>
       </template>
     </Popup>
+
+    <!-- 轨迹回放列表-->
+    <Track-back-list></Track-back-list>
+
+    <!-- overLayer鼠标经过显示-->
+    <div id="shipHoverInfo" class="popup" ref="popupDOMRef">
+      <h4 class="popup-tit" ref="popupTitDOMRef"></h4>
+      <div class="popup-content" ref="popupContentDOMRef"></div>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch } from "vue";
+import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch, unref } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
@@ -68,11 +77,11 @@ import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
 import Popup from "./components/popup/index.vue";
+import TrackBackList from "./components/trackBackList.vue";
 
 defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
-
 const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function; outsideTreeNode?: any }>(), {
   config: () => {},
@@ -298,6 +307,11 @@ let isDynamicLine = computed(() => gisStore.isDynamicLine);
 let imgIndex = computed(() => gisStore.imgIndex);
 const timer: any = ref(null);
 
+// overlayer
+const popupDOMRef = ref();
+const popupTitDOMRef = ref();
+const popupContentDOMRef = ref();
+
 const initMap = async (mapId: string | number) => {
   // 获取地图配置（初始化地图参数详情）
   const res: { [key: string]: any } = await getMapParamsDetail(mapId);
@@ -426,10 +440,9 @@ const initMap = async (mapId: string | number) => {
       })
     }) as VisualMap;
 
-    gisStore.setMapCase(map);
-
     // 缓存配置
     map.defaultOptions = defaultOptions;
+    gisStore.setMapCase(map);
 
     // 根据图层配置信息创建图层
     const layerMap: { [key: string]: any } = {};
@@ -638,11 +651,54 @@ const initMap = async (mapId: string | number) => {
     }
 
     // 鼠标移动事件
-    map.on("pointermove", function (e: MapBrowserEvent<any>) {
-      const pixel = map.getEventPixel(e.originalEvent);
-      const hit = map.hasFeatureAtPixel(pixel, { hitTolerance: 5 });
-      map.getTargetElement().style.cursor = hit ? "pointer" : "";
+    let hoverInfoLayer: Overlay = new Overlay({
+      element: popupDOMRef.value,
+      autoPan: true,
+      offset: [20, 0]
     });
+    map.addOverlay(hoverInfoLayer);
+    map.on("pointermove", function (event: any) {
+      const pixel = map.getEventPixel(event.originalEvent); // 坐标
+      const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
+      const pos = event.coordinate;
+      if (hit) {
+        map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
+          let targetFeature = null;
+          if (Array.isArray(feature.get("features"))) {
+            targetFeature = feature.get("features")[0];
+          } else {
+            targetFeature = feature;
+          }
+
+          let { extendsData, type, name } = targetFeature.getProperties();
+          if (type == "trackPoint" || type == "trackShip") {
+            const { detailInfo, titleInfo } = unref(extendsData);
+            let infoStr = "";
+            let infoData = detailInfo as [[string, any]];
+            infoData.forEach(val => {
+              infoStr += `<p>${val[0]}:${val[1]}</p>`;
+            });
+            popupTitDOMRef.value.innerHTML = titleInfo.name;
+            popupContentDOMRef.value.innerHTML = infoStr;
+            hoverInfoLayer.setPosition(pos);
+          } else if (extendsData?.type == "ship") {
+            const { mmsi, sog, positionReportTicks } = unref(extendsData);
+            popupTitDOMRef.value.innerHTML = name;
+            popupContentDOMRef.value.innerHTML = `<p>mmsi : ${mmsi}</p><p>速度  :${sog}节</p><p>时间 : ${positionReportTicks}节</p>`;
+            hoverInfoLayer.setPosition(pos);
+          } else {
+            hoverInfoLayer.setPosition(undefined);
+          }
+        });
+      } else {
+        hoverInfoLayer.setPosition(undefined);
+      }
+    });
+    // map.on("pointermove", function (e: MapBrowserEvent<any>) {
+    //   const pixel = map.getEventPixel(e.originalEvent);
+    //   const hit = map.hasFeatureAtPixel(pixel, { hitTolerance: 5 });
+    //   map.getTargetElement().style.cursor = hit ? "pointer" : "";
+    // });
 
     // 地图点击弹框
     // 弹窗图层
@@ -860,6 +916,28 @@ watch(
 </style>
 
 <style lang="scss">
+.popup {
+  min-width: 200px;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px #00000033;
+  .popup-tit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    padding: 0 20px;
+    color: #ffffff;
+    background: var(--el-color-primary);
+  }
+  .popup-content {
+    padding: 10px 20px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 22px;
+  }
+}
 .component-box {
   .visual-map {
     width: 100%;

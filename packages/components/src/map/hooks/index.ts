@@ -312,7 +312,8 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   }
 
   // 点击的不是要绘制节点
-  if (!labelInfo) {
+  if (Object.keys(labelInfo).length == 0) {
+    ElMessage.warning("当前目标不在地图上!");
     return;
   }
   let layer: any = null;
@@ -384,7 +385,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
         map.set("featureSelect", selectFeature);
       }
     } else {
-      console.log("未找到匹配的要素");
+      ElMessage.warning("当前目标不在地图上!");
     }
   }
   let featureName = labelInfo?.name;

@@ -4,9 +4,9 @@ import * as olProj from "ol/proj";
 import { LineString, Point } from "ol/geom";
 import { Vector as VectorLayer } from "ol/layer";
 import BaseLayer from "ol/layer/Base.js";
-
 import { Vector as VectorSource, Cluster } from "ol/source";
 import { Style, Stroke, Fill, Circle, Icon, Text } from "ol/style.js";
+import { ElMessage } from "element-plus";
 
 // ⤵ type
 import type { FeatureLike } from "ol/Feature";
@@ -14,6 +14,7 @@ import type { trackLayerParamType, cashFeatureStyleType, showHideTrackDataType, 
 
 // ⤵ store
 import { useGisStore } from "../../stores/modules/gis";
+import { useTrackListStore } from "../../stores/modules/trackList";
 
 // ⤵ 辅助函数
 import { createdCanvasShip } from "./createdCanvasShip"; // 绘制船只
@@ -22,31 +23,83 @@ import { backCenterByFeatures } from "./backCenterByFeatures"; // 一组要素�
 import { setToMapCenter } from "./setToMapCenter"; // 设置地图中心点
 import arrow from "../img/arrow.png";
 
+// ⤵ API
+import { getTrackTypeInfo, getTrackLayerInfo } from "../../api/trackList"; // 设置地图中心点
+
 /******************************************************************************************************/
 
-// 缓存样式
+// 轨迹样式(缓存)
 const cashFeatureStyle: cashFeatureStyleType = {};
+
+// 轨迹标签类型(缓存)
+let labelTypeInfoCash: any = {};
+
+// 轨迹layer(缓存)
+let trackLayerCash: any = {};
 
 // 轨迹动画时长
 const shipTags = localStorage.getItem("shipTags");
 const animationTime = shipTags && JSON.parse(shipTags)[2];
 let setNumArr: any[] = []; // 定时器指针(清除动画)
 
-// 轨迹回放
-const createdTrackData = function (param: trackLayerParamType) {
-  const { data, id, color } = param;
-  const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = param.layerConfig;
+// 轨迹回放的颜色
+const trackColor = ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"];
 
-  // 创建要素
+// 轨迹回放
+const createdTrackData = async function (param: trackLayerParamType) {
+  /*****************************************************
+      这里有个逻辑
+      01: 轨迹数据需要在那个layer上绘制
+      02: layer的数据，先从地图配置上读取轨迹的标签类型
+      03: 在用该标签类型，获取layer的基本信息
+  ****************************************************/
+
+  // mapCase地图实例 => 获取指定做轨迹回放的标签类型
+  const gisStore = useGisStore();
+  const mapCase = gisStore.mapCase;
+  const trackSearchCode = mapCase.defaultOptions.trackSearchCode; //标签类型code
+
+  // 轨迹的标签类型
+  if (!labelTypeInfoCash?.success) {
+    labelTypeInfoCash = await getTrackTypeInfo({ code: trackSearchCode });
+    if (Number(labelTypeInfoCash.code) !== 200) {
+      ElMessage.error("接口报错");
+      return;
+    }
+  }
+
+  // layer的基本信息
+  if (!trackLayerCash?.success) {
+    trackLayerCash = await getTrackLayerInfo({ id: labelTypeInfoCash?.data?.layerConfigId });
+    if (Number(trackLayerCash.code) !== 200) {
+      ElMessage.error("接口报错");
+      return;
+    }
+  }
+
+  /*****************************************************
+   设置颜色(根据trackList个数取索引)
+  ****************************************************/
+  const trackListStore = useTrackListStore();
+  const trackListLength = trackListStore.data.length;
+  const color = trackColor[trackListLength];
+
+  /*****************************************************
+   创建要素
+  ****************************************************/
+  const { data, id } = param;
+  const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = trackLayerCash.data;
   const strategyTime = 10 * 60 * 1000; //分钟(策略时间，用于是否绘制虚线)
   const trackLineFeatureArr: Feature[] = [];
   const trackLineCircleFeatureArr: Feature[] = [];
   const trackLineLabelFeatureArr: Feature[] = [];
+  if (!data.length) {
+    return ElMessage.warning("暂无轨迹数");
+  }
   for (let i = 0; i < data.length; i++) {
     if (!data[i + 1]) {
       break; // 下一个数据
     }
-
     const currData = data[i];
     const nextData = data[i + 1];
     const {
@@ -156,9 +209,6 @@ const createdTrackData = function (param: trackLayerParamType) {
   /********************************************************************************************
     图层名字 (轨迹回放(01:绘制线layer, 02:绘制线上圆圈(聚合)layer,03:绘制显示的文字(聚合)layer)) 
   *****************************************************************************************/
-  // mapCase地图实例
-  const gisStore = useGisStore();
-  const mapCase = gisStore.mapCase;
   const mapTackListMap = mapCase.get("tackListMap");
   const layerManageData = {
     trackLine: {
@@ -391,6 +441,8 @@ const createdTrackData = function (param: trackLayerParamType) {
       setNumArr.push(timerId);
     }
   }
+
+  return color;
 };
 
 // 显示隐藏轨迹
@@ -414,6 +466,9 @@ const delTrackData: delTrackDataType = function (id) {
   const gisStore = useGisStore();
   const mapCase = gisStore.mapCase;
   const mapTackListMap = mapCase.get("tackListMap");
+  if (!mapTackListMap[id]) {
+    return;
+  }
   Object.values(mapTackListMap[id]).forEach(layer => {
     mapCase.removeLayer(layer);
   });

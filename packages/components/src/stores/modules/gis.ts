@@ -14,8 +14,7 @@ export const useGisStore = defineStore({
     isDynamicLine: false, // 线环闪烁维护字段
     imgIndex: 0, // 动画点图片索引
     isEdit: false, // 地图编辑
-    mapCase: {}, // 地图实例
-    trackColor: ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"] // 轨迹回放的颜色
+    mapCase: {} // 地图实例
   }),
   actions: {
     // 导航树及关联关系

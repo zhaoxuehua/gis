@@ -9,11 +9,23 @@
       <div class="query-box">
         <el-form :inline="true" :model="formData" label-width="80px" :rules="rulesForm" ref="refForm">
           <el-form-item label="开始时间" prop="startTime">
-            <el-date-picker v-model="formData.startTime" type="datetime" placeholder="选择开始时间" style="width: 200px">
+            <el-date-picker
+              v-model="formData.startTime"
+              type="datetime"
+              placeholder="选择开始时间"
+              style="width: 200px"
+              :disabledDate="disabledDateFun"
+            >
             </el-date-picker>
           </el-form-item>
           <el-form-item label="结束时间" prop="endTime">
-            <el-date-picker v-model="formData.endTime" type="datetime" placeholder="选择结束时间" style="width: 200px">
+            <el-date-picker
+              v-model="formData.endTime"
+              type="datetime"
+              placeholder="选择结束时间"
+              style="width: 200px"
+              :disabledDate="disabledDateFun"
+            >
             </el-date-picker>
           </el-form-item>
           <el-form-item label="查询模式" prop="selectMode">
@@ -94,22 +106,22 @@
           border
         >
           <el-table-column label="名称" prop="name"></el-table-column>
-          <el-table-column label="操作" width="120">
+          <el-table-column label="操作" width="80">
             <template #default="scope">
               <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)"></Icon>
-              <Icon src="Switch" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)"></Icon>
+              <Icon src="Connection" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)"></Icon>
             </template>
           </el-table-column>
         </el-table>
+
         <div class="pagination-container-gis" v-if="table.data?.length">
           <el-pagination
-            :background="true"
+            background
+            small
             v-model:current-page="formData.pageNumber"
             v-model:page-size="formData.pageSize"
-            :page-sizes="[10, 20, 30, 50]"
-            layout="total, prev, pager, next, sizes"
+            layout="prev, pager, next"
             :total="table.total"
-            :small="true"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
           />
@@ -124,8 +136,11 @@ import { ElMessage } from "element-plus";
 import Icon from "./Icon.vue";
 import moment from "moment";
 
-// ⤵ 接口 getShipTrackData
-import { eventListByObjType } from "../../api/device";
+// ⤵ store
+import { useTrackListStore } from "../../stores/modules/trackList";
+
+// ⤵ 接口
+import { eventListByObjType, getTrackListData, getTrackDataById } from "../../api/device";
 
 // ⤵ type
 import type { VisualMap, TableList, selectModeListType } from "../type";
@@ -133,6 +148,9 @@ import type { VisualMap, TableList, selectModeListType } from "../type";
 // ⤵ 辅助函数
 import { selectionAddDrawInteraction } from "../hooks/index"; // 框选方法
 import { clearSelectionDrawInteraction } from "../hooks/clearSelectionDrawInteraction"; // 清除框选
+import { toLonLatFN } from "../hooks/toLonLat"; // 坐标转换
+import { createdTrackData } from "../hooks/createdTrackData"; // 绘制轨迹
+import { labelOnSelect } from "../hooks/index"; // 定位
 
 // 解构props(withDefaults设置props默认值)
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; isShow?: boolean }>(), {
@@ -159,6 +177,7 @@ const labelList: any[] = Object.values(map.value?.get("labelInfoMap"));
               查询表单数据
 ****************************************/
 const refForm: any = ref();
+let coordinateArr: any[] = []; // 坐标点集合
 const formData = reactive({
   startTime: moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"),
   endTime: moment().format("YYYY-MM-DD HH:mm:ss"),
@@ -167,8 +186,7 @@ const formData = reactive({
   selectLabel: "", // 选择的标签
   alarmLevel: "", // 告警等级（只有配置了外部对象及查询模式不是图形时显示）
   pageNumber: 1,
-  pageSize: 10,
-  coordinateArr: [] as number[] // 坐标点集合
+  pageSize: 6
 });
 
 // 表单验证
@@ -176,8 +194,17 @@ let rulesForm: any = {
   startTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
   endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
   selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
-  boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }],
+  // boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }],
   selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }]
+};
+
+// 时间限制
+const disabledDateFun = (time: Date) => {
+  if (time.getTime() < new Date().getTime()) {
+    return time.getTime() > new Date().getTime() || time.getTime() < new Date().getTime() - 1000 * 3600 * 24 * 14; //时间范围必须是时间戳
+  } else {
+    return new Date().getTime(); //时间范围必须是时间戳
+  }
 };
 
 let selectModeList: Ref<selectModeListType[]> = ref([
@@ -244,19 +271,23 @@ const defaultOptions = computed(() => {
 
 // 获取告警options
 async function getAlarmListOptions(id: number) {
-  const { code, data } = await eventListByObjType(id);
-  if (Number(code) == 200) {
-    // 过滤出告警 eventType  "hidden_alarm"  以alarm结尾
-    (data as []).forEach((item: { [key: string]: any }) => {
-      let arr = item.eventType.split("_");
-      if (arr && arr?.length && arr.length > 1 && arr[1] == "alarm") {
-        alarmList.value.push({
-          ...item
-        });
-      }
-    });
-  } else {
-    ElMessage.error("接口异常");
+  try {
+    const { code, data } = await eventListByObjType(id);
+    if (Number(code) == 200) {
+      // 过滤出告警 eventType  "hidden_alarm"  以alarm结尾
+      (data as []).forEach((item: { [key: string]: any }) => {
+        let arr = item.eventType.split("_");
+        if (arr && arr?.length && arr.length > 1 && arr[1] == "alarm") {
+          alarmList.value.push({
+            ...item
+          });
+        }
+      });
+    } else {
+      ElMessage.error("接口异常");
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -274,8 +305,8 @@ watch(
       map.value,
       n,
       (coordinates: any[]) => {
-        formData.coordinateArr = coordinates;
-        console.log("回调。。。", coordinates);
+        coordinates[0].pop();
+        coordinateArr = coordinates;
       },
       true
     );
@@ -286,26 +317,30 @@ watch(
       查询模式 : 标签类型模式
 *****************************************/
 function getCoordinateArrByLabelType() {
+  let tempArr: any[] = [];
+  let target: any[] = [];
   if (formData.selectMode == "shape") {
-    return formData.coordinateArr; // 框选模式,直接返回
-  }
-  if (formData.selectLabel === "all") {
-    // 如果选的全部，收集该类型下所有数据
-    let target = selectLabelList.value.filter(val => val.code !== "all");
-    let tempArr: any[] = [];
-    target.forEach(val => {
-      if (val.coordinates) {
-        val.coordinates[0].forEach((item: number[]) => {
-          tempArr.push(item);
-        });
-      }
+    if (!coordinateArr.length) {
+      return [];
+    }
+    // 框选模式,直接返回
+    coordinateArr[0].forEach((item: number[]) => {
+      tempArr.push(`(${toLonLatFN(item).join()})`);
     });
-    return tempArr;
+  } else if (formData.selectLabel === "all") {
+    // 如果选的全部，收集该类型下所有数据
+    target = selectLabelList.value.filter(val => val.code !== "all");
   } else {
     // 单个
-    const target = selectLabelList.value.filter(val => val.code === formData.selectLabel);
-    return target[0].coordinates;
+    target = selectLabelList.value.filter(val => val.code === formData.selectLabel);
   }
+  target.forEach(val => {
+    if (val.coordinates) {
+      const mapData = val.coordinates[0].map((j: number[]) => `(${j.join()})`);
+      tempArr.push(`[${mapData.toString()}]`);
+    }
+  });
+  return `[${tempArr.toString()}]`;
 }
 
 /****************************************
@@ -315,8 +350,8 @@ const searchForm = function () {
   // 校验必填项
   refForm.value?.validate(async (valid: boolean) => {
     if (valid) {
-      const coordinateArr = getCoordinateArrByLabelType();
-      console.log(coordinateArr);
+      formData.pageNumber = 1;
+      formData.pageSize = 6;
       table.value.getTableData();
     }
   });
@@ -325,11 +360,70 @@ const searchForm = function () {
 /****************************************
             表格
 *****************************************/
+// 定位
 const toLocation = (row: { [key: string]: any }) => {
-  console.log(row, 1);
+  labelOnSelect(map.value, row.code, false, true);
 };
+
+// 轨迹回放
 const trackPlayBack = (row: { [key: string]: any }) => {
-  console.log(row, 2);
+  const store = useTrackListStore();
+  getTrackDataById({
+    equipCodes: row.code,
+    isVisitObject: true,
+    isHistory: true,
+    beginTime: moment(formData.startTime).format("YYYY-MM-DD HH:mm:ss"),
+    endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
+    pageNumber: 1,
+    pageSize: 1000000,
+    ascDesc: "asc"
+  }).then(res => {
+    const { code, data } = res;
+    if (Number(code) !== 200) {
+      ElMessage("获取数据报错");
+      return;
+    }
+
+    if (!data.items.length) {
+      return ElMessage.warning("暂无轨迹数据");
+    }
+
+    // 后端数据是倒叙的，此处在转一下
+    const transData = data.items.map(val => {
+      const aisLocation = val.aisLocation;
+      const aisInfo = JSON.parse(aisLocation);
+      const params = {
+        posInfo: {
+          lat: aisInfo.lat,
+          lon: aisInfo.lon,
+          cog: aisInfo.cog
+        },
+        titleInfo: {
+          name: moment(aisInfo.positionReportTicks).format("YYYY-MM-DD HH:mm:ss")
+        },
+        labelInfo: {
+          time: moment(aisInfo.positionReportTicks).format("YYYY-MM-DD HH:mm:ss"),
+          speed: aisInfo.sog,
+          unit: "节"
+        },
+        detailInfo: [
+          ["船名", aisInfo.name],
+          ["MMSI", aisInfo.mmsi],
+          ["宽", aisInfo.width]
+        ]
+      };
+      return params;
+    });
+
+    createdTrackData({
+      id: row.code,
+      name: row.name,
+      data: transData
+    }).then(res => {
+      row.color = res;
+      store.addData(row);
+    });
+  });
 };
 
 // 分页
@@ -354,10 +448,45 @@ const table = ref<TableList>({
   ids: [],
   data: [],
   getTableData: async () => {
-    console.log("数据列表", formData);
-    // const res = await getShipTrackData(id);
-    const tempData = [{}];
-    table.value.data = tempData;
+    const regions = getCoordinateArrByLabelType();
+    if (!regions.length) {
+      return ElMessage.warning("请先设置选区,暂无选区数据！");
+    }
+    const params = {
+      regions,
+      beginTime: moment(formData.startTime).format("YYYY-MM-DD HH:mm:ss"),
+      endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
+      pageSize: formData.pageSize,
+      pageNumber: formData.pageNumber
+    };
+    if (formData.alarmLevel) {
+      (params as any).eventType = formData.alarmLevel;
+    }
+
+    // 时间判断(3天的数据)
+    if (+moment(formData.endTime) - +moment(formData.startTime) > 4 * 24 * 60 * 60 * 1000) {
+      return ElMessage.warning("查询不能超过3天数据");
+    }
+    if (+moment(formData.endTime) < +moment(formData.startTime)) {
+      return ElMessage.warning("开始时间不能小于结束时间");
+    }
+
+    try {
+      const { code, data } = await getTrackListData(params);
+      if (Number(code) !== 200) {
+        return ElMessage.error("接口请求错误");
+      }
+      // 清除绘制区域
+      formData.boxSelectMode = "";
+      clearSelectionDrawInteraction(map.value);
+      table.value.data = data.items;
+      table.value.total = data.totalNum;
+      if (!data.items.length) {
+        return ElMessage.warning("暂无数据");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 });
 
@@ -369,7 +498,10 @@ onMounted(() => {});
   display: flex;
   flex-direction: column;
   width: 320px;
-  height: 700px;
+  min-height: 500px;
+  max-height: 700px;
+
+  // height: 700px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
   .title {
@@ -389,33 +521,7 @@ onMounted(() => {});
   }
   .track-back-content {
     height: calc(100% - 60px);
-    padding: 0 20px;
-
-    // 查询块
-    .query-box {
-      margin-top: 20px;
-    }
-
-    // 表格块
-    .table-box {
-      height: 350px;
-      overflow-y: auto;
-      .pagination-container-gis {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        padding: 0;
-        margin: 0;
-        .el-pagination__sizes {
-          margin: 0 0 0 16px !important;
-        }
-        .pagination-container-gis .el-pagination {
-          position: absolute;
-          right: 0;
-        }
-      }
-    }
+    padding: 20px;
   }
   .operate-icon {
     margin-right: 12px !important;
