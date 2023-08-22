@@ -58,7 +58,14 @@
         <el-table-column label="序号" type="index" width="60"></el-table-column>
         <el-table-column label="图层编码" prop="code" sortable="custom" min-width="120"></el-table-column>
         <el-table-column label="图层名称" prop="name" sortable="custom" min-width="120"></el-table-column>
-        <el-table-column label="创建时间" prop="createdOn" sortable="custom" min-width="200"></el-table-column>
+        <el-table-column label="默认显示层级" prop="layerLevel" sortable="custom" min-width="130"></el-table-column>
+        <el-table-column label="最低显示层级" prop="layerMinLevel" sortable="custom" min-width="130"></el-table-column>
+        <el-table-column label="最高显示层级" prop="layerMaxLevel" sortable="custom" min-width="130"></el-table-column>
+        <el-table-column label="创建时间" prop="createdOn" sortable="custom" min-width="200">
+          <template #default="scope">
+            {{ scope.row?.createdOn ? moment(scope.row?.createdOn).format("YYYY-MM-DD HH:mm:ss") : "" }}
+          </template>
+        </el-table-column>
         <el-table-column prop="path" label="操作" width="200" fixed="right" class-name="small-padding fixed-width">
           <template #default="scope">
             <el-button type="primary" link plain @click="table.onEdit(scope.row, 'detail')">
@@ -87,8 +94,14 @@
       <template #isTagAgg="scope">
         {{ scope.row?.isTagAgg ? "是" : "否" }}
       </template>
+      <template #tagAggDistance="scope">
+        {{ scope.row?.tagAggDistance ? `${scope.row?.tagAggDistance}px` : "" }}
+      </template>
       <template #isTrackDraw="scope">
         {{ scope.row?.isTrackDraw ? "是" : "否" }}
+      </template>
+      <template #trackAggDistance="scope">
+        {{ scope.row?.trackAggDistance ? `${scope.row?.trackAggDistance}px` : "" }}
       </template>
     </DetailDialog>
   </div>
@@ -96,6 +109,7 @@
 
 <script setup lang="ts" name="LayerConfig">
 import { onMounted, ref } from "vue";
+import moment from "moment";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import { getLayerList, deleteLayerCheck, deleteLayer } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";

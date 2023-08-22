@@ -9,12 +9,16 @@ export const GIS_LAYER_DETAIL = [
     name: "name"
   },
   {
-    label: "图层等级",
+    label: "默认显示层级",
     name: "layerLevel"
   },
   {
-    label: "图层显示最低等级",
+    label: "最低显示层级",
     name: "layerMinLevel"
+  },
+  {
+    label: "最高显示层级",
+    name: "layerMaxLevel"
   },
   {
     label: "标签聚合",
@@ -23,7 +27,8 @@ export const GIS_LAYER_DETAIL = [
   },
   {
     label: "标签聚合距离",
-    name: "tagAggDistance"
+    name: "tagAggDistance",
+    slot: true
   },
   {
     label: "轨迹聚合",
@@ -32,7 +37,8 @@ export const GIS_LAYER_DETAIL = [
   },
   {
     label: "轨迹聚合距离",
-    name: "trackAggDistance"
+    name: "trackAggDistance",
+    slot: true
   }
 ];
 
