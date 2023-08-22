@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- 更新包增加白名单关注列表功能
+- q 对接基础组件 s 搜索功能
 - Updated dependencies
   - @adm-gis-ui/components@1.0.36
 

@@ -116,16 +116,16 @@ watch(
 
 <style lang="scss" scoped>
 .label-select {
+  max-height: 260px;
   padding: 0;
   margin: 0;
   margin-top: 4px;
+  overflow: scroll;
   list-style: none;
   background: var(--el-bg-color-overlay);
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--el-border-radius-base);
   box-shadow: var(--el-box-shadow-light);
-  max-height: 260px;
-  overflow: scroll;
   .label-select-item {
     height: 34px;
     padding: 0 32px 0 20px;
