@@ -39,7 +39,7 @@ class RequestHttp {
         // config.noLoading || showFullScreenLoading();
         if (config.headers && typeof config.headers.set === "function") {
           config.headers.set("agioe_sso_sessionid", userStore.token);
-          // config.headers.set("agioe_sso_sessionid", "431_ac6a04b4cde749cda58d94203a29d9f5");
+          // config.headers.set("agioe_sso_sessionid", "26_cff328d91bbd49a68cc4b751a779493d");
         }
         return config;
       },
