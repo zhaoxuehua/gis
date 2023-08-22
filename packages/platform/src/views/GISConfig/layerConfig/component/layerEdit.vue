@@ -18,15 +18,15 @@
           <el-input placeholder="请输入..." v-model="form.name" clearable />
         </el-form-item>
 
-        <el-form-item label="图层等级" prop="layerLevel">
+        <el-form-item label="默认显示层级" prop="layerLevel">
           <el-input type="number" v-model="form.layerLevel" />
         </el-form-item>
 
-        <el-form-item label="图层显示最低等级" prop="layerMinLevel">
+        <el-form-item label="最低显示层级" prop="layerMinLevel">
           <el-input type="number" v-model="form.layerMinLevel" />
         </el-form-item>
 
-        <el-form-item label="图层显示最高等级" prop="layerMaxLevel">
+        <el-form-item label="最高显示层级" prop="layerMaxLevel">
           <el-input type="number" v-model="form.layerMaxLevel" />
         </el-form-item>
 
@@ -49,7 +49,7 @@
         <div>
           <el-form-item prop="isTrackDraw">
             <template #label>
-              <span>轨迹</span>
+              <span>轨迹聚合</span>
               <el-tooltip effect="dark" content="目前只针对点类型标签生效" placement="top">
                 <Icon src="WarningFilled" :size="16" color="#e6a23c" class="iconItem"></Icon>
               </el-tooltip>
@@ -87,7 +87,14 @@ const codeVerification = (rule: any, value: any, callback: Function) => {
 };
 const layerLevelVerification = (rule: any, value: any, callback: Function) => {
   if (!Regular.verifyPositiveInteger.test(value)) {
-    return callback(new Error("等级只能为大于0的整数"));
+    return callback(new Error("层级只能为大于0的整数"));
+  }
+  callback();
+};
+
+const tagAggDistanceVerification = (rule: any, value: any, callback: Function) => {
+  if (value && !Regular.verifyPositiveInteger.test(value)) {
+    return callback(new Error("聚合距离只能为大于0的整数"));
   }
   callback();
 };
@@ -106,16 +113,24 @@ const state = reactive({
       { max: 50, message: "图层名称长度不能大于50", trigger: ["blur", "change"] }
     ],
     layerLevel: [
-      { required: true, message: "图层等级不能为空", trigger: ["blur", "change"] },
+      { required: true, message: "默认显示层级不能为空", trigger: ["blur", "change"] },
       { validator: layerLevelVerification, trigger: ["blur", "change"] }
     ],
     layerMinLevel: [
-      { required: true, message: "图层显示最低等级不能为空", trigger: ["blur", "change"] },
+      { required: true, message: "最低显示层级不能为空", trigger: ["blur", "change"] },
       { validator: layerLevelVerification, trigger: ["blur", "change"] }
     ],
     layerMaxLevel: [
-      { required: true, message: "图层显示最高等级不能为空", trigger: ["blur", "change"] },
+      { required: true, message: "最高显示层级不能为空", trigger: ["blur", "change"] },
       { validator: layerLevelVerification, trigger: ["blur", "change"] }
+    ],
+    tagAggDistance: [
+      { required: false, trigger: ["blur", "change"] },
+      { validator: tagAggDistanceVerification, trigger: ["blur", "change"] }
+    ],
+    trackAggDistance: [
+      { required: false, trigger: ["blur", "change"] },
+      { validator: tagAggDistanceVerification, trigger: ["blur", "change"] }
     ]
   }
 });
