@@ -40,6 +40,9 @@
           </el-table-column>
           <!-- 自定义插槽 -->
           <el-table-column v-if="Object(col).hasOwnProperty('scope')" v-bind="col">
+            <template #header="scope">
+              <slot v-bind="scope" name="header"></slot>
+            </template>
             <template #default="scope">
               <slot v-bind="scope" :name="col.scope"></slot>
             </template>
