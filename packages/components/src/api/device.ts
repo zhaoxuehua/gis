@@ -4,7 +4,9 @@ import type {
   trackDataByIdParamsType,
   trackDataByIdResponseType,
   trackListDataParamsType,
-  trackListDataResponseType
+  trackListDataResponseType,
+  getTrackDataFieldMapType,
+  getTrackDataFieldMapResponseType
 } from "./interface";
 
 // 轨迹回放(列表)
@@ -15,6 +17,11 @@ export function getTrackListData(params: trackListDataParamsType) {
 // 轨迹回放(单个详情数据,每次请求前，需要查询轨迹列表数据，有没有超过5条数据，超过提示)
 export function getTrackDataById(params: trackDataByIdParamsType) {
   return request.post<trackDataByIdResponseType>(`/api/adm-service/view/common/getEquipData`, params);
+}
+
+// 轨迹返沪数据的中文映射字段
+export function getTrackDataFieldMap(params: getTrackDataFieldMapType) {
+  return request.get<getTrackDataFieldMapResponseType>(`/api/gis-service-zhk/equip/gisLabelPopupInfo/getSavedJsonConfig`, params);
 }
 
 // 快速创建
