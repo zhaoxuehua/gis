@@ -89,6 +89,7 @@ const deleteRow = (row: { [key: string]: any }, index: number) => {
   position: absolute;
   top: 70px;
   right: 20px;
+  z-index: 10;
   background: #ffffff;
   box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
   .popup-box {
