@@ -422,7 +422,7 @@ const initMap = async (mapId: string | number) => {
 
     // 实例化地图，类型为扩展后的VisualMap
     const map = new Map({
-      target: defaultOptions.target || "map",
+      target: defaultOptions?.target || "map",
       controls: defaults({
         attribution: false,
         rotate: false,
@@ -478,7 +478,7 @@ const initMap = async (mapId: string | number) => {
           code: item?.code,
           isTagAgg: item?.isTagAgg,
           isTrackDraw: item?.isTrackDraw,
-          style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value) // 是否选中（因为聚合图层的选中单独处理）
+          style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
         };
       } else {
         options = {

@@ -21,6 +21,7 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
     message: "进入绘制模式，退出绘制请按 ESC 键",
     type: "success"
   });
+  if (!map) return;
   // 移除绘制交互器
   let drawFeature = map.get("drawFeature");
   if (drawFeature) {
@@ -28,6 +29,7 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
     drawFeature = null;
     map.set("drawFeature", null);
   }
+  console.log(1);
   const { dataType } = featureType; // 是数据类型中取出的（是数字型）
 
   // 将数据类型数字型=> 转为对应的字符串  1=>Point
@@ -37,18 +39,19 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
   let styleMap = createStyle(styleData);
   let currentStyle = styleMap[dataTypeString];
   const refLayer = map.defaultOptions.layers.find((item: any) => item.id === featureType.layerConfigId);
-
+  console.log(2);
   const layerMap = map?.get("layerMap") || {};
   const layer = layerMap[refLayer.code];
   const isTagAgg = layer.get("isTagAgg"); // 是否聚合图层
   let source: any;
   if (isTagAgg) {
+    console.log(34);
     const clusterDataSource = layer.getSource();
     source = clusterDataSource.getSource();
   } else {
     source = layer.getSource();
   }
-
+  console.log(3);
   let geometryFunction; // 图形函数
   let type = dataTypeString; // 存储Draw的类型
 
@@ -309,7 +312,9 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     let labelInfoMap = map?.get("trackInfoMap") || [];
     labelInfo = labelInfoMap.filter((item: any) => item.code === featureCode)?.[0] || {};
   }
-
+  if (!labelInfo) {
+    return;
+  }
   // 点击的不是要绘制节点
   if (Object.keys(labelInfo).length == 0) {
     ElMessage.warning("当前目标不在地图上!");
@@ -325,10 +330,18 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   const minZoom = Math.ceil(layer.getMinZoom()); // 图层最小层级
   const maxZoom = Math.floor(layer.getMaxZoom()); // 图层最大层级
   const currentZoom = map.getView().getZoom(); // 当前视图层级
-  let zoom = Math.ceil((maxZoom + minZoom) / 2);
-  // 如果在当前视图的层级则显示
-  if (minZoom <= currentZoom && currentZoom <= maxZoom) {
-    zoom = currentZoom;
+
+  let zoom = maxZoom;
+  // 视图缩放策略（点（点文本）取值最大值  线（线、环）平均值  其他均值）  兼容外部对象(外部对象目前没存数据类型)
+  let dataType = labelInfo?.labelType?.dataType;
+  if (dataType) {
+    if (dataType == "1" || dataType == "6") {
+      zoom = maxZoom;
+    } else if (dataType == "2" || dataType == "7") {
+      zoom = Math.ceil((maxZoom + minZoom) / 2);
+    } else if (minZoom <= currentZoom && currentZoom <= maxZoom) {
+      zoom = currentZoom;
+    }
   }
 
   let center = null;
@@ -351,15 +364,13 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   clearSelectedFeature(map);
 
   if (isTagAgg) {
-    const clusterDataSource = layer.getSource();
-    clusterDataSource.getFeatures().forEach(function (clusterFeature: any) {
+    const clusterDataSource = layer?.getSource();
+    clusterDataSource?.getFeatures()?.forEach(function (clusterFeature: any) {
       clusterFeature.get("features").forEach(function (originalFeature: any) {
         if (originalFeature.get("code") === featureCode) {
           // 分是否外部对象
           if (isVisitObject) {
-            // 思路获取图层的样式将feature传过去
             layer?.getStyleFunction()(clusterFeature);
-            console.log("设置外部对象要素选中状态");
           } else {
             // 设置原始要素的样式以示选中(这里是给聚合要素设置的样式)
             clusterFeature.setStyle((feature: any) =>
@@ -377,7 +388,6 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     if (selectFeature) {
       if (isVisitObject) {
         layer?.getStyleFunction()(selectFeature);
-        console.log("设置外部对象要素选中状态");
       } else {
         selectFeature.set("selected", true); // 非聚合图层的可以这样实现
         selectFeature.changed();
