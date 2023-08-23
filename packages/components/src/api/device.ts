@@ -21,7 +21,7 @@ export function getTrackDataById(params: trackDataByIdParamsType) {
 
 // 轨迹返沪数据的中文映射字段
 export function getTrackDataFieldMap(params: getTrackDataFieldMapType) {
-  return request.get<getTrackDataFieldMapResponseType>(`/api/gis-service-zhk/equip/gisLabelPopupInfo/getSavedJsonConfig`, params);
+  return request.get<getTrackDataFieldMapResponseType>(`/api/gis-service/equip/gisLabelPopupInfo/getSavedJsonConfig`, params);
 }
 
 // 快速创建
