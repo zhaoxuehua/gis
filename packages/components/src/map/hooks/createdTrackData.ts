@@ -119,6 +119,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
       labelInfo: currData.labelInfo,
       detailInfo: currDataDetailInfo,
       titleInfo: currData.titleInfo,
+      lineWidth: labelTypeInfoCash.data.lineWidth,
+      unit: labelTypeInfoCash.data.speedUnit || "km/h",
       color,
       dotted // true:虚线  false:实线
     };
@@ -219,7 +221,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
       vector: new VectorSource(),
       styleFunction: function (feature: FeatureLike) {
         const type = feature.get("type");
-        const { color, dotted } = feature.get("extendsData");
+        let { color, dotted, lineWidth = 2 } = feature.get("extendsData");
         const styles: Style[] = [];
 
         // 设置线
@@ -229,8 +231,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
           : new Style({
               stroke: new Stroke({
                 color: color,
-                width: 2,
-                lineDash: type === "trackLine" && dotted ? [2, 4] : [0, 0] //  绘制实线虚线
+                width: lineWidth,
+                lineDash: type === "trackLine" && dotted ? [lineWidth, lineWidth * 2] : [0, 0] //  绘制实线虚线
               })
             });
         styles.push(trackLineSty);
@@ -331,7 +333,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
       styleFunction: function (feature: FeatureLike) {
         const targetFeature = feature.get("features")[0];
         const speed = targetFeature.get("speed");
-        const { color, labelInfo } = targetFeature.get("extendsData");
+        const { color, labelInfo, unit } = targetFeature.get("extendsData");
         let chart = "";
         switch (speed) {
           case "faster":
@@ -342,7 +344,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
             break;
         }
         let text = labelInfo.time + "  " + labelInfo?.speed ?? "";
-        text += labelInfo?.unit ?? "";
+        text += unit ?? "";
         text += chart;
         let txtSty = new Style({
           text: new Text({
