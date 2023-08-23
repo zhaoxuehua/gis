@@ -24,7 +24,7 @@
               <li v-for="item in attrData.monitorSequenceData" :key="item.code" class="list-item">
                 <span class="label">{{ item.name }}{{ item.unit ? `(${item.unit})` : "" }}</span>
                 <span class="value">{{ item.value }}</span>
-                <span class="time">{{ state.currentTime }}</span>
+                <span class="time">{{ item.time }}</span>
               </li>
             </ul>
           </div>
