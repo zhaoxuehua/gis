@@ -163,12 +163,12 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   console.log(relationMap);
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
-  // equipInfo.value = relationMap;
-  equipInfo.value = {
-    equipType: 761,
-    code: "tunnel01",
-    isVisitObject
-  };
+  equipInfo.value = relationMap;
+  // equipInfo.value = {
+  //   equipType: 761,
+  //   code: "tunnel01",
+  //   isVisitObject
+  // };
   // 获取绑定的属性
   await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject });
   attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3);

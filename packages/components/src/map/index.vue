@@ -74,6 +74,7 @@ import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
 import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature, getSelectedFeature } from "./hooks/index";
 import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
+import { getTrackDataByIdFn } from "./hooks/getTrackDataById"; // 获取单个轨迹数据
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -871,6 +872,7 @@ defineExpose({
   createGeometry,
 
   createdTrackData,
+  getTrackDataByIdFn,
   showHideTrackData,
   delTrackData,
 
@@ -1040,12 +1042,10 @@ watch(
   /* 当前等级 */
   .mapLevel {
     position: absolute;
-    right: 100px;
+    right: 88px;
     bottom: 6px;
     z-index: 10000;
     padding: 5px 10px;
-
-    // margin-bottom: 1px;
     font-size: 14px;
     color: #333333;
     cursor: pointer;

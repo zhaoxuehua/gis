@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.37
+
+### Patch Changes
+
+- 增加轨迹回放
+
 ## 1.0.36
 
 ### Patch Changes
