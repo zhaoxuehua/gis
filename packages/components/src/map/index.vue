@@ -1040,12 +1040,10 @@ watch(
   /* 当前等级 */
   .mapLevel {
     position: absolute;
-    right: 100px;
+    right: 88px;
     bottom: 6px;
     z-index: 10000;
     padding: 5px 10px;
-
-    // margin-bottom: 1px;
     font-size: 14px;
     color: #333333;
     cursor: pointer;
