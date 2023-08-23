@@ -33,7 +33,7 @@
           <el-button title="当前定位" type="primary" text @click="labelOnSelect(props.map, scope.row.objectCode, false, true)">
             <el-icon :size="16"><Location /></el-icon>
           </el-button>
-          <el-button title="轨迹回放" type="primary" text>
+          <el-button title="轨迹回放" type="primary" text @click="trackPlayBack">
             <el-icon :size="16"><Refresh /></el-icon>
           </el-button>
           <el-button title="取消关注" type="primary" text @click="deleteAttention([scope.row.id])">
@@ -51,6 +51,8 @@ import { addAttentionApi, getAttentionList, deleteAttentionApi } from "../../api
 import { ElMessage } from "element-plus";
 import type { VisualMap } from "../type";
 import { labelOnSelect } from "../hooks/index";
+import { getTrackDataByIdFn } from "../hooks/getTrackDataById"; // 获取单个轨迹数据
+import moment from "moment";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -131,6 +133,16 @@ const deleteAttention = async (id?: number[]) => {
     ElMessage.success("取消关注成功");
     getTableData();
   }
+};
+
+// 轨迹回放
+const trackPlayBack = (row: { [key: string]: any }) => {
+  getTrackDataByIdFn({
+    code: row.objectCode,
+    name: row.objectName,
+    beginTime: moment(row.beginTime).format("YYYY-MM-DD HH:mm:ss"),
+    endTime: moment(row.endTime).format("YYYY-MM-DD HH:mm:ss")
+  });
 };
 
 watch(

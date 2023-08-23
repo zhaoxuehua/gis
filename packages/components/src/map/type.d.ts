@@ -117,13 +117,16 @@ export type TableList = {
   onSelectionChange?: Function;
   onEdit?: Function;
 };
+// 不确定对象
+export interface anyObjectType {
+  [key: string]: any;
+}
 
 // 创建要素
-interface createdFeatureArgType {
+interface createdFeatureArgType extends anyObjectType {
   name: string;
   geometry: Point;
   extendsData?: any;
-  [key: string]: any;
 }
 
 export type createdFeatureType = (data: createdFeatureArgType) => Feature;
@@ -132,15 +135,6 @@ export type createdFeatureType = (data: createdFeatureArgType) => Feature;
 export interface trackLayerParamType {
   id: number | string;
   name: string;
-  // color: string;
-  // layerConfig: {
-  //   code: string | number;
-  //   name: string;
-  //   layerLevel: number;
-  //   layerMaxLevel: number;
-  //   layerMinLevel: number;
-  //   trackAggDistance: number;
-  // };
   data: any[];
 }
 
@@ -173,3 +167,11 @@ export interface selectModeListType {
 }
 // 返回多个要素的中心
 export type backCenterByFeaturesType = (Features: Feature[]) => number[];
+
+export interface getTrackDataByIdFnParamType extends anyObjectType {
+  code: string;
+  name: string;
+  beginTime: string;
+  endTime: string;
+  [key: string]: any;
+}

@@ -101,7 +101,7 @@ const state = reactive({
     label: "name"
   },
   filterText: "",
-  treeCode: "fix"
+  treeCode: "drawLineTree"
 });
 
 const styleDialogRef = ref();

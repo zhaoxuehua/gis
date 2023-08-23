@@ -51,6 +51,23 @@
       </div>
     </div>
   </div>
+  <el-dialog v-model="state.dialogVisible" title="轨迹查询" class="el-dialog-small">
+    <el-date-picker
+      v-model="state.dateTimes"
+      type="datetimerange"
+      range-separator="至"
+      start-placeholder="开始日期"
+      end-placeholder="结束日期"
+      value-format="YYYY-MM-DD HH:mm:ss"
+      popper-class="canvas-date-picker"
+      style="width: 400px !important"
+    >
+    </el-date-picker>
+    <template #footer>
+      <el-button type="primary" @click="onTrack">查询</el-button>
+      <el-button @click="onTrackClose">取消</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -64,6 +81,7 @@ import { ElMessage } from "element-plus";
 import { addAttentionApi, getAttentionList, deleteDialogAttentionApi } from "../../../api/gis.js";
 import type { VisualMap } from "../../type";
 import { useJSONBody } from "../../hooks/useJSONBody";
+import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单个轨迹数据
 
 // import { chartData } from "./popupmock";
 
@@ -104,10 +122,13 @@ const equipInfo: any = ref({
   isVisitObject: false,
   associationInfo: {}
 });
+
 const state = reactive({
   isRelationBody: false, // 是否是关联设备
   currentTime: "", // 当前时间
-  countCharts: {} // 图标集合
+  countCharts: {}, // 图表集合
+  dialogVisible: false, // 轨迹时间选择弹窗
+  dateTimes: [] as any
 });
 
 // 获取设备数据
@@ -142,12 +163,12 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   console.log(relationMap);
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
-  equipInfo.value = relationMap;
-  // equipInfo.value = {
-  //   equipType: 761,
-  //   code: "tunnel01",
-  //   isVisitObject
-  // };
+  // equipInfo.value = relationMap;
+  equipInfo.value = {
+    equipType: 761,
+    code: "tunnel01",
+    isVisitObject
+  };
   // 获取绑定的属性
   await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject });
   attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3);
@@ -223,8 +244,8 @@ const onAction = (actionType: number) => {
     // 4: "track" // 轨迹
   };
   if (actionType === 4) {
-    // 4 // 轨迹
-    onTrack();
+    // 4  轨迹
+    state.dialogVisible = true;
   } else {
     let option = {
       ...equipInfo.value,
@@ -238,7 +259,17 @@ const onAction = (actionType: number) => {
   }
 };
 
-const onTrack = () => {};
+const onTrack = () => {
+  getTrackDataByIdFn({
+    code: equipInfo.value.code,
+    name: equipInfo.value.name,
+    beginTime: state.dateTimes[0],
+    endTime: state.dateTimes[1]
+  });
+};
+const onTrackClose = () => {
+  state.dialogVisible = false;
+};
 
 const focusType = ref(1);
 const focusMap: { [key: string]: string } = {
