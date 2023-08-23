@@ -102,7 +102,7 @@ const onOpen = async (id: number, index: number, checkedConfig: any[]) => {
   }
 };
 
-const handleCheck: any = (row: any) => {
+const handleCheck = (row: any) => {
   let checked = row.checked;
   row.children?.forEach((item: any) => {
     item.checked = checked;
