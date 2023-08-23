@@ -13,14 +13,14 @@
       :columns="jsonBodyColumns"
       default-expand-all
     >
-      <template #selection-header>
+      <!-- <template #selection-header>
         <el-checkbox @change="val => handleCheck(val, state.JsonBodyData[0])"></el-checkbox>
-      </template>
+      </template> -->
       <template #selection="scope">
         <el-checkbox
           v-model="scope.row.checked"
           :indeterminate="getIndeterminate(scope.row)"
-          @change="val => handleCheck(val, scope.row)"
+          @change="handleCheck(scope.row)"
         ></el-checkbox>
       </template>
     </Table>
@@ -52,7 +52,8 @@ const jsonBodyColumns = [
   {
     scope: "selection",
     width: 80,
-    header: "selection-header"
+    label: ""
+    // header: "selection-header"
   },
   {
     label: "key",
@@ -75,7 +76,6 @@ const onOpen = async (id: number, index: number, checkedConfig: any[]) => {
   if (res.code === 200) {
     state.JsonBodyData = res.data;
     nextTick(() => {
-      // 没选属性  根元素必选
       state.tile = checkedConfig?.[0]?.tile || true;
       const getCheckedField = (config: any[], checkedField: any[]) => {
         return config.reduce((pre, cur) => {
@@ -85,11 +85,12 @@ const onOpen = async (id: number, index: number, checkedConfig: any[]) => {
         }, checkedField);
       };
       const checkedField = getCheckedField(checkedConfig, []);
-      console.log(checkedField);
       const setCheckStatus = (list: any[]) => {
-        list.forEach(item => {
+        list?.forEach(item => {
           if (checkedField.includes(item.field)) {
             item.checked = true;
+          } else {
+            item.checked = false;
           }
           if (item.children.length) {
             setCheckStatus(item.children);
@@ -101,33 +102,47 @@ const onOpen = async (id: number, index: number, checkedConfig: any[]) => {
   }
 };
 
-const handleCheck: any = (checked: boolean, row: any) => {
-  row.checked = checked;
+const handleCheck: any = (row: any) => {
+  let checked = row.checked;
   row.children?.forEach((item: any) => {
     item.checked = checked;
-    item.children?.length && handleCheck(item.checked, item);
+    item.children?.length && handleCheck(item);
   });
+  let parent: any = getParentNode(state.JsonBodyData, row.parent) || {};
+  const [nodeCount, checkedCount, uncheckedCount] = getNodesCheckStatus(parent);
+  if (nodeCount === checkedCount && checkedCount) {
+    parent.checked = true;
+  }
+  if (nodeCount === uncheckedCount && uncheckedCount) {
+    parent.checked = false;
+  }
 };
 
-const getIndeterminate = (row: any) => {
-  let indeterminate = false;
-  let unchecked = 0;
-  let checked = 0;
-  let count = 0;
+const getNodesCheckStatus = (row: any) => {
+  let uncheckedCount = 0;
+  let checkedCount = 0;
+  let nodeCount = 0;
   const getStatus = (data: any) => {
-    data.children.forEach((item: any) => {
+    data.children?.forEach((item: any) => {
       if (item.checked) {
-        checked++;
+        checkedCount++;
       } else {
-        unchecked++;
+        uncheckedCount++;
       }
-      count++;
+      nodeCount++;
       item.children.length && getStatus(item);
     });
   };
   getStatus(row);
-  if (count === unchecked || count === checked) {
+  return [nodeCount, checkedCount, uncheckedCount];
+};
+
+const getIndeterminate = (row: any) => {
+  let indeterminate = false;
+  const [nodeCount, checkedCount, uncheckedCount] = getNodesCheckStatus(row);
+  if (nodeCount === uncheckedCount || nodeCount === checkedCount) {
     indeterminate = false;
+    row.indeterminate = false;
   } else {
     indeterminate = true;
     row.indeterminate = true;
@@ -135,10 +150,28 @@ const getIndeterminate = (row: any) => {
   return indeterminate;
 };
 
+const getParentNode = (tree: any[], nodeId: string) => {
+  let parentNode: any = null;
+  const findParentNode = (nodes: any[], targetId: string) => {
+    nodes.forEach(node => {
+      if (node.tempId === targetId) {
+        parentNode = node;
+      } else if (node.children && node.children.length > 0) {
+        findParentNode(node.children, targetId);
+        if (parentNode !== null) {
+          return;
+        }
+      }
+    });
+  };
+  findParentNode(tree, nodeId);
+  return parentNode;
+};
+
 const filterTree = (tree: any[]) => {
   let filteredTree: any = [];
   let newTree = JSON.parse(JSON.stringify(tree));
-  newTree.forEach((node: any) => {
+  newTree?.forEach((node: any) => {
     if (node.checked || node.indeterminate) {
       filteredTree.push(node);
       if (node.children && node.children.length > 0) {
