@@ -1,4 +1,4 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
 
 settings:
   autoInstallPeers: true
@@ -277,7 +277,7 @@ importers:
   packages/platform:
     dependencies:
       '@adm-gis-ui/components':
-        specifier: workspace:^1.0.36
+        specifier: workspace:^1.0.37
         version: link:../components
       '@element-plus/icons-vue':
         specifier: ^2.1.0
@@ -9500,19 +9500,4 @@ packages:
     dev: true
 
   /z-schema@5.0.5:
-    resolution: {integrity: sha512-D7eujBWkLa3p2sIpJA0d1pr7es+a7m0vFAnZLlCEKq/Ij2k0MLi9Br2UPxoxdYystm5K1yeBGzub0FlYUEWj2Q==}
-    engines: {node: '>=8.0.0'}
-    hasBin: true
-    dependencies:
-      lodash.get: 4.4.2
-      lodash.isequal: 4.5.0
-      validator: 13.9.0
-    optionalDependencies:
-      commander: 9.5.0
-    dev: true
-
-  /zrender@5.4.1:
-    resolution: {integrity: sha512-M4Z05BHWtajY2241EmMPHglDQAJ1UyHQcYsxDNzD9XLSkPDqMq4bB28v9Pb4mvHnVQ0GxyTklZ/69xCFP6RXBA==}
-    dependencies:
-      tslib: 2.3.0
-    dev: false
+    resolution
