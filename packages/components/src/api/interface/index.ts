@@ -59,3 +59,11 @@ export interface trackDataByIdResponseType {
   totalPage: number;
   items: shipTrackDataItemType[];
 }
+
+export interface getTrackDataFieldMapType {
+  attributeCode: string;
+}
+
+export interface getTrackDataFieldMapResponseType {
+  [key: string]: any;
+}

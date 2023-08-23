@@ -33,6 +33,7 @@ class RequestHttp {
       (config: CustomAxiosRequestConfig) => {
         if (config.headers && typeof config.headers.set === "function") {
           config.headers.set("agioe_sso_sessionid", localStorage.getItem("sessionId"));
+          config.headers.set("agioe_sso_sessionid", "431_ac6a04b4cde749cda58d94203a29d9f5");
         }
         return config;
       },

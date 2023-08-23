@@ -8,9 +8,9 @@
     <div class="track-back-content">
       <div class="query-box">
         <el-form :inline="true" :model="formData" label-width="80px" :rules="rulesForm" ref="refForm">
-          <el-form-item label="开始时间" prop="startTime">
+          <el-form-item label="开始时间" prop="beginTime">
             <el-date-picker
-              v-model="formData.startTime"
+              v-model="formData.beginTime"
               type="datetime"
               placeholder="选择开始时间"
               style="width: 200px"
@@ -137,11 +137,8 @@ import { ElMessage } from "element-plus";
 import Icon from "./Icon.vue";
 import moment from "moment";
 
-// ⤵ store
-import { useTrackListStore } from "../../stores/modules/trackList";
-
 // ⤵ 接口
-import { eventListByObjType, getTrackListData, getTrackDataById } from "../../api/device";
+import { eventListByObjType, getTrackListData } from "../../api/device";
 
 // ⤵ type
 import type { VisualMap, TableList, selectModeListType } from "../type";
@@ -150,8 +147,8 @@ import type { VisualMap, TableList, selectModeListType } from "../type";
 import { selectionAddDrawInteraction } from "../hooks/index"; // 框选方法
 import { clearSelectionDrawInteraction } from "../hooks/clearSelectionDrawInteraction"; // 清除框选
 import { toLonLatFN } from "../hooks/toLonLat"; // 坐标转换
-import { createdTrackData } from "../hooks/createdTrackData"; // 绘制轨迹
 import { labelOnSelect } from "../hooks/index"; // 定位
+import { getTrackDataByIdFn } from "../hooks/getTrackDataById"; // 获取单个轨迹数据
 
 // 解构props(withDefaults设置props默认值)
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; isShow?: boolean }>(), {
@@ -180,7 +177,7 @@ const labelList: any[] = Object.values(map.value?.get("labelInfoMap"));
 const refForm: any = ref();
 let coordinateArr: any[] = []; // 坐标点集合
 const formData = reactive({
-  startTime: moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"),
+  beginTime: moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"),
   endTime: moment().format("YYYY-MM-DD HH:mm:ss"),
   selectMode: "shape", // 查询模式
   boxSelectMode: "", // 框选模式（查询模式是图形时）
@@ -192,7 +189,7 @@ const formData = reactive({
 
 // 表单验证
 let rulesForm: any = {
-  startTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
+  beginTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
   endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
   selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
   // boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }],
@@ -368,62 +365,11 @@ const toLocation = (row: { [key: string]: any }) => {
 
 // 轨迹回放
 const trackPlayBack = (row: { [key: string]: any }) => {
-  const store = useTrackListStore();
-  getTrackDataById({
-    equipCodes: row.code,
-    isVisitObject: true,
-    isHistory: true,
-    beginTime: moment(formData.startTime).format("YYYY-MM-DD HH:mm:ss"),
-    endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
-    pageNumber: 1,
-    pageSize: 1000000,
-    ascDesc: "asc"
-  }).then(res => {
-    const { code, data } = res;
-    if (Number(code) !== 200) {
-      ElMessage("获取数据报错");
-      return;
-    }
-
-    if (!data.items.length) {
-      return ElMessage.warning("暂无轨迹数据");
-    }
-
-    // 后端数据是倒叙的，此处在转一下
-    const transData = data.items.map(val => {
-      const aisLocation = val.aisLocation;
-      const aisInfo = JSON.parse(aisLocation);
-      const params = {
-        posInfo: {
-          lat: aisInfo.lat,
-          lon: aisInfo.lon,
-          cog: aisInfo.cog
-        },
-        titleInfo: {
-          name: moment(aisInfo.positionReportTicks).format("YYYY-MM-DD HH:mm:ss")
-        },
-        labelInfo: {
-          time: moment(aisInfo.positionReportTicks).format("YYYY-MM-DD HH:mm:ss"),
-          speed: aisInfo.sog,
-          unit: "节"
-        },
-        detailInfo: [
-          ["船名", aisInfo.name],
-          ["MMSI", aisInfo.mmsi],
-          ["宽", aisInfo.width]
-        ]
-      };
-      return params;
-    });
-
-    createdTrackData({
-      id: row.code,
-      name: row.name,
-      data: transData
-    }).then(res => {
-      row.color = res;
-      store.addData(row);
-    });
+  getTrackDataByIdFn({
+    code: row.code,
+    name: row.name,
+    beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
+    endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss")
   });
 };
 
@@ -455,7 +401,7 @@ const table = ref<TableList>({
     }
     const params = {
       regions,
-      beginTime: moment(formData.startTime).format("YYYY-MM-DD HH:mm:ss"),
+      beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
       endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
       pageSize: formData.pageSize,
       pageNumber: formData.pageNumber
@@ -465,10 +411,10 @@ const table = ref<TableList>({
     }
 
     // 时间判断(3天的数据)
-    if (+moment(formData.endTime) - +moment(formData.startTime) > 4 * 24 * 60 * 60 * 1000) {
+    if (+moment(formData.endTime) - +moment(formData.beginTime) > 3 * 24 * 60 * 60 * 1000) {
       return ElMessage.warning("查询不能超过3天数据");
     }
-    if (+moment(formData.endTime) < +moment(formData.startTime)) {
+    if (+moment(formData.endTime) < +moment(formData.beginTime)) {
       return ElMessage.warning("开始时间不能小于结束时间");
     }
 
