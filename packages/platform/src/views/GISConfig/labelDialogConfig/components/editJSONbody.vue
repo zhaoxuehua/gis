@@ -203,8 +203,8 @@ defineExpose({
 </script>
 <style lang="scss" scoped>
 .json-table {
-  margin-top: 10px;
   height: 300px;
+  margin-top: 10px;
 }
 .label {
   display: inline-block;

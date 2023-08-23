@@ -2,6 +2,7 @@
 <template>
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
+    <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
 
     <!-- 左侧控件 -->
     <LeftActionBox
@@ -102,6 +103,7 @@ const emits = defineEmits([
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
+const currentLevel = ref();
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -419,7 +421,7 @@ const initMap = async (mapId: string | number) => {
 
     // 实例化地图，类型为扩展后的VisualMap
     const map = new Map({
-      target: defaultOptions.target || "",
+      target: defaultOptions.target || "map",
       controls: defaults({
         attribution: false,
         rotate: false,
@@ -439,6 +441,13 @@ const initMap = async (mapId: string | number) => {
         constrainResolution: true
       })
     }) as VisualMap;
+
+    // 监听视图的变化获取当前层级
+    currentLevel.value = defaultOptions.defaultZoom; // 视图层级初始值
+    map?.getView().on("change:resolution", function () {
+      let zoomLevel = Math.ceil(map?.getView()?.getZoom());
+      currentLevel.value = zoomLevel;
+    });
 
     // 缓存配置
     map.defaultOptions = defaultOptions;
@@ -1026,6 +1035,23 @@ watch(
     .control-scaleLine span {
       white-space: nowrap;
     }
+  }
+
+  /* 当前等级 */
+  .mapLevel {
+    position: absolute;
+    right: 100px;
+    bottom: 6px;
+    z-index: 10000;
+    padding: 5px 10px;
+
+    // margin-bottom: 1px;
+    font-size: 14px;
+    color: #333333;
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    transform: scale(0.8);
   }
 }
 </style>
