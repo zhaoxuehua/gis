@@ -28,36 +28,15 @@
       </template>
     </Table>
   </div>
-  <el-dialog title="编辑" v-model="state.dialogVisible" class="el-dialog-default">
-    <span class="label">展示方式</span>
-    <el-select v-model="state.tile">
-      <el-option label="平铺展示" :value="true" key="flat"></el-option>
-      <el-option label="表格展示" :value="false" key="table"></el-option>
-    </el-select>
-    <Table
-      ref="jsonTableRef"
-      class="json-table"
-      row-key="tempId"
-      :data="state.JsonBodyData"
-      :columns="jsonBodyColumns"
-      default-expand-all
-      @selection-change="handleSelectionChange"
-    >
-    </Table>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="onClose">取消</el-button>
-        <el-button type="primary" @click="onConfirm">确认</el-button>
-      </span>
-    </template>
-  </el-dialog>
+  <EditJSONbody ref="editJSONbodyRef" @success="onEditJSONbodySuccess"></EditJSONbody>
 </template>
 <script setup lang="ts" name="labelDialog">
 import { reactive, ref, nextTick } from "vue";
 import Table from "../../../../../../components/src/map/components/Table/index.vue";
 import addAttr from "./addAttr.vue";
-import { deleteBindAttrApi, updateJSONBody, getAllJSONbodyApi } from "../../../../api/modules/labelDialogConfig";
+import { deleteBindAttrApi } from "../../../../api/modules/labelDialogConfig";
 import { ElMessage, ElMessageBox } from "element-plus";
+import EditJSONbody from "./editJSONbody.vue";
 
 const props = defineProps({
   static: Array,
@@ -71,12 +50,10 @@ const emit = defineEmits(["update:static", "update:monitor"]);
 const state = reactive({
   loading: false,
   activeAttr: "static",
-  dialogVisible: false,
-  selectJSONBody: [],
-  JsonBodyData: [],
-  editJSONbodyIndex: 0,
-  tile: true
+  editJSONbodyIndex: 0
 });
+
+const editJSONbodyRef = ref();
 
 const tableData: any = ref([]);
 const tableColumns = [
@@ -92,25 +69,6 @@ const tableColumns = [
     label: "操作",
     scope: "action",
     width: 100
-  }
-];
-
-const jsonTableRef = ref();
-const jsonBodyColumns = [
-  {
-    type: "selection"
-  },
-  {
-    label: "key",
-    prop: "field"
-  },
-  {
-    label: "类型",
-    prop: "fieldType"
-  },
-  {
-    label: "名称",
-    prop: "remark"
   }
 ];
 
@@ -139,27 +97,8 @@ const onAttrConfigAdd = () => {
 };
 
 const onJsonEdit = async (id: number, index: number) => {
-  state.dialogVisible = true;
-  state.editJSONbodyIndex = index;
-  const res: any = await getAllJSONbodyApi(id);
-  if (res.code === 200) {
-    state.JsonBodyData = res.data;
-    nextTick(() => {
-      // 没选属性  根元素必选
-      const checkedConfig = tableData.value[state.editJSONbodyIndex]?.attributeJsonConfig;
-      state.tile = checkedConfig?.tile || true;
-      const root: any = state.JsonBodyData.filter((item: any) => item.field === "root")?.[0] || {};
-      jsonTableRef.value?.toggleRowSelection(root, true);
-      root.children?.forEach((item: any) => {
-        jsonTableRef.value?.toggleRowSelection(item, false);
-      });
-      const checkedroot: any = checkedConfig.filter((item: any) => item.field === "root")?.[0] || {};
-      checkedroot.children?.forEach((item: any) => {
-        const sameChild = root.children.find((rchild: any) => rchild.tempId === item.tempId);
-        sameChild && jsonTableRef.value?.toggleRowSelection(sameChild, true);
-      });
-    });
-  }
+  const checkedConfig = tableData.value[index]?.attributeJsonConfig;
+  editJSONbodyRef.value.onOpen(id, index, checkedConfig);
 };
 
 const onDelete = (id: number, index: number) => {
@@ -178,30 +117,9 @@ const onDelete = (id: number, index: number) => {
     }
   });
 };
-const handleSelectionChange = (val: any) => {
-  state.selectJSONBody = val;
-};
-const onClose = () => {
-  state.dialogVisible = false;
-};
-const getTree: any = (list: any[], parent: any) => {
-  let children = list.filter(item => (item.parent || null) === parent);
-  return children.map((item: any) => {
-    return {
-      ...item,
-      tile: state.tile,
-      children: getTree(list, item.tempId)
-    };
-  });
-};
-const onConfirm = async () => {
-  const tree = getTree(state.selectJSONBody, null);
-  const res: any = await updateJSONBody(tree);
-  if (res.code === 200) {
-    state.dialogVisible = false;
-    ElMessage.success("结构体配置成功");
-    tableData.value[state.editJSONbodyIndex].attributeJsonConfig = tree;
-  }
+
+const onEditJSONbodySuccess = (tree: any, index: number) => {
+  tableData.value[index].attributeJsonConfig = tree;
 };
 defineExpose({
   handleTabChange
@@ -220,13 +138,5 @@ defineExpose({
 .attr-table {
   height: 370px;
   margin-top: 10px;
-}
-.json-table {
-  height: 300px;
-  margin-top: 10px;
-}
-.label {
-  display: inline-block;
-  margin-right: 10px;
 }
 </style>
