@@ -99,12 +99,6 @@
             <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" style="width: 200px" />
           </el-form-item>
           <div></div>
-          <!-- <el-form-item v-if="form.isTrackSetting">
-            <template #label>
-              <div style="font-weight: bold">轨迹线样式</div>
-            </template>
-          </el-form-item>
-          <div></div> -->
         </template>
         <!-- 线 面 圆 矩形 轨迹配置时   要不要icon -->
         <template v-if="['2', '3', '4', '5', '7'].includes(form.dataType) || form.isTrackSetting">
@@ -112,7 +106,7 @@
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
 
-          <el-form-item label="速度单位" prop="speedUnit">
+          <el-form-item label="速度单位" prop="speedUnit" v-if="form.isTrackSetting && form.dataType == '1'">
             <el-input v-model="form.speedUnit" :disabled="state.dialogType == 2" />
           </el-form-item>
 
