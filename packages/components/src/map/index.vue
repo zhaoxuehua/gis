@@ -52,7 +52,18 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch, unref } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  defineAsyncComponent,
+  reactive,
+  computed,
+  shallowRef,
+  useSlots,
+  watch,
+  unref
+} from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
@@ -69,7 +80,7 @@ import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
 
-import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
+import { layerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
 import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature, getSelectedFeature } from "./hooks/index";
@@ -309,6 +320,7 @@ const onEditLabel = (labelCode: string) => {
 let isDynamicLine = computed(() => gisStore.isDynamicLine);
 let imgIndex = computed(() => gisStore.imgIndex);
 const timer: any = ref(null);
+const dynamicTimes: any = ref(null); // 风机、动态线、动态环的定时器
 
 // overlayer
 const popupDOMRef = ref();
@@ -448,6 +460,20 @@ const initMap = async (mapId: string | number) => {
     map?.getView().on("change:resolution", function () {
       let zoomLevel = Math.ceil(map?.getView()?.getZoom());
       currentLevel.value = zoomLevel;
+      // 增加地图缩放层级最大时不聚合的逻辑
+      let layerMap = map?.get("layerMap") || {};
+      let clusterLayerArr = Object.values(layerMap).filter((layer: any) => layer?.get("isTagAgg"));
+      clusterLayerArr.forEach((layer: any) => {
+        // 获取layer的最大层级
+        let maxZoom = layer.getMaxZoom();
+        if (maxZoom == zoomLevel) {
+          let clusterDataSource = layer.getSource();
+          clusterDataSource.setDistance(0);
+        } else {
+          let clusterDataSource = layer.getSource();
+          clusterDataSource.setDistance(layer?.get("tagAggDistance"));
+        }
+      });
     });
 
     // 缓存配置
@@ -456,10 +482,19 @@ const initMap = async (mapId: string | number) => {
 
     // 根据图层配置信息创建图层
     const layerMap: { [key: string]: any } = {};
-    let clusterLayerCodes: any = [];
-
     defaultOptions.layers.forEach((item: { [key: string]: any }) => {
       let options: { [key: string]: any };
+      options = {
+        zIndex: item?.layerLevel,
+        minZoom: item?.layerMinLevel - 0.000000000000005,
+        maxZoom: item?.layerMaxLevel,
+        name: item?.name,
+        code: item?.code,
+        isTagAgg: item?.isTagAgg,
+        isTrackDraw: item?.isTrackDraw,
+        trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
+        style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
+      };
 
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
@@ -468,44 +503,19 @@ const initMap = async (mapId: string | number) => {
           distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 0, // 图层上标签聚合距离
           source: sourceVector
         });
-        options = {
-          source: clusterSource,
-          zIndex: item?.layerLevel,
-          minZoom: item?.layerMinLevel - 0.000000000000005,
-          maxZoom: item?.layerMaxLevel,
-          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
-          name: item?.name,
-          code: item?.code,
-          isTagAgg: item?.isTagAgg,
-          isTrackDraw: item?.isTrackDraw,
-          style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
-        };
+        options.source = clusterSource;
+        options.tagAggDistance = item?.tagAggDistance || 0;
       } else {
-        options = {
-          source: new VectorSource({ wrapX: false }),
-          zIndex: item?.layerLevel,
-          minZoom: item?.layerMinLevel - 0.000000000000005,
-          maxZoom: item?.layerMaxLevel,
-          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
-          name: item.name,
-          code: item?.code,
-          isTagAgg: item?.isTagAgg,
-          isTrackDraw: item?.isTrackDraw,
-          style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
-        };
+        options.source = new VectorSource({ wrapX: false });
       }
 
       layerMap[item.code] = new VectorLayer(options);
-      if (item?.isTagAgg) {
-        clusterLayerCodes.push(item.code);
-      }
       map.addLayer(layerMap[item.code]);
     });
 
     /**********************************************************************/
 
     map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
-    map.set("clusterLayerCodes", clusterLayerCodes); // 存储所有的图层信息
 
     // 创建固定的点图层用于定位时增加定位点到点图层
     let positionPointLayer = new VectorLayer({
@@ -569,13 +579,13 @@ const initMap = async (mapId: string | number) => {
             geometry: createGeometry(item.labelData)
           });
 
-          labelFeature.set("layerCode", item.refLayer.code); // 所属图层编码
-          labelFeature.set("labelTypeCode", item.labelType.code); // 所属标签类型编码
           labelFeature.setId(item.code); // 是否显示标签
           labelFeature.set("code", item.code); // 是否显示标签
           labelFeature.set("type", item.labelData?.style?.type); // 旧数据Point  新数据 1
           labelFeature.set("isShow", true); // 是否显示标签
           labelFeature.set("labelData", item?.labelData); // 标签绘制数据
+          labelFeature.set("layerCode", item.refLayer.code); // 所属图层编码
+          labelFeature.set("labelTypeCode", item.labelType.code); // 所属标签类型编码
 
           // 点(根据图片源数量)
           if (item?.labelType?.dataType == "1") {
@@ -635,23 +645,20 @@ const initMap = async (mapId: string | number) => {
         }
       });
 
-      // 动态样式
+      // 动态样式(风机 动态线 动态环)
       let dynamicLayers = Array.from(new Set(dynamicLayerCodes));
       map.set("dynamicLayerCodes", dynamicLayers);
+      if (dynamicTimes.value) {
+        clearInterval(dynamicTimes.value);
+        dynamicTimes.value = null;
+      }
       if (map.get("dynamicLayerCodes")?.length) {
-        setInterval(() => {
+        dynamicTimes.value = setInterval(() => {
           // 风机转动及虚线闪动
           gisStore.setImgIndex(imgIndex.value + 1);
           gisStore.setIsDynamicLine(!isDynamicLine.value);
           dynamicLayers.forEach((code: string) => {
-            // 判断是聚合图层还是非聚合图层
-            if (clusterLayerCodes.includes(code)) {
-              layerMap[code].setStyle((feature: FeatureLike) =>
-                clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false)
-              );
-            } else {
-              layerMap[code].setStyle((feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value));
-            }
+            layerMap[code].setStyle((feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value));
           });
         }, 200);
       }
@@ -835,6 +842,13 @@ onMounted(() => {
   const mapParams = props?.config?.id;
   if (!mapParams) return;
   initMap(mapParams);
+});
+
+onBeforeUnmount(() => {
+  if (dynamicTimes.value) {
+    clearInterval(dynamicTimes.value);
+    dynamicTimes.value = null;
+  }
 });
 
 // 自定义框选弹框
