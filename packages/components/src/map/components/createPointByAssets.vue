@@ -62,7 +62,7 @@
             :background="true"
             v-model:current-page="query.params.pageNumber"
             v-model:page-size="query.params.pageSize"
-            :page-sizes="[10, 20, 30, 50]"
+            :page-sizes="[10, 20, 30, 50, 100]"
             layout="total, prev, pager, next, sizes"
             :total="table.total"
             :small="true"
@@ -105,7 +105,7 @@ const query = ref({
   }
 });
 const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: query.value.params.pageNumber, limit: val });
+  query.value.getPagination({ page: 1, limit: val });
 };
 
 const handleCurrentChange = (val: any) => {

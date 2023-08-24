@@ -42,10 +42,12 @@
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useGisStore } from "../../stores/modules/gis";
 import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 
+const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
   index: () => 0
@@ -74,19 +76,22 @@ const tagTreeData = computed(() => {
   const labelInfoMap = props.map?.get("labelInfoMap") || {};
   let tree: any = [];
   Object.entries(labelTypeMap)?.forEach(([key, object]: any) => {
-    const node = {
-      ...object,
-      pId: 0,
-      isParent: true,
-      children: []
-    };
-    Object.entries(labelInfoMap)?.forEach((labelInfo: any) => {
-      let item = labelInfo[1];
-      if (item?.labelType?.code == key) {
-        node.children.push(item);
-      }
-    });
-    tree.push(node);
+    // 过滤是否挂载标签树的逻辑
+    if (object.isHang) {
+      const node = {
+        ...object,
+        pId: 0,
+        isParent: true,
+        children: []
+      };
+      Object.entries(labelInfoMap)?.forEach((labelInfo: any) => {
+        let item = labelInfo[1];
+        if (item?.labelType?.code == key) {
+          node.children.push(item);
+        }
+      });
+      tree.push(node);
+    }
   });
   return tree;
 });
@@ -99,15 +104,21 @@ const filterNode = (value: any, data: any) => {
   return data.name.indexOf(value) !== -1;
 };
 
-// 树节点点击
+// 树节点点击(定位+选中)
 const handleNodeClick = (node: any) => {
   labelOnSelect(props.map, node.code, false);
 };
 
+const timer: any = ref(null);
 // 编辑
 const onEdit = (node: { [key: string]: any }, data: { [key: string]: any }) => {
   getParentNode(node);
   emits("onEditLabel", data.code);
+  timer.value = setTimeout(() => {
+    labelOnSelect(props.map, data.code, false);
+    clearTimeout(timer);
+    timer.value = null;
+  }, 200);
 };
 
 // 删除
@@ -119,6 +130,12 @@ const onDelete = (node: { [key: string]: any }, data: { [key: string]: any }) =>
     ElMessage.warning("标签不存在");
     return;
   }
+
+  if (gisStore.isShowEditLabel) {
+    ElMessage.warning("请先关闭编辑标签弹框");
+    return;
+  }
+
   ElMessageBox.confirm("确定删除该标签吗？", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",

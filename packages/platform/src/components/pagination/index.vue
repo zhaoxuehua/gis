@@ -35,7 +35,7 @@ const props = defineProps({
   },
   pageSizes: {
     type: Array as () => number[],
-    default: () => [10, 20, 30, 50] // 设置默认值
+    default: () => [10, 20, 30, 50, 100] // 设置默认值
   },
   layout: {
     type: String,

@@ -30,7 +30,7 @@
         </el-col>
         <el-col :span="6" class="right-align">
           <!-- 选中树节点有标签配置存在  且选择了列表点数据 -->
-          <el-button type="primary" @click="onDraw" :disabled="!currentTarget.gisLabelConfig || table.data.length === 0"
+          <el-button type="primary" @click="beforeOnDraw" :disabled="!currentTarget.gisLabelConfig || table.data.length === 0"
             >生成标签</el-button
           >
           <!-- 删除的是左侧选中目标节点数据（针对绘制的面删除） -->
@@ -81,6 +81,8 @@
     >
       <SelectDeviceToCreatePolygonDialog @on-confirm="onDialogConfirm" :type="props?.type"></SelectDeviceToCreatePolygonDialog>
     </el-dialog>
+
+    <StyleDialog ref="styleDialogRef" @success-add="editStyleConfirm"></StyleDialog>
   </div>
 </template>
 
@@ -92,6 +94,7 @@ import { getLabelInfoByEquipId, getEquipListByLine, addLabelSingle, deleteLabelS
 import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import type { TableList } from "../type";
 import SelectDeviceToCreatePolygonDialog from "./selectDeviceToCreatePolygonDialog.vue";
+import StyleDialog from "./styleDialog.vue";
 import { MAP_DATA_TYPE } from "../hooks/createGeometry";
 import { transformLabelType } from "../hooks/index";
 
@@ -105,8 +108,9 @@ const state = reactive({
     label: "name"
   },
   filterText: "",
-  treeCode: "tunneltree"
+  treeCode: "drawSurfaceTree"
 });
+const styleDialogRef = ref();
 // 树实例
 const treeRef = ref();
 // 树数据
@@ -166,6 +170,9 @@ const fetchPolygonInfo = async (id: number) => {
       if (gisLabelConfig.dataType === "3") {
         // 面
         currentTarget.value.gisLabelConfig = gisLabelConfig;
+        // 存储一份面本身的配置样式（面填充色、线色、线宽、线型）
+        let { polygonColor, lineWidth, lineColor, lineType } = gisLabelConfig;
+        originPolygonStyle.value = { polygonColor, lineWidth, lineColor, lineType };
       } else {
         ElMessage.warning("请选择面类型节点");
       }
@@ -202,6 +209,7 @@ const query = ref<{ [key: string]: any }>({
 });
 
 const currentTarget = ref<{ [key: string]: any }>({});
+const originPolygonStyle = ref<{ [key: string]: any }>({});
 const dialogVisible = ref<boolean>(false); // 选择设备弹框
 
 const table = ref<TableList>({
@@ -231,8 +239,26 @@ const table = ref<TableList>({
   onEdit: () => {}
 });
 
-// 生成标签按钮事件
-const onDraw = () => {
+// 生成标签前更改样式弹框
+const beforeOnDraw = () => {
+  // 缓冲单面的坐标数据处理
+  let bufferDistance = Number(props.distance);
+  if (!bufferDistance) {
+    ElMessage.warning("请设置缓冲距离");
+    return;
+  }
+  // 初始化样式信息
+  styleDialogRef.value?.openDialog(originPolygonStyle.value, "drawPolygon");
+};
+
+// 更改绘制面的样式并进行绘制
+const editStyleConfirm = (styleObj: { [key: string]: any }) => {
+  let { gisLabelConfig = {} } = currentTarget.value;
+  let { polygonColor, lineWidth, lineColor, lineType } = styleObj; // 面填充色 线宽 线色 线型
+  gisLabelConfig.polygonColor = polygonColor;
+  gisLabelConfig.lineWidth = lineWidth;
+  gisLabelConfig.lineColor = lineColor;
+  gisLabelConfig.lineType = lineType;
   ElMessageBox.confirm("确定要生成标签吗？", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -281,7 +307,7 @@ const drawHandler = () => {
     ElMessage.warning("请至少选择1个设备");
     return;
   }
-
+  // 线坐标数组
   table.value.data.forEach(item => {
     const labelData = JSON.parse(item.labelData);
     coordinates.push(labelData.coordinates);
@@ -289,14 +315,9 @@ const drawHandler = () => {
 
   // 缓冲单面的坐标数据处理
   let bufferDistance = Number(props.distance);
-  if (!bufferDistance) {
-    ElMessage.warning("请设置缓冲距离");
-    return;
-  }
-
   // 创建一个空的缓冲要素集合
   let bufferFeatures: any = [];
-  // 遍历每条线并执行缓冲操作
+  // 遍历每条线并执行缓冲操作（线缓冲）
   coordinates.forEach(function (coords) {
     let line = turf.lineString(coords);
     let bufferedLine = turf.buffer(line, bufferDistance, { units: "meters" });

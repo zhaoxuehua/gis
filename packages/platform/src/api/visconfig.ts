@@ -78,10 +78,6 @@ export function getLabelDataType() {
 export function getLabelTypeDetail(params: string | number) {
   return request.get(`/api/gis-service/equip/gisLabel/type/getById/${params}`);
 }
-// 根据设备类型获取属性列表
-export function getBindAttributeByEquipType(params: string | number) {
-  return request.get(`/api/gis-service/equip/equip/description/getByType/${params}/true`);
-}
 
 // 标签
 // 获取标签列表

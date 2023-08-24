@@ -2,6 +2,7 @@
 <template>
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
+    <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
 
     <!-- 左侧控件 -->
     <LeftActionBox
@@ -26,15 +27,32 @@
     >
     </RightActionBox>
     <!-- 地图点击弹框 -->
-    <Popup :data="popupData" @on-close="onScadaClose" ref="popupRef">
+    <Popup
+      :map="exportMap"
+      :data="popupData"
+      @on-close="onScadaClose"
+      ref="popupRef"
+      @scada="handlePopLink"
+      @view="handlePopLink"
+    >
       <template #customContent v-if="customContent">
         <component :is="customContent"></component>
       </template>
     </Popup>
+
+    <!-- 轨迹回放列表-->
+    <Track-back-list></Track-back-list>
+
+    <!-- overLayer鼠标经过显示-->
+    <div id="shipHoverInfo" class="popup" ref="popupDOMRef">
+      <h4 class="popup-tit" ref="popupTitDOMRef"></h4>
+      <div class="popup-content" ref="popupContentDOMRef"></div>
+    </div>
   </div>
 </template>
+
 <script lang="ts" setup>
-import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch } from "vue";
+import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch, unref } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
@@ -43,7 +61,6 @@ import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { XYZ, Vector as VectorSource, Cluster } from "ol/source";
 import type { FeatureLike } from "ol/Feature";
 import { fromLonLat } from "ol/proj";
-import { Select } from "ol/interaction";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
@@ -55,17 +72,18 @@ import { useGisStore } from "../stores/modules/gis";
 import { layerStyle, clusterLayerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
-// import { createdTrackLayer } from "./hooks/createdTrackLayer.js";
-import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature } from "./hooks/index";
+import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature, getSelectedFeature } from "./hooks/index";
+import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
+import { getTrackDataByIdFn } from "./hooks/getTrackDataById"; // 获取单个轨迹数据
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
-import Popup from "./components/popup.vue";
+import Popup from "./components/popup/index.vue";
+import TrackBackList from "./components/trackBackList.vue";
 
 defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
-
 const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function; outsideTreeNode?: any }>(), {
   config: () => {},
@@ -78,11 +96,15 @@ const emits = defineEmits([
   "onCloseRightMenu",
   "getClickBoxSelection",
   "getCustomSearchContent",
-  "getInitMapExportData"
+  "getInitMapExportData",
+  "scada",
+  "view",
+  "track"
 ]);
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
+const currentLevel = ref();
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -106,6 +128,13 @@ const state = reactive({
       isShow: false,
       visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
+    },
+    {
+      icon: "iconfont icon-retweet1",
+      label: "轨迹回放",
+      isShow: false,
+      visible: false,
+      component: shallowRef(defineAsyncComponent(() => import("./components/trackPlayBack.vue")))
     }
   ],
   rightBoxData: [
@@ -145,6 +174,13 @@ const state = reactive({
       component: shallowRef(defineAsyncComponent(() => import("./components/imgLegend.vue")))
     },
     {
+      icon: "iconfont icon-list-ol-solid",
+      label: "关注列表",
+      isShow: false,
+      visible: false,
+      component: shallowRef(defineAsyncComponent(() => import("./components/attentionList.vue")))
+    },
+    {
       icon: "iconfont icon-complex-device",
       label: "白名单",
       isShow: false,
@@ -171,6 +207,9 @@ const getLeftData = computed(() => {
         break;
       case "快速创建":
         item.visible = !!controlList.value.includes("quickCreate");
+        break;
+      case "轨迹回放":
+        item.visible = !!controlList.value.includes("trackPlayBack");
         break;
 
       default:
@@ -213,6 +252,9 @@ const getRightData = computed(() => {
       case "图例":
         item.visible = !!controlList.value.includes("imgLegend");
         break;
+      case "关注列表":
+        item.visible = !!controlList.value.includes("attentionList");
+        break;
       case "白名单":
         item.visible = !!controlList.value.includes("whiteList");
         break;
@@ -237,6 +279,8 @@ const rightBoxDataChange = (index: number, label: string = "") => {
   if (label == "编辑") {
     // 编辑控件
     gisStore.setIsEdit(!isEditShow.value);
+    // 关闭当前编辑标签弹框及左击弹框
+    editLabelRef.value?.onClose();
   }
 };
 
@@ -264,13 +308,18 @@ const onEditLabel = (labelCode: string) => {
 
 let isDynamicLine = computed(() => gisStore.isDynamicLine);
 let imgIndex = computed(() => gisStore.imgIndex);
+const timer: any = ref(null);
+
+// overlayer
+const popupDOMRef = ref();
+const popupTitDOMRef = ref();
+const popupContentDOMRef = ref();
 
 const initMap = async (mapId: string | number) => {
   // 获取地图配置（初始化地图参数详情）
   const res: { [key: string]: any } = await getMapParamsDetail(mapId);
   if (res.code === 200 && res.data) {
     const originalData = JSON.parse(JSON.stringify(res.data));
-    originalData.displaySearchIds = "3,55,54,53,52,51,50,1,7";
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
     if (props?.config?.bigScreenControls) {
       let newControls = [];
@@ -319,19 +368,26 @@ const initMap = async (mapId: string | number) => {
       layers: originalData.displayLayer, // 显示图层  object[]
       layersIds: originalData.displayLayerIds, // 图层id string
       displaySearchIds: originalData.displaySearchIds, // 搜索类型id
+      displaySearch: originalData.displaySearch, // 搜索类型 []
 
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
       scaleLine: controls.includes("scaleLine"), // 比例尺控件  scaleLine
+      scaleLineUnit: originalData?.scaleLineUnit, // 比例尺单位
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
-      displayLegend: originalData.displayLegend // 图例[]
+      displayLegend: originalData.displayLegend, // 图例[]
+      trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
+      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
     };
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
     // 比例尺控件
-    const scaleLine = new ScaleLine({ className: "control-scaleLine" });
+    const scaleLine = new ScaleLine({
+      className: "control-scaleLine",
+      units: defaultOptions.scaleLineUnit || "metric"
+    });
     // 控件列表(是否显示全屏缩放控件)
     const controlsList = [];
     if (defaultOptions.fullScreen) {
@@ -366,7 +422,7 @@ const initMap = async (mapId: string | number) => {
 
     // 实例化地图，类型为扩展后的VisualMap
     const map = new Map({
-      target: defaultOptions.target || "",
+      target: defaultOptions?.target || "map",
       controls: defaults({
         attribution: false,
         rotate: false,
@@ -386,19 +442,30 @@ const initMap = async (mapId: string | number) => {
         constrainResolution: true
       })
     }) as VisualMap;
+
+    // 监听视图的变化获取当前层级
+    currentLevel.value = defaultOptions.defaultZoom; // 视图层级初始值
+    map?.getView().on("change:resolution", function () {
+      let zoomLevel = Math.ceil(map?.getView()?.getZoom());
+      currentLevel.value = zoomLevel;
+    });
+
     // 缓存配置
     map.defaultOptions = defaultOptions;
+    gisStore.setMapCase(map);
 
     // 根据图层配置信息创建图层
     const layerMap: { [key: string]: any } = {};
     let clusterLayerCodes: any = [];
+
     defaultOptions.layers.forEach((item: { [key: string]: any }) => {
       let options: { [key: string]: any };
+
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
         let sourceVector = new VectorSource();
         let clusterSource = new Cluster({
-          distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 20, // 图层上标签聚合距离
+          distance: item?.tagAggDistance ? Number(item?.tagAggDistance) : 0, // 图层上标签聚合距离
           source: sourceVector
         });
         options = {
@@ -406,32 +473,34 @@ const initMap = async (mapId: string | number) => {
           zIndex: item?.layerLevel,
           minZoom: item?.layerMinLevel - 0.000000000000005,
           maxZoom: item?.layerMaxLevel,
-          trackAggDistance: item.trackAggDistance ? Number(item?.trackAggDistance) : 120, // 聚合图层上轨迹聚合距离
+          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
           name: item?.name,
           code: item?.code,
           isTagAgg: item?.isTagAgg,
+          isTrackDraw: item?.isTrackDraw,
           style: (feature: FeatureLike) => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false) // 是否选中（因为聚合图层的选中单独处理）
         };
-        // createdTrackLayer(item); // 是否设置对应改图的要素有轨迹
       } else {
         options = {
           source: new VectorSource({ wrapX: false }),
           zIndex: item?.layerLevel,
           minZoom: item?.layerMinLevel - 0.000000000000005,
           maxZoom: item?.layerMaxLevel,
+          trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
           name: item.name,
           code: item?.code,
           isTagAgg: item?.isTagAgg,
+          isTrackDraw: item?.isTrackDraw,
           style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
         };
       }
+
       layerMap[item.code] = new VectorLayer(options);
       if (item?.isTagAgg) {
         clusterLayerCodes.push(item.code);
       }
       map.addLayer(layerMap[item.code]);
     });
-    console.log(defaultOptions, "............defaultOptions...........");
 
     /**********************************************************************/
 
@@ -469,6 +538,7 @@ const initMap = async (mapId: string | number) => {
       }
     });
     map.set("labelTypeMap", labelTypeMap);
+    map.set("featureTypeGroup", featureTypeGroup);
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
       ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
@@ -591,11 +661,54 @@ const initMap = async (mapId: string | number) => {
     }
 
     // 鼠标移动事件
-    map.on("pointermove", function (e: MapBrowserEvent<any>) {
-      const pixel = map.getEventPixel(e.originalEvent);
-      const hit = map.hasFeatureAtPixel(pixel, { hitTolerance: 5 });
-      map.getTargetElement().style.cursor = hit ? "pointer" : "";
+    let hoverInfoLayer: Overlay = new Overlay({
+      element: popupDOMRef.value,
+      autoPan: true,
+      offset: [20, 0]
     });
+    map.addOverlay(hoverInfoLayer);
+    map.on("pointermove", function (event: any) {
+      const pixel = map.getEventPixel(event.originalEvent); // 坐标
+      const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
+      const pos = event.coordinate;
+      if (hit) {
+        map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
+          let targetFeature = null;
+          if (Array.isArray(feature.get("features"))) {
+            targetFeature = feature.get("features")[0];
+          } else {
+            targetFeature = feature;
+          }
+
+          let { extendsData, type, name } = targetFeature.getProperties();
+          if (type == "trackPoint" || type == "trackShip") {
+            const { detailInfo, titleInfo } = unref(extendsData);
+            let infoStr = "";
+            let infoData = detailInfo as [[string, any]];
+            infoData.forEach(val => {
+              infoStr += `<p>${val[0]}:${val[1]}</p>`;
+            });
+            popupTitDOMRef.value.innerHTML = titleInfo.name;
+            popupContentDOMRef.value.innerHTML = infoStr;
+            hoverInfoLayer.setPosition(pos);
+          } else if (extendsData?.type == "ship") {
+            const { mmsi, sog, positionReportTicks } = unref(extendsData);
+            popupTitDOMRef.value.innerHTML = name;
+            popupContentDOMRef.value.innerHTML = `<p>mmsi : ${mmsi}</p><p>速度  :${sog}节</p><p>时间 : ${positionReportTicks}节</p>`;
+            hoverInfoLayer.setPosition(pos);
+          } else {
+            hoverInfoLayer.setPosition(undefined);
+          }
+        });
+      } else {
+        hoverInfoLayer.setPosition(undefined);
+      }
+    });
+    // map.on("pointermove", function (e: MapBrowserEvent<any>) {
+    //   const pixel = map.getEventPixel(e.originalEvent);
+    //   const hit = map.hasFeatureAtPixel(pixel, { hitTolerance: 5 });
+    //   map.getTargetElement().style.cursor = hit ? "pointer" : "";
+    // });
 
     // 地图点击弹框
     // 弹窗图层
@@ -608,127 +721,81 @@ const initMap = async (mapId: string | number) => {
       overlay && overlay.setPosition(undefined);
       popupData.featureCode = "";
       popupData.featureName = "";
+      popupData.relationMap = null;
       // 移除选中状态
       clearSelectedFeature(map);
     };
     // 地图标签元素默认浮窗
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }) => {
-      // 不是编辑状态下才会有弹框
+      const { featureCode, center, featureName } = options;
+      // 在编辑状态下不弹框
       if (gisStore?.isEdit) {
-        // map.closePopup();
         return;
       }
-      const { featureCode, center, featureName } = options;
-      const result: any = await props?.onClickFeaturePopup({ featureCode, featureName, relationMap: gisStore?.relationMap });
-      if (result) {
-        popupData.featureCode = featureCode;
-        popupData.featureName = featureName;
-        overlay.setPosition(center);
-      }
+      // 获取船的数据
+      const trackInfoMap = map.get("trackInfoMap") || [];
+      const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+      popupData.featureCode = featureCode;
+      popupData.featureName = featureName;
+      popupData.relationMap = gisStore?.relationMap[featureCode] || currentTrack;
+      overlay.setPosition(center);
     };
 
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
       map.closePopup(); // 关闭点击弹框
       emits("onCloseRightMenu"); // 关闭右键菜单
-      let featureSelect = map.get("featureSelect");
-      clearSelectedFeature(map);
-      const feature = map.forEachFeatureAtPixel(
-        evt.pixel,
-        function (feature: FeatureLike) {
-          return feature;
-        },
-        { hitTolerance: 5 } // 设置捏合度为 5 像素
-      );
-      if (feature) {
-        // 点击地图上的要素
-        const featureCode = feature.get("code");
-        const featureName = feature.get("name");
+      editLabelRef.value?.onClose(); // 关闭编辑标签弹框
+      clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)
+      let pixel = map.getEventPixel(evt.originalEvent);
+      let hit = map.hasFeatureAtPixel(pixel, {
+        hitTolerance: 5
+      }); // 当前点击处是否有要素
+      if (hit) {
+        let currentSelectFeature = getSelectedFeature(map, pixel);
+        // 对选则的要素做弹框弹出及选中样式、编辑弹框
+        const featureCode = currentSelectFeature?.get("code");
+        const featureName = currentSelectFeature?.get("name");
+        const labelTypeCode = currentSelectFeature?.get("labelTypeCode");
         if (featureCode) {
-          featureSelect = feature; // 更新当前选中要素
-
-          if (featureSelect) {
-            featureSelect.set("selected", true); // 将当前选中要素的 selected 属性设置为 true
-            featureSelect.changed(); // 触发要素样式的变化
-            map.set("featureSelect", feature);
-          }
-          // 弹框逻辑
-          let center = getCenter(feature.getGeometry().getExtent());
+          let center = getCenter(currentSelectFeature.getGeometry().getExtent());
+          // 获取船的数据
+          const trackInfoMap = map.get("trackInfoMap") || [];
+          const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           map.popupInfo({ featureCode, featureName, center });
+          // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
+          if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
+            if (map?.get("labelInfoMap")[featureCode]) {
+              editLabelRef.value?.onOpen(featureCode);
+              timer.value = setTimeout(() => {
+                labelOnSelect(exportMap.value, featureCode, true);
+                clearTimeout(timer);
+                timer.value = null;
+              }, 200);
+            }
+          } else {
+            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isVisitObject); // 选中（还需要判断是否外部对象的选中）
+          }
         }
       }
     });
 
-    // 聚合图层选中事件（通过交互控件实现）
-    if (clusterLayerCodes?.length) {
-      let selectInteraction = new Select({
-        condition: function (event) {
-          return event.type == "click" || event.type == "singleclick";
-        },
-        layers: clusterLayerCodes.map((code: string) => layerMap[code])
-      });
-      map.addInteraction(selectInteraction);
-      selectInteraction.on("select", function (e) {
-        emits("onCloseRightMenu");
-        if (e.selected?.length > 0) {
-          let originalFeatureList: any = [];
-          // let propertiesList=[]
-          e.selected.forEach(function (clusterFeature) {
-            // 根据选中状态切换要素的样式
-            clusterFeature.setStyle(feature => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, true));
-            clusterFeature.get("features").forEach(function (originalFeature: FeatureLike) {
-              // propertiesList.push(originalFeature.getProperties()); // 原始要素的属性
-              originalFeatureList.push(originalFeature);
-            });
-          });
-          // 实现业务是获取到选中要素的唯一标识进行以后的逻辑
-          let orgFeature;
-          if (originalFeatureList && originalFeatureList?.length) {
-            orgFeature = originalFeatureList[0];
-            const featureCode = orgFeature.get("code");
-            const featureName = orgFeature.get("name");
-            let center = getCenter(orgFeature?.getGeometry()?.getExtent());
-            map.popupInfo({ featureCode, featureName, center });
-          }
-        }
-        if (e.deselected?.length > 0) {
-          e.deselected.forEach(function (clusterFeature) {
-            // 取消选中
-            clusterFeature.setStyle(feature => clusterLayerStyle(feature, isDynamicLine.value, imgIndex.value, false));
-          });
-        }
-      });
-      map.set("selectInteraction", selectInteraction);
-    }
-
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
-      let pixel = map.getEventPixel(evt);
-      const features = map.getFeaturesAtPixel(pixel, { hitTolerance: 5 });
-      if (features && features.length > 0) {
-        let feature: any = null;
-        let clickedFeature = features[0];
-        // 判断是否聚合要素
-        if (clickedFeature?.get("features")) {
-          const originalFeatures = clickedFeature.get("features");
-          feature = originalFeatures[0];
-        } else if (clickedFeature instanceof Feature) {
-          feature = clickedFeature;
-        }
-        if (feature) {
-          const featureCode = feature?.getId();
-          console.log(evt.offsetX, evt.offsetY);
-          emits("onOpenRightMenu", {
-            featureCode,
-            relationMap: gisStore?.relationMap,
-            offsetX: evt.offsetX,
-            offsetY: evt.offsetY
-          });
-        }
+      let pixel = map?.getEventPixel(evt);
+      let currentSelectFeature = getSelectedFeature(map, pixel);
+      if (currentSelectFeature) {
+        const featureCode = currentSelectFeature?.get("code");
+        emits("onOpenRightMenu", {
+          featureCode,
+          relationMap: gisStore?.relationMap,
+          offsetX: evt.offsetX,
+          offsetY: evt.offsetY
+        });
       }
     };
-
+    // 初始化完成
     exportMap.value = map;
     emits("getInitMapExportData", exportMap.value); // 应用获取初始化地图实例
   } else {
@@ -793,12 +860,22 @@ const getRelationMap = () => {
   return gisStore?.relationMap;
 };
 
+const handlePopLink = (type: any, option: any) => {
+  emits(type, option);
+};
+
 defineExpose({
   getMapElement,
   panToFeature,
   getRelationMap,
   createdFeature,
   createGeometry,
+
+  createdTrackData,
+  getTrackDataByIdFn,
+  showHideTrackData,
+  delTrackData,
+
   createLabel,
   removeLabel,
   getFeature,
@@ -830,6 +907,7 @@ watch(
   }
 );
 </script>
+
 <style lang="scss" scoped>
 .component-box {
   position: relative;
@@ -839,6 +917,28 @@ watch(
 </style>
 
 <style lang="scss">
+.popup {
+  min-width: 200px;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px #00000033;
+  .popup-tit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    padding: 0 20px;
+    color: #ffffff;
+    background: var(--el-color-primary);
+  }
+  .popup-content {
+    padding: 10px 20px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 22px;
+  }
+}
 .component-box {
   .visual-map {
     width: 100%;
@@ -937,6 +1037,21 @@ watch(
     .control-scaleLine span {
       white-space: nowrap;
     }
+  }
+
+  /* 当前等级 */
+  .mapLevel {
+    position: absolute;
+    right: 88px;
+    bottom: 6px;
+    z-index: 10000;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #333333;
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    transform: scale(0.8);
   }
 }
 </style>

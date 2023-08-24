@@ -30,7 +30,7 @@
         </el-col>
         <el-col :span="6" class="right-align">
           <!-- 选中标签配置存在且选择了列表点数据 -->
-          <el-button type="primary" @click="onDraw" :disabled="!currentTarget.gisLabelConfig || table.data.length === 0"
+          <el-button type="primary" @click="beforeOnDraw" :disabled="!currentTarget.gisLabelConfig || table.data.length === 0"
             >生成标签</el-button
           >
           <el-button type="primary" @click="onDelete" :disabled="!currentTarget.coordinates">删除标签</el-button>
@@ -80,6 +80,7 @@
     >
       <SelectDeviceDialog @on-confirm="onDialogConfirm"></SelectDeviceDialog>
     </el-dialog>
+    <StyleDialog ref="styleDialogRef" @success-add="editStyleConfirm"></StyleDialog>
   </div>
 </template>
 
@@ -90,6 +91,7 @@ import { getLabelInfoByEquipId, getEquipListByLine, addLabelSingle, deleteLabelS
 import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import type { TableList } from "../type";
 import SelectDeviceDialog from "./selectDeviceDialog.vue";
+import StyleDialog from "./styleDialog.vue";
 import { MAP_DATA_TYPE } from "../hooks/createGeometry";
 import { transformLabelType } from "../hooks/index";
 
@@ -99,9 +101,10 @@ const state = reactive({
     label: "name"
   },
   filterText: "",
-  treeCode: "fix"
+  treeCode: "drawLineTree"
 });
 
+const styleDialogRef = ref();
 // 树实例
 const treeRef = ref();
 // 树数据
@@ -164,6 +167,9 @@ const fetchLineInfo = async (id: number) => {
       if (gisLabelConfig.dataType === "2") {
         // 线
         currentTarget.value.gisLabelConfig = gisLabelConfig;
+        // 存储一份线本身的配置样式（线色、线宽、线型）
+        let { lineWidth, lineColor, lineType } = gisLabelConfig;
+        originPolygonStyle.value = { lineWidth, lineColor, lineType };
       } else {
         ElMessage.warning("请选择线类型节点");
       }
@@ -200,6 +206,7 @@ const query = ref<{ [key: string]: any }>({
 });
 
 const currentTarget = ref<{ [key: string]: any }>({});
+const originPolygonStyle = ref<{ [key: string]: any }>({});
 const dialogVisible = ref<boolean>(false); // 选择设备弹框
 
 const table = ref<TableList>({
@@ -229,8 +236,23 @@ const table = ref<TableList>({
   onEdit: () => {}
 });
 
-// 生成标签按钮事件
-const onDraw = () => {
+// 生成标签前更改样式弹框
+const beforeOnDraw = () => {
+  if (table.value.data.length < 2) {
+    ElMessage.warning("请至少选择2个设备");
+    return;
+  }
+  // 初始化样式信息
+  styleDialogRef.value?.openDialog(originPolygonStyle.value, "drawLine");
+};
+
+// 更改绘制面的样式并进行绘制
+const editStyleConfirm = (styleObj: { [key: string]: any }) => {
+  let { gisLabelConfig = {} } = currentTarget.value;
+  let { lineWidth, lineColor, lineType } = styleObj; // 面填充色 线宽 线色 线型
+  gisLabelConfig.lineWidth = lineWidth;
+  gisLabelConfig.lineColor = lineColor;
+  gisLabelConfig.lineType = lineType;
   ElMessageBox.confirm("确定要生成标签吗？", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -273,11 +295,6 @@ const drawHandler = () => {
     }),
     labelData: ""
   };
-
-  if (table.value.data.length < 2) {
-    ElMessage.warning("请至少选择2个设备");
-    return;
-  }
 
   table.value.data.forEach(item => {
     const labelData = JSON.parse(item.labelData);

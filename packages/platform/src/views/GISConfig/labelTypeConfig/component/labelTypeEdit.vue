@@ -34,15 +34,15 @@
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
-        <!-- <el-form-item label="对应要素" prop="factor">
-          <el-input placeholder="请输入..." v-model="form.factor" clearable :disabled="state.dialogType == 2" />
-        </el-form-item> -->
         <el-form-item label="默认显示标签名称" prop="isDefaultDisplayLabelName">
           <el-checkbox
             v-model="form.isDefaultDisplayLabelName"
             :disabled="state.dialogType == 2"
             style="width: 200px"
           ></el-checkbox>
+        </el-form-item>
+        <el-form-item label="默认挂载标签树" prop="isHang">
+          <el-checkbox v-model="form.isHang" :disabled="state.dialogType == 2" style="width: 200px"></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
           <el-select
@@ -98,33 +98,33 @@
           <el-form-item label="轨迹设置" prop="isTrackSetting">
             <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" style="width: 200px" />
           </el-form-item>
-          <el-form-item label="轨迹模式" prop="trackMode" v-if="form.isTrackSetting">
-            <el-select v-model="form.trackMode" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
-              <el-option
-                v-for="(item, index) in trackModeList.data"
-                :key="index"
-                :label="item.name"
-                :value="item.code"
-              ></el-option>
-            </el-select>
-          </el-form-item>
           <div></div>
-          <el-form-item v-if="form.isTrackSetting">
+          <!-- <el-form-item v-if="form.isTrackSetting">
             <template #label>
               <div style="font-weight: bold">轨迹线样式</div>
             </template>
           </el-form-item>
-          <div></div>
+          <div></div> -->
         </template>
         <!-- 线 面 圆 矩形 轨迹配置时   要不要icon -->
         <template v-if="['2', '3', '4', '5', '7'].includes(form.dataType) || form.isTrackSetting">
           <el-form-item label="线宽" prop="lineWidth">
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="线色" prop="lineColor" style="width: 350px">
+
+          <el-form-item label="速度单位" prop="speedUnit">
+            <el-input v-model="form.speedUnit" :disabled="state.dialogType == 2" />
+          </el-form-item>
+
+          <el-form-item
+            label="线色"
+            prop="lineColor"
+            style="width: 350px"
+            v-if="['2', '3', '4', '5', '7'].includes(form.dataType)"
+          >
             <el-color-picker v-model="form.lineColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="线型" prop="lineType">
+          <el-form-item label="线型" prop="lineType" v-if="['2', '3', '4', '5', '7'].includes(form.dataType)">
             <el-select v-model="form.lineType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
@@ -149,7 +149,7 @@
         </template>
         <!-- 面 圆 矩形 -->
         <template v-if="['3', '4', '5'].includes(form.dataType)">
-          <el-form-item label="面填充色" prop="polygonColor">
+          <el-form-item label="面填充色" prop="polygonColor" style="width: 350px">
             <el-color-picker v-model="form.polygonColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
         </template>
@@ -185,7 +185,7 @@
           <el-form-item label="字体大小" prop="fontSize">
             <el-input type="number" v-model="form.fontSize" :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="字体颜色" prop="fontColor">
+          <el-form-item label="字体颜色" prop="fontColor" style="width: 350px">
             <el-color-picker v-model="form.fontColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
           <el-form-item label="边框线宽" prop="borderWidth">
@@ -194,7 +194,7 @@
           <el-form-item label="边框颜色" prop="borderColor" style="width: 350px">
             <el-color-picker v-model="form.borderColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="背景颜色" prop="backGroundColor">
+          <el-form-item label="背景颜色" prop="backGroundColor" style="width: 350px">
             <el-color-picker v-model="form.backGroundColor" show-alpha :disabled="state.dialogType == 2" />
           </el-form-item>
         </template>
@@ -249,6 +249,15 @@ const fontSizeVerification = (rule: any, value: any, callback: Function) => {
   }
   callback();
 };
+
+// 线时 矢量宽 高 显示比例(非必填)            线宽增加正数校验
+const lineVectoVerification = (rule: any, value: any, callback: Function) => {
+  if (value && !Regular.verifyPositiveInteger.test(value)) {
+    return callback(new Error("只能为大于0的整数"));
+  }
+  callback();
+};
+
 // 是设备关联对象还是其他
 const referenceType = ref("");
 const state = reactive({
@@ -289,7 +298,10 @@ const state = reactive({
       { required: true, message: "字体大小不能为空", trigger: ["blur", "change"] },
       { validator: fontSizeVerification, trigger: ["blur", "change"] }
     ],
-    trackMode: [{ required: true, message: "请选择轨迹模式", trigger: ["blur", "change"] }]
+    lineVectorWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
+    lineVectorHeight: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
+    lineVectorProportion: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
+    borderWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }]
   }
 });
 
@@ -303,16 +315,23 @@ const defaultParam = {
   name: "",
   layerConfigId: "",
 
-  attribute: null, // 关联属性
-  attributeId: 0, // 关联属性id
+  // 物理、逻辑的设备类型及属性传参
   equipType: null, // 设备类型 {}
   equipTypeId: 0, // 设备类型id 1441
-  referenceValue: "", //  json string  属性类型及选择值
-  referenceValueReal: "", // 属性值
 
-  referenceObject: null, // 配置的关联对象
+  attribute: null, // 关联属性对象
+  attributeId: 0, // 关联属性id（取值attribute中的extendAttribute）
+  referenceValue: "", //  json string  属性类型及选择值（type为select是需要该字段）
+  referenceValueReal: "", // 属性值（属性绑定的值即用户输入的值）
 
-  isDefaultDisplayLabelName: false,
+  // 外部对象的传参
+  isVisitObject: null,
+
+  // 其他关联对象的传参数
+  referenceObject: null, // 配置的关联对象（自定义的关联对象，例如除设备关联外的其他 是一个表格行数据）
+
+  isDefaultDisplayLabelName: false, // 默认展示标签名称
+  isHang: true, // 是否挂载标签树
   labelLegendImagePath: "", // 标签图例
   labelLegendImageAllPath: "",
   dataType: "1",
@@ -320,6 +339,7 @@ const defaultParam = {
   pellucidity: 1,
   labelTypeImagePath: [],
   lineWidth: 1,
+  speedUnit: "节",
   lineType: "solid",
   lineColor: "rgba(0,0,0,1)",
   polygonColor: "rgba(0,0,0,1)",
@@ -336,7 +356,6 @@ const defaultParam = {
   borderColor: "rgba(0,0,0,1)",
   backGroundColor: "rgba(0,0,0,0.3)",
   isTrackSetting: false, // 轨迹设置
-  trackMode: "", // 轨迹模式
   animationSetting: "", // 动画设置
   trackLineStyle: null // 轨迹线样式
 };
@@ -347,11 +366,12 @@ let form = ref<
     referenceValue: string;
     referenceValueReal: any;
     isTrackSetting: any;
-    trackMode: any;
     labelLegendImagePath: any;
     animationSetting: string;
     referenceObject: any;
     trackLineStyle: any;
+    isVisitObject?: any;
+    speedUnit: string;
   }
 >(defaultParam);
 
@@ -399,6 +419,7 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
     const res: { [key: string]: any } = await getLabelTypeDetail(row.id);
     if (res.code === 200 && res.data) {
       form.value = JSON.parse(JSON.stringify(res.data));
+      form.value.isVisitObject = !!res.data?.reference.includes("VisitObject");
     }
     form.value.id = row.id;
   } else {
@@ -426,22 +447,18 @@ const onConfirm = () => {
       const { isBold, isDefaultDisplayLabelName, lineVectorPath } = param;
       param.isBold = Boolean(isBold);
       param.isDefaultDisplayLabelName = Boolean(isDefaultDisplayLabelName);
+
       param.lineVectorPath = lineVectorPath || "";
 
       // 数据类型点且轨迹设置时 拼接trackLineStyle
       if (param.dataType == "1" && param?.isTrackSetting) {
         param.trackLineStyle = {
-          lineWidth: param?.lineWidth,
-          lineColor: param?.lineColor,
-          lineType: param?.lineType
+          lineWidth: param?.lineWidth
         };
       } else {
         // 清除轨迹模式及轨迹线样式
         if (param.trackLineStyle) {
           delete param.trackLineStyle;
-        }
-        if (param.trackMode) {
-          delete param.trackMode;
         }
       }
       // 点数据时标签类型图片
@@ -501,12 +518,21 @@ const onRefrenceClick = () => {
   }
 };
 
-// 确认关联回调
-const onReferenceChange = (equipType: { [key: string]: any }, equipAttribute: { [key: string]: any }) => {
+// 确认关联回调（设备类型行（一定有） 设备属性行（不一定）  是物理逻辑还是外部）
+const onReferenceChange = (
+  equipType: { [key: string]: any },
+  equipAttribute: { [key: string]: any },
+  isLogical?: number | string
+) => {
+  if (isLogical == 3) {
+    form.value.isVisitObject = true;
+  } else {
+    form.value.isVisitObject = false;
+  }
   form.value.equipType = { ...equipType };
   form.value.equipTypeId = equipType.id;
 
-  // 如果有设备属性
+  // 如果有设备属性对象
   if (equipAttribute) {
     const { type, bindValue, option, extendAttribute } = equipAttribute;
     let selectedValue = bindValue;
@@ -591,24 +617,6 @@ const layerList = ref<{
       ElMessage.error("接口异常");
     }
   }
-});
-
-const trackModeList = ref<{
-  data: Array<{
-    code: string;
-    name: string;
-  }>;
-}>({
-  data: [
-    {
-      code: "dynamic",
-      name: "动态延展轨迹线"
-    },
-    {
-      code: "fixed",
-      name: "固定轨迹线"
-    }
-  ]
 });
 
 // 动画配置

@@ -1,5 +1,11 @@
+// ⤵ ol库
 import { Feature } from "ol";
+
+// ⤵ type
 import type { createdFeatureType } from "../type";
+
+/******************************************************************************************************/
+
 const createdFeature: createdFeatureType = function (data) {
   return new Feature({
     name: data?.name, // 标签名字

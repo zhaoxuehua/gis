@@ -1,5 +1,5 @@
 <template>
-  <div class="tag-edit-draw" v-if="state.isShow" @click.stop>
+  <div class="tag-edit-draw" v-if="isShowEditLabel" @click.stop>
     <div class="title">
       <span>编辑标签</span>
       <Icon src="Close" :size="14" @click="onClose"></Icon>
@@ -202,9 +202,13 @@
 import { reactive, ref, computed, onBeforeUnmount, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { cloneDeep } from "lodash";
+import { Modify, Translate } from "ol/interaction";
+import Collection from "ol/Collection";
+import { Circle } from "ol/geom";
+import { useGisStore } from "../../stores/modules/gis";
 import type { LabelForm, LabelInfoData } from "../type";
 
-import { MAP_DATA_TYPE } from "../hooks/createGeometry.js";
+import { MAP_DATA_TYPE, getLonLatCoordinate } from "../hooks/createGeometry.js";
 import { featureUpdate, getFeature } from "../hooks/index.js";
 import { editLabel } from "../../api/visconfig";
 import type { VisualMap } from "../type";
@@ -394,10 +398,21 @@ const form = ref<LabelForm>({
   }
 });
 
-// 自己逻辑实现
 const originEditLabel = ref(); // 编辑前的原始数据
 const hasEdit = ref(false); // 是否编辑过数据
 const isEditSuccess = ref(false); // 是否编辑成功（即是否需要恢复原来的数据）
+
+const gisStore = useGisStore();
+const isShowEditLabel = computed(() => {
+  return gisStore.isShowEditLabel;
+});
+
+// 编辑地图要素（点的话就是平移）
+const modifyFeature = ref(); // 编辑的要素
+const modify = ref(); // 编辑交互器
+
+// 平移地图要素
+const translation = ref(); // 平移交互器
 
 // 打开标签编辑
 const onOpen = (labelCode: string) => {
@@ -408,6 +423,7 @@ const onOpen = (labelCode: string) => {
       ElMessage.warning("标签不存在或已删除");
       return;
     }
+    clearModify(); // 恢复上条数据的信息
     originEditLabel.value = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
     // 文本标注默认样式
     const defaultTextStyle = {
@@ -438,14 +454,56 @@ const onOpen = (labelCode: string) => {
     }
     // 更新表单
     form.value = editLabel;
-    state.isShow = true;
+    // state.isShow = true;
+    gisStore?.setIsShowEditLabel(true);
+
+    // 增加平移功能
+    translation.value = new Translate({
+      hitTolerance: 30,
+      filter: function (allFeature) {
+        return allFeature?.get("code") == labelCode;
+      }
+    });
+    props.map?.addInteraction(translation.value); // 给地图增加平移要素几何的交互
+    translation.value.on("translating", function (event: any) {
+      const feature = event.features?.getArray()[0];
+      let featureCoordinates = feature.getGeometry()?.getCoordinates(); // 坐标集合
+      // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
+      if (feature.getGeometry() instanceof Circle) {
+        // 平移时圆只有中心点变化
+        featureCoordinates = feature.getGeometry().getCenter();
+      }
+      featureCoordinates = getLonLatCoordinate(featureCoordinates);
+      // 根据平移坐标
+      form.value.labelData.coordinates = featureCoordinates;
+    });
+
+    // 标签元素进入编辑状态（点1、文本6不需要编辑交互只需要平移）
+    modifyFeature.value = feature;
+    modify.value = new Modify({ features: new Collection([modifyFeature.value]) });
+    props.map?.addInteraction(modify.value); // 给地图增加修改要素几何的交互
+    modify.value.on("modifyend", function (event: any) {
+      const feature = event.features.getArray()[0];
+      let featureCoordinates = feature.getGeometry().getCoordinates(); // 坐标集合
+      let radius = null; // 圆的半径
+      if (feature.getGeometry() instanceof Circle) {
+        // 编辑圆时只有半径变化
+        featureCoordinates = feature.getGeometry().getCenter();
+        radius = feature.getGeometry().getRadius();
+      }
+      // 坐标转换：EPSG:3857转为EPSG:4326  投影到经纬度
+      featureCoordinates = getLonLatCoordinate(featureCoordinates);
+      // 根据拖拽更新表单中圆半径及坐标
+      form.value.labelData.coordinates = featureCoordinates;
+      form.value.labelData.radius = radius;
+    });
   }
 };
 
 // 关闭标签编辑
 const onClose = () => {
-  state.isShow = false;
-  clearModify();
+  gisStore?.setIsShowEditLabel(false);
+  clearModify(); // 恢复原数据
 };
 
 // 编辑坐标（线、面、矩形、环）
@@ -493,11 +551,11 @@ const onConfirm = () => {
             props.map.set("labelInfoMap", labelInfoMap.value);
             isEditSuccess.value = true;
             ElMessage.success("保存成功");
+            onClose();
           } else {
             console.warn(res.msg);
             ElMessage.error("接口异常");
           }
-          state.isShow = false;
         },
         (err: any) => {
           console.error(err);
@@ -510,11 +568,21 @@ const onConfirm = () => {
 
 // 恢复原来的标签样式
 const clearModify = () => {
+  if (modify.value) {
+    props.map?.removeInteraction(modify.value);
+  }
+  if (translation.value) {
+    props.map?.removeInteraction(translation.value);
+  }
+  modifyFeature.value = null;
+  modify.value = null;
+  translation.value = null;
   if (hasEdit.value && !isEditSuccess.value) {
     if (originEditLabel.value) {
       labelInfoMap.value[originEditLabel.value?.code] = originEditLabel.value;
       props.map.set("labelInfoMap", labelInfoMap.value); // 更新标签树
       featureUpdate(originEditLabel.value, props.map);
+      originEditLabel.value = null;
     }
   }
 };
@@ -524,7 +592,8 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({
-  onOpen
+  onOpen,
+  onClose
 });
 
 watch(

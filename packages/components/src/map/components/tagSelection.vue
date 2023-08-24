@@ -94,7 +94,6 @@ const setFeatureVisible = () => {
       } else {
         source = layer.getSource();
       }
-      // 此处设置样式还是操作图层？
       if (checkedTags.value.includes(item.code)) {
         source.addFeature(feature);
       } else if (!checkedTags.value.includes(item.code) && source.hasFeature(feature)) {

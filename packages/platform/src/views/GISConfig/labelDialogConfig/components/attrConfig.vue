@@ -6,46 +6,54 @@
     </el-tabs>
     <el-button class="add-btn" type="primary" @click="onAttrConfigAdd">添加</el-button>
   </div>
-  <addAttr ref="addAttrRef" @change="handleAddAttr" />
+  <addAttr
+    ref="addAttrRef"
+    :type="state.activeAttr"
+    :equipTypeId="props.equipTypeId"
+    :visitObjectTypeId="props.visitObjectTypeId"
+    @change="handleAddAttr"
+  />
   <div class="attr-config">
     <Table class="attr-table" title="" v-loading="state.loading" :data="tableData" :columns="tableColumns" :is-pageable="false">
       <template #action="scope">
-        <el-button v-if="scope.row.isJSONBody" type="primary" text @click="onJsonEdit">编辑</el-button>
-        <el-button type="primary" text @click="onDelete">删除</el-button>
+        <el-button
+          v-if="scope.row.attributeType === 10"
+          type="primary"
+          text
+          @click="onJsonEdit(scope.row.attributeId, scope.$index)"
+        >
+          编辑
+        </el-button>
+        <el-button type="primary" text @click="onDelete(scope.row.attributeId, scope.$index)">删除</el-button>
       </template>
     </Table>
   </div>
-  <el-dialog title="编辑" v-model="state.dialogVisible">
-    <Table :data="JsonBodyData" :columns="jsonBodyColumns" default-expand-all @selection-change="handleSelectionChange"></Table>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="onClose">取消</el-button>
-        <el-button type="primary" @click="onConfirm">确认</el-button>
-      </span>
-    </template>
-  </el-dialog>
+  <EditJSONbody ref="editJSONbodyRef" @success="onEditJSONbodySuccess"></EditJSONbody>
 </template>
 <script setup lang="ts" name="labelDialog">
-import { reactive, ref } from "vue";
-import Table from "@/components/Table/index.vue";
+import { reactive, ref, nextTick } from "vue";
+import Table from "../../../../../../components/src/map/components/Table/index.vue";
 import addAttr from "./addAttr.vue";
-import { JsonBodyData } from "./mock";
+import { deleteBindAttrApi } from "../../../../api/modules/labelDialogConfig";
+import { ElMessage, ElMessageBox } from "element-plus";
+import EditJSONbody from "./editJSONbody.vue";
 
-interface Props {
-  static: any[];
-  monitor: any[];
-}
-const props = withDefaults(defineProps<Props>(), {
-  static: () => [],
-  monitor: () => []
+const props = defineProps({
+  static: Array,
+  monitor: Array,
+  equipTypeId: Number,
+  currentType: String,
+  visitObjectTypeId: Number
 });
 const emit = defineEmits(["update:static", "update:monitor"]);
 
 const state = reactive({
   loading: false,
   activeAttr: "static",
-  dialogVisible: false
+  editJSONbodyIndex: 0
 });
+
+const editJSONbodyRef = ref();
 
 const tableData: any = ref([]);
 const tableColumns = [
@@ -63,31 +71,16 @@ const tableColumns = [
     width: 100
   }
 ];
-const jsonBodyColumns = [
-  {
-    type: "selection"
-  },
-  {
-    label: "key",
-    prop: "field"
-  },
-  {
-    label: "类型",
-    prop: "fieldType"
-  },
-  {
-    label: "名称",
-    prop: "remark"
-  }
-];
 
 const handleTabChange: any = (val: string) => {
   state.activeAttr = val;
-  if (val === "static") {
-    tableData.value = props.static;
-  } else if (val === "monitor") {
-    tableData.value = props.monitor;
-  }
+  nextTick(() => {
+    if (val === "static") {
+      tableData.value = props.static;
+    } else if (val === "monitor") {
+      tableData.value = props.monitor;
+    }
+  });
 };
 
 const addAttrRef = ref();
@@ -103,18 +96,30 @@ const onAttrConfigAdd = () => {
   addAttrRef.value.onOpen();
 };
 
-const onJsonEdit = () => {
-  state.dialogVisible = true;
+const onJsonEdit = async (id: number, index: number) => {
+  const checkedConfig = tableData.value[index]?.attributeJsonConfig;
+  editJSONbodyRef.value.onOpen(id, index, checkedConfig);
 };
-const onDelete = () => {};
-const handleSelectionChange = (val: any) => {
-  console.log(val);
+
+const onDelete = (id: number, index: number) => {
+  ElMessageBox.confirm("确定要删除吗", "警告", {
+    type: "warning",
+    confirmButtonText: "确定"
+  }).then(async () => {
+    const res: any = await deleteBindAttrApi({
+      equipTypeId: props.equipTypeId,
+      currentType: props.currentType,
+      attributeId: id
+    });
+    if (res.code === 200) {
+      ElMessage.success("删除成功");
+      tableData.value.splice(index, 1);
+    }
+  });
 };
-const onClose = () => {
-  state.dialogVisible = false;
-};
-const onConfirm = () => {
-  state.dialogVisible = false;
+
+const onEditJSONbodySuccess = (tree: any, index: number) => {
+  tableData.value[index].attributeJsonConfig = tree;
 };
 defineExpose({
   handleTabChange
@@ -131,7 +136,7 @@ defineExpose({
   }
 }
 .attr-table {
-  height: 300px;
+  height: 370px;
   margin-top: 10px;
 }
 </style>

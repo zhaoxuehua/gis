@@ -1,8 +1,10 @@
 import { Draw } from "ol/interaction";
 import { Geometry } from "ol/geom";
 import { Feature } from "ol";
+import { Style } from "ol/style.js";
 import Point from "ol/geom/Point.js";
 export type VisualMap = Map & { defaultOptions: { [key: string]: any }; popupInfo: function; closePopup: function };
+
 // 标签类型
 export type LabelType = {
   id?: number | null;
@@ -40,6 +42,7 @@ export type LabelType = {
   backGroundColor: string;
   iconUrl?: string;
   animationSetting?: any;
+  isHang?: boolean; // 是否挂载标签树
 };
 
 // 标签信息
@@ -111,16 +114,64 @@ export type TableList = {
   ids: Array<number>;
   data: Array<any>;
   getTableData: Function;
-  onSelectionChange: Function;
-  onEdit: Function;
+  onSelectionChange?: Function;
+  onEdit?: Function;
 };
-
-// 创建要素
-interface createdFeatureArgType {
-  name: string;
-  geometry: Point;
-  extendsData?: any;
+// 不确定对象
+export interface anyObjectType {
   [key: string]: any;
 }
 
+// 创建要素
+interface createdFeatureArgType extends anyObjectType {
+  name: string;
+  geometry: Point;
+  extendsData?: any;
+}
+
 export type createdFeatureType = (data: createdFeatureArgType) => Feature;
+
+// 创建轨迹回放
+export interface trackLayerParamType {
+  id: number | string;
+  name: string;
+  data: any[];
+}
+
+// 显示隐藏轨迹
+export type showHideTrackDataType = (id: number | string, isTrue: boolean) => void;
+
+// 删除轨迹
+export type delTrackDataType = (id: number | string) => void;
+
+// 轨迹要素
+export interface cashFeatureStyleType {
+  [key: string]: Style;
+}
+
+//设置地图中心点
+export interface setToMapCenterType {
+  lon: number;
+  lat: number;
+  duration?: number;
+  zoom?: number;
+  callBack?: () => void;
+}
+
+// 轨迹回放选择模式
+export interface selectModeListType {
+  code: string;
+  name: string;
+  coordinates?: any[];
+  id?: number | string;
+}
+// 返回多个要素的中心
+export type backCenterByFeaturesType = (Features: Feature[]) => number[];
+
+export interface getTrackDataByIdFnParamType extends anyObjectType {
+  code: string;
+  name: string;
+  beginTime: string;
+  endTime: string;
+  [key: string]: any;
+}

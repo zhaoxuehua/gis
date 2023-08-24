@@ -9,12 +9,16 @@ export const GIS_LAYER_DETAIL = [
     name: "name"
   },
   {
-    label: "图层等级",
+    label: "默认显示层级",
     name: "layerLevel"
   },
   {
-    label: "图层显示最低等级",
+    label: "最低显示层级",
     name: "layerMinLevel"
+  },
+  {
+    label: "最高显示层级",
+    name: "layerMaxLevel"
   },
   {
     label: "标签聚合",
@@ -23,11 +27,18 @@ export const GIS_LAYER_DETAIL = [
   },
   {
     label: "标签聚合距离",
-    name: "tagAggDistance"
+    name: "tagAggDistance",
+    slot: true
+  },
+  {
+    label: "轨迹聚合",
+    name: "isTrackDraw",
+    slot: true
   },
   {
     label: "轨迹聚合距离",
-    name: "trackAggDistance"
+    name: "trackAggDistance",
+    slot: true
   }
 ];
 
@@ -57,15 +68,15 @@ export const GIS_LABEL_DETAIL = [
   }
 ];
 
-//地图参数配置详情
+//应用场景配置详情
 export const GIS_MAPPARAMS_DETAIL = [
   {
-    label: "应用名称",
-    name: "appName"
+    label: "场景编码",
+    name: "appCode"
   },
   {
-    label: "应用编码",
-    name: "appCode"
+    label: "场景名称",
+    name: "appName"
   },
   {
     label: "默认显示模式",
@@ -98,6 +109,12 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
+    label: "搜索标签类型",
+    name: "displaySearchIds",
+    slot: true
+  },
+
+  {
     label: "显示图层",
     name: "displayLayerIds",
     slot: true
@@ -113,6 +130,20 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
+    label: "显示外部对象类型",
+    name: "trackSearchName"
+  },
+  {
+    label: "比例尺单位",
+    name: "scaleLineUnit",
+    slot: true
+  },
+  {
+    label: "是否可编辑",
+    name: "isEdit",
+    slot: true
+  },
+  {
     label: "电子地图URL",
     name: "normalUrl"
   },
@@ -123,11 +154,6 @@ export const GIS_MAPPARAMS_DETAIL = [
   {
     label: "路网叠加层URL",
     name: "overlayUrl"
-  },
-  {
-    label: "是否可编辑",
-    name: "isEdit",
-    slot: true
   }
 ];
 

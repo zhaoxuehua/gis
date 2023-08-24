@@ -1,5 +1,53 @@
 # adm-gis-platform
 
+## 1.0.37
+
+### Patch Changes
+
+- 增加轨迹回放
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.37
+
+## 1.0.36
+
+### Patch Changes
+
+- q 对接基础组件 s 搜索功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.36
+
+## 1.0.35
+
+### Patch Changes
+
+- 修复翻页问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.35
+
+## 1.0.34
+
+### Patch Changes
+
+- 轨迹回放要素增加扩展字段
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.34
+
+## 1.0.33
+
+### Patch Changes
+
+- f 修复归轨迹回放 圈数据
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.33
+
+## 1.0.32
+
+### Patch Changes
+
+- feature :轨迹回放
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.32
+
 ## 1.0.31
 
 ### Patch Changes

@@ -1,77 +1,117 @@
 <template>
   <div class="label-dialog">
-    <TreeFilter class="tree-filter-select" label="name" title="" :data="treeFilterData" @change="changeTreeFilter" />
+    <TreeFilter
+      class="tree-filter-select"
+      label="name"
+      title=""
+      :data="treeFilterData"
+      :defaultValue="treeDefaultValue"
+      @change="changeTreeFilter"
+    />
     <div class="card table-main">
-      <el-row class="flx-align-center">
-        <el-col :span="2">标题名称</el-col>
-        <el-col :span="10">
-          <el-input v-model="params.title"></el-input>
-        </el-col>
-      </el-row>
+      <div class="flx-align-center">
+        <span>标题名称</span>
+        <el-input v-model="params.label"></el-input>
+        <el-button type="primary" @click="editTitle">保存</el-button>
+      </div>
       <p class="title title-box">属性配置</p>
-      <AttrConfig v-model:static="params.static" v-model:monitor="params.monitor" ref="attrConfigRef" />
+      <AttrConfig
+        v-model:static="params.staticAttribute"
+        v-model:monitor="params.monitorAttribute"
+        ref="attrConfigRef"
+        :equipTypeId="equipTypeId"
+        :visitObjectTypeId="visitObjectTypeId"
+        :currentType="currentType"
+      />
       <div class="flx-justify-between title-box">
         <p class="title">链接配置</p>
         <el-button type="primary" @click="onLinkAdd">添加</el-button>
       </div>
-      <linkConfig v-model:link="params.link" ref="linkConfigRef" />
-      <el-row class="flx-align-center title-box">
-        <el-col :span="2">是否启用</el-col>
-        <el-col :span="10">
-          <el-checkbox v-model="params.status"></el-checkbox>
-        </el-col>
-      </el-row>
+      <linkConfig v-model:link="params.linkConfig" ref="linkConfigRef" :equipTypeId="equipTypeId" :currentType="currentType" />
     </div>
   </div>
 </template>
 <script setup lang="ts" name="labelDialog">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import TreeFilter from "@/components/TreeFilter/index.vue";
 import AttrConfig from "./components/attrConfig.vue";
 import linkConfig from "./components/linkConfig.vue";
-import { TreeData } from "./components/mock";
+import { equipTypeTreeApi, labelDetailAttr, updateLabel } from "../../../api/modules/labelDialogConfig";
+import { ElMessage } from "element-plus";
 
-const treeFilterData = ref(TreeData);
-const changeTreeFilter = (id: number) => {
+const treeFilterData = ref();
+const treeDefaultValue = ref();
+const equipTypeId = ref();
+const visitObjectTypeId = ref();
+const currentType = ref(); // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
+const changeTreeFilter = (id: number, data: any) => {
+  if (!id || data.currentType === "EquipCategory") return;
+  currentType.value = data.currentType;
+  if (data.currentType === "VisitObjectType") {
+    visitObjectTypeId.value = id;
+    equipTypeId.value = undefined;
+  } else {
+    equipTypeId.value = id;
+    visitObjectTypeId.value = undefined;
+  }
   getDetail(id);
 };
 
 const initParams: any = {
-  title: "",
-  status: true,
-  static: [],
-  monitor: []
+  label: "",
+  staticAttribute: [],
+  monitorAttribute: [],
+  linkConfig: []
 };
 const params = ref({
   ...initParams
 });
+
 const attrConfigRef = ref();
-const getDetail = (id: number) => {
-  params.value = {
-    title: `测试名称${id}`,
-    status: true,
-    static: [],
-    monitor: [
-      {
-        attributeName: "船长",
-        attributeTypeName: "浮点",
-        isJSONBody: false
-      },
-      {
-        attributeName: "船长",
-        attributeTypeName: "浮点",
-        isJSONBody: true
-      }
-    ],
-    link: []
-  };
-  attrConfigRef.value.handleTabChange("static");
+const getDetail = async (id: number) => {
+  const res: any = await labelDetailAttr(id, currentType.value);
+  if (res.code === 200) {
+    params.value = res.data;
+    attrConfigRef.value.handleTabChange("static");
+  }
 };
 
 const linkConfigRef = ref();
+
 const onLinkAdd = () => {
   linkConfigRef.value.onOpen();
 };
+
+const getTree = async () => {
+  const res: any = await equipTypeTreeApi();
+  if (res.code === 200) {
+    treeFilterData.value = res.data;
+    let child: any;
+    const findFirstChild = (node: any) => {
+      if (node?.children?.length) {
+        findFirstChild(node.children[0]);
+      } else {
+        child = node;
+      }
+    };
+    findFirstChild(res.data[0] || []);
+    treeDefaultValue.value = child?.id + "";
+    changeTreeFilter(Number(treeDefaultValue.value), child);
+  }
+};
+const editTitle = async () => {
+  const res: any = await updateLabel({
+    equipType: equipTypeId.value,
+    currentType: currentType.value,
+    label: params.value.label
+  });
+  if (res.code === 200) {
+    ElMessage.success("修改标题成功");
+  }
+};
+onMounted(() => {
+  getTree();
+});
 </script>
 <style lang="scss" scoped>
 .label-dialog {
@@ -84,6 +124,12 @@ const onLinkAdd = () => {
   .title {
     font-size: 14px;
     font-weight: bold;
+  }
+  .flx-align-center {
+    .el-input {
+      width: 240px;
+      margin: 0 10px;
+    }
   }
 }
 </style>

@@ -67,7 +67,7 @@
             :background="true"
             v-model:current-page="query.pageNo"
             v-model:page-size="query.pageSize"
-            :page-sizes="[10, 20, 30, 50]"
+            :page-sizes="[10, 20, 30, 50, 100]"
             layout="total, prev, pager, next, sizes"
             :total="table.total"
             :small="true"
@@ -97,7 +97,7 @@ const state = reactive({
     label: "name"
   },
   filterText: "",
-  treeCode: "tunneltree"
+  treeCode: "drawPointTree"
 });
 
 // 树实例
@@ -202,7 +202,7 @@ const query = ref<{ [key: string]: any }>({
 });
 
 const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: query.value.pageNo, limit: val });
+  query.value.getPagination({ page: 1, limit: val });
 };
 
 const handleCurrentChange = (val: any) => {

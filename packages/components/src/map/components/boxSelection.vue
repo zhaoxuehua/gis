@@ -20,6 +20,7 @@
 <script lang="ts" setup>
 import { ref, toRefs, watch } from "vue";
 import { selectionAddDrawInteraction } from "../hooks/index";
+import { clearSelectionDrawInteraction } from "../hooks/clearSelectionDrawInteraction";
 import type { VisualMap } from "../type";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index?: number; isShow?: boolean }>(), {
@@ -44,17 +45,18 @@ watch(
     if (isShowVal) {
       selectionAddDrawInteraction(map.value, radio.value, handleSelectionFeatures);
     } else {
-      if (map.value) {
-        // 关闭框选
-        if (map.value?.get("boxSelectionDrawInteraction")) {
-          map.value?.removeInteraction(map.value?.get("boxSelectionDrawInteraction"));
-          map.value?.set("boxSelectionDrawInteraction", null);
-        }
-        if (map.value?.get("boxSelectionSource")) {
-          map.value?.get("boxSelectionSource")?.clear();
-          map.value?.set("boxSelectionSource", null);
-        }
-      }
+      clearSelectionDrawInteraction(map.value);
+      // if (map.value) {
+      //   // 关闭框选
+      //   if (map.value?.get("boxSelectionDrawInteraction")) {
+      //     map.value?.removeInteraction(map.value?.get("boxSelectionDrawInteraction"));
+      //     map.value?.set("boxSelectionDrawInteraction", null);
+      //   }
+      //   if (map.value?.get("boxSelectionSource")) {
+      //     map.value?.get("boxSelectionSource")?.clear();
+      //     map.value?.set("boxSelectionSource", null);
+      //   }
+      // }
     }
   },
   {
@@ -65,9 +67,12 @@ watch(
 
 const boxSelectRadioChange = (val: any) => {
   radio.value = val;
+  clearSelectionDrawInteraction(map.value);
   selectionAddDrawInteraction(map.value, val, handleSelectionFeatures);
 };
 const handleSelectionFeatures = (selectionFeatures: any[]) => {
+  const searchCode = map.value.defaultOptions.displaySearch.map((item: any) => item.code);
+  selectionFeatures = selectionFeatures.filter(item => searchCode.includes(item.get("labelTypeCode")));
   emits("onBoxSelection", selectionFeatures);
 };
 </script>

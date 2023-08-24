@@ -1,5 +1,5 @@
 import type { Coordinate } from "ol/coordinate";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
 import { Circle as CircleGeom, LineString, Point, Polygon } from "ol/geom";
 import { boundingExtent, getCenter } from "ol/extent";
 import type { LabelData } from "../type";
@@ -144,7 +144,7 @@ export function getGeometryCenter(labelData: LabelData) {
   return geometryCenter;
 }
 
-//  坐标转换：EPSG:4326=>EPSG:3857  返回坐标值
+//  坐标转换：EPSG:4326=>EPSG:3857  返回坐标值（坐标值=>地图   即经纬度坐标转为地图投影）
 export function getCoordinate(positionCoordinates: any[]) {
   let coordinates = positionCoordinates;
   const deep = multiArray(coordinates);
@@ -161,6 +161,20 @@ export function getCoordinate(positionCoordinates: any[]) {
     if (coordinates[0] < 180) {
       coordinates = fromLonLat(coordinates);
     }
+  }
+  return coordinates;
+}
+
+// 坐标转换：EPSG:3857转为EPSG:4326  直接从地图要素上获取的坐标是3857（地图投影）=>经纬度
+export function getLonLatCoordinate(positionCoordinates: any[]) {
+  let coordinates = positionCoordinates;
+  const deep = multiArray(coordinates);
+  if (deep === 3) {
+    coordinates = coordinates.map((item: any) => item.map((coord: any) => toLonLat(coord)));
+  } else if (deep === 2) {
+    coordinates = coordinates.map((coord: any) => toLonLat(coord));
+  } else {
+    coordinates = toLonLat(coordinates);
   }
   return coordinates;
 }

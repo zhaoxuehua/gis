@@ -13,7 +13,7 @@ export const MENU_BTNS_AUTH = {
   // GIS配置-标签信息
   VISCONFIG_GISCONFIG_LABELCONFIG_DELETE: "visconfig:gisconfig:labelconfig:delete", //删除
 
-  // GIS配置-地图参数配置
+  // GIS配置-应用场景配置
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_ADD: "visconfig:gisconfig:mapparamsconfig:add", //创建
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_EDIT: "visconfig:gisconfig:mapparamsconfig:edit", //编辑
   VISCONFIG_GISCONFIG_MAPPARAMSCONFIG_DELETE: "visconfig:gisconfig:mapparamsconfig:delete", //删除
