@@ -6,7 +6,7 @@
     </div>
     <div class="content-box">
       <el-form :model="form" inline>
-        <el-form-item label="MMSI">
+        <el-form-item label="标识">
           <el-input
             class="mmsi-input"
             v-model="form.objectCode"
@@ -27,18 +27,28 @@
         :pagination="pagination"
         :loading="loading"
         class="attention-table"
-        @selection-change="handleSelectionChange"
+        @selection-change.stop="handleSelectionChange"
       >
         <template #action="scope">
-          <el-button title="当前定位" type="primary" text @click="labelOnSelect(props.map, scope.row.objectCode, false, true)">
-            <el-icon :size="16"><Location /></el-icon>
-          </el-button>
-          <el-button title="轨迹回放" type="primary" text @click="trackPlayBack">
-            <el-icon :size="16"><Refresh /></el-icon>
-          </el-button>
-          <el-button title="取消关注" type="primary" text @click="deleteAttention([scope.row.id])">
-            <el-icon :size="16"><CircleClose /></el-icon>
-          </el-button>
+          <el-link
+            type="primary"
+            class="my-el-link"
+            title="当前定位"
+            :underline="false"
+            @click.stop="labelOnSelect(props.map, scope.row.objectCode, false, true)"
+            ><el-icon :size="14"><Location /></el-icon
+          ></el-link>
+          <el-link type="primary" class="my-el-link" title="轨迹回放" :underline="false" @click.stop="trackPlayBack"
+            ><el-icon :size="14"><Connection /></el-icon
+          ></el-link>
+          <el-link
+            type="primary"
+            class="my-el-link"
+            title="取消关注"
+            :underline="false"
+            @click.stop="deleteAttention([scope.row.id])"
+            ><el-icon :size="14"><CircleClose /></el-icon
+          ></el-link>
         </template>
       </Table>
     </div>
@@ -118,7 +128,7 @@ const getTableData = async () => {
 };
 
 const addAttention = async () => {
-  if (!form.value.objectCode) return ElMessage.error("MMSI号不能为空");
+  if (!form.value.objectCode) return ElMessage.error("标识不能为空");
   const res: any = await addAttentionApi({
     ...form.value
   });
@@ -185,7 +195,11 @@ watch(
     }
   }
   .attention-table {
-    flex: 1;
+    // flex: 1;
+    height: 350px;
+    .my-el-link {
+      margin-right: 12px !important;
+    }
   }
 }
 </style>
