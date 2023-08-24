@@ -4,7 +4,13 @@
       <el-tab-pane label="静态属性" name="static"></el-tab-pane>
       <el-tab-pane label="监测属性" name="monitor"></el-tab-pane>
     </el-tabs>
-    <el-button class="add-btn" type="primary" @click="onAttrConfigAdd">添加</el-button>
+    <el-button
+      v-if="props.currentId && props.currentType && props.currentType !== 'EquipCategory'"
+      class="add-btn"
+      type="primary"
+      @click="onAttrConfigAdd"
+      >添加</el-button
+    >
   </div>
   <addAttr
     ref="addAttrRef"
@@ -43,7 +49,8 @@ const props = defineProps({
   monitor: Array,
   equipTypeId: Number,
   currentType: String,
-  visitObjectTypeId: Number
+  visitObjectTypeId: Number,
+  currentId: Number
 });
 const emit = defineEmits(["update:static", "update:monitor"]);
 

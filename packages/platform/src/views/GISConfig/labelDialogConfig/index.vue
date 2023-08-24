@@ -12,7 +12,9 @@
       <div class="flx-align-center">
         <span>标题名称</span>
         <el-input v-model="params.label"></el-input>
-        <el-button type="primary" @click="editTitle">保存</el-button>
+        <el-button v-if="currentId && currentType && currentType !== 'EquipCategory'" type="primary" @click="editTitle"
+          >保存</el-button
+        >
       </div>
       <p class="title title-box">属性配置</p>
       <AttrConfig
@@ -22,10 +24,13 @@
         :equipTypeId="equipTypeId"
         :visitObjectTypeId="visitObjectTypeId"
         :currentType="currentType"
+        :currentId="currentId"
       />
       <div class="flx-justify-between title-box">
         <p class="title">链接配置</p>
-        <el-button type="primary" @click="onLinkAdd">添加</el-button>
+        <el-button v-if="currentId && currentType && currentType !== 'EquipCategory'" type="primary" @click="onLinkAdd"
+          >添加</el-button
+        >
       </div>
       <linkConfig v-model:link="params.linkConfig" ref="linkConfigRef" :equipTypeId="equipTypeId" :currentType="currentType" />
     </div>
@@ -43,10 +48,16 @@ const treeFilterData = ref();
 const treeDefaultValue = ref();
 const equipTypeId = ref();
 const visitObjectTypeId = ref();
+const currentId = ref();
 const currentType = ref(); // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
 const changeTreeFilter = (id: number, data: any) => {
-  if (!id || data.currentType === "EquipCategory") return;
   currentType.value = data.currentType;
+  currentId.value = id;
+  // 初始化
+  params.value = initParams;
+  attrConfigRef.value.handleTabChange("static");
+
+  if (!id || data.currentType === "EquipCategory") return ElMessage.warning("请在设备类型下配置");
   if (data.currentType === "VisitObjectType") {
     visitObjectTypeId.value = id;
     equipTypeId.value = undefined;
