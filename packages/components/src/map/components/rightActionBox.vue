@@ -90,10 +90,10 @@ const onBoxSelection = (selectionFeatures: any[]) => {
   font-size: 14px;
 }
 .right-action-item:hover {
-  color: var(--color-primary);
+  color: var(--el-color-primary);
 }
 .active {
-  color: var(--color-primary);
+  color: var(--el-color-primary);
 }
 
 // 内容区域的样式
