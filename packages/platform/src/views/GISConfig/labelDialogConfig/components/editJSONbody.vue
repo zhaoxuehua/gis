@@ -173,7 +173,10 @@ const filterTree = (tree: any[]) => {
   let newTree = JSON.parse(JSON.stringify(tree));
   newTree?.forEach((node: any) => {
     if (node.checked || node.indeterminate) {
-      filteredTree.push(node);
+      filteredTree.push({
+        ...node,
+        tile: state.tile
+      });
       if (node.children && node.children.length > 0) {
         node.children = filterTree(node.children);
       }
