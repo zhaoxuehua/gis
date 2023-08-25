@@ -83,7 +83,7 @@ const onBoxSelection = (selectionFeatures: any[]) => {
   align-items: center;
   padding: 10px;
   cursor: pointer;
-  background-color: var(--background-color);
+  background-color: #ffffff;
 }
 .left-icon {
   margin-right: 6px;
