@@ -252,6 +252,14 @@ const lineVectoVerification = (rule: any, value: any, callback: Function) => {
   callback();
 };
 
+// 文本线宽只能取>=0
+const lineWidetVectoVerification = (rule: any, value: any, callback: Function) => {
+  if (value && !/^(0|[1-9]\d*)$/.test(value)) {
+    return callback(new Error("只能为大于等于0的整数"));
+  }
+  callback();
+};
+
 // 是设备关联对象还是其他
 const referenceType = ref("");
 const state = reactive({
@@ -295,7 +303,7 @@ const state = reactive({
     lineVectorWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
     lineVectorHeight: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
     lineVectorProportion: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
-    borderWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }]
+    borderWidth: [{ validator: lineWidetVectoVerification, trigger: ["blur", "change"] }]
   }
 });
 

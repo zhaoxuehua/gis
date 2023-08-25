@@ -524,6 +524,8 @@ const initMap = async (mapId: string | number) => {
     map.addLayer(positionPointLayer);
     map.set("positionPointLayer", positionPointLayer);
 
+    /****************************按标签类型存储******************************************/
+
     // 存储标签类型信息及根据标签类型分组 code => labelType
     const labelTypeMap: { [key: string]: LabelType } = {};
     let featureTypeGroup: { [key: string]: Feature[] } = {};
@@ -549,6 +551,8 @@ const initMap = async (mapId: string | number) => {
     });
     map.set("labelTypeMap", labelTypeMap);
     map.set("featureTypeGroup", featureTypeGroup);
+
+    /****************************获取已绘制的标签进行渲染******************************************/
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
       ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
@@ -646,7 +650,7 @@ const initMap = async (mapId: string | number) => {
       });
 
       // 动态样式(风机 动态线 动态环)
-      let dynamicLayers = Array.from(new Set(dynamicLayerCodes));
+      let dynamicLayers = Array.from(new Set(dynamicLayerCodes)); // 动态图层layer的code过滤
       map.set("dynamicLayerCodes", dynamicLayers);
       if (dynamicTimes.value) {
         clearInterval(dynamicTimes.value);
@@ -667,6 +671,7 @@ const initMap = async (mapId: string | number) => {
       ElMessage.error("接口异常");
     }
 
+    /****************************鼠标经过******************************************/
     // 鼠标移动事件
     let hoverInfoLayer: Overlay = new Overlay({
       element: popupDOMRef.value,
@@ -679,6 +684,7 @@ const initMap = async (mapId: string | number) => {
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       const pos = event.coordinate;
       if (hit) {
+        map.getTargetElement().style.cursor = hit ? "pointer" : "";
         map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
           let targetFeature = null;
           if (Array.isArray(feature.get("features"))) {
@@ -711,12 +717,8 @@ const initMap = async (mapId: string | number) => {
         hoverInfoLayer.setPosition(undefined);
       }
     });
-    // map.on("pointermove", function (e: MapBrowserEvent<any>) {
-    //   const pixel = map.getEventPixel(e.originalEvent);
-    //   const hit = map.hasFeatureAtPixel(pixel, { hitTolerance: 5 });
-    //   map.getTargetElement().style.cursor = hit ? "pointer" : "";
-    // });
 
+    /***********************地图点击弹框及（搜索、标签树、导航树点击对应弹框）*****************************/
     // 地图点击弹框
     // 弹窗图层
     const overlay = new Overlay({
@@ -748,6 +750,7 @@ const initMap = async (mapId: string | number) => {
       overlay.setPosition(center);
     };
 
+    /***********************地图鼠标点击事件*****************************/
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
       map.closePopup(); // 关闭点击弹框
@@ -787,6 +790,7 @@ const initMap = async (mapId: string | number) => {
       }
     });
 
+    /***********************地图右键（目前只有监控可用）*****************************/
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
