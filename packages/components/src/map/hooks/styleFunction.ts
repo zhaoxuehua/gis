@@ -315,7 +315,10 @@ export function createStyle(
 }
 
 // 图层样式（点、动态点、线、面 、圆、矩形 环、文本） 线环分动态
-export function layerStyle(feature: any, isDynamicLine: boolean = false, imgIndex: number = 0) {
+export function layerStyle(features: any, isDynamicLine: boolean = false, imgIndex: number = 0) {
+  let len = features.get("features")?.length;
+  let feature = len ? features?.getProperties().features[0] : features; // 聚合要素取值第0项
+
   const isSelected = feature.get("selected"); // 是否选中
   let type = feature.get("type"); // 原标签类型
   const typeStats = feature.get("typeStats"); // 为了区分静态点、动态点、静态线、动态线、静态环、动态环增加的
@@ -354,54 +357,6 @@ export function layerStyle(feature: any, isDynamicLine: boolean = false, imgInde
     return isSelected ? currentStyle.concat(styleAct.polStyAct) : currentStyle;
   } else {
     return [];
-  }
-}
-
-// 聚合图层样式（只能匹配点类型标签）
-export function clusterLayerStyle(
-  feature: any,
-  isDynamicLine: boolean = false,
-  imgIndex: number = 0,
-  isSelected: boolean = false
-) {
-  if (!feature || !feature.get("features")) {
-    return [];
-  }
-  const size = feature.get("features")?.length; // 是否改成给聚合和原始要素都设置样式
-  const originalFeatures = feature.get("features")[0]; // 获取原始要素数组
-  const typeStats = originalFeatures.get("typeStats");
-  // 获取不同类型的样式，再根据是否选中及动态设置样式分类
-  let labelData = originalFeatures.get("labelData");
-  let code = originalFeatures.get("code");
-  if (typeof labelData != "object") {
-    console.warn(`解析标签数据出错, 标签id:${code}`);
-    return;
-  }
-
-  let type = labelData.style.type;
-
-  if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
-    type = MAP_DATA_TYPE[type]?.value;
-  }
-  if (type !== "Point") {
-    return [];
-  }
-  // 获取样式
-  let styleMap = createStyle(labelData.style, typeStats, isDynamicLine, imgIndex);
-  let currentStyle = styleMap[type];
-  // 特殊考虑矢量线的样式(currentStyle是一个函数)
-  if (type === "LineString" && labelData.style.lineVector?.path) {
-    feature.setStyle(currentStyle);
-    return;
-  }
-  // 显示label通过和text组合
-  if (labelData.isDefaultDisplayLabelName) {
-    currentStyle = currentStyle.concat(styleMap["Text"]);
-  }
-  if (size > 1) {
-    return isSelected ? currentStyle.concat(styleAct.selectAct) : currentStyle;
-  } else {
-    return isSelected ? currentStyle.concat(styleAct.selectAct) : currentStyle;
   }
 }
 

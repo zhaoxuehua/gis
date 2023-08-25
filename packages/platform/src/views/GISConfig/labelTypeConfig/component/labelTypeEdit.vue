@@ -99,12 +99,6 @@
             <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" style="width: 200px" />
           </el-form-item>
           <div></div>
-          <!-- <el-form-item v-if="form.isTrackSetting">
-            <template #label>
-              <div style="font-weight: bold">轨迹线样式</div>
-            </template>
-          </el-form-item>
-          <div></div> -->
         </template>
         <!-- 线 面 圆 矩形 轨迹配置时   要不要icon -->
         <template v-if="['2', '3', '4', '5', '7'].includes(form.dataType) || form.isTrackSetting">
@@ -112,7 +106,7 @@
             <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
           </el-form-item>
 
-          <el-form-item label="速度单位" prop="speedUnit">
+          <el-form-item label="速度单位" prop="speedUnit" v-if="form.isTrackSetting && form.dataType == '1'">
             <el-input v-model="form.speedUnit" :disabled="state.dialogType == 2" />
           </el-form-item>
 
@@ -258,6 +252,14 @@ const lineVectoVerification = (rule: any, value: any, callback: Function) => {
   callback();
 };
 
+// 文本线宽只能取>=0
+const lineWidetVectoVerification = (rule: any, value: any, callback: Function) => {
+  if (value && !/^(0|[1-9]\d*)$/.test(value)) {
+    return callback(new Error("只能为大于等于0的整数"));
+  }
+  callback();
+};
+
 // 是设备关联对象还是其他
 const referenceType = ref("");
 const state = reactive({
@@ -301,7 +303,7 @@ const state = reactive({
     lineVectorWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
     lineVectorHeight: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
     lineVectorProportion: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
-    borderWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }]
+    borderWidth: [{ validator: lineWidetVectoVerification, trigger: ["blur", "change"] }]
   }
 });
 
