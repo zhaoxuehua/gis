@@ -34,7 +34,7 @@
 </template>
 <script setup lang="ts" name="editJSONbody">
 import { ElMessage } from "element-plus";
-import { reactive, ref, nextTick } from "vue";
+import { reactive, ref } from "vue";
 import Table from "../../../../../../components/src/map/components/Table/index.vue";
 import { updateJSONBody, getAllJSONbodyApi } from "../../../../api/modules/labelDialogConfig";
 
@@ -75,30 +75,28 @@ const onOpen = async (id: number, index: number, checkedConfig: any[]) => {
   const res: any = await getAllJSONbodyApi(id);
   if (res.code === 200) {
     state.JsonBodyData = res.data;
-    nextTick(() => {
-      state.tile = checkedConfig?.[0]?.tile || true;
-      const getCheckedField = (config: any[], checkedField: any[]) => {
-        return config.reduce((pre, cur) => {
-          pre.push(cur.field);
-          if (cur.children.length) getCheckedField(cur.children, checkedField);
-          return pre;
-        }, checkedField);
-      };
-      const checkedField = getCheckedField(checkedConfig, []);
-      const setCheckStatus = (list: any[]) => {
-        list?.forEach(item => {
-          if (checkedField.includes(item.field)) {
-            item.checked = true;
-          } else {
-            item.checked = false;
-          }
-          if (item.children.length) {
-            setCheckStatus(item.children);
-          }
-        });
-      };
-      setCheckStatus(state.JsonBodyData);
-    });
+    state.tile = checkedConfig[0]?.tile ?? null;
+    const getCheckedField = (config: any[], checkedField: any[]) => {
+      return config.reduce((pre, cur) => {
+        pre.push(cur.field);
+        if (cur.children.length) getCheckedField(cur.children, checkedField);
+        return pre;
+      }, checkedField);
+    };
+    const checkedField = getCheckedField(checkedConfig, []);
+    const setCheckStatus = (list: any[]) => {
+      list?.forEach(item => {
+        if (checkedField.includes(item.field)) {
+          item.checked = true;
+        } else {
+          item.checked = false;
+        }
+        if (item.children.length) {
+          setCheckStatus(item.children);
+        }
+      });
+    };
+    setCheckStatus(state.JsonBodyData);
   }
 };
 
@@ -173,10 +171,8 @@ const filterTree = (tree: any[]) => {
   let newTree = JSON.parse(JSON.stringify(tree));
   newTree?.forEach((node: any) => {
     if (node.checked || node.indeterminate) {
-      filteredTree.push({
-        ...node,
-        tile: state.tile
-      });
+      node.tile = state.tile;
+      filteredTree.push(node);
       if (node.children && node.children.length > 0) {
         node.children = filterTree(node.children);
       }
@@ -186,6 +182,7 @@ const filterTree = (tree: any[]) => {
 };
 
 const onConfirm = async () => {
+  if (state.tile === null) return ElMessage.error("请选择展示方式");
   const tree = filterTree(state.JsonBodyData);
   console.log(tree);
   const res: any = await updateJSONBody(tree);
