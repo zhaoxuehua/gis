@@ -75,7 +75,7 @@ const onOpen = async (id: number, index: number, checkedConfig: any[]) => {
   const res: any = await getAllJSONbodyApi(id);
   if (res.code === 200) {
     state.JsonBodyData = res.data;
-    state.tile = checkedConfig?.[0]?.tile || true;
+    state.tile = checkedConfig[0]?.tile ?? null;
     const getCheckedField = (config: any[], checkedField: any[]) => {
       return config.reduce((pre, cur) => {
         pre.push(cur.field);
@@ -182,6 +182,7 @@ const filterTree = (tree: any[]) => {
 };
 
 const onConfirm = async () => {
+  if (state.tile === null) return ElMessage.error("请选择展示方式");
   const tree = filterTree(state.JsonBodyData);
   console.log(tree);
   const res: any = await updateJSONBody(tree);
