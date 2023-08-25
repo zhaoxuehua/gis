@@ -33,6 +33,7 @@ const emit = defineEmits(["update:link"]);
 const props = defineProps({
   link: Array,
   equipTypeId: Number,
+  visitObjectTypeId: Number,
   currentType: String
 });
 const state = reactive({
@@ -80,7 +81,8 @@ const handleSelectionChange = (val: any) => {
   state.selectedList = val;
 };
 const getUnBindLink = async () => {
-  const res: any = await getUnBindLinkApi(props.equipTypeId!, props.currentType!);
+  const id = props.equipTypeId || props.visitObjectTypeId;
+  const res: any = await getUnBindLinkApi(id!, props.currentType!);
   if (res.code === 200) {
     unBindLinkData.value = res.data;
   }
@@ -95,7 +97,7 @@ const onClose = () => {
 };
 const onConfirm = async () => {
   const res: any = await bindLinkApi({
-    equipTypeId: props.equipTypeId,
+    equipTypeId: props.equipTypeId || props.visitObjectTypeId,
     currentType: props.currentType,
     buttons: state.ids.join(",")
   });
@@ -110,7 +112,7 @@ const onDelete = async (id: number, index: number) => {
     confirmButtonText: "确定"
   }).then(async () => {
     const res: any = await deleteLinkApi({
-      equipTypeId: props.equipTypeId,
+      equipTypeId: props.equipTypeId || props.visitObjectTypeId,
       currentType: props.currentType,
       buttonType: id
     });
