@@ -12,6 +12,7 @@ export const useUserStore = defineStore({
     // Set Token
     setToken(token: string) {
       this.token = token;
+      localStorage.setItem("sessionId", token);
     },
     // Set setUserInfo
     setUserInfo(userInfo: UserState["userInfo"]) {
