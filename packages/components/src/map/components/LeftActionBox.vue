@@ -9,7 +9,7 @@
             class="left-action-item"
             :class="{ active: item.isShow }"
             @click.stop="leftBoxClick(index)"
-            v-if="item.visible && !(!isEditShow && (item.label == '标签树' || item.label == '快速创建'))"
+            v-if="item.visible && !(!isEditShow && (item.label == '标签树' || item.label == '快速绘制'))"
           >
             <el-tooltip effect="light" :content="item.label" placement="bottom-start">
               <i :class="item.icon" class="left-icon"></i>

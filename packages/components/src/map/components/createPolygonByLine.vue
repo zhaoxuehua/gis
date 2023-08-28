@@ -315,7 +315,7 @@ const drawHandler = () => {
 
   // 缓冲单面的坐标数据处理
   let bufferDistance = Number(props.distance);
-  // 创建一个空的缓冲要素集合
+  // 一个空的缓冲要素集合
   let bufferFeatures: any = [];
   // 遍历每条线并执行缓冲操作（线缓冲）
   coordinates.forEach(function (coords) {
@@ -379,12 +379,12 @@ const drawHandler = () => {
 
   addLabelSingle(result).then(
     () => {
-      ElMessage.success("创建成功");
+      ElMessage.success("绘制成功");
       fetchPolygonInfo(assetId);
     },
     error => {
       console.warn(error);
-      ElMessage.error("创建失败");
+      ElMessage.error("绘制失败");
     }
   );
 };

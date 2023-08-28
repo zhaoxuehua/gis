@@ -1,10 +1,10 @@
 <template>
   <div class="quick-create-point">
     <div class="quick-create-point-mode">
-      <span class="label-span">创建模式</span>
+      <span class="label-span">绘制模式</span>
       <el-select placeholder="请选择..." v-model="state.createPointType" clearable>
-        <el-option label="按面创建" value="polygon"></el-option>
-        <el-option label="按资产创建" value="assets"></el-option>
+        <el-option label="按面绘制" value="polygon"></el-option>
+        <el-option label="按资产绘制" value="assets"></el-option>
       </el-select>
     </div>
     <div class="quick-create-point-content">

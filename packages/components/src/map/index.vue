@@ -135,7 +135,7 @@ const state = reactive({
     },
     {
       icon: "iconfont icon-GIS-09",
-      label: "快速创建",
+      label: "快速绘制",
       isShow: false,
       visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
@@ -216,7 +216,7 @@ const getLeftData = computed(() => {
       case "标签树":
         item.visible = !!controlList.value.includes("tagTree");
         break;
-      case "快速创建":
+      case "快速绘制":
         item.visible = !!controlList.value.includes("quickCreate");
         break;
       case "轨迹回放":
