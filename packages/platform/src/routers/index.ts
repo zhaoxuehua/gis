@@ -55,7 +55,6 @@ router.beforeEach(async (to, from, next) => {
 
   // 5.判断是否有 Token，没有重定向到 login 页面
   if (!userStore.token) {
-    localStorage.setItem("sessionId", window.$wujie?.props?.sessionId);
     userStore.setToken(window.$wujie?.props?.sessionId || localStorage.getItem("sessionId"));
   }
 
