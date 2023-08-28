@@ -452,23 +452,6 @@ const selectable = (row: any) => {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
-
-      // .pagination-container-gis {
-      //   position: relative;
-      //   display: flex;
-      //   align-items: center;
-      //   justify-content: flex-end;
-      //   padding: 0;
-      //   margin: 0;
-      //   margin-top: 20px;
-      //   .el-pagination__sizes {
-      //     margin: 0 0 0 16px !important;
-      //   }
-      //   .pagination-container-gis .el-pagination {
-      //     position: absolute;
-      //     right: 0;
-      //   }
-      // }
     }
     .right-align {
       display: flex;
