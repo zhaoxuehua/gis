@@ -1,4 +1,4 @@
-<!-- 按面创建点：选择已绘制的面，在选择需要添加的设备点，需要刷新 -->
+<!-- 按面绘制点：选择已绘制的面，在选择需要添加的设备点，需要刷新 -->
 <template>
   <div class="quick-create-main">
     <div class="side-tree">
@@ -328,12 +328,12 @@ const drawHandler = () => {
     if (result.length === 0) return;
     addLabelBatch(result).then(
       () => {
-        ElMessage.success("创建成功");
+        ElMessage.success("绘制成功");
         table.value.getTableData();
       },
       error => {
         console.warn(error);
-        ElMessage.error("创建失败");
+        ElMessage.error("绘制失败");
       }
     );
   }

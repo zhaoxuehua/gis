@@ -614,7 +614,7 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
     // 调用方法将要素抛出去应用实现逻辑
     !isTrue && callback(selectionFeatures);
     isTrue && callback((polygon as any).getCoordinates());
-    boxSelectionDrawInteraction.setActive(false);
+    isTrue && boxSelectionDrawInteraction.setActive(false); // isTrue是true时只能框选一次不能左击后继续框选
   });
 }
 

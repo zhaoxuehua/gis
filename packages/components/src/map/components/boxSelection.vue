@@ -46,17 +46,6 @@ watch(
       selectionAddDrawInteraction(map.value, radio.value, handleSelectionFeatures);
     } else {
       clearSelectionDrawInteraction(map.value);
-      // if (map.value) {
-      //   // 关闭框选
-      //   if (map.value?.get("boxSelectionDrawInteraction")) {
-      //     map.value?.removeInteraction(map.value?.get("boxSelectionDrawInteraction"));
-      //     map.value?.set("boxSelectionDrawInteraction", null);
-      //   }
-      //   if (map.value?.get("boxSelectionSource")) {
-      //     map.value?.get("boxSelectionSource")?.clear();
-      //     map.value?.set("boxSelectionSource", null);
-      //   }
-      // }
     }
   },
   {

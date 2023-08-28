@@ -340,12 +340,12 @@ const drawHandler = () => {
 
   addLabelSingle(result).then(
     () => {
-      ElMessage.success("创建成功");
+      ElMessage.success("绘制成功");
       fetchLineInfo(assetId);
     },
     error => {
       console.warn(error);
-      ElMessage.error("创建失败");
+      ElMessage.error("绘制失败");
     }
   );
 };

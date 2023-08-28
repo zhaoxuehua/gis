@@ -274,7 +274,7 @@ onMounted(() => {});
     color: #606266;
   }
   .highlight {
-    color: var(--color-primary);
+    color: var(--el-color-primary);
   }
   .action-btns {
     padding-left: 5px;

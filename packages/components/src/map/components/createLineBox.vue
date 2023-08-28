@@ -1,9 +1,9 @@
 <template>
   <div class="quick-create-point">
     <div class="quick-create-point-mode">
-      <span class="label-span">创建模式</span>
+      <span class="label-span">绘制模式</span>
       <el-select placeholder="请选择..." v-model="state.createLineType" clearable>
-        <el-option label="多点连接创建" value="multiplePoint"></el-option>
+        <el-option label="多点连接绘制" value="multiplePoint"></el-option>
       </el-select>
     </div>
     <div class="quick-create-point-content">
