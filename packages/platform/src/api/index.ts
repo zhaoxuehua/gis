@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse } from "axios";
 // import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
 import { LOGIN_URL } from "@/config";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { ResultData } from "@/api/interface";
 import { ResultEnum } from "@/enums/httpEnum";
 import { checkStatus } from "./helper/checkStatus";
@@ -59,10 +59,21 @@ class RequestHttp {
         // tryHideFullScreenLoading();
         // 登陆失效
         if (data.code == ResultEnum.OVERDUE) {
+          // 是子应用
           if (window.__POWERED_BY_WUJIE__) {
             window.$wujie.bus.$emit("subapp-logout");
             return;
           }
+          // 不是子应用 去登录页
+          ElMessageBox.alert("登录信息失效，请重新登录", "警告", {
+            confirmButtonText: "确定",
+            callback: () => {
+              // 清除缓存
+              window.localStorage.clear();
+              // 新开tab页  登录失效 适配子应用跳转回主应用登录页
+              window.location.href = window.location.origin + "/";
+            }
+          });
           userStore.setToken("");
           router.replace(LOGIN_URL);
           ElMessage.error(data.msg);
