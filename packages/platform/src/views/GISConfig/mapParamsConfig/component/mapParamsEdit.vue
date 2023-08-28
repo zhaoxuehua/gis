@@ -112,7 +112,7 @@
             <el-option v-for="(item, index) in trackSearchList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="比例尺单位" prop="scaleLineUnit" v-if="form.displayControlIds.includes('scaleLine')">
+        <el-form-item label="距离单位" prop="scaleLineUnit" v-if="form.displayControlIds.includes('scaleLine')">
           <el-select v-model="form.scaleLineUnit" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
             <el-option
               v-for="(item, index) in scaleLineUnitList.data"
@@ -246,7 +246,7 @@ const state = reactive({
     ],
     displayLabelInfoIds: [{ required: true, message: "请选择显示标签类型", trigger: ["blur", "change"] }],
     displayLayerIds: [{ required: true, message: "请选择显示图层", trigger: ["blur", "change"] }],
-    scaleLineUnit: [{ required: true, message: "请选择比例尺单位", trigger: ["blur", "change"] }],
+    scaleLineUnit: [{ required: true, message: "请选择距离单位", trigger: ["blur", "change"] }],
     normalUrl: [
       { required: true, message: "电子地图URL不能为空", trigger: ["blur", "change"] },
       { max: 500, message: "电子地图URL长度不能大于500", trigger: ["blur", "change"] }
@@ -281,7 +281,7 @@ const defaultParam = {
   normalUrl: "",
   sateUrl: "",
   overlayUrl: "",
-  scaleLineUnit: "metric", // 比例尺单位
+  scaleLineUnit: "metric", // 距离单位（比例尺及测距用）
   trackSearchId: "", // 轨迹搜索类型
   isEdit: false // 是否可编辑
 };

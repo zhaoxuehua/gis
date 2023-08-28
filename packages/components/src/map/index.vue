@@ -385,7 +385,7 @@ const initMap = async (mapId: string | number) => {
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
       scaleLine: controls.includes("scaleLine"), // 比例尺控件  scaleLine
-      scaleLineUnit: originalData?.scaleLineUnit, // 比例尺单位
+      scaleLineUnit: originalData?.scaleLineUnit, // 距离单位（该配置对比例尺及测距生效）
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
