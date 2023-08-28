@@ -32,13 +32,7 @@
           >添加</el-button
         >
       </div>
-      <linkConfig
-        v-model:link="params.linkConfig"
-        ref="linkConfigRef"
-        :equipTypeId="equipTypeId"
-        :visitObjectTypeId="visitObjectTypeId"
-        :currentType="currentType"
-      />
+      <linkConfig v-model:link="params.linkConfig" ref="linkConfigRef" :equipTypeId="equipTypeId" :currentType="currentType" />
     </div>
   </div>
 </template>
@@ -118,7 +112,7 @@ const getTree = async () => {
 };
 const editTitle = async () => {
   const res: any = await updateLabel({
-    equipType: equipTypeId.value || visitObjectTypeId.value,
+    equipType: equipTypeId.value,
     currentType: currentType.value,
     label: params.value.label
   });

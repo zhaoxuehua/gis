@@ -114,7 +114,7 @@
           </el-table-column>
         </el-table>
 
-        <div v-if="table.data?.length">
+        <div class="pagination-container-gis" v-if="table.data?.length">
           <el-pagination
             background
             small

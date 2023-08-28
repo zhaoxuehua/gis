@@ -27,9 +27,7 @@
         :pagination="pagination"
         :loading="loading"
         class="attention-table"
-        @selection-change="handleSelectionChange"
-        @page-size-change="handlePageSizeChange"
-        @page-current-change="handlePageCurrentChange"
+        @selection-change.stop="handleSelectionChange"
       >
         <template #action="scope">
           <el-link
@@ -109,17 +107,6 @@ const onClose = () => {
 const handleSelectionChange = (val: any) => {
   ids.value = val.map((item: any) => item.id);
 };
-
-const handlePageSizeChange = (val: any) => {
-  pagination.pageSize = val;
-  getTableData();
-};
-
-const handlePageCurrentChange = (val: any) => {
-  pagination.page = val;
-  getTableData();
-};
-
 const getTableData = async () => {
   loading.value = true;
   const res: any = await getAttentionList(

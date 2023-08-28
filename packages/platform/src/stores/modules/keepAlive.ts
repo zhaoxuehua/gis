@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { KeepAliveState } from "@/stores/interface";
 
 export const useKeepAliveStore = defineStore({
-  id: "gis-keepAlive",
+  id: "geeker-keepAlive",
   state: (): KeepAliveState => ({
     keepAliveName: []
   }),
