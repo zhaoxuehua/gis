@@ -64,12 +64,12 @@ class RequestHttp {
             window.$wujie.bus.$emit("subapp-logout");
             return;
           }
-          // 清除缓存
-          window.localStorage.clear();
           // 不是子应用 去登录页
           ElMessageBox.alert("登录信息失效，请重新登录", "警告", {
             confirmButtonText: "确定",
             callback: () => {
+              // 清除缓存
+              window.localStorage.clear();
               // 新开tab页  登录失效 适配子应用跳转回主应用登录页
               window.location.href = window.location.origin + "/";
             }
