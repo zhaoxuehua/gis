@@ -143,7 +143,7 @@ onMounted(() => {
   gap: 20px;
   width: 100%;
   height: calc(100% - 94px);
-  margin-bottom: 20px;
+  margin-bottom: 0;
   overflow: auto;
 }
 </style>
