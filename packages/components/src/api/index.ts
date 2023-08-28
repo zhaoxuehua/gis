@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { AxiosInstance, AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse } from "axios";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import type { ResultData } from "@/api/interface";
 import { ResultEnum } from "@/enums/httpEnum";
 import { checkStatus } from "./helper/checkStatus";
@@ -48,25 +48,6 @@ class RequestHttp {
     this.service.interceptors.response.use(
       (response: AxiosResponse) => {
         const { data } = response;
-        // 登陆失效
-        if (data.code == ResultEnum.OVERDUE) {
-          // 是子应用 通知主应用退出登录
-          if (window.__POWERED_BY_WUJIE__) {
-            window.$wujie.bus.$emit("subapp-logout");
-            return false;
-          }
-          // 不是子应用 去登录页
-          ElMessageBox.alert("登录信息失效，请重新登录", "警告", {
-            confirmButtonText: "确定",
-            callback: () => {
-              // 清除缓存
-              window.localStorage.clear();
-              // 新开tab页  登录失效 适配子应用跳转回主应用登录页
-              window.location.href = window.location.origin + "/";
-            }
-          });
-          return false;
-        }
         // 全局错误信息拦截（防止下载文件的时候返回数据流，没有 code 直接报错）
         if (data.code && data.code !== ResultEnum.SUCCESS) {
           ElMessage.error(data.msg);

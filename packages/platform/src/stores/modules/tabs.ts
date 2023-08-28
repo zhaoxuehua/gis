@@ -1,9 +1,10 @@
 import router from "@/routers";
 import { defineStore } from "pinia";
 import { TabsState, TabsMenuProps } from "@/stores/interface";
+import piniaPersistConfig from "@/config/piniaPersist";
 
 export const useTabsStore = defineStore({
-  id: "gis-tabs",
+  id: "geeker-tabs",
   state: (): TabsState => ({
     tabsMenuList: []
   }),
@@ -44,5 +45,6 @@ export const useTabsStore = defineStore({
         if (item.path == nowFullPath) item.title = title;
       });
     }
-  }
+  },
+  persist: piniaPersistConfig("geeker-tabs")
 });

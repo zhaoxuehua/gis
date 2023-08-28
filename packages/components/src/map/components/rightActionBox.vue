@@ -83,17 +83,17 @@ const onBoxSelection = (selectionFeatures: any[]) => {
   align-items: center;
   padding: 10px;
   cursor: pointer;
-  background-color: #ffffff;
+  background-color: var(--background-color);
 }
 .left-icon {
   margin-right: 6px;
   font-size: 14px;
 }
 .right-action-item:hover {
-  color: var(--el-color-primary);
+  color: var(--color-primary);
 }
 .active {
-  color: var(--el-color-primary);
+  color: var(--color-primary);
 }
 
 // 内容区域的样式

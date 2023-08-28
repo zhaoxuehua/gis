@@ -1,17 +1,5 @@
 # @adm-gis-ui/agmap
 
-## 1.0.40
-
-### Patch Changes
-
-- 修改关注列表翻页问题
-
-## 1.0.39
-
-### Patch Changes
-
-- 修改翻页样式
-
 ## 1.0.38
 
 ### Patch Changes

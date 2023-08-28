@@ -621,7 +621,7 @@ watch(
   z-index: 2000;
   width: 360px;
   height: 500px;
-  background-color: #ffffff;
+  background-color: var(--background-color);
 }
 .title {
   display: flex;

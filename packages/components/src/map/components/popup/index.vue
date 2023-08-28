@@ -155,21 +155,12 @@ const lineChartRef = ref();
 
 // 获取左键配置信息
 const getLabelDialogConfigInfo = async (relationMap: any) => {
-  //init data
-  attrData.staticData = [];
-  attrData.monitorSequenceData = [];
-  attrData.monitorLineAttr = [];
-  attrData.monitorJSONbodyData = [];
-  attrData.linkData = [];
-  attrData.monitorJSONbodyMap = {};
-
   if (!Object.keys(relationMap || {}).length) {
     state.isRelationBody = false;
     return;
   }
   state.isRelationBody = true;
   console.log(relationMap);
-
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
   equipInfo.value = relationMap;
