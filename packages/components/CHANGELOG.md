@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.43
+
+### Patch Changes
+
+- 删除图层多余的样式函数
+
 ## 1.0.42
 
 ### Patch Changes
