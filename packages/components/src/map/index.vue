@@ -496,6 +496,10 @@ const initMap = async (mapId: string | number) => {
         style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
       };
 
+      item?.code != "seaMap"
+        ? (options.style = (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value))
+        : null;
+
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
         let sourceVector = new VectorSource();
@@ -506,7 +510,7 @@ const initMap = async (mapId: string | number) => {
         options.source = clusterSource;
         options.tagAggDistance = item?.tagAggDistance || 0;
       } else {
-        options.source = new VectorSource({ wrapX: false });
+        options.source = new VectorSource({});
       }
 
       layerMap[item.code] = new VectorLayer(options);
