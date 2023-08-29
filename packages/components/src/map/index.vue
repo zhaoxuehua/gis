@@ -492,8 +492,7 @@ const initMap = async (mapId: string | number) => {
         code: item?.code,
         isTagAgg: item?.isTagAgg,
         isTrackDraw: item?.isTrackDraw,
-        trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
-        style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
+        trackAggDistance: item.trackAggDistance || 0 // 聚合图层上轨迹聚合距离
       };
 
       item?.code != "seaMap"
