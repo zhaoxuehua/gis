@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.42
+
+### Patch Changes
+
+- 增加图层样式过滤
+
 ## 1.0.41
 
 ### Patch Changes

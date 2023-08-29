@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.42
+
+### Patch Changes
+
+- 增加图层样式过滤
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.42
+
 ## 1.0.41
 
 ### Patch Changes
