@@ -134,7 +134,7 @@ export const GIS_MAPPARAMS_DETAIL = [
     name: "trackSearchName"
   },
   {
-    label: "比例尺单位",
+    label: "距离单位",
     name: "scaleLineUnit",
     slot: true
   },

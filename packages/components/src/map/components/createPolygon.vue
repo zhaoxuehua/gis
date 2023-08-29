@@ -1,7 +1,7 @@
 <template>
   <div class="quick-create-point">
     <div class="quick-create-point-mode">
-      <span class="label-span">创建模式</span>
+      <span class="label-span">绘制模式</span>
       <el-select placeholder="请选择..." v-model="state.createPolygonType" clearable>
         <el-option label="线缓冲" value="2"></el-option>
       </el-select>

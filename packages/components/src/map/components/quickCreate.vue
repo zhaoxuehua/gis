@@ -1,12 +1,12 @@
-<!-- 快速创建 -->
+<!-- 快速绘制 -->
 <template>
   <div class="quick-create">
     <div class="quick-create-title">
       <div class="quick-create-title-tab">
         <el-tabs v-model="state.activeName">
-          <el-tab-pane label="创建点" name="1"></el-tab-pane>
-          <el-tab-pane label="创建线" name="2"></el-tab-pane>
-          <el-tab-pane label="创建面" name="3"></el-tab-pane>
+          <el-tab-pane label="绘制点" name="1"></el-tab-pane>
+          <el-tab-pane label="绘制线" name="2"></el-tab-pane>
+          <el-tab-pane label="绘制面" name="3"></el-tab-pane>
         </el-tabs>
       </div>
       <Icon src="Close" :size="14" @click="onClose" class="icon"></Icon>

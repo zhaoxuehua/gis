@@ -67,15 +67,17 @@ const layerMap = computed(() => {
 // 已选择的标签
 let checkedTags = ref<Array<string>>([]);
 
+// 全选
 const handleCheckAllChange = (val: any) => {
   checkedTags.value = val ? labelTypeList.value?.map((item: any) => item.code) : [];
   state.isIndeterminate = false;
   setFeatureVisible();
 };
 
+// 标签列表
 const handleCheckedChange = (value: any[]) => {
   const checkedCount = value.length;
-  state.checkAll = checkedCount === checkedTags.value.length;
+  state.checkAll = checkedCount === checkedTags.value.length && checkedCount != 0;
   state.isIndeterminate = checkedCount > 0 && checkedCount < labelTypeList.value?.length;
   setFeatureVisible();
 };

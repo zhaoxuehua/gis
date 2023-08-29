@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.41
+
+### Patch Changes
+
+- 修复外部树节点点击功能块，原因导航树与外部树节点点击的逻辑不同
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.41
+
 ## 1.0.40
 
 ### Patch Changes

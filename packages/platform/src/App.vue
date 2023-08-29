@@ -30,7 +30,6 @@ const router = useRouter();
 
 onMounted(() => {
   if (window.__POWERED_BY_WUJIE__) {
-    window.$wujie?.props?.sessionId && localStorage.setItem("sessionId", window.$wujie?.props?.sessionId);
     window.$wujie.bus.$on(window.$wujie?.props?.appId + "-router-change", (path: string) => {
       router.push(path);
     });

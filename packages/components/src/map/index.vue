@@ -135,7 +135,7 @@ const state = reactive({
     },
     {
       icon: "iconfont icon-GIS-09",
-      label: "快速创建",
+      label: "快速绘制",
       isShow: false,
       visible: false,
       component: shallowRef(defineAsyncComponent(() => import("./components/quickCreate.vue")))
@@ -216,7 +216,7 @@ const getLeftData = computed(() => {
       case "标签树":
         item.visible = !!controlList.value.includes("tagTree");
         break;
-      case "快速创建":
+      case "快速绘制":
         item.visible = !!controlList.value.includes("quickCreate");
         break;
       case "轨迹回放":
@@ -385,7 +385,7 @@ const initMap = async (mapId: string | number) => {
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
       scaleLine: controls.includes("scaleLine"), // 比例尺控件  scaleLine
-      scaleLineUnit: originalData?.scaleLineUnit, // 比例尺单位
+      scaleLineUnit: originalData?.scaleLineUnit, // 距离单位（该配置对比例尺及测距生效）
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
@@ -902,15 +902,15 @@ defineExpose({
   getGeometryCenter
 });
 
-// 监听外部树节点点击
+// 监听外部树节点点击(监控在可视化配置的树)
 watch(
   () => props.outsideTreeNode,
   node => {
     if (node) {
-      const { tupleList, equipNodeFlag } = node;
+      const { tupleList = [], model } = node;
       const equipId = Number(tupleList[0]);
 
-      if (equipNodeFlag) {
+      if (model.toLocaleLowerCase() === "eam_eqp_equip") {
         const res = find(gisStore?.relationMap, (item: any) => {
           return item.id === equipId;
         });
