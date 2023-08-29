@@ -902,15 +902,15 @@ defineExpose({
   getGeometryCenter
 });
 
-// 监听外部树节点点击
+// 监听外部树节点点击(监控在可视化配置的树)
 watch(
   () => props.outsideTreeNode,
   node => {
     if (node) {
-      const { tupleList, equipNodeFlag } = node;
+      const { tupleList = [], model } = node;
       const equipId = Number(tupleList[0]);
 
-      if (equipNodeFlag) {
+      if (model.toLocaleLowerCase() === "eam_eqp_equip") {
         const res = find(gisStore?.relationMap, (item: any) => {
           return item.id === equipId;
         });
