@@ -1,6 +1,13 @@
 <template>
   <div class="search-label-box">
-    <el-input v-model="inputParam" :placeholder="'请输入' + placeholderText + '...'" clearable @input="search" @focus="search">
+    <el-input
+      v-model="inputParam"
+      :placeholder="'请输入' + placeholderText.slice(0, 6) + '...'"
+      clearable
+      :title="placeholderText + '搜索'"
+      @input="search"
+      @focus="search"
+    >
       <template #append>
         <el-button @click.stop="search"><Icon src="Search"></Icon></el-button>
       </template>
@@ -30,9 +37,7 @@ let mapInstance: VisualMap;
 const open = ref<boolean>(false);
 
 const inputParam = ref("");
-const placeholderText = computed(() =>
-  (props.map?.defaultOptions?.displaySearch?.map((item: any) => item.name) || []).join(",").slice(0, 10)
-);
+const placeholderText = computed(() => (props.map?.defaultOptions?.displaySearch?.map((item: any) => item.name) || []).join(","));
 const searchData: any = ref([]);
 
 const search = () => {
