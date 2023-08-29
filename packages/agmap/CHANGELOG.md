@@ -1,5 +1,17 @@
 # @adm-gis-ui/agmap
 
+## 1.0.43
+
+### Patch Changes
+
+- 删除图层多余的样式函数
+
+## 1.0.42
+
+### Patch Changes
+
+- 增加图层样式过滤
+
 ## 1.0.41
 
 ### Patch Changes

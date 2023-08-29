@@ -1,5 +1,21 @@
 # adm-gis-platform
 
+## 1.0.43
+
+### Patch Changes
+
+- 删除图层多余的样式函数
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.43
+
+## 1.0.42
+
+### Patch Changes
+
+- 增加图层样式过滤
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.42
+
 ## 1.0.41
 
 ### Patch Changes

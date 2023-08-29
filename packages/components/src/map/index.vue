@@ -40,7 +40,7 @@
       </template>
     </Popup>
 
-    <!-- 轨迹回放列表-->
+    <!-- 轨迹回放列表(轨迹列表只能展示5条)-->
     <Track-back-list></Track-back-list>
 
     <!-- overLayer鼠标经过显示-->
@@ -96,9 +96,8 @@ defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
 const gisStore = useGisStore();
-const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function; outsideTreeNode?: any }>(), {
+const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any }>(), {
   config: () => {},
-  onClickFeaturePopup: () => true,
   outsideTreeNode: () => null
 });
 
@@ -115,7 +114,7 @@ const emits = defineEmits([
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
-const currentLevel = ref();
+const currentLevel = ref(); // 当前视图层级
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -492,9 +491,12 @@ const initMap = async (mapId: string | number) => {
         code: item?.code,
         isTagAgg: item?.isTagAgg,
         isTrackDraw: item?.isTrackDraw,
-        trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
-        style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
+        trackAggDistance: item.trackAggDistance || 0 // 聚合图层上轨迹聚合距离
       };
+
+      item?.code != "seaMap"
+        ? (options.style = (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value))
+        : null;
 
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
@@ -506,7 +508,7 @@ const initMap = async (mapId: string | number) => {
         options.source = clusterSource;
         options.tagAggDistance = item?.tagAggDistance || 0;
       } else {
-        options.source = new VectorSource({ wrapX: false });
+        options.source = new VectorSource({});
       }
 
       layerMap[item.code] = new VectorLayer(options);
@@ -707,7 +709,9 @@ const initMap = async (mapId: string | number) => {
           } else if (extendsData?.type == "ship") {
             const { mmsi, sog, positionReportTicks } = unref(extendsData);
             popupTitDOMRef.value.innerHTML = name;
-            popupContentDOMRef.value.innerHTML = `<p>mmsi : ${mmsi}</p><p>速度  :${sog}节</p><p>时间 : ${positionReportTicks}节</p>`;
+            popupContentDOMRef.value.innerHTML = `<p>MMSI : ${mmsi}</p><p>时间 : ${positionReportTicks}</p><p>航速 : ${sog?.toFixed(
+              1
+            )}节</p>`;
             hoverInfoLayer.setPosition(pos);
           } else {
             hoverInfoLayer.setPosition(undefined);
@@ -953,7 +957,7 @@ watch(
   .popup-content {
     padding: 10px 20px;
     overflow: hidden;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 22px;
   }
 }
