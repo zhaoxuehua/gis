@@ -114,7 +114,7 @@ const onDelete = (id: number, index: number) => {
     confirmButtonText: "确定"
   }).then(async () => {
     const res: any = await deleteBindAttrApi({
-      equipTypeId: props.equipTypeId,
+      equipTypeId: props.equipTypeId || props.visitObjectTypeId,
       currentType: props.currentType,
       attributeId: id
     });
