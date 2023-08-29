@@ -108,8 +108,7 @@ const emits = defineEmits([
   "getCustomSearchContent",
   "getInitMapExportData",
   "scada",
-  "view",
-  "track"
+  "view"
 ]);
 
 const exportMap = ref<VisualMap>();

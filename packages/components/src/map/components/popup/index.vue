@@ -15,7 +15,7 @@
         <el-scrollbar>
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
-              <span class="label">{{ item.name }}</span>
+              <span class="label">{{ item.name + "：" }}</span>
               <span class="value">{{ item.value }}</span>
             </li>
           </ul>
@@ -51,7 +51,7 @@
       </div>
     </div>
   </div>
-  <el-dialog v-model="state.dialogVisible" title="轨迹查询" class="el-dialog-small">
+  <el-dialog v-model="state.dialogVisible" title="轨迹查询" width="560px" append-to-body>
     <el-date-picker
       v-model="state.dateTimes"
       type="datetimerange"
@@ -83,7 +83,7 @@ import type { VisualMap } from "../../type";
 import { useJSONBody } from "../../hooks/useJSONBody";
 import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单个轨迹数据
 
-// import { chartData } from "./popupmock";
+// import { chartData, attrconfigData } from "./popupmock";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; data: { [key: string]: any } }>(), {
   data: () => ({}),
@@ -143,6 +143,7 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
       dataTime: state.currentTime, //数据时间，针对具体时间
       tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
     });
+    // const res = attrconfigData;
     if (res.code === 200) {
       resolve(res);
     } else {
@@ -340,7 +341,15 @@ watch(
   () => props.data.featureCode,
   () => {
     getLabelDialogConfigInfo(props.data.relationMap);
+    // getLabelDialogConfigInfo({
+    //   equipType: 761,
+    //   code: "tunnel01",
+    //   isVisitObject: false
+    // });
   }
+  // {
+  //   immediate: true
+  // }
 );
 
 defineExpose({
