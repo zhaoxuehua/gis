@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.48
+
+### Patch Changes
+
+- 增加左击定位及备注功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.46
+
 ## 1.0.45
 
 ### Patch Changes

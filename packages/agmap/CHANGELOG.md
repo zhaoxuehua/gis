@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.46
+
+### Patch Changes
+
+- 增加左击定位及备注功能
+
 ## 1.0.45
 
 ### Patch Changes
