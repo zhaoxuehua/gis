@@ -46,7 +46,7 @@ export interface trackDataByIdParamsType {
 
 // 轨迹数据格式
 export interface shipTrackDataItemType {
-  aisLocation: string;
+  AISDATA: string;
   equipCode: string;
   equipName: string;
   position: string;
