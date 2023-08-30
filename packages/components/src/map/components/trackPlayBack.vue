@@ -305,6 +305,7 @@ watch(
       (coordinates: any[]) => {
         coordinates[0].pop();
         coordinateArr = coordinates;
+        formData.boxSelectMode = "";
       },
       true
     );
