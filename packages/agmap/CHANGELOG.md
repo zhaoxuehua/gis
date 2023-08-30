@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.45
+
+### Patch Changes
+
+- 更新轨迹回放时间字段
+
 ## 1.0.44
 
 ### Patch Changes
