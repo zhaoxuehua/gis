@@ -68,6 +68,7 @@
       <el-button @click="onTrackClose">取消</el-button>
     </template>
   </el-dialog>
+  <AddRemarkDialog ref="addRemarkRef"></AddRemarkDialog>
 </template>
 
 <script lang="ts" setup>
@@ -82,6 +83,8 @@ import { addAttentionApi, getAttentionList, deleteDialogAttentionApi } from "../
 import type { VisualMap } from "../../type";
 import { useJSONBody } from "../../hooks/useJSONBody";
 import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单个轨迹数据
+import { labelOnSelect } from "../../hooks/index";
+import AddRemarkDialog from "./addRemarkDialog.vue";
 
 // import { chartData, attrconfigData } from "./popupmock";
 
@@ -97,6 +100,7 @@ const onClosePopup = () => {
   emits("onClose");
 };
 
+const addRemarkRef = ref();
 const getDOMElement = () => {
   return popupRef.value;
 };
@@ -245,7 +249,7 @@ const getMonitorLine = async () => {
   }
 };
 
-// 不同动作所做的事情
+// 不同动作所做的事情（3关注单独挪出去处理了）
 const onAction = (actionType: number) => {
   const actionMap: { [key: number]: any } = {
     1: "scada", // 进入组态
@@ -254,6 +258,14 @@ const onAction = (actionType: number) => {
   if (actionType === 4) {
     // 4  轨迹
     state.dialogVisible = true;
+  } else if (actionType === 5) {
+    // 5 备注
+    addRemarkRef.value?.openDialog({
+      ...equipInfo.value
+    });
+  } else if (actionType === 6) {
+    // 6 定位（基础引擎有关联关系的及外部对象的定位）
+    labelOnSelect(props?.map, props?.data?.featureCode, false, equipInfo.value?.isVisitObject);
   } else {
     let option = {
       ...equipInfo.value,
@@ -284,7 +296,7 @@ const focusMap: { [key: string]: string } = {
   1: "关注",
   2: "取消关注"
 };
-const trackSearchCode = computed(() => props.map?.defaultOptions.trackSearchCode);
+const trackSearchCode = computed(() => props.map?.defaultOptions?.trackSearchCode);
 const getFocusStatus = async () => {
   const res: any = await getAttentionList(
     {

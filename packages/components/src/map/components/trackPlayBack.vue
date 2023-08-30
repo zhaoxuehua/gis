@@ -74,7 +74,7 @@
           <el-form-item
             label="告警"
             prop="alarmLevel"
-            v-if="formData.selectMode && formData.selectMode != 'shape' && defaultOptions.trackSearchId"
+            v-if="formData.selectMode && formData.selectMode != 'shape' && defaultOptions?.trackSearchId"
           >
             <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable style="width: 200px">
               <el-option
@@ -261,7 +261,7 @@ const selectModeChange = (value: string) => {
 // 地图上的默认参数
 const defaultOptions = computed(() => {
   const mapDefaultOptions = map.value?.defaultOptions;
-  if (mapDefaultOptions.trackSearchId || mapDefaultOptions.trackSearchId === 0) {
+  if (mapDefaultOptions?.trackSearchId || mapDefaultOptions?.trackSearchId === 0) {
     getAlarmListOptions(mapDefaultOptions.trackSearchId);
   }
   return mapDefaultOptions;

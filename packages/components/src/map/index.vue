@@ -396,37 +396,37 @@ const initMap = async (mapId: string | number) => {
     // 比例尺控件
     const scaleLine = new ScaleLine({
       className: "control-scaleLine",
-      units: defaultOptions.scaleLineUnit || "metric"
+      units: defaultOptions?.scaleLineUnit || "metric"
     });
     // 控件列表(是否显示全屏缩放控件)
     const controlsList = [];
-    if (defaultOptions.fullScreen) {
+    if (defaultOptions?.fullScreen) {
       controlsList.push(fullScreen);
     }
-    if (defaultOptions.scaleLine) {
+    if (defaultOptions?.scaleLine) {
       controlsList.push(scaleLine);
     }
 
     // 电子底图图层
     const normalMap = new TileLayer({
-      visible: defaultOptions.defaultMapType === 1,
+      visible: defaultOptions?.defaultMapType === 1,
       source: new XYZ({
-        url: defaultOptions.normalUrl
+        url: defaultOptions?.normalUrl
       })
     });
     // 卫星影像图层
     const sateMap = new TileLayer({
-      visible: defaultOptions.defaultMapType === 2,
+      visible: defaultOptions?.defaultMapType === 2,
       source: new XYZ({
-        url: defaultOptions.sateUrl
+        url: defaultOptions?.sateUrl
       })
     });
 
     // 路网叠加层（是卫星影像且显示路网叠加层）
     const overlayMap = new TileLayer({
-      visible: defaultOptions.defaultMapType === 2 && defaultOptions.showOverlay,
+      visible: defaultOptions?.defaultMapType === 2 && defaultOptions?.showOverlay,
       source: new XYZ({
-        url: defaultOptions.overlayUrl
+        url: defaultOptions?.overlayUrl
       })
     });
 
@@ -436,7 +436,7 @@ const initMap = async (mapId: string | number) => {
       controls: defaults({
         attribution: false,
         rotate: false,
-        zoom: defaultOptions.zoom,
+        zoom: defaultOptions?.zoom,
         zoomOptions: {
           className: "ol-zoom",
           zoomInTipLabel: "放大",
@@ -446,15 +446,15 @@ const initMap = async (mapId: string | number) => {
       layers: [normalMap, sateMap, overlayMap],
       view: new View({
         center: fromLonLat([defaultOptions.center.lon, defaultOptions.center.lat]),
-        zoom: defaultOptions.defaultZoom,
-        minZoom: defaultOptions.minZoom,
-        maxZoom: defaultOptions.maxZoom,
+        zoom: defaultOptions?.defaultZoom,
+        minZoom: defaultOptions?.minZoom,
+        maxZoom: defaultOptions?.maxZoom,
         constrainResolution: true
       })
     }) as VisualMap;
 
     // 监听视图的变化获取当前层级
-    currentLevel.value = defaultOptions.defaultZoom; // 视图层级初始值
+    currentLevel.value = defaultOptions?.defaultZoom; // 视图层级初始值
     map?.getView().on("change:resolution", function () {
       let zoomLevel = Math.ceil(map?.getView()?.getZoom());
       currentLevel.value = zoomLevel;
@@ -480,7 +480,7 @@ const initMap = async (mapId: string | number) => {
 
     // 根据图层配置信息创建图层
     const layerMap: { [key: string]: any } = {};
-    defaultOptions.layers.forEach((item: { [key: string]: any }) => {
+    defaultOptions?.layers?.forEach((item: { [key: string]: any }) => {
       let options: { [key: string]: any };
       options = {
         zIndex: item?.layerLevel,
@@ -530,7 +530,7 @@ const initMap = async (mapId: string | number) => {
     // 存储标签类型信息及根据标签类型分组 code => labelType
     const labelTypeMap: { [key: string]: LabelType } = {};
     let featureTypeGroup: { [key: string]: Feature[] } = {};
-    const { labelType, layersIds } = defaultOptions;
+    const { labelType, layersIds } = defaultOptions || {};
     labelType.forEach((item: LabelType) => {
       if (layersIds.split(",").includes(String(item.layerConfigId))) {
         if (item.labelTypeImagePath || item?.labelLegendImagePath) {
