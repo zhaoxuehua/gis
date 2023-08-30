@@ -15,7 +15,7 @@
         <el-scrollbar>
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
-              <span class="label">{{ item.name }}</span>
+              <span class="label">{{ item.name + "：" }}</span>
               <span class="value">{{ item.value }}</span>
             </li>
           </ul>
@@ -51,7 +51,7 @@
       </div>
     </div>
   </div>
-  <el-dialog v-model="state.dialogVisible" title="轨迹查询" class="el-dialog-small">
+  <el-dialog v-model="state.dialogVisible" title="轨迹查询" width="560px" append-to-body>
     <el-date-picker
       v-model="state.dateTimes"
       type="datetimerange"
@@ -83,7 +83,7 @@ import type { VisualMap } from "../../type";
 import { useJSONBody } from "../../hooks/useJSONBody";
 import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单个轨迹数据
 
-// import { chartData } from "./popupmock";
+// import { chartData, attrconfigData } from "./popupmock";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; data: { [key: string]: any } }>(), {
   data: () => ({}),
@@ -110,8 +110,8 @@ const attrData: any = reactive({
   monitorSequenceData: [], // 监测散点数据
   monitorLineAttr: [], //监测线性属性code
   monitorJSONbodyData: [], // 监测结构体数据
-  linkData: [],
-  hasFocusBtn: false,
+  linkData: [], // 链接按钮后端数据
+  hasFocusBtn: false, // 关注（取消关注）
   monitorJSONbodyMap: {}
 });
 
@@ -143,6 +143,7 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
       dataTime: state.currentTime, //数据时间，针对具体时间
       tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
     });
+    // const res = attrconfigData;
     if (res.code === 200) {
       resolve(res);
     } else {
@@ -168,7 +169,6 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     return;
   }
   state.isRelationBody = true;
-  console.log(relationMap);
 
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
@@ -180,9 +180,9 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   // };
   // 获取绑定的属性
   await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject });
-  attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3);
+  attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3); // 关注
   if (attrData.hasFocusBtn) {
-    attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3);
+    attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注
     getFocusStatus();
   }
   attrData.monitorLineAttr = monitorLineAttr.value;
@@ -250,7 +250,6 @@ const onAction = (actionType: number) => {
   const actionMap: { [key: number]: any } = {
     1: "scada", // 进入组态
     2: "view" // 全景
-    // 4: "track" // 轨迹
   };
   if (actionType === 4) {
     // 4  轨迹
@@ -300,7 +299,7 @@ const getFocusStatus = async () => {
     }
   );
   if (res.code === 200) {
-    focusType.value = res.data.items.length ? 2 : 1;
+    focusType.value = res.data.items.length ? 2 : 1; // 关注还是取消关注
   }
 };
 
@@ -340,12 +339,19 @@ watch(
   () => props.data.featureCode,
   () => {
     getLabelDialogConfigInfo(props.data.relationMap);
+    // getLabelDialogConfigInfo({
+    //   equipType: 761,
+    //   code: "tunnel01",
+    //   isVisitObject: false
+    // });
   }
+  // {
+  //   immediate: true
+  // }
 );
 
 defineExpose({
   getDOMElement
-  // getLabelDialogConfigInfo
 });
 </script>
 

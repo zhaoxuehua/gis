@@ -64,6 +64,7 @@ import { ElMessage } from "element-plus";
 import type { VisualMap } from "../type";
 import { labelOnSelect } from "../hooks/index";
 import { getTrackDataByIdFn } from "../hooks/getTrackDataById"; // 获取单个轨迹数据
+import Icon from "./Icon.vue";
 import moment from "moment";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {

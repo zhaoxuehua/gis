@@ -184,7 +184,6 @@ const filterTree = (tree: any[]) => {
 const onConfirm = async () => {
   if (state.tile === null) return ElMessage.error("请选择展示方式");
   const tree = filterTree(state.JsonBodyData);
-  console.log(tree);
   const res: any = await updateJSONBody(tree);
   if (res.code === 200) {
     state.dialogVisible = false;

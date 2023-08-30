@@ -46,7 +46,7 @@
       </template>
       <template v-else>
         <div class="title">{{ table.name }}</div>
-        <el-empty description="无数据" :image-size="200" />
+        <el-empty description="无数据" :image-size="100" />
       </template>
     </div>
   </div>
@@ -83,8 +83,6 @@ const onSwitch = (type: string, table: any) => {
 watch(
   () => props.jsonbodyData,
   () => {
-    console.log(props.jsonbodyData);
-    console.log(props.jsonbodyMap);
     handleBodyValue(props.jsonbodyData!, props.jsonbodyMap);
   }
 );
@@ -106,6 +104,9 @@ watch(
     .title {
       margin-right: auto;
     }
+  }
+  .title {
+    font-weight: bold;
   }
   .desc-list {
     flex-shrink: 0;

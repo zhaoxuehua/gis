@@ -47,7 +47,7 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
     fieldMap[key] = val[key];
   });
   const transData = trackResult.data.items.map(val => {
-    const aisLocation = val.aisLocation;
+    const aisLocation = val.AISDATA;
     const aisInfo = JSON.parse(aisLocation);
     const detailInfo: anyObjectType[] = [];
     Object.entries(fieldMap).forEach(v => {
@@ -62,10 +62,10 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
         cog: aisInfo.cog
       },
       titleInfo: {
-        name: moment(aisInfo.positionReportTicks).format("YYYY-MM-DD HH:mm:ss")
+        name: moment(aisInfo.positionReportTicks * 1000).format("YYYY-MM-DD HH:mm:ss")
       },
       labelInfo: {
-        time: moment(aisInfo.positionReportTicks).format("YYYY-MM-DD HH:mm:ss"),
+        time: moment(aisInfo.positionReportTicks * 1000).format("YYYY-MM-DD HH:mm:ss"),
         speed: aisInfo.sog
       },
       detailInfo: detailInfo
