@@ -37,9 +37,9 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
 
   let styleMap = createStyle(styleData);
   let currentStyle = styleMap[dataTypeString];
-  const refLayer = map.defaultOptions.layers.find((item: any) => item.id === featureType.layerConfigId);
+  const refLayer = map?.defaultOptions?.layers?.find((item: any) => item.id === featureType.layerConfigId);
   const layerMap = map?.get("layerMap") || {};
-  const layer = layerMap[refLayer.code];
+  const layer = layerMap[refLayer?.code];
   const isTagAgg = layer.get("isTagAgg"); // 是否聚合图层
   let source: any;
   if (isTagAgg) {

@@ -1,3 +1,176 @@
+export const attrconfigData = {
+  code: 200,
+  msg: "success",
+  data: {
+    currentPage: 1,
+    pageSize: 10,
+    totalNum: 1,
+    totalPage: 0,
+    items: [
+      {
+        id: 49979,
+        equipCode: "tunnel01",
+        equipName: "管廊01",
+        equipTypeId: 761,
+        equipTypeCode: "TUNNEL",
+        equipTypeName: "管廊",
+        attributes: [
+          "AVP",
+          "CD",
+          "CH4",
+          "CO",
+          "duoxuan",
+          "equipLocation",
+          "H2S",
+          "HUM",
+          "jsonattribute",
+          "JZLX",
+          "MF",
+          "O2",
+          "TEMP",
+          "testjsonbody"
+        ],
+        statusCode: "nan",
+        statusName: "无数据",
+        time: "1970-01-01 08:00:00",
+        title: "管廊01",
+        alarmNum: 0,
+        telemetry: [
+          {
+            code: "CH4",
+            name: "甲烷",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 2,
+            unit: "%LEL",
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "CO",
+            name: "一氧化碳",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 2,
+            unit: "ppm",
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "duoxuan",
+            name: "遥测结构体",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 10,
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "H2S",
+            name: "硫化氢",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 2,
+            unit: "ppm",
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "HUM",
+            name: "湿度",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 2,
+            unit: "%RH",
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "jsonattribute",
+            name: "Json属性",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 10,
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "O2",
+            name: "氧气",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 2,
+            unit: "%",
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "TEMP",
+            name: "温度",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 2,
+            unit: "℃",
+            value: "无数据",
+            isSquareWave: false
+          },
+          {
+            code: "testjsonbody",
+            name: "测试结构体",
+            status: "无数据",
+            monitorState: "NAN",
+            time: "0000-00-00 00:00:00",
+            type: 10,
+            value: "无数据",
+            isSquareWave: false
+          }
+        ],
+        descriptions: [
+          {
+            code: "AVP",
+            name: "视频参数"
+          },
+          {
+            code: "CD",
+            name: "投运日期",
+            value: ""
+          },
+          {
+            code: "AVP",
+            name: "视频参数"
+          },
+          {
+            code: "equipLocation",
+            name: "设备位置"
+          },
+
+          {
+            code: "JZLX",
+            name: "建筑类型",
+            value: "1"
+          },
+          {
+            code: "MF",
+            name: "生产厂商",
+            value: ""
+          }
+        ],
+        isControl: false,
+        enable: true
+      }
+    ]
+  },
+  success: true
+};
+
 export const chartData = {
   code: 200,
   msg: "success",

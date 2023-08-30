@@ -1,5 +1,41 @@
 # @adm-gis-ui/agmap
 
+## 1.0.46
+
+### Patch Changes
+
+- 增加左击定位及备注功能
+
+## 1.0.45
+
+### Patch Changes
+
+- 更新轨迹回放时间字段
+
+## 1.0.44
+
+### Patch Changes
+
+- 优化船经过的显示
+
+## 1.0.43
+
+### Patch Changes
+
+- 删除图层多余的样式函数
+
+## 1.0.42
+
+### Patch Changes
+
+- 增加图层样式过滤
+
+## 1.0.41
+
+### Patch Changes
+
+- 修复外部树节点点击功能块，原因导航树与外部树节点点击的逻辑不同
+
 ## 1.0.40
 
 ### Patch Changes

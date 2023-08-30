@@ -60,8 +60,8 @@ const boxSelectRadioChange = (val: any) => {
   selectionAddDrawInteraction(map.value, val, handleSelectionFeatures);
 };
 const handleSelectionFeatures = (selectionFeatures: any[]) => {
-  const searchCode = map.value.defaultOptions.displaySearch.map((item: any) => item.code);
-  selectionFeatures = selectionFeatures.filter(item => searchCode.includes(item.get("labelTypeCode")));
+  const searchCode = map.value?.defaultOptions?.displaySearch.map((item: any) => item.code);
+  selectionFeatures = selectionFeatures.filter(item => searchCode?.includes(item.get("labelTypeCode")));
   emits("onBoxSelection", selectionFeatures);
 };
 </script>

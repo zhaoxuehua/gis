@@ -1,5 +1,65 @@
 # adm-gis-platform
 
+## 1.0.48
+
+### Patch Changes
+
+- 增加左击定位及备注功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.46
+
+## 1.0.45
+
+### Patch Changes
+
+- 更新轨迹回放时间字段
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.45
+
+## 1.0.46
+
+### Patch Changes
+
+- g 更新轨迹回放字段
+
+## 1.0.45
+
+### Patch Changes
+
+- 修复轨迹回放数据
+
+## 1.0.44
+
+### Patch Changes
+
+- 优化船经过的显示
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.44
+
+## 1.0.43
+
+### Patch Changes
+
+- 删除图层多余的样式函数
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.43
+
+## 1.0.42
+
+### Patch Changes
+
+- 增加图层样式过滤
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.42
+
+## 1.0.41
+
+### Patch Changes
+
+- 修复外部树节点点击功能块，原因导航树与外部树节点点击的逻辑不同
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.41
+
 ## 1.0.40
 
 ### Patch Changes

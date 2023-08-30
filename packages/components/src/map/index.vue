@@ -40,7 +40,7 @@
       </template>
     </Popup>
 
-    <!-- 轨迹回放列表-->
+    <!-- 轨迹回放列表(轨迹列表只能展示5条)-->
     <Track-back-list></Track-back-list>
 
     <!-- overLayer鼠标经过显示-->
@@ -96,9 +96,8 @@ defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
 const gisStore = useGisStore();
-const props = withDefaults(defineProps<{ config: any; onClickFeaturePopup?: Function; outsideTreeNode?: any }>(), {
+const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any }>(), {
   config: () => {},
-  onClickFeaturePopup: () => true,
   outsideTreeNode: () => null
 });
 
@@ -109,13 +108,12 @@ const emits = defineEmits([
   "getCustomSearchContent",
   "getInitMapExportData",
   "scada",
-  "view",
-  "track"
+  "view"
 ]);
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
-const currentLevel = ref();
+const currentLevel = ref(); // 当前视图层级
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -385,7 +383,7 @@ const initMap = async (mapId: string | number) => {
       zoom: controls.includes("zoom"), // 缩放控件
       fullScreen: controls.includes("fullScreen"), // 全屏控件
       scaleLine: controls.includes("scaleLine"), // 比例尺控件  scaleLine
-      scaleLineUnit: originalData?.scaleLineUnit, // 比例尺单位
+      scaleLineUnit: originalData?.scaleLineUnit, // 距离单位（该配置对比例尺及测距生效）
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
@@ -398,37 +396,37 @@ const initMap = async (mapId: string | number) => {
     // 比例尺控件
     const scaleLine = new ScaleLine({
       className: "control-scaleLine",
-      units: defaultOptions.scaleLineUnit || "metric"
+      units: defaultOptions?.scaleLineUnit || "metric"
     });
     // 控件列表(是否显示全屏缩放控件)
     const controlsList = [];
-    if (defaultOptions.fullScreen) {
+    if (defaultOptions?.fullScreen) {
       controlsList.push(fullScreen);
     }
-    if (defaultOptions.scaleLine) {
+    if (defaultOptions?.scaleLine) {
       controlsList.push(scaleLine);
     }
 
     // 电子底图图层
     const normalMap = new TileLayer({
-      visible: defaultOptions.defaultMapType === 1,
+      visible: defaultOptions?.defaultMapType === 1,
       source: new XYZ({
-        url: defaultOptions.normalUrl
+        url: defaultOptions?.normalUrl
       })
     });
     // 卫星影像图层
     const sateMap = new TileLayer({
-      visible: defaultOptions.defaultMapType === 2,
+      visible: defaultOptions?.defaultMapType === 2,
       source: new XYZ({
-        url: defaultOptions.sateUrl
+        url: defaultOptions?.sateUrl
       })
     });
 
     // 路网叠加层（是卫星影像且显示路网叠加层）
     const overlayMap = new TileLayer({
-      visible: defaultOptions.defaultMapType === 2 && defaultOptions.showOverlay,
+      visible: defaultOptions?.defaultMapType === 2 && defaultOptions?.showOverlay,
       source: new XYZ({
-        url: defaultOptions.overlayUrl
+        url: defaultOptions?.overlayUrl
       })
     });
 
@@ -438,7 +436,7 @@ const initMap = async (mapId: string | number) => {
       controls: defaults({
         attribution: false,
         rotate: false,
-        zoom: defaultOptions.zoom,
+        zoom: defaultOptions?.zoom,
         zoomOptions: {
           className: "ol-zoom",
           zoomInTipLabel: "放大",
@@ -448,15 +446,15 @@ const initMap = async (mapId: string | number) => {
       layers: [normalMap, sateMap, overlayMap],
       view: new View({
         center: fromLonLat([defaultOptions.center.lon, defaultOptions.center.lat]),
-        zoom: defaultOptions.defaultZoom,
-        minZoom: defaultOptions.minZoom,
-        maxZoom: defaultOptions.maxZoom,
+        zoom: defaultOptions?.defaultZoom,
+        minZoom: defaultOptions?.minZoom,
+        maxZoom: defaultOptions?.maxZoom,
         constrainResolution: true
       })
     }) as VisualMap;
 
     // 监听视图的变化获取当前层级
-    currentLevel.value = defaultOptions.defaultZoom; // 视图层级初始值
+    currentLevel.value = defaultOptions?.defaultZoom; // 视图层级初始值
     map?.getView().on("change:resolution", function () {
       let zoomLevel = Math.ceil(map?.getView()?.getZoom());
       currentLevel.value = zoomLevel;
@@ -482,7 +480,7 @@ const initMap = async (mapId: string | number) => {
 
     // 根据图层配置信息创建图层
     const layerMap: { [key: string]: any } = {};
-    defaultOptions.layers.forEach((item: { [key: string]: any }) => {
+    defaultOptions?.layers?.forEach((item: { [key: string]: any }) => {
       let options: { [key: string]: any };
       options = {
         zIndex: item?.layerLevel,
@@ -492,9 +490,12 @@ const initMap = async (mapId: string | number) => {
         code: item?.code,
         isTagAgg: item?.isTagAgg,
         isTrackDraw: item?.isTrackDraw,
-        trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
-        style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value)
+        trackAggDistance: item.trackAggDistance || 0 // 聚合图层上轨迹聚合距离
       };
+
+      item?.code != "seaMap"
+        ? (options.style = (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value))
+        : null;
 
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
@@ -506,7 +507,7 @@ const initMap = async (mapId: string | number) => {
         options.source = clusterSource;
         options.tagAggDistance = item?.tagAggDistance || 0;
       } else {
-        options.source = new VectorSource({ wrapX: false });
+        options.source = new VectorSource({});
       }
 
       layerMap[item.code] = new VectorLayer(options);
@@ -529,7 +530,7 @@ const initMap = async (mapId: string | number) => {
     // 存储标签类型信息及根据标签类型分组 code => labelType
     const labelTypeMap: { [key: string]: LabelType } = {};
     let featureTypeGroup: { [key: string]: Feature[] } = {};
-    const { labelType, layersIds } = defaultOptions;
+    const { labelType, layersIds } = defaultOptions || {};
     labelType.forEach((item: LabelType) => {
       if (layersIds.split(",").includes(String(item.layerConfigId))) {
         if (item.labelTypeImagePath || item?.labelLegendImagePath) {
@@ -707,7 +708,9 @@ const initMap = async (mapId: string | number) => {
           } else if (extendsData?.type == "ship") {
             const { mmsi, sog, positionReportTicks } = unref(extendsData);
             popupTitDOMRef.value.innerHTML = name;
-            popupContentDOMRef.value.innerHTML = `<p>mmsi : ${mmsi}</p><p>速度  :${sog}节</p><p>时间 : ${positionReportTicks}节</p>`;
+            popupContentDOMRef.value.innerHTML = `<p>MMSI : ${mmsi}</p><p>时间 : ${positionReportTicks}</p><p>航速 : ${sog?.toFixed(
+              1
+            )}节</p>`;
             hoverInfoLayer.setPosition(pos);
           } else {
             hoverInfoLayer.setPosition(undefined);
@@ -902,15 +905,15 @@ defineExpose({
   getGeometryCenter
 });
 
-// 监听外部树节点点击
+// 监听外部树节点点击(监控在可视化配置的树)
 watch(
   () => props.outsideTreeNode,
   node => {
     if (node) {
-      const { tupleList, equipNodeFlag } = node;
+      const { tupleList = [], model } = node;
       const equipId = Number(tupleList[0]);
 
-      if (equipNodeFlag) {
+      if (model.toLocaleLowerCase() === "eam_eqp_equip") {
         const res = find(gisStore?.relationMap, (item: any) => {
           return item.id === equipId;
         });
@@ -953,7 +956,7 @@ watch(
   .popup-content {
     padding: 10px 20px;
     overflow: hidden;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 22px;
   }
 }

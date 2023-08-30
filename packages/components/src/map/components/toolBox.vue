@@ -232,15 +232,17 @@ const measureAddInteraction = (value: string) => {
 
   // 计算线的长度以及面的面积
   // 计算长度的函数
+  let defaultOptions = props.map?.defaultOptions;
+  let unit = defaultOptions?.scaleLineUnit; // "metric"米千米或者海里
   let formatLength = function (line: LineString) {
     let length = getLength(line); // 获取线的长度（每个部分长度和），默认米meters
     let output;
     if (length > 1000) {
       let outputKilometer: number = Math.round((length / 1000) * 1000) / 1000; // 千米 四舍五入
-      output = `${outputKilometer.toFixed(2)}千米（${(outputKilometer / 1.852).toFixed(2)}海里）`; // 1海里=1.852千米
+      output = unit == "metric" ? `${outputKilometer.toFixed(2)}千米` : `${(outputKilometer / 1.852).toFixed(2)}海里`; // 1海里=1.852千米;
     } else {
       let outputMetric: number = Math.round(length * 1000) / 1000; // 米
-      output = `${outputMetric.toFixed(2)}米（${(outputMetric / 1000 / 1.852).toFixed(2)}海里）`; // 1海里=1.852千米
+      output = unit == "metric" ? `${outputMetric.toFixed(2)}米` : `${(outputMetric / 1000 / 1.852).toFixed(2)}海里`; // 1海里=1.852千米;
     }
     return output;
   };
@@ -251,10 +253,11 @@ const measureAddInteraction = (value: string) => {
 
     if (area > 10000) {
       let outputKilometer: number = Math.round((area / 1000000) * 100) / 100; // 平方千米
-      output = `${outputKilometer.toFixed(2)}平方千米（${(outputKilometer / 3.429904).toFixed(2)}平方海里）`;
+      output = unit == "metric" ? `${outputKilometer.toFixed(2)}平方千米` : `${(outputKilometer / 3.429904).toFixed(2)}平方海里`; // 1海里=1.852千米;
     } else {
       let outputMetric: number = Math.round(area * 100) / 100; // 平方米
-      output = `${outputMetric.toFixed(2)}平方米（${(outputMetric / 1000000 / 3.429904).toFixed(2)}平方海里）`;
+      output =
+        unit == "metric" ? `${outputMetric.toFixed(2)}平方米` : `${(outputMetric / 1000000 / 3.429904).toFixed(2)}平方海里`; // 1海里=1.852千米;
     }
     return output;
   };
