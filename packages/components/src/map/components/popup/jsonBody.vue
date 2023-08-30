@@ -83,8 +83,6 @@ const onSwitch = (type: string, table: any) => {
 watch(
   () => props.jsonbodyData,
   () => {
-    console.log(props.jsonbodyData);
-    console.log(props.jsonbodyMap);
     handleBodyValue(props.jsonbodyData!, props.jsonbodyMap);
   }
 );

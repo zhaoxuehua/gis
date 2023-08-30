@@ -109,7 +109,6 @@ export const useJSONBody = () => {
         tableBodyItem.pagination.page * tableBodyItem.pagination.pageSize
       );
       state.tableBodyData.push(tableBodyItem);
-      console.log(state.tableBodyData);
     });
   };
 
