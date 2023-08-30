@@ -75,7 +75,7 @@ const emits = defineEmits(["onClose"]);
 
 const form = ref({
   objectCode: "",
-  objectTypeCode: computed(() => props.map?.defaultOptions.trackSearchCode)
+  objectTypeCode: computed(() => props.map?.defaultOptions?.trackSearchCode)
 });
 const tableData = ref([]);
 const ids = ref<number[]>([]);

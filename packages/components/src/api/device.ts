@@ -62,6 +62,16 @@ export function getDepthWater(params: object) {
   return request.post(`/api/equipment-service/object/whitelist`, params);
 }
 
+// 获取外部对象详情
+export function getVisitObjectDetail(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/equip/visitObject/list${queryString}`, params);
+}
+
+// 添加备注（给外部对象左击弹框增加编辑备注的功能）
+export function editVisitObject(params: object) {
+  return request.put(`/api/equipment-service/equip/visitObject`, params);
+}
+
 // 左键弹窗 获取设备数据
 export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);

@@ -1,5 +1,17 @@
 # @adm-gis-ui/components
 
+## 1.0.46
+
+### Patch Changes
+
+- 增加左击定位及备注功能
+
+## 1.0.45
+
+### Patch Changes
+
+- 更新轨迹回放时间字段
+
 ## 1.0.44
 
 ### Patch Changes

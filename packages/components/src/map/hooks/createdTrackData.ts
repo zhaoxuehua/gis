@@ -57,7 +57,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
   // mapCase地图实例 => 获取指定做轨迹回放的标签类型
   const gisStore = useGisStore();
   const mapCase = gisStore.mapCase;
-  const trackSearchCode = mapCase.defaultOptions.trackSearchCode; //标签类型code
+  const trackSearchCode = mapCase?.defaultOptions?.trackSearchCode; //标签类型code
 
   // 轨迹的标签类型
   if (!labelTypeInfoCash?.success) {
