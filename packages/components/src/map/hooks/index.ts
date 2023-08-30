@@ -305,7 +305,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     labelInfo = labelInfoMap[featureCode];
   } else {
     let labelInfoMap = map?.get("trackInfoMap") || [];
-    labelInfo = labelInfoMap.filter((item: any) => item.code === featureCode)?.[0] || {};
+    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {}; // code后端可能数字可能字符串
   }
   if (!labelInfo) {
     return;
@@ -328,6 +328,10 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   let zoom = minZoom;
   // 视图缩放策略（点（点文本）取值最大值  线（线、环）平均值  其他均值）  兼容外部对象(外部对象目前没存数据类型)
   let dataType = labelInfo?.labelType?.dataType;
+  if (isVisitObject) {
+    // 外部对象默认给类型是点类型
+    dataType = "1";
+  }
   if (["1", "6"].includes(dataType)) {
     zoom = maxZoom;
   }

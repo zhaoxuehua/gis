@@ -746,7 +746,7 @@ const initMap = async (mapId: string | number) => {
       }
       // 获取船的数据
       const trackInfoMap = map.get("trackInfoMap") || [];
-      const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+      const currentTrack = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0]; // code有时字符串有时数字
       popupData.featureCode = featureCode;
       popupData.featureName = featureName;
       popupData.relationMap = gisStore?.relationMap[featureCode] || currentTrack;
