@@ -62,10 +62,10 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
         cog: aisInfo.cog
       },
       titleInfo: {
-        name: moment(aisInfo.positionReportTicks * 1000).format("YYYY-MM-DD HH:mm:ss")
+        name: val.position
       },
       labelInfo: {
-        time: moment(aisInfo.positionReportTicks * 1000).format("YYYY-MM-DD HH:mm:ss"),
+        time: val.position,
         speed: aisInfo.sog
       },
       detailInfo: detailInfo
