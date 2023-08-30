@@ -1,7 +1,7 @@
 {
   "name": "@adm-gis-ui/platform",
   "private": true,
-  "version": "1.0.44",
+  "version": "1.0.46",
   "type": "module",
   "description": "front-vue3-template",
   "license": "MIT",
