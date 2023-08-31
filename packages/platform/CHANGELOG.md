@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.51
+
+### Patch Changes
+
+- 绘制标签的接口改为升序排列
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.49
+
 ## 1.0.50
 
 ### Patch Changes
