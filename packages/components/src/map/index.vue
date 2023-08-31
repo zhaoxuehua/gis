@@ -900,7 +900,7 @@ const handlePopLink = (type: any, option: any) => {
 };
 
 // 实时标签样式
-let toolboxCallBack: (arg: toolboxDataType) => void = () => {};
+let toolboxCallBack: (arg: toolboxDataType) => void;
 const toolboxStore = useToolboxStore();
 watch(
   () => toolboxStore.data,
