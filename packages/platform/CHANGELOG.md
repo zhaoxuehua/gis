@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.52
+
+### Patch Changes
+
+- 左键设备类型基础引擎设备增加接口请求,工具箱增加获取水深
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.50
+
 ## 1.0.51
 
 ### Patch Changes

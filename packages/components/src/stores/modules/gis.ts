@@ -94,11 +94,11 @@ const collectRelation = (nodes: any[]) => {
       if (Array.isArray(tree) && tree.length > 0) {
         tree.forEach(function (element) {
           let deviceType = null;
-          const { children, nodeRelatedModel, id, name, code, associationInfo, nodeType } = element;
+          const { children, nodeRelatedModel, id, name, code, associationInfo, nodeType, equipNodeFlag } = element;
 
           // 由于接口为返回的设备节点没有设备类型信息，需要从父节点获取
-          // 如果是设备类型节点，将设备类型id、name传给子节点
-          if (nodeRelatedModel.toLocaleLowerCase() === "eam_eqp_equip_type") {
+          // 如果是设备类型节点，将设备类型id、name传给子节点(如果不是设备树不塞)
+          if (nodeRelatedModel?.toLocaleLowerCase() === "eam_eqp_equip_type") {
             deviceType = {
               equipType: id,
               equipTypeName: name
@@ -106,7 +106,7 @@ const collectRelation = (nodes: any[]) => {
           }
 
           // 如果是设备并且已绘制标签
-          if (nodeRelatedModel.toLocaleLowerCase() === "eam_eqp_equip" && associationInfo) {
+          if (equipNodeFlag && associationInfo) {
             result[associationInfo.associationObjectCode] = {
               id,
               name,

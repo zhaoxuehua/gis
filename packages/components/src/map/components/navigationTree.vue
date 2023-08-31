@@ -9,7 +9,6 @@
       <el-link type="primary" class="title-icon" title="上传" :underline="false"
         ><i class="iconfont icon-cloud-upload"></i
       ></el-link> -->
-      <el-button type="primary" @click="getDepthWater">获取水深</el-button>
       <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="nav-tree-content">
@@ -42,7 +41,6 @@
         </el-tree>
       </div>
     </div>
-    <DepthWaterDialog ref="depthWaterRef"></DepthWaterDialog>
   </div>
 </template>
 <script lang="ts" setup>
@@ -55,7 +53,6 @@ import { cloneDeep } from "lodash";
 import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
-import DepthWaterDialog from "./depthWaterDialog.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -210,12 +207,6 @@ document.addEventListener("keyup", (event: KeyboardEvent) => {
     }
   }
 });
-
-const depthWaterRef = ref();
-// 获取水深
-const getDepthWater = () => {
-  depthWaterRef.value.openDialog();
-};
 
 watch(
   () => state.filterText,

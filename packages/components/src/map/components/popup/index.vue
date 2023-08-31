@@ -74,7 +74,7 @@
 <script lang="ts" setup>
 import { ref, reactive, nextTick, computed, watch } from "vue";
 import Icon from "../Icon.vue";
-import { getEquipData, lineRealTimeCurveApi } from "../../../api/device";
+import { getEquipData, lineRealTimeCurveApi, getEquipDetail } from "../../../api/device";
 import dayjs from "dayjs";
 import lineChart from "../lineChart.vue";
 import jsonBody from "./jsonBody.vue";
@@ -156,6 +156,14 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
   });
 };
 
+// 通过设备id获取设备类型id
+const getEquipType = async (id: number) => {
+  const res: any = await getEquipDetail(id);
+  if (res.code === 200) {
+    equipInfo.value.equipType = res.data.equipType;
+  }
+};
+
 const lineChartRef = ref();
 
 // 获取左键配置信息
@@ -177,6 +185,10 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
   equipInfo.value = relationMap;
+  // 获取设备类型id
+  if (!isVisitObject) {
+    await getEquipType(equipInfo.value.id);
+  }
   // equipInfo.value = {
   //   equipType: 761,
   //   code: "tunnel01",

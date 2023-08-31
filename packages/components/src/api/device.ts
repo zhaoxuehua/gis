@@ -77,10 +77,15 @@ export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);
 }
 
-// 左键弹窗 获取设备信息
-export function getEquipInfo(params: object) {
-  return request.post(`/api/adm-service/view/common/getEquipInfo`, params);
+// 左键弹窗 获取设备详情 拿到设备类型id
+export function getEquipDetail(id: number) {
+  return request.get(`/api/equipment-service/equip/equip/getById/${id}`);
 }
+
+// 左键弹窗 获取设备信息
+// export function getEquipInfo(params: object) {
+//   return request.post(`/api/adm-service/view/common/getEquipInfo`, params);
+// }
 
 // 左键弹窗 线性实时曲线
 export function lineRealTimeCurveApi(params: object) {
