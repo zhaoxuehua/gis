@@ -11,6 +11,7 @@
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
         <el-tab-pane name="3" label="实时标签样式"></el-tab-pane>
+        <el-tab-pane name="4" label="获取水深"></el-tab-pane>
       </el-tabs>
 
       <!-- 展示内容区 -->
@@ -122,6 +123,13 @@
           </el-form-item>
         </div>
       </div>
+
+      <!-- 获取水深 -->
+      <div class="measuring-tools" v-if="state.activeIndex == '4'">
+        <div>
+          <DepthWaterBox></DepthWaterBox>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -141,6 +149,7 @@ import { measureStyle } from "../hooks/styleFunction";
 import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
+import DepthWaterBox from "./depthWaterBox.vue";
 // 辅助函数，设置地图中心点
 import { setToMapCenter } from "../hooks/setToMapCenter";
 
