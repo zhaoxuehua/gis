@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.50
+
+### Patch Changes
+
+- 优化外部树节点点击
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.48
+
 ## 1.0.49
 
 ### Patch Changes

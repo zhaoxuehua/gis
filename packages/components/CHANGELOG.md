@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.48
+
+### Patch Changes
+
+- 优化外部树节点点击
+
 ## 1.0.47
 
 ### Patch Changes
