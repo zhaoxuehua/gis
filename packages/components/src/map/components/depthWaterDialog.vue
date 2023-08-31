@@ -17,7 +17,7 @@
           <el-input placeholder="正整数" v-model="form.port" clearable />
         </el-form-item>
         <el-form-item label="水深间隔(m)" prop="depth">
-          <el-input placeholder="非整数" v-model="form.depth" clearable />
+          <el-input placeholder="正整数" v-model="form.depth" clearable />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -73,7 +73,7 @@ const state = reactive({
       { required: true, message: "水深间隔不能为空", trigger: ["blur", "change"] },
       {
         validator: (rule: any, value: any, callback: Function) => {
-          if (!/^\d+$/.test(value)) {
+          if (!/^[1-9]\d*$/.test(value)) {
             return callback(new Error("水深间隔不正确"));
           }
           callback();
