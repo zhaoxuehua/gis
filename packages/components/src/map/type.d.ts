@@ -175,3 +175,6 @@ export interface getTrackDataByIdFnParamType extends anyObjectType {
   endTime: string;
   [key: string]: any;
 }
+
+//  实时标签样式
+export type toolboxDataType = (string | boolean)[];
