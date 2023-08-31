@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.50
+
+### Patch Changes
+
+- 左键设备类型基础引擎设备增加接口请求,工具箱增加获取水深
+
 ## 1.0.49
 
 ### Patch Changes
