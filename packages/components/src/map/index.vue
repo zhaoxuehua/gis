@@ -556,7 +556,10 @@ const initMap = async (mapId: string | number) => {
     /****************************获取已绘制的标签进行渲染******************************************/
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
-      ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+      ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "createdOn", isAsc: "asc" }) as [
+        string,
+        object
+      ])
     );
     let dynamicLayerCodes: string[] = []; // 不能添加重复图层(只添加code)
     const labelInfoMap: { [key: string]: LabelInfoData } = {};
