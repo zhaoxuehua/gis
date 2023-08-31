@@ -55,6 +55,14 @@ class RequestHttp {
             window.$wujie.bus.$emit("subapp-logout");
             return false;
           }
+          // 是iframe
+          let isIframe = window.location.href.includes("agioe_sso_sessionid");
+          if (isIframe) {
+            // iframe向外界发送消息
+            let parentUrl = `${localStorage.getItem("href")}`;
+            window.parent.postMessage("logout", parentUrl);
+            return false;
+          }
           // 不是子应用 去登录页
           ElMessageBox.alert("登录信息失效，请重新登录", "警告", {
             confirmButtonText: "确定",
