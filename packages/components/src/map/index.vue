@@ -672,7 +672,7 @@ const initMap = async (mapId: string | number) => {
       ElMessage.error("接口异常");
     }
 
-    /****************************鼠标经过******************************************/
+    /****************************鼠标经过*************************************************************/
     // 鼠标移动事件
     let hoverInfoLayer: Overlay = new Overlay({
       element: popupDOMRef.value,
@@ -753,7 +753,7 @@ const initMap = async (mapId: string | number) => {
       overlay.setPosition(center);
     };
 
-    /***********************地图鼠标点击事件*****************************/
+    /***********************地图鼠标点击事件***************************************************************/
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
       map.closePopup(); // 关闭点击弹框
@@ -793,7 +793,7 @@ const initMap = async (mapId: string | number) => {
       }
     });
 
-    /***********************地图右键（目前只有监控可用）*****************************/
+    /***********************地图右键（目前只有监控可用）*****************************************************/
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
@@ -809,9 +809,19 @@ const initMap = async (mapId: string | number) => {
         });
       }
     };
+
     // 初始化完成
     exportMap.value = map;
     emits("getInitMapExportData", exportMap.value); // 应用获取初始化地图实例
+    // 兼容监控外部树节点点击（首次树节点因地图没有初始化完成所以watch执行时定位不到,首次的数据手动执行）
+    if (props?.outsideTreeNode) {
+      let outsideTreeTimer: any = null;
+      outsideTreeTimer = setTimeout(() => {
+        outsideTreeNodeSelect(props.outsideTreeNode);
+        clearTimeout(outsideTreeTimer);
+        outsideTreeTimer = null;
+      }, 3000);
+    }
   } else {
     ElMessage.error("接口异常");
   }
@@ -905,22 +915,24 @@ defineExpose({
   getGeometryCenter
 });
 
-// 监听外部树节点点击(监控在可视化配置的树)
+/***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
+const outsideTreeNodeSelect = (node: any) => {
+  const { tupleList = [], model } = node;
+  const equipId = Number(tupleList[0]);
+  if (model.toLocaleLowerCase() === "eam_eqp_equip") {
+    const res = find(gisStore?.relationMap, (item: any) => {
+      return item.id === equipId;
+    });
+    if (res && res.associationInfo && exportMap.value) {
+      labelOnSelect(exportMap.value, res.associationInfo.associationObjectCode, false);
+    }
+  }
+};
 watch(
   () => props.outsideTreeNode,
   node => {
     if (node) {
-      const { tupleList = [], model } = node;
-      const equipId = Number(tupleList[0]);
-
-      if (model.toLocaleLowerCase() === "eam_eqp_equip") {
-        const res = find(gisStore?.relationMap, (item: any) => {
-          return item.id === equipId;
-        });
-        if (res && res.associationInfo && exportMap.value) {
-          labelOnSelect(exportMap.value, res.associationInfo.associationObjectCode, false);
-        }
-      }
+      outsideTreeNodeSelect(node);
     }
   },
   {
