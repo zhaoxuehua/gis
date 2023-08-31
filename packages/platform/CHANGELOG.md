@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.49
+
+### Patch Changes
+
+- 增加左键备注和定位功能及修复轨迹列表定位 code 匹配不上问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.47
+
 ## 1.0.48
 
 ### Patch Changes

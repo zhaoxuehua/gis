@@ -305,7 +305,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     labelInfo = labelInfoMap[featureCode];
   } else {
     let labelInfoMap = map?.get("trackInfoMap") || [];
-    labelInfo = labelInfoMap.filter((item: any) => item.code === featureCode)?.[0] || {};
+    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {}; // code后端可能数字可能字符串
   }
   if (!labelInfo) {
     return;
