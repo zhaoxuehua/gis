@@ -57,11 +57,11 @@
 
         <!-- 线、面、矩形、圆、环 -->
         <template v-if="['2', '3', '4', '5', '7'].includes(form.labelType.dataType)">
-          <el-form-item label="线宽" prop="labelData.style.stroke.width">
+          <el-form-item label="线宽" prop="labelData.style.stroke.width" v-if="!form?.labelData?.style?.lineVector?.path">
             <el-input placeholder="请输入..." v-model="form.labelData.style.stroke.width" clearable />
           </el-form-item>
 
-          <el-form-item label="线型" prop="labelData.style.stroke.lineDash">
+          <el-form-item label="线型" prop="labelData.style.stroke.lineDash" v-if="!form?.labelData?.style?.lineVector?.path">
             <el-select placeholder="请选择..." v-model="form.labelData.style.stroke.lineDash" clearable style="width: 213px">
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
@@ -75,15 +75,15 @@
 
         <!-- 线 -->
         <template v-if="['2'].includes(form.labelType.dataType)">
-          <el-form-item label="矢量路径" prop="labelData.style.lineVector.path">
+          <el-form-item label="矢量路径" prop="labelData.style.lineVector.path" v-if="form?.labelData?.style?.lineVector?.path">
             <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.path" clearable disabled />
           </el-form-item>
 
-          <el-form-item label="矢量宽度" prop="labelData.style.lineVector.width">
+          <el-form-item label="矢量宽度" prop="labelData.style.lineVector.width" v-if="form?.labelData?.style?.lineVector?.path">
             <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.width" clearable />
           </el-form-item>
 
-          <el-form-item label="矢量高度" prop="labelData.style.lineVector.height">
+          <el-form-item label="矢量高度" prop="labelData.style.lineVector.height" v-if="form?.labelData?.style?.lineVector?.path">
             <el-input placeholder="请输入..." v-model="form.labelData.style.lineVector.height" clearable />
           </el-form-item>
         </template>
@@ -96,12 +96,21 @@
         </template>
 
         <!-- 是否显示标签名称 -->
-        <el-form-item label="显示标签名称" prop="labelData.isDefaultDisplayLabelName" v-if="form.labelType.dataType !== '6'">
+        <el-form-item
+          label="显示标签名称"
+          prop="labelData.isDefaultDisplayLabelName"
+          v-if="form.labelType.dataType !== '6' && !form?.labelData?.style?.lineVector?.path"
+        >
           <el-checkbox v-model="form.labelData.isDefaultDisplayLabelName"></el-checkbox>
         </el-form-item>
 
         <!-- 文本 -->
-        <template v-if="['6'].includes(form.labelType.dataType) || form.labelData.isDefaultDisplayLabelName">
+        <template
+          v-if="
+            (['6'].includes(form.labelType.dataType) || form.labelData.isDefaultDisplayLabelName) &&
+            !form?.labelData?.style?.lineVector?.path
+          "
+        >
           <el-form-item label="文本内容" prop="labelData.style.text.text">
             <el-input placeholder="请输入..." v-model="form.labelData.style.text.text" clearable />
           </el-form-item>
@@ -136,7 +145,13 @@
         <el-form-item
           label="标注放置方式"
           prop="labelData.style.text.placement"
-          v-if="form.labelType.dataType !== '1' && form.labelType.dataType !== '6' && form.labelData.isDefaultDisplayLabelName"
+          v-if="
+            form.labelType.dataType !== '1' &&
+            form.labelType.dataType !== '6' &&
+            form.labelType.dataType !== '4' &&
+            form.labelData.isDefaultDisplayLabelName &&
+            !form?.labelData?.style?.lineVector?.path
+          "
         >
           <el-select v-model="form.labelData.style.text.placement" placeholder="请选择..." clearable style="width: 213px">
             <el-option label="中心点标注" value="point"></el-option>
@@ -145,7 +160,12 @@
         </el-form-item>
 
         <!-- 文本 -->
-        <template v-if="['6'].includes(form.labelType.dataType) || form.labelData.isDefaultDisplayLabelName">
+        <template
+          v-if="
+            (['6'].includes(form.labelType.dataType) || form.labelData.isDefaultDisplayLabelName) &&
+            !form?.labelData?.style?.lineVector?.path
+          "
+        >
           <el-form-item
             label="旋转角度"
             prop="labelData.style.text.rotation"

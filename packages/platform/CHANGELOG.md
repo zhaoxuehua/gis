@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.53
+
+### Patch Changes
+
+- 修复文本展示字段，将无用的字段隐藏，主要针对原及矢量线
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.51
+
 ## 1.0.52
 
 ### Patch Changes

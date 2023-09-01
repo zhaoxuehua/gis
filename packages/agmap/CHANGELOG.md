@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.51
+
+### Patch Changes
+
+- 修复文本展示字段，将无用的字段隐藏，主要针对原及矢量线
+
 ## 1.0.50
 
 ### Patch Changes
