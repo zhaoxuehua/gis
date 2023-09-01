@@ -268,7 +268,7 @@ export function transformLabelType(originalData: LabelType) {
       font:
         (originalData?.isBold ? "bold" : "normal") +
         " " +
-        (originalData.fontSize || 12 + "px") +
+        ((originalData.fontSize || 12) + "px") +
         " " +
         (originalData.fontType || "MicrosoftYaHei"),
       fill: originalData?.fontColor || "rgba(0, 0, 0, 1)", // 字体颜色
