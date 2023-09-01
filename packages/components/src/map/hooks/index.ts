@@ -30,6 +30,7 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
     map.set("drawFeature", null);
   }
   const { dataType } = featureType; // 是数据类型中取出的（是数字型）
+  console.log(featureType, 5678954322);
 
   // 将数据类型数字型=> 转为对应的字符串  1=>Point
   const dataTypeString = MAP_DATA_TYPE[dataType].value;
@@ -264,24 +265,24 @@ export function transformLabelType(originalData: LabelType) {
       opacity: originalData?.pellucidity
     },
     text: {
-      text: originalData?.name,
+      text: originalData?.dataType == "6" ? originalData?.content : originalData?.name, // 文本内容（文本时取值配的值，其他默认显示标签名称时取值标签类型的name）
       font:
         (originalData?.isBold ? "bold" : "normal") +
         " " +
         (originalData.fontSize || 12 + "px") +
         " " +
         (originalData.fontType || "MicrosoftYaHei"),
-      fill: originalData?.fontColor || "rgba(0, 0, 0, 1)",
+      fill: originalData?.fontColor || "rgba(0, 0, 0, 1)", // 字体颜色
       offsetX: 0,
       offsetY: 0,
       maxAngle: 6.283185307179586,
       rotation: 0,
       placement: "point",
-      fontStrokeWidth: 0,
-      fontStrokeColor: "rgba(255, 255, 255, 0.5)",
-      backgroundFill: originalData?.backGroundColor,
-      backgroundStrokeWidth: originalData?.borderWidth,
-      backgroundStrokeColor: originalData?.borderColor
+      fontStrokeWidth: 0, // 描边大小
+      fontStrokeColor: "rgba(255, 255, 255, 0.5)", // 字体阴影填充色（描边颜色）有描边大小才有描边颜色
+      backgroundFill: originalData?.backGroundColor, // 背景填充色（边框）
+      backgroundStrokeWidth: originalData?.borderWidth, // 边框线宽
+      backgroundStrokeColor: originalData?.borderColor // 边框颜色
     },
     // 矢量线
     lineVector: {
