@@ -74,11 +74,12 @@ import type { FeatureLike } from "ol/Feature";
 import { fromLonLat } from "ol/proj";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
-import type { VisualMap, LabelType, LabelInfoData } from "./type";
+import type { VisualMap, LabelType, LabelInfoData, toolboxDataType } from "./type";
 import { getMapParamsDetail, getLabelList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
+import { useToolboxStore } from "../stores/modules/toolBox";
 
 import { layerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
@@ -898,6 +899,19 @@ const handlePopLink = (type: any, option: any) => {
   emits(type, option);
 };
 
+// 实时标签样式
+let toolboxCallBack: (arg: toolboxDataType) => void;
+const toolboxStore = useToolboxStore();
+watch(
+  () => toolboxStore.data,
+  n => {
+    toolboxCallBack(n);
+  }
+);
+const toolBoxSetChange = (fn: () => void) => {
+  toolboxCallBack = fn;
+};
+
 defineExpose({
   getMapElement,
   panToFeature,
@@ -915,7 +929,8 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter
+  getGeometryCenter,
+  toolBoxSetChange
 });
 
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/

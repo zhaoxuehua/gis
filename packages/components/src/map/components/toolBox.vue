@@ -150,8 +150,12 @@ import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
 import DepthWaterBox from "./depthWaterBox.vue";
+
 // 辅助函数，设置地图中心点
 import { setToMapCenter } from "../hooks/setToMapCenter";
+
+// store
+import { useToolboxStore } from "../../stores/modules/toolBox";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -424,9 +428,12 @@ const toMapCenter = () => {
 onMounted(() => {});
 
 // 实时标签样式:存入浏览器
+const toolboxStore = useToolboxStore();
 watch([() => state.shipHeadLine, () => state.shipShowHideByTrack, () => state.trackSpeed], function (n) {
   localStorage.setItem("shipTags", JSON.stringify(n));
+  toolboxStore.changeData(n);
 });
+
 //页面加载浏览器数据
 let shipTagsData: string | null = localStorage.getItem("shipTags");
 if (shipTagsData) {
