@@ -38,12 +38,13 @@ let labelTypeInfoCash: any = {};
 let trackLayerCash: any = {};
 
 // 轨迹动画时长
-const shipTags = localStorage.getItem("shipTags");
-const animationTime = shipTags && JSON.parse(shipTags)[2];
 let setNumArr: any[] = []; // 定时器指针(清除动画)
 
 // 轨迹回放的颜色
 const trackColor = ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"];
+
+// 隐藏的图层
+let hideLayer: any;
 
 // 轨迹回放
 const createdTrackData = async function (param: trackLayerParamType) {
@@ -207,6 +208,15 @@ const createdTrackData = async function (param: trackLayerParamType) {
       }
     }
   });
+
+  /********************************************************************************************
+    读取localStorage => 隐藏图层 + 轨迹动画时长
+  *****************************************************************************************/
+  const shipTags = localStorage.getItem("shipTags");
+  const animationTime = shipTags && JSON.parse(shipTags)[2]; // 动画
+  const hideLayerCode = shipTags && JSON.parse(shipTags)[1]; // 隐藏layer
+  hideLayer = mapCase.get("layerMap")[hideLayerCode];
+  showHideLayer(false);
 
   /********************************************************************************************
     图层名字 (轨迹回放(01:绘制线layer, 02:绘制线上圆圈(聚合)layer,03:绘制显示的文字(聚合)layer)) 
@@ -477,4 +487,12 @@ const delTrackData: delTrackDataType = function (id) {
   delete mapTackListMap[id];
 };
 
-export { createdTrackData, showHideTrackData, delTrackData };
+/********************************************************************************************
+  轨迹回放隐藏的图层
+  读取localStorage 中需要隐藏的船只
+*****************************************************************************************/
+const showHideLayer = function (flag: boolean) {
+  hideLayer && hideLayer.setVisible(flag);
+};
+
+export { createdTrackData, showHideTrackData, delTrackData, showHideLayer };

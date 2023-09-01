@@ -1,5 +1,5 @@
 <template>
-  <div class="trackListBox" v-show="tableData.length">
+  <div class="trackListBox" v-show="isShowHide">
     <div class="map-popup">
       <div class="popup-box">
         <div class="map-popup-header">
@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import Icon from "./Icon.vue";
 
 // ⤵ store
@@ -49,9 +49,10 @@ import { useGisStore } from "../../stores/modules/gis";
 
 // ⤵ 辅助函数
 import { labelOnSelect } from "../hooks"; // 定位
-import { showHideTrackData, delTrackData } from "../hooks/createdTrackData"; // 显示隐藏|删除轨迹
+import { showHideTrackData, delTrackData, showHideLayer } from "../hooks/createdTrackData"; // 显示隐藏|删除轨迹
 
 // 表格数据
+const isShowHide = ref(false);
 const tableData = ref<any>([]);
 const store = useTrackListStore();
 tableData.value = store.data;
@@ -82,6 +83,15 @@ const deleteRow = (row: { [key: string]: any }, index: number) => {
   delTrackData(row.code);
   tableData.value.splice(index, 1);
 };
+
+// 监测数据个数据
+watch(
+  () => tableData.value.length,
+  n => {
+    isShowHide.value = n !== 0;
+    n == 0 && showHideLayer(true);
+  }
+);
 </script>
 
 <style lang="scss" scoped>

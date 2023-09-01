@@ -67,3 +67,8 @@ export interface getTrackDataFieldMapType {
 export interface getTrackDataFieldMapResponseType {
   [key: string]: any;
 }
+
+export interface getLayerListParamsType {
+  pageNumber: number;
+  pageSize: number;
+}

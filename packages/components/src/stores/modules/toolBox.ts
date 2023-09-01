@@ -1,12 +1,18 @@
 import { defineStore } from "pinia";
-import type { toolboxDataType } from "../../map/type";
+function getLocalStorage() {
+  let shipHeadLine: boolean | string | null = localStorage.getItem("shipTags");
+  if (shipHeadLine) {
+    shipHeadLine = JSON.parse(shipHeadLine)[1];
+  }
+  return Boolean(shipHeadLine);
+}
 export const useToolboxStore = defineStore({
   id: "toolbox",
   state: () => ({
-    data: [] as toolboxDataType
+    data: getLocalStorage()
   }),
   actions: {
-    changeData(arg: toolboxDataType) {
+    changeData(arg: boolean) {
       this.data = arg;
     }
   }
