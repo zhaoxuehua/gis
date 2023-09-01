@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.53
+
+### Patch Changes
+
+- s 实时标签 g 修改 效果实时更新
+
 ## 1.0.52
 
 ### Patch Changes
