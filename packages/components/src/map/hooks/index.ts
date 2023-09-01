@@ -30,7 +30,6 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
     map.set("drawFeature", null);
   }
   const { dataType } = featureType; // 是数据类型中取出的（是数字型）
-  console.log(featureType, 5678954322);
 
   // 将数据类型数字型=> 转为对应的字符串  1=>Point
   const dataTypeString = MAP_DATA_TYPE[dataType].value;
