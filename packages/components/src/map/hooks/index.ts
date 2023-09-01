@@ -272,11 +272,11 @@ export function transformLabelType(originalData: LabelType) {
         " " +
         (originalData.fontType || "MicrosoftYaHei"),
       fill: originalData?.fontColor || "rgba(0, 0, 0, 1)", // 字体颜色
-      offsetX: 0,
-      offsetY: 0,
-      maxAngle: 6.283185307179586,
-      rotation: 0,
-      placement: "point",
+      offsetX: 0, // 文本水平方向偏移量
+      offsetY: 0, // 文本垂直方向偏移量
+      maxAngle: 6.283185307179586, // placement 设置为 'line' 时，允许相邻字符之间的最大角度
+      rotation: 0, // rotation旋转角度
+      placement: "point", // 标注（文本）放置方式  point line
       fontStrokeWidth: 0, // 描边大小
       fontStrokeColor: "rgba(255, 255, 255, 0.5)", // 字体阴影填充色（描边颜色）有描边大小才有描边颜色
       backgroundFill: originalData?.backGroundColor, // 背景填充色（边框）
