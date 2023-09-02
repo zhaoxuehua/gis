@@ -142,7 +142,7 @@ watch(
     white-space: nowrap;
     cursor: pointer;
     &:hover {
-      background-color: var(--el-color-primary-light-9);
+      background-color: #f5f7fa;
     }
   }
 }
