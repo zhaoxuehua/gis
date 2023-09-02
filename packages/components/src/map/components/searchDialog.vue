@@ -127,7 +127,7 @@ watch(
   margin-top: 4px;
   overflow: scroll;
   list-style: none;
-  background: var(--el-bg-color-overlay);
+  background: #ffffff;
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--el-border-radius-base);
   box-shadow: var(--el-box-shadow-light);
@@ -142,7 +142,7 @@ watch(
     white-space: nowrap;
     cursor: pointer;
     &:hover {
-      background-color: var(--el-fill-color-light);
+      background-color: #f5f7fa;
     }
   }
 }

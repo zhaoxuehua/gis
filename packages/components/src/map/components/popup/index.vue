@@ -186,7 +186,7 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   const { isVisitObject = false } = relationMap || {};
   equipInfo.value = relationMap;
   // 获取设备类型id
-  if (!isVisitObject) {
+  if (!isVisitObject && relationMap?.model.toLocaleLowerCase() === "eam_eqp_equip") {
     await getEquipType(equipInfo.value.id);
   }
   // equipInfo.value = {
