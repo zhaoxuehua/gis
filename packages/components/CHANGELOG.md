@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.54
+
+### Patch Changes
+
+- 快速绘制将标签类型名改为设备名进行展示标签名
+
 ## 1.0.53
 
 ### Patch Changes
