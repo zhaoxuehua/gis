@@ -113,7 +113,14 @@
           </el-form-item>
 
           <el-form-item label="轨迹回放隐藏船" label-width="110">
-            <el-checkbox v-model="state.shipShowHideByTrack"></el-checkbox>
+            <el-select v-model="state.shipShowHideByTrack">
+              <el-option
+                v-for="item in state.shipShowHideByTrackOption"
+                :key="item?.name"
+                :label="item?.name"
+                :value="item?.code"
+              />
+            </el-select>
           </el-form-item>
 
           <el-form-item label="轨迹回放动画" label-width="110">
@@ -157,6 +164,9 @@ import { setToMapCenter } from "../hooks/setToMapCenter";
 // store
 import { useToolboxStore } from "../../stores/modules/toolBox";
 
+// api
+import { getLayerList } from "../../api/device";
+
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
   index: () => 0
@@ -183,7 +193,15 @@ const state = reactive({
   // 实时标签样式
   shipHeadLine: false,
   shipShowHideByTrack: true,
+  shipShowHideByTrackOption: [] as any,
   trackSpeed: ""
+});
+
+// 轨迹隐藏图层
+getLayerList({ pageNumber: 1, pageSize: 100 }).then(res => {
+  if (res.data && res.data.items) {
+    state.shipShowHideByTrackOption = res.data.items;
+  }
 });
 
 // 轨迹回放动画
@@ -431,7 +449,7 @@ onMounted(() => {});
 const toolboxStore = useToolboxStore();
 watch([() => state.shipHeadLine, () => state.shipShowHideByTrack, () => state.trackSpeed], function (n) {
   localStorage.setItem("shipTags", JSON.stringify(n));
-  toolboxStore.changeData(n);
+  toolboxStore.changeData(n[0]);
 });
 
 //页面加载浏览器数据

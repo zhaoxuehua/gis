@@ -6,7 +6,8 @@ import type {
   trackListDataParamsType,
   trackListDataResponseType,
   getTrackDataFieldMapType,
-  getTrackDataFieldMapResponseType
+  getTrackDataFieldMapResponseType,
+  getLayerListParamsType
 } from "./interface";
 
 // 轨迹回放(列表)
@@ -95,4 +96,14 @@ export function lineRealTimeCurveApi(params: object) {
 // 左键弹窗 查看配置属性
 export function labelDetailAttr(equipTypeId: number, currentType: string) {
   return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
+}
+
+// 获取图层列表
+export function getLayerList(params: getLayerListParamsType) {
+  return request.post<trackListDataResponseType>(
+    `/api/gis-service/equip/layerConfig/list?pageSize=${params.pageSize}&pageNumber=${params.pageNumber}`,
+    {
+      name: ""
+    }
+  );
 }

@@ -74,7 +74,7 @@ import type { FeatureLike } from "ol/Feature";
 import { fromLonLat } from "ol/proj";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
-import type { VisualMap, LabelType, LabelInfoData, toolboxDataType } from "./type";
+import type { VisualMap, LabelType, LabelInfoData } from "./type";
 import { getMapParamsDetail, getLabelList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
@@ -900,12 +900,12 @@ const handlePopLink = (type: any, option: any) => {
 };
 
 // 实时标签样式
-let toolboxCallBack: (arg: toolboxDataType) => void;
+let toolboxCallBack: (arg: boolean) => void;
 const toolboxStore = useToolboxStore();
 watch(
   () => toolboxStore.data,
   n => {
-    toolboxCallBack(n);
+    typeof toolboxCallBack == "function" && toolboxCallBack(n);
   }
 );
 const toolBoxSetChange = (fn: () => void) => {

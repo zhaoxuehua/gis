@@ -1,5 +1,21 @@
 # adm-gis-platform
 
+## 1.0.55
+
+### Patch Changes
+
+- s 实时标签 g 修改 效果实时更新
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.53
+
+## 1.0.54
+
+### Patch Changes
+
+- s 实时标签设置 实时设置
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.52
+
 ## 1.0.53
 
 ### Patch Changes
