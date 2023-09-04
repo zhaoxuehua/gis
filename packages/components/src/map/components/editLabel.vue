@@ -437,7 +437,8 @@ const translation = ref(); // 平移交互器
 // 打开标签编辑
 const onOpen = (labelCode: string) => {
   if (labelCode) {
-    const editLabel = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
+    let editLabel = null;
+    editLabel = cloneDeep(labelInfoMap.value[labelCode]) as LabelInfoData & { font: { [key: string]: any } };
     if (!editLabel) {
       // 从标签信息中找不到（可能别的应用绘制了但是有的应用没有配置对应的类型所以地图上没有）
       ElMessage.warning("标签不存在或已删除");
@@ -570,6 +571,7 @@ const onConfirm = () => {
             labelInfoMap.value[newLabel.code] = newLabel;
             props.map.set("labelInfoMap", labelInfoMap.value);
             isEditSuccess.value = true;
+            originEditLabel.value = null;
             ElMessage.success("保存成功");
             onClose();
           } else {
