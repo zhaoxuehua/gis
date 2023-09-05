@@ -115,7 +115,6 @@
 <script lang="ts" setup name="ReferenceAttribute">
 import { onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
-// import { getBindAttributeByEquipType, getBindAttributeByObjType } from "@/api/device.js";
 import { getBindAttributeByType } from "@/api/visconfig";
 
 const props = defineProps({

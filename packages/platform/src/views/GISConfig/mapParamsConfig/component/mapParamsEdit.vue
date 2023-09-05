@@ -205,7 +205,7 @@ const latVerification = (rule: any, value: any, callback: Function) => {
 };
 const codeVerification = (rule: any, value: any, callback: Function) => {
   if (!Regular.verifyNumCode.test(value)) {
-    return callback(new Error("应用编码只能出现字母,数字,下划线"));
+    return callback(new Error("场景编码只能出现字母,数字,下划线"));
   }
   callback();
 };
