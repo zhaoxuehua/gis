@@ -11,6 +11,7 @@
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
         <el-tab-pane name="3" label="实时标签样式"></el-tab-pane>
+        <el-tab-pane name="4" label="获取水深"></el-tab-pane>
       </el-tabs>
 
       <!-- 展示内容区 -->
@@ -112,7 +113,14 @@
           </el-form-item>
 
           <el-form-item label="轨迹回放隐藏船" label-width="110">
-            <el-checkbox v-model="state.shipShowHideByTrack"></el-checkbox>
+            <el-select v-model="state.shipShowHideByTrack">
+              <el-option
+                v-for="item in state.shipShowHideByTrackOption"
+                :key="item?.name"
+                :label="item?.name"
+                :value="item?.code"
+              />
+            </el-select>
           </el-form-item>
 
           <el-form-item label="轨迹回放动画" label-width="110">
@@ -120,6 +128,13 @@
               <el-option v-for="item in trackSpeedOption" :key="item.name" :label="item.name" :value="item.value" />
             </el-select>
           </el-form-item>
+        </div>
+      </div>
+
+      <!-- 获取水深 -->
+      <div class="measuring-tools" v-if="state.activeIndex == '4'">
+        <div>
+          <DepthWaterBox></DepthWaterBox>
         </div>
       </div>
     </div>
@@ -141,8 +156,16 @@ import { measureStyle } from "../hooks/styleFunction";
 import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
+import DepthWaterBox from "./depthWaterBox.vue";
+
 // 辅助函数，设置地图中心点
 import { setToMapCenter } from "../hooks/setToMapCenter";
+
+// store
+import { useToolboxStore } from "../../stores/modules/toolBox";
+
+// api
+import { getLayerList } from "../../api/device";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -170,7 +193,15 @@ const state = reactive({
   // 实时标签样式
   shipHeadLine: false,
   shipShowHideByTrack: true,
+  shipShowHideByTrackOption: [] as any,
   trackSpeed: ""
+});
+
+// 轨迹隐藏图层
+getLayerList({ pageNumber: 1, pageSize: 100 }).then(res => {
+  if (res.data && res.data.items) {
+    state.shipShowHideByTrackOption = res.data.items;
+  }
 });
 
 // 轨迹回放动画
@@ -415,9 +446,12 @@ const toMapCenter = () => {
 onMounted(() => {});
 
 // 实时标签样式:存入浏览器
+const toolboxStore = useToolboxStore();
 watch([() => state.shipHeadLine, () => state.shipShowHideByTrack, () => state.trackSpeed], function (n) {
   localStorage.setItem("shipTags", JSON.stringify(n));
+  toolboxStore.changeData(n[0]);
 });
+
 //页面加载浏览器数据
 let shipTagsData: string | null = localStorage.getItem("shipTags");
 if (shipTagsData) {

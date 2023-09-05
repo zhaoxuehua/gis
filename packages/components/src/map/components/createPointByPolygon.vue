@@ -1,4 +1,5 @@
-<!-- 按面绘制点：选择已绘制的面，在选择需要添加的设备点，需要刷新 -->
+<!-- 按面绘制点：选择左侧节点请求绘制信息，已绘制且是面则根据节点请求列表数据，在列表中选择需要添加的设备点，需要刷新 -->
+<!-- 快速绘制、快速删除：列表可选择的数据必须是配置过标签类型且是点类型。 删除时会继续过滤存在gisLabelInfo即绘制过的进行删除；绘制时会过滤出未绘制的，随机生成面范围内点进行绘制-->
 <template>
   <div class="quick-create-main">
     <div class="side-tree">
@@ -148,6 +149,7 @@ const handleNodeClick = (data: any) => {
       }
     );
   } else {
+    currentTarget.value = {};
     ElMessage.warning("请选择设备节点");
   }
 };
@@ -308,6 +310,9 @@ const drawHandler = () => {
     // 生成接口所需的数据结构
     const result = equipList.map(function (item, index) {
       const { id, name, gisLabelConfig } = item;
+      if (name) {
+        gisLabelConfig.name = name;
+      }
       const labelData = createLabelData(gisLabelConfig, points[index]); // 标签类型及点坐标
       let type = gisLabelConfig.dataType;
       if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
@@ -318,7 +323,7 @@ const drawHandler = () => {
         assetId: String(id),
         assetModel: "EAM_EQP_EQUIP",
         code: labelCode,
-        name: name, // 标签名称
+        name: name, // 显示标签名称(设备名)
         associationType: 5,
         layer: gisLabelConfig.layerConfigId,
         type: gisLabelConfig.id,

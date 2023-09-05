@@ -1,4 +1,8 @@
 <!-- 根据提前录入的坐标信息gisCoordinates 可以为点类型的设备批量绘制 -->
+<!-- 获取设备列表=>获取设备对应的标签配置及绘制信息塞入表格数据 -->
+<!-- 可选逻辑：配置过标签类型&&是点&&有录入坐标 -->
+<!-- 删除：过滤gisLabelInfo -->
+<!-- 绘制： 选择的都会重新绘制-->
 <template>
   <div class="quick-create-main">
     <div class="main-content">
@@ -13,6 +17,7 @@
                 clearable
                 @keyup.enter.stop="querySearch"
                 @clear="querySearch"
+                style="width: 200px"
               ></el-input>
             </el-form-item>
             <el-button type="primary" @click="querySearch"><Icon src="Search"></Icon>搜索</el-button>
@@ -197,6 +202,9 @@ const drawHandler = () => {
   const result = table.value.chooseList.map((item, index) => {
     const { id, name, gisLabelConfig } = item;
     const lonLat = item.gisCoordinates.split(",");
+    if (name) {
+      gisLabelConfig.name = name;
+    }
     const labelData = createLabelData(gisLabelConfig, lonLat);
     let type = gisLabelConfig.dataType;
     if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {

@@ -79,6 +79,7 @@ import { getMapParamsDetail, getLabelList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
+import { useToolboxStore } from "../stores/modules/toolBox";
 
 import { layerStyle, createStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
@@ -325,9 +326,9 @@ const popupDOMRef = ref();
 const popupTitDOMRef = ref();
 const popupContentDOMRef = ref();
 
-const initMap = async (mapId: string | number) => {
+const initMap = async (mapId: string | number, isId: boolean) => {
   // 获取地图配置（初始化地图参数详情）
-  const res: { [key: string]: any } = await getMapParamsDetail(mapId);
+  const res: { [key: string]: any } = await getMapParamsDetail(mapId, isId);
   if (res.code === 200 && res.data) {
     const originalData = JSON.parse(JSON.stringify(res.data));
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
@@ -556,7 +557,10 @@ const initMap = async (mapId: string | number) => {
     /****************************获取已绘制的标签进行渲染******************************************/
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
-      ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+      ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "createdOn", isAsc: "asc" }) as [
+        string,
+        object
+      ])
     );
     let dynamicLayerCodes: string[] = []; // 不能添加重复图层(只添加code)
     const labelInfoMap: { [key: string]: LabelInfoData } = {};
@@ -672,7 +676,7 @@ const initMap = async (mapId: string | number) => {
       ElMessage.error("接口异常");
     }
 
-    /****************************鼠标经过******************************************/
+    /****************************鼠标经过*************************************************************/
     // 鼠标移动事件
     let hoverInfoLayer: Overlay = new Overlay({
       element: popupDOMRef.value,
@@ -746,14 +750,14 @@ const initMap = async (mapId: string | number) => {
       }
       // 获取船的数据
       const trackInfoMap = map.get("trackInfoMap") || [];
-      const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
+      const currentTrack = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0]; // code有时字符串有时数字
       popupData.featureCode = featureCode;
       popupData.featureName = featureName;
       popupData.relationMap = gisStore?.relationMap[featureCode] || currentTrack;
       overlay.setPosition(center);
     };
 
-    /***********************地图鼠标点击事件*****************************/
+    /***********************地图鼠标点击事件***************************************************************/
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
       map.closePopup(); // 关闭点击弹框
@@ -793,7 +797,7 @@ const initMap = async (mapId: string | number) => {
       }
     });
 
-    /***********************地图右键（目前只有监控可用）*****************************/
+    /***********************地图右键（目前只有监控可用）*****************************************************/
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
@@ -809,9 +813,19 @@ const initMap = async (mapId: string | number) => {
         });
       }
     };
+
     // 初始化完成
     exportMap.value = map;
     emits("getInitMapExportData", exportMap.value); // 应用获取初始化地图实例
+    // 兼容监控外部树节点点击（首次树节点因地图没有初始化完成所以watch执行时定位不到,首次的数据手动执行）
+    if (props?.outsideTreeNode) {
+      let outsideTreeTimer: any = null;
+      outsideTreeTimer = setTimeout(() => {
+        outsideTreeNodeSelect(props.outsideTreeNode);
+        clearTimeout(outsideTreeTimer);
+        outsideTreeTimer = null;
+      }, 3000);
+    }
   } else {
     ElMessage.error("接口异常");
   }
@@ -846,9 +860,9 @@ onMounted(() => {
     }
   }
   gisStore.setIsEdit(false);
-  const mapParams = props?.config?.id;
+  const mapParams = props?.config?.id || props?.config?.code;
   if (!mapParams) return;
-  initMap(mapParams);
+  initMap(mapParams, !!props?.config?.id);
 });
 
 onBeforeUnmount(() => {
@@ -885,6 +899,19 @@ const handlePopLink = (type: any, option: any) => {
   emits(type, option);
 };
 
+// 实时标签样式
+let toolboxCallBack: (arg: boolean) => void;
+const toolboxStore = useToolboxStore();
+watch(
+  () => toolboxStore.data,
+  n => {
+    typeof toolboxCallBack == "function" && toolboxCallBack(n);
+  }
+);
+const toolBoxSetChange = (fn: () => void) => {
+  toolboxCallBack = fn;
+};
+
 defineExpose({
   getMapElement,
   panToFeature,
@@ -902,25 +929,28 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter
+  getGeometryCenter,
+  toolBoxSetChange
 });
 
-// 监听外部树节点点击(监控在可视化配置的树)
+/***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
+const outsideTreeNodeSelect = (node: any) => {
+  const { tupleList = [], model } = node;
+  const equipId = Number(tupleList[0]);
+  if (model.toLocaleLowerCase() === "eam_eqp_equip") {
+    const res = find(gisStore?.relationMap, (item: any) => {
+      return item.id === equipId;
+    });
+    if (res && res.associationInfo && exportMap.value) {
+      labelOnSelect(exportMap.value, res.associationInfo.associationObjectCode, false);
+    }
+  }
+};
 watch(
   () => props.outsideTreeNode,
   node => {
     if (node) {
-      const { tupleList = [], model } = node;
-      const equipId = Number(tupleList[0]);
-
-      if (model.toLocaleLowerCase() === "eam_eqp_equip") {
-        const res = find(gisStore?.relationMap, (item: any) => {
-          return item.id === equipId;
-        });
-        if (res && res.associationInfo && exportMap.value) {
-          labelOnSelect(exportMap.value, res.associationInfo.associationObjectCode, false);
-        }
-      }
+      outsideTreeNodeSelect(node);
     }
   },
   {

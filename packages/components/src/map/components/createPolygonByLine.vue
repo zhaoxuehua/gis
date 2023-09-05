@@ -1,4 +1,5 @@
 <!-- 选择树节点是面类型节点：根据已绘制线的坐标信息及缓冲距离生成一个缓冲面 -->
+<!-- 弹框选择的设备必须是线&&配置了标签类型&&已绘制 -->
 <template>
   <div class="quick-create-main">
     <div class="side-tree">
@@ -156,14 +157,14 @@ const handleNodeClick = (data: any) => {
 const fetchPolygonInfo = async (id: number) => {
   const res: { [key: string]: any } = await getLabelInfoByEquipId([id]);
   if (res?.data) {
-    const { gisLabelInfo, gisLabelConfig } = res.data[0];
+    const { gisLabelInfo, gisLabelConfig, name } = res.data[0]; // 没绘制过name取设备name，绘制过取值标签name（也是设备name）
     // 已绘制标签信息（currentTarget中添加gisLabelInfo信息）
     if (gisLabelInfo) {
       const { id, code, name, labelData, refLayerId, labelTypeId } = gisLabelInfo;
       const { coordinates } = JSON.parse(labelData);
       currentTarget.value = { ...currentTarget.value, id, code, name, coordinates, layer: refLayerId, type: labelTypeId };
     } else {
-      currentTarget.value = { ...currentTarget.value, id: null, code: null, coordinates: null, layer: null, type: null };
+      currentTarget.value = { ...currentTarget.value, id: null, name, code: null, coordinates: null, layer: null, type: null };
     }
     // 标签配置信息（（currentTarget中添加gisLabelConfig信息））
     if (gisLabelConfig) {
@@ -173,15 +174,16 @@ const fetchPolygonInfo = async (id: number) => {
         // 存储一份面本身的配置样式（面填充色、线色、线宽、线型）
         let { polygonColor, lineWidth, lineColor, lineType } = gisLabelConfig;
         originPolygonStyle.value = { polygonColor, lineWidth, lineColor, lineType };
+        // 获取生成面的线节点信息
+        table.value.getTableData();
       } else {
+        currentTarget.value = {};
+        table.value.data = [];
         ElMessage.warning("请选择面类型节点");
       }
     } else {
       ElMessage.warning("请先配置标签类型");
     }
-
-    // 获取生成面的线节点信息
-    table.value.getTableData();
   }
 };
 
@@ -285,7 +287,11 @@ const onDelete = () => {
 
 // 生成标签：根据线坐标及缓冲距离生成缓冲面
 const drawHandler = () => {
-  const { id, assetId, code, name, assetModel, associationType, layer, type, gisLabelConfig } = currentTarget.value;
+  const { id, assetId, code, name, assetModel, associationType, layer, type, gisLabelConfig = {} } = currentTarget.value;
+  if (name) {
+    // 强制将绘制标签的标签名从标签类型改为设备名
+    gisLabelConfig.name = name;
+  }
   // 面（线数组组合） [[[],[]]]
   const coordinates: any[] = [];
   let result = {

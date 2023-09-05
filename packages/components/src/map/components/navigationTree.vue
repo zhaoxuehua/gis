@@ -9,7 +9,6 @@
       <el-link type="primary" class="title-icon" title="上传" :underline="false"
         ><i class="iconfont icon-cloud-upload"></i
       ></el-link> -->
-      <el-button type="primary" @click="getDepthWater">获取水深</el-button>
       <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="nav-tree-content">
@@ -28,21 +27,23 @@
           @node-click="handleNodeClick"
           :filter-node-method="filterNode"
           ref="treeRef"
+          :expand-on-click-node="false"
+          :default-expanded-keys="state.expandedKeys"
+          node-key="code"
         >
-          <template #default="{ data }">
+          <template #default="{ node, data }">
             <span class="custom-tree-node" :class="{ active: !!data.associationInfo }">
               <span>{{ data.name }}</span>
               <span v-if="isEditShow && data.equipNodeFlag" @click.stop>
-                <Icon src="Plus" :size="14" @click="onAdd(data)" v-if="!data.associationInfo"></Icon>
+                <Icon src="Plus" :size="14" @click="onAdd(node, data)" v-if="!data.associationInfo"></Icon>
                 <Icon src="EditPen" :size="14" v-if="data.associationInfo" @click.stop="onEdit(data)"></Icon>
-                <Icon src="Delete" :size="14" v-if="data.associationInfo" @click.stop="onDelete(data)"></Icon>
+                <Icon src="Delete" :size="14" v-if="data.associationInfo" @click.stop="onDelete(node, data)"></Icon>
               </span>
             </span>
           </template>
         </el-tree>
       </div>
     </div>
-    <DepthWaterDialog ref="depthWaterRef"></DepthWaterDialog>
   </div>
 </template>
 <script lang="ts" setup>
@@ -55,7 +56,6 @@ import { cloneDeep } from "lodash";
 import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
-import DepthWaterDialog from "./depthWaterDialog.vue";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -64,12 +64,13 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
 const emits = defineEmits(["onEditLabel", "onClose"]);
 const gisStore = useGisStore();
 const treeRef = ref();
-const state = reactive({
+const state: { defaultProps: { [key: string]: any }; expandedKeys: any[]; filterText: string } = reactive({
   defaultProps: {
     children: "children",
     label: "name"
   },
-  filterText: "" // 树搜索字段
+  filterText: "", // 树搜索字段
+  expandedKeys: [] // 已展开的节点键
 });
 
 // 关闭导航树
@@ -110,7 +111,8 @@ const onEdit = async (data: NavigationTreeNodeData) => {
 };
 
 // 删除
-const onDelete = (data: NavigationTreeNodeData) => {
+const onDelete = (node: { [key: string]: any }, data: NavigationTreeNodeData) => {
+  getParentNode(node);
   const labelInfoMap = props.map?.get("labelInfoMap") || {};
   const label = labelInfoMap[data.associationInfo?.associationObjectCode];
   if (!label) {
@@ -133,8 +135,10 @@ const onDelete = (data: NavigationTreeNodeData) => {
 };
 
 // 新增标签
-const onAdd = async (data: NavigationTreeNodeData) => {
+const onAdd = async (node: { [key: string]: any }, data: NavigationTreeNodeData) => {
   const { id } = data;
+  if (!id) return;
+  getParentNode(node);
   const res: { [key: string]: any } = await getLabelInfoByEquipId([id]);
   if (res.code == 200 && res.data) {
     const labelTypeMap = props.map?.get("labelTypeMap") || {};
@@ -199,6 +203,16 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
   });
 };
 
+// 查找父节点并存储展开节点
+const getParentNode = (node: { [key: string]: any }) => {
+  // 找父节点塞数据
+  const parentNode: { [key: string]: any } = node?.parent;
+  const parentNodeCode: string | undefined = parentNode?.data?.code;
+  if (parentNodeCode) {
+    state.expandedKeys = [parentNodeCode];
+  }
+};
+
 // 监听键盘ESC
 document.addEventListener("keyup", (event: KeyboardEvent) => {
   if (event.key === "Escape" && props.map) {
@@ -210,12 +224,6 @@ document.addEventListener("keyup", (event: KeyboardEvent) => {
     }
   }
 });
-
-const depthWaterRef = ref();
-// 获取水深
-const getDepthWater = () => {
-  depthWaterRef.value.openDialog();
-};
 
 watch(
   () => state.filterText,

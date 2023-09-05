@@ -1,5 +1,77 @@
 # adm-gis-platform
 
+## 1.0.57
+
+### Patch Changes
+
+- 关联设备类型配置及地图 map 查详情接口变更
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.55
+
+## 1.0.56
+
+### Patch Changes
+
+- 快速绘制将标签类型名改为设备名进行展示标签名
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.54
+
+## 1.0.55
+
+### Patch Changes
+
+- s 实时标签 g 修改 效果实时更新
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.53
+
+## 1.0.54
+
+### Patch Changes
+
+- s 实时标签设置 实时设置
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.52
+
+## 1.0.53
+
+### Patch Changes
+
+- 修复文本展示字段，将无用的字段隐藏，主要针对原及矢量线
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.51
+
+## 1.0.52
+
+### Patch Changes
+
+- 左键设备类型基础引擎设备增加接口请求,工具箱增加获取水深
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.50
+
+## 1.0.51
+
+### Patch Changes
+
+- 绘制标签的接口改为升序排列
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.49
+
+## 1.0.50
+
+### Patch Changes
+
+- 优化外部树节点点击
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.48
+
+## 1.0.49
+
+### Patch Changes
+
+- 增加左键备注和定位功能及修复轨迹列表定位 code 匹配不上问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.47
+
 ## 1.0.48
 
 ### Patch Changes

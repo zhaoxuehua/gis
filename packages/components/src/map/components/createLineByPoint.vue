@@ -1,4 +1,6 @@
-<!-- 选择树节点是线类型节点（根据选择已绘制设备的点生成） -->
+<!-- 选择树节点是线类型节点（再根据选择已绘制设备的点生成） -->
+<!--选择的设备弹框中数据必须是点&&配置了标签类型&&已绘制过  -->
+
 <template>
   <div class="quick-create-main">
     <div class="side-tree">
@@ -143,6 +145,7 @@ const handleNodeClick = (data: any) => {
     fetchLineInfo(tuple);
   } else {
     currentTarget.value = {};
+    table.value.data = [];
     ElMessage.warning("请选择设备节点");
   }
 };
@@ -151,7 +154,7 @@ const fetchLineInfo = async (id: number) => {
   // 获取该设备已绘制的标签信息
   const res: { [key: string]: any } = await getLabelInfoByEquipId([id]);
   if (res?.data) {
-    const { gisLabelInfo, gisLabelConfig } = res.data[0];
+    const { gisLabelInfo, gisLabelConfig, name } = res.data[0];
     // 已绘制标签信息（currentTarget中添加gisLabelInfo信息）
     if (gisLabelInfo) {
       const { id, code, name, labelData, refLayerId, labelTypeId } = gisLabelInfo;
@@ -159,7 +162,7 @@ const fetchLineInfo = async (id: number) => {
 
       currentTarget.value = { ...currentTarget.value, id, code, name, coordinates, layer: refLayerId, type: labelTypeId };
     } else {
-      currentTarget.value = { ...currentTarget.value, id: null, code: null, coordinates: null, layer: null, type: null };
+      currentTarget.value = { ...currentTarget.value, id: null, code: null, name, coordinates: null, layer: null, type: null };
     }
 
     // 标签配置信息（（currentTarget中添加gisLabelConfig信息））
@@ -170,15 +173,16 @@ const fetchLineInfo = async (id: number) => {
         // 存储一份线本身的配置样式（线色、线宽、线型）
         let { lineWidth, lineColor, lineType } = gisLabelConfig;
         originPolygonStyle.value = { lineWidth, lineColor, lineType };
+        // 获取生成线路的设备点信息
+        table.value.getTableData();
       } else {
+        currentTarget.value = {};
+        table.value.data = [];
         ElMessage.warning("请选择线类型节点");
       }
     } else {
       ElMessage.warning("请先配置标签类型");
     }
-
-    // 获取生成线路的设备点信息
-    table.value.getTableData();
   }
 };
 
@@ -280,6 +284,10 @@ const onDelete = () => {
 // 生成标签
 const drawHandler = () => {
   const { id, assetId, code, name, assetModel, associationType, layer, type, gisLabelConfig } = currentTarget.value;
+  if (name) {
+    // 强制将绘制标签的标签名从标签类型改为设备名
+    gisLabelConfig.name = name;
+  }
   const coordinates: any[] = [];
   let result = {
     id,

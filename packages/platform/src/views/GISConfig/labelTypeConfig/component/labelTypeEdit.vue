@@ -244,18 +244,10 @@ const fontSizeVerification = (rule: any, value: any, callback: Function) => {
   callback();
 };
 
-// 线时 矢量宽 高 显示比例(非必填)            线宽增加正数校验
+// 线时 矢量宽 高 显示比例(非必填) 正数           文本线宽增加正数校验
 const lineVectoVerification = (rule: any, value: any, callback: Function) => {
   if (value && !Regular.verifyPositiveInteger.test(value)) {
     return callback(new Error("只能为大于0的整数"));
-  }
-  callback();
-};
-
-// 文本线宽只能取>=0
-const lineWidetVectoVerification = (rule: any, value: any, callback: Function) => {
-  if (value && !/^(0|[1-9]\d*)$/.test(value)) {
-    return callback(new Error("只能为大于等于0的整数"));
   }
   callback();
 };
@@ -303,7 +295,7 @@ const state = reactive({
     lineVectorWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
     lineVectorHeight: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
     lineVectorProportion: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }],
-    borderWidth: [{ validator: lineWidetVectoVerification, trigger: ["blur", "change"] }]
+    borderWidth: [{ validator: lineVectoVerification, trigger: ["blur", "change"] }]
   }
 });
 

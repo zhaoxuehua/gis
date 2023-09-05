@@ -1,8 +1,8 @@
 import request from "@/api";
 
-// 获取地图参数详情
-export function getMapParamsDetail(params: string | number) {
-  return request.get(`/api/gis-service/equip/mapParams/config/getById/${params}`);
+// 获取地图参数详情(可以根据code id )
+export function getMapParamsDetail(params: string | number, idId: boolean) {
+  return request.get(`/api/gis-service/equip/mapParams/config/detail?${idId ? "id" : "code"}=${params}`);
 }
 
 // 标签

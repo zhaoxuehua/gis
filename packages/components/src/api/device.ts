@@ -6,7 +6,8 @@ import type {
   trackListDataParamsType,
   trackListDataResponseType,
   getTrackDataFieldMapType,
-  getTrackDataFieldMapResponseType
+  getTrackDataFieldMapResponseType,
+  getLayerListParamsType
 } from "./interface";
 
 // 轨迹回放(列表)
@@ -77,10 +78,15 @@ export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);
 }
 
-// 左键弹窗 获取设备信息
-export function getEquipInfo(params: object) {
-  return request.post(`/api/adm-service/view/common/getEquipInfo`, params);
+// 左键弹窗 获取设备详情 拿到设备类型id
+export function getEquipDetail(id: number) {
+  return request.get(`/api/equipment-service/equip/equip/getById/${id}`);
 }
+
+// 左键弹窗 获取设备信息
+// export function getEquipInfo(params: object) {
+//   return request.post(`/api/adm-service/view/common/getEquipInfo`, params);
+// }
 
 // 左键弹窗 线性实时曲线
 export function lineRealTimeCurveApi(params: object) {
@@ -90,4 +96,14 @@ export function lineRealTimeCurveApi(params: object) {
 // 左键弹窗 查看配置属性
 export function labelDetailAttr(equipTypeId: number, currentType: string) {
   return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
+}
+
+// 获取图层列表
+export function getLayerList(params: getLayerListParamsType) {
+  return request.post<trackListDataResponseType>(
+    `/api/gis-service/equip/layerConfig/list?pageSize=${params.pageSize}&pageNumber=${params.pageNumber}`,
+    {
+      name: ""
+    }
+  );
 }
