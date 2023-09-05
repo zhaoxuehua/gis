@@ -326,9 +326,9 @@ const popupDOMRef = ref();
 const popupTitDOMRef = ref();
 const popupContentDOMRef = ref();
 
-const initMap = async (mapId: string | number) => {
+const initMap = async (mapId: string | number, isId: boolean) => {
   // 获取地图配置（初始化地图参数详情）
-  const res: { [key: string]: any } = await getMapParamsDetail(mapId);
+  const res: { [key: string]: any } = await getMapParamsDetail(mapId, isId);
   if (res.code === 200 && res.data) {
     const originalData = JSON.parse(JSON.stringify(res.data));
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
@@ -860,9 +860,9 @@ onMounted(() => {
     }
   }
   gisStore.setIsEdit(false);
-  const mapParams = props?.config?.id;
+  const mapParams = props?.config?.id || props?.config?.code;
   if (!mapParams) return;
-  initMap(mapParams);
+  initMap(mapParams, !!props?.config?.id);
 });
 
 onBeforeUnmount(() => {
