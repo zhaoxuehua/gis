@@ -252,14 +252,6 @@ const lineVectoVerification = (rule: any, value: any, callback: Function) => {
   callback();
 };
 
-// >=0
-// const lineWidetVectoVerification = (rule: any, value: any, callback: Function) => {
-//   if (value && !/^(0|[1-9]\d*)$/.test(value)) {
-//     return callback(new Error("只能为大于等于0的整数"));
-//   }
-//   callback();
-// };
-
 // 是设备关联对象还是其他
 const referenceType = ref("");
 const state = reactive({

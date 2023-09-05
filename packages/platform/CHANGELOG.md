@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.57
+
+### Patch Changes
+
+- 关联设备类型配置及地图 map 查详情接口变更
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.55
+
 ## 1.0.56
 
 ### Patch Changes

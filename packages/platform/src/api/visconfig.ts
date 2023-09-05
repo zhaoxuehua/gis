@@ -79,6 +79,16 @@ export function getLabelTypeDetail(params: string | number) {
   return request.get(`/api/gis-service/equip/gisLabel/type/getById/${params}`);
 }
 
+// 获取关联关系设备类型接口（物理设备类型、逻辑设备类型、外部对象类型）
+export function getAllLabelTypeList(params: any) {
+  return request.get(`/api/gis-service/equip/gisLabel/type/equipAndVisitType/list?isLogical=${params}`);
+}
+
+// 获取属性接口（物理设备类型、逻辑设备类型、外部对象类型类型下的属性）
+export function getBindAttributeByType(isVisitObject: boolean, id: number) {
+  return request.get(`/api/gis-service/equip/gisLabel/type/description/${isVisitObject}/${id}`);
+}
+
 // 标签
 // 获取标签列表
 export function getLabelList(queryString: string, params: object) {

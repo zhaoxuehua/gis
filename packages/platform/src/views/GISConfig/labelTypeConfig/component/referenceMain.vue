@@ -64,8 +64,7 @@
 <script lang="ts" setup name="ReferenceMain">
 import { onMounted, ref, watch } from "vue";
 import { ElMessage, ElTable } from "element-plus";
-import { handleParam } from "@/utils/common.js";
-import { deviceTypeList, objTypeList } from "@/api/device.js";
+import { getAllLabelTypeList } from "@/api/visconfig.js";
 import ReferenceAttribute from "./referenceAttribute.vue";
 
 const emit = defineEmits(["referenceChange"]);
@@ -105,29 +104,14 @@ const equipTypeList = ref({
   ids: [],
   fetchData: async () => {
     equipTypeList.value.loading = true;
-    // 物理设备类型、逻辑设备类型
-    if (isLogical.value == 1 || isLogical.value == 2) {
-      const res: { [key: string]: any } = await deviceTypeList(
-        ...(handleParam({ pageNumber: 1, pageSize: 1000, isLogical: isLogical.value, orderByColumn: "", isAsc: "" }) as [
-          string,
-          object
-        ])
-      );
-      if (res.items) {
-        equipTypeList.value.data = res.items;
-      } else {
-        ElMessage.error("接口异常");
-      }
+    // 物理设备类型、逻辑设备类型、外部设备类型
+    const res: { [key: string]: any } = await getAllLabelTypeList(
+      isLogical.value == 1 || isLogical.value == 2 ? isLogical.value : ""
+    );
+    if (res.code == 200) {
+      equipTypeList.value.data = res?.data || [];
     } else {
-      // 外部对象的对象类型（设备类型）
-      const res: { [key: string]: any } = await objTypeList(
-        ...(handleParam({ pageNumber: 1, pageSize: 10000, orderByColumn: "", isAsc: "" }) as [string, object])
-      );
-      if (res.items) {
-        equipTypeList.value.data = res.items;
-      } else {
-        ElMessage.error("接口异常");
-      }
+      ElMessage.error("接口异常");
     }
     equipTypeList.value.loading = false;
   },

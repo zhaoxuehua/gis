@@ -64,13 +64,13 @@
         </template>
       </el-table>
       <el-pagination
-        v-if="Object.keys(props.pagination).length"
-        :background="initPagination.background"
-        :total="props.pagination.total"
-        :layout="props.layout"
-        :page-sizes="initPagination.pageSizes"
-        v-model:current-page="state.currentPage"
-        v-model:page-size="state.currentPageSize"
+        v-if="Object.keys(pagination).length"
+        :background="pagination.background"
+        :total="pagination.total"
+        :layout="pagination.layout"
+        :page-sizes="pagination.pageSizes"
+        v-model:current-page="pagination.currentPage"
+        v-model:page-size="pagination.currentPageSize"
         small
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -79,7 +79,7 @@
   </div>
 </template>
 <script setup lang="ts" name="Table">
-import { reactive, ref } from "vue";
+import { computed, ref } from "vue";
 interface Props {
   data: any[];
   columns: any[];
@@ -125,14 +125,13 @@ const defaultPagination = {
   pageSize: 10
 };
 
-const initPagination = reactive({
-  ...defaultPagination,
-  ...props.pagination
-});
-
-const state = reactive({
-  currentPage: initPagination.page,
-  currentPageSize: initPagination.pageSize
+const pagination = computed(() => {
+  return {
+    ...defaultPagination,
+    ...props.pagination,
+    currentPage: props.pagination.page,
+    currentPageSize: props.pagination.pageSize
+  };
 });
 
 const tableRef = ref();
