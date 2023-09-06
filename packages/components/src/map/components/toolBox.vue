@@ -192,7 +192,7 @@ const state = reactive({
 
   // 实时标签样式
   shipHeadLine: false,
-  shipShowHideByTrack: true,
+  shipShowHideByTrack: "",
   shipShowHideByTrackOption: [] as any,
   trackSpeed: ""
 });
