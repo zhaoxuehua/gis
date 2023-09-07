@@ -49,6 +49,7 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
+import Icon from "./Icon.vue";
 
 const emits = defineEmits(["successAdd"]);
 const open = ref<boolean>(false);

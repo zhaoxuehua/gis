@@ -22,6 +22,7 @@
         <div v-for="(item, index) in props.rightBoxData" :key="index">
           <component
             :is="item.component"
+            v-if="item.visible"
             v-show="item.isShow && item?.label !== '编辑'"
             :map="props.map"
             :index="index"
