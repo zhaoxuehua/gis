@@ -5,6 +5,11 @@ export function getMapParamsDetail(params: string | number, idId: boolean) {
   return request.get(`/api/gis-service/equip/mapParams/config/detail?${idId ? "id" : "code"}=${params}`);
 }
 
+// 获取设备告警列表
+export function getEquipAlarmList(params: string | number, idId: boolean) {
+  return request.get(`/api/gis-service/alarm/mapParams/config/detail?${idId ? "id" : "code"}=${params}`);
+}
+
 // 标签
 // 获取标签列表
 export function getLabelList(queryString: string, params: object) {

@@ -691,3 +691,22 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
   }
   return currentSelectFeature;
 }
+
+// 根据设备code查标签code（报警要素点击时需要查到对应设备的标签）
+export function getFeatureCodeByEquipCode(equipCode: string, map: VisualMap) {
+  let featureInfo: { [key: string]: any } = {};
+  let labelInfoMap = map?.get("labelInfoMap") || {};
+  let gisStore = useGisStore();
+  const relationMap = gisStore?.relationMap;
+  for (let key in relationMap) {
+    // 标签设备关联关系
+    if (equipCode == relationMap[key].code) {
+      // key是标签的code(报警弹出对应设备的信息)
+      featureInfo.featureLabelCode = key;
+      let labelInfo = labelInfoMap[key];
+      featureInfo.featureLabelType = labelInfo?.labelType?.code;
+      break;
+    }
+  }
+  return featureInfo;
+}

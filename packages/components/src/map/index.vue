@@ -75,18 +75,27 @@ import { fromLonLat } from "ol/proj";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
-import { getMapParamsDetail, getLabelList } from "../api/visconfig";
+import { getMapParamsDetail, getLabelList, getEquipAlarmList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
 import { useToolboxStore } from "../stores/modules/toolBox";
 
-import { layerStyle, createStyle } from "./hooks/styleFunction.js";
+import { layerStyle, createStyle, alarmLayerStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
-import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature, getSelectedFeature } from "./hooks/index";
+import {
+  clearSelectedFeature,
+  labelOnSelect,
+  createLabel,
+  removeLabel,
+  getFeature,
+  getSelectedFeature,
+  getFeatureCodeByEquipCode
+} from "./hooks/index";
 import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
 import { getTrackDataByIdFn } from "./hooks/getTrackDataById"; // 获取单个轨迹数据
+import { initAlarmLayerAndCreateFeature } from "./hooks/initAlarmLayerAndCreateFeature";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -320,6 +329,7 @@ let isDynamicLine = computed(() => gisStore.isDynamicLine);
 let imgIndex = computed(() => gisStore.imgIndex);
 const timer: any = ref(null);
 const dynamicTimes: any = ref(null); // 风机、动态线、动态环的定时器
+const alarmTimer: any = ref(null); // 告警列表动态请求
 
 // overlayer
 const popupDOMRef = ref();
@@ -676,6 +686,57 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       ElMessage.error("接口异常");
     }
 
+    /*******************************************告警标签**********************************************/
+    // 绘制报警点信息
+    let alarmLayer: any = new VectorLayer({
+      source: new VectorSource(),
+      zIndex: 9999,
+      style: (feature: FeatureLike) => alarmLayerStyle(feature)
+    });
+    alarmLayer.set("code", "alarmLayer");
+    alarmLayer.set("name", "报警图层");
+
+    map.addLayer(alarmLayer);
+    let alarmRes: any = (await getEquipAlarmList(mapId, isId)) || {};
+    // mock数据
+    // let alarmRes: any = {
+    //   data: [
+    //     {
+    //       lon: 106.22146190350247,
+    //       lat: 38.50491008819031,
+    //       code: "os0000102",
+    //       name: "氧气0000102",
+    //       id: 123
+    //     },
+    //     {
+    //       code: "part00002",
+    //       name: "测试面"
+    //     },
+    //     {
+    //       code: "part00001",
+    //       name: "测试面"
+    //     },
+    //     {
+    //       code: "part00005",
+    //       name: "测试面"
+    //     },
+
+    //     {
+    //       code: "测试线",
+    //       name: "测试线"
+    //     }
+    //   ]
+    // };
+
+    if (alarmRes?.data) {
+      initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data);
+      alarmTimer.value = setInterval(() => {
+        initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data);
+      }, 5000);
+    } else {
+      ElMessage.error("接口异常");
+    }
+
     /****************************鼠标经过*************************************************************/
     // 鼠标移动事件
     let hoverInfoLayer: Overlay = new Overlay({
@@ -770,17 +831,26 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       }); // 当前点击处是否有要素
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
-        // 对选则的要素做弹框弹出及选中样式、编辑弹框
-        const featureCode = currentSelectFeature?.get("code");
-        const featureName = currentSelectFeature?.get("name");
-        const labelTypeCode = currentSelectFeature?.get("labelTypeCode");
+        // 对选择的要素做弹框弹出及选中样式、编辑弹框
+        let featureCode = currentSelectFeature?.get("code");
+        let featureName = currentSelectFeature?.get("name");
+        let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
+
+        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
+        let type = currentSelectFeature?.get("type");
+        if (type == "alarmPoint") {
+          let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
+          featureCode = featureLabelCode || featureCode;
+          labelTypeCode = featureLabelType;
+        }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
           // 获取船的数据
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           map.popupInfo({ featureCode, featureName, center });
-          // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
+          // 以下是选中+编辑要素逻辑
+          // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 将选中用定时器是因为编辑弹框会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
             if (map?.get("labelInfoMap")[featureCode]) {
               editLabelRef.value?.onOpen(featureCode);
@@ -804,7 +874,13 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       let pixel = map?.getEventPixel(evt);
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
-        const featureCode = currentSelectFeature?.get("code");
+        let featureCode = currentSelectFeature?.get("code");
+        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
+        let type = currentSelectFeature?.get("type");
+        if (type == "alarmPoint") {
+          let { featureLabelCode } = getFeatureCodeByEquipCode(featureCode, map);
+          featureCode = featureLabelCode || featureCode;
+        }
         emits("onOpenRightMenu", {
           featureCode,
           relationMap: gisStore?.relationMap,
@@ -869,6 +945,14 @@ onBeforeUnmount(() => {
   if (dynamicTimes.value) {
     clearInterval(dynamicTimes.value);
     dynamicTimes.value = null;
+  }
+  if (alarmTimer.value) {
+    clearInterval(alarmTimer.value);
+    alarmTimer.value = null;
+  }
+  if (gisStore?.simulateAlarmTimer) {
+    clearInterval(gisStore?.simulateAlarmTimer);
+    gisStore?.setSimulateAlarmTimer(null);
   }
 });
 
