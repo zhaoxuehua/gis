@@ -139,6 +139,17 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
+    label: "导航树",
+    name: "navTree",
+    slot: true
+  },
+  {
+    label: "关键词显示配置",
+    name: "keywordConfig",
+    slot: true
+  },
+
+  {
     label: "是否可编辑",
     name: "isEdit",
     slot: true

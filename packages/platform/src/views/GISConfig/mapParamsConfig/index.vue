@@ -125,6 +125,18 @@
       <template #scaleLineUnit="scope">
         {{ scope.row.scaleLineUnit == "metric" ? "米（千米）" : "海里" }}
       </template>
+      <template #navTree="scope">
+        {{ scope.row.navTree == "default" ? "自定义" : "设备树" }}
+      </template>
+      <template #keywordConfig="scope">
+        {{
+          scope.row.keywordConfig
+            ? Object.entries(scope.row.keywordConfig)
+                .map(([key, value]) => `${key}:${value}`)
+                .join("; ")
+            : ""
+        }}
+      </template>
       <template #isEdit="scope">
         {{ scope.row.isEdit ? "是" : "否" }}
       </template>

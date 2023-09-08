@@ -38,67 +38,27 @@
           <el-input type="number" v-model.number="form.defaultCenterPointLongitude" />
         </el-form-item>
         <el-form-item label="显示标签类型" prop="displayLabelInfoIds">
-          <el-select
-            filterable
-            v-model="form.displayLabelInfoIds"
-            multiple
-            collapse-tags
-            clearable
-            placeholder="请选择..."
-            :disabled="state.dialogType == 2"
-          >
+          <el-select filterable v-model="form.displayLabelInfoIds" multiple collapse-tags clearable placeholder="请选择...">
             <el-option v-for="(item, index) in labelTypeList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="搜索标签类型" prop="displaySearchIds">
-          <el-select
-            v-model="form.displaySearchIds"
-            multiple
-            collapse-tags
-            clearable
-            placeholder="请选择..."
-            :disabled="state.dialogType == 2"
-            filterable
-          >
+          <el-select v-model="form.displaySearchIds" multiple collapse-tags clearable placeholder="请选择..." filterable>
             <el-option v-for="(item, index) in searchTypeList" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="显示图层" prop="displayLayerIds">
-          <el-select
-            v-model="form.displayLayerIds"
-            multiple
-            collapse-tags
-            clearable
-            placeholder="请选择..."
-            :disabled="state.dialogType == 2"
-            filterable
-          >
+          <el-select v-model="form.displayLayerIds" multiple collapse-tags clearable placeholder="请选择..." filterable>
             <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="显示控件" prop="displayControlIds">
-          <el-select
-            filterable
-            v-model="form.displayControlIds"
-            multiple
-            collapse-tags
-            clearable
-            placeholder="请选择..."
-            :disabled="state.dialogType == 2"
-          >
+          <el-select filterable v-model="form.displayControlIds" multiple collapse-tags clearable placeholder="请选择...">
             <el-option v-for="(item, index) in controlList.data" :key="index" :label="item.name" :value="item.code"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="显示图例" prop="displayLegendIds">
-          <el-select
-            v-model="form.displayLegendIds"
-            multiple
-            collapse-tags
-            clearable
-            placeholder="请选择..."
-            :disabled="state.dialogType == 2"
-            filterable
-          >
+          <el-select v-model="form.displayLegendIds" multiple collapse-tags clearable placeholder="请选择..." filterable>
             <el-option
               v-for="(item, index) in legendIdsList.data"
               :key="index"
@@ -108,12 +68,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="显示外部对象类型" prop="trackSearchId">
-          <el-select v-model="form.trackSearchId" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+          <el-select v-model="form.trackSearchId" clearable placeholder="请选择..." filterable>
             <el-option v-for="(item, index) in trackSearchList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="距离单位" prop="scaleLineUnit" v-if="form.displayControlIds.includes('scaleLine')">
-          <el-select v-model="form.scaleLineUnit" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+        <el-form-item label="距离单位" prop="scaleLineUnit">
+          <el-select v-model="form.scaleLineUnit" clearable placeholder="请选择..." filterable>
             <el-option
               v-for="(item, index) in scaleLineUnitList.data"
               :key="index"
@@ -121,6 +81,21 @@
               :value="item.code"
             ></el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="导航树" prop="navTree">
+          <el-select v-model="form.navTree" clearable placeholder="请选择..." filterable>
+            <el-option v-for="(item, index) in navTreeList.data" :key="index" :label="item.name" :value="item.code"></el-option>
+          </el-select>
+          <el-button class="reference-button" circle @click="customTreeConfigClick" v-if="form.navTree == 'custom'">
+            <Icon src="EditPen"></Icon>
+          </el-button>
+        </el-form-item>
+        <el-form-item label="关键词显示配置" prop="keywordConfig">
+          <div style="width: 200px">
+            <el-button class="reference-button" circle @click="keywordConfigClick">
+              <Icon src="EditPen"></Icon>
+            </el-button>
+          </div>
         </el-form-item>
         <el-form-item label="是否可编辑" prop="isEdit">
           <el-checkbox v-model="form.isEdit" style="width: 200px"></el-checkbox>
@@ -150,6 +125,8 @@
         </span>
       </template>
     </el-dialog>
+    <KeywordConfigDialog ref="keywordConfigRef" @success-add="saveKeywordConfig"></KeywordConfigDialog>
+    <NavTreeConfigDialog ref="navTreeConfigRef" @success-add="saveNavTreeConfig"></NavTreeConfigDialog>
   </div>
 </template>
 
@@ -161,6 +138,8 @@ import { handleParam } from "@/utils/common.js";
 import { addMapParams, editMapParams, getLayerList, getLabelTypeList, getLegendConfigList } from "@/api/visconfig.js";
 import { objTypeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
+import KeywordConfigDialog from "./keywordConfigDialog.vue";
+import NavTreeConfigDialog from "./navTreeConfigDialog.vue";
 
 interface MapParamsForm {
   id?: number;
@@ -181,6 +160,9 @@ interface MapParamsForm {
   sateUrl: string;
   overlayUrl: string;
   scaleLineUnit?: string;
+  navTree?: string;
+  navTreeConfig?: any;
+  keywordConfig?: any;
   trackSearchId?: string | Number;
   isEdit: boolean;
 }
@@ -247,6 +229,7 @@ const state = reactive({
     displayLabelInfoIds: [{ required: true, message: "请选择显示标签类型", trigger: ["blur", "change"] }],
     displayLayerIds: [{ required: true, message: "请选择显示图层", trigger: ["blur", "change"] }],
     scaleLineUnit: [{ required: true, message: "请选择距离单位", trigger: ["blur", "change"] }],
+    navTree: [{ required: true, message: "请选择导航树", trigger: ["blur", "change"] }],
     normalUrl: [
       { required: true, message: "电子地图URL不能为空", trigger: ["blur", "change"] },
       { max: 500, message: "电子地图URL长度不能大于500", trigger: ["blur", "change"] }
@@ -262,6 +245,8 @@ const state = reactive({
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
+const keywordConfigRef = ref();
+const navTreeConfigRef = ref();
 
 const defaultParam = {
   appName: "",
@@ -282,6 +267,9 @@ const defaultParam = {
   sateUrl: "",
   overlayUrl: "",
   scaleLineUnit: "metric", // 距离单位（比例尺及测距用）
+  navTree: "default", // 导航树
+  navTreeConfig: {},
+  keywordConfig: {}, // 关键词配置
   trackSearchId: "", // 轨迹搜索类型
   isEdit: false // 是否可编辑
 };
@@ -401,6 +389,25 @@ const scaleLineUnitList = ref<{
   ]
 });
 
+// 导航树配置列表
+const navTreeList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "default",
+      name: "设备树"
+    },
+    {
+      code: "custom",
+      name: "自定义"
+    }
+  ]
+});
+
 // 图例列表
 const legendIdsList = ref<{
   data: Array<{
@@ -493,6 +500,26 @@ const searchTypeList = computed(() => {
   });
 });
 
+// 关键词显示配置
+const keywordConfigClick = () => {
+  keywordConfigRef.value.openDialog(form.value.keywordConfig);
+};
+
+// 存储键值对
+const saveKeywordConfig = (keywordConfig: { [key: string]: any }) => {
+  form.value.keywordConfig = keywordConfig;
+};
+
+// 自定义导航树配置弹框
+const customTreeConfigClick = () => {
+  navTreeConfigRef.value.openDialog(form.value.navTreeConfig);
+};
+
+// 自定义导航树配置内容存储
+const saveNavTreeConfig = (navTreeConfig: { [key: string]: any }) => {
+  form.value.navTreeConfig = navTreeConfig;
+};
+
 onMounted(() => {
   labelTypeList.value.fetchData();
   layerList.value.fetchData();
@@ -505,4 +532,11 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.reference-button {
+  margin-left: 5px;
+  i {
+    margin-right: 0;
+  }
+}
+</style>
