@@ -147,7 +147,6 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
     event.feature.set("layerCode", featureParams.refLayer.code); // 所属图层编码
     event.feature.set("labelTypeCode", featureParams.labelType.code); // 所属标签类型编码
     event.feature.set("type", labelData?.style?.type); // 数字型
-    event.feature.set("isShow", true); // 是否显示标签
     event.feature.set("labelData", labelData); // 标签绘制数据Json格式
     let typeStats = getTypeStatsByLabelType(featureType, dataType);
     event.feature.set("typeStats", typeStats); // 标签绘制数据
@@ -435,12 +434,11 @@ export function featureUpdate(labelData: any, map: VisualMap) {
   }
 
   feature.setId(labelData.code);
-  feature.set("code", labelData.code); // 是否显示标签
+  feature.set("code", labelData.code);
   feature.set("name", labelData.name);
   feature.set("layerCode", labelData.refLayer.code); // 所属图层编码
   feature.set("labelTypeCode", labelData.labelType.code); // 所属标签类型编码
   feature.set("type", labelData?.labelType?.dataType); // 数字型
-  feature.set("isShow", true); // 是否显示标签
   feature.set("labelData", labelData.labelData); // 标签绘制数据Json格式
   let typeStats = getTypeStatsByLabelType(labelData.labelType, dataType);
   feature.set("typeStats", typeStats); // 标签绘制数据

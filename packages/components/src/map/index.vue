@@ -598,10 +598,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             geometry: createGeometry(item.labelData)
           });
 
-          labelFeature.setId(item.code); // 是否显示标签
-          labelFeature.set("code", item.code); // 是否显示标签
-          labelFeature.set("type", item.labelData?.style?.type); // 旧数据Point  新数据 1
-          labelFeature.set("isShow", true); // 是否显示标签
+          labelFeature.setId(item.code);
+          labelFeature.set("code", item.code);
+          labelFeature.set("type", item.labelData?.style?.type); // 标签类型
           labelFeature.set("labelData", item?.labelData); // 标签绘制数据
           labelFeature.set("layerCode", item.refLayer.code); // 所属图层编码
           labelFeature.set("labelTypeCode", item.labelType.code); // 所属标签类型编码
@@ -808,7 +807,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (gisStore?.isEdit) {
         return;
       }
-      // 获取船的数据
+      // 获取标签关联的设备信息|| 实时数据（船、人通过isVisitObject区分）
       const trackInfoMap = map.get("trackInfoMap") || [];
       const currentTrack = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0]; // code有时字符串有时数字
       popupData.featureCode = featureCode;
