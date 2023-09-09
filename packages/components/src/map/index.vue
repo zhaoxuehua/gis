@@ -686,7 +686,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       ElMessage.error("接口异常");
     }
 
-    /*******************************************告警标签**********************************************/
+    /*******************************************告警标签（点线面）**********************************************/
     // 绘制报警点信息
     let alarmLayer: any = new VectorLayer({
       source: new VectorSource(),
@@ -695,7 +695,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     });
     alarmLayer.set("code", "alarmLayer");
     alarmLayer.set("name", "报警图层");
-
     map.addLayer(alarmLayer);
     let alarmRes: any = (await getEquipAlarmList(mapId, isId)) || {};
     // mock数据
@@ -850,9 +849,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           map.popupInfo({ featureCode, featureName, center });
           // 以下是选中+编辑要素逻辑
-          // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 将选中用定时器是因为编辑弹框会让选中消失
+          // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
           if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
             if (map?.get("labelInfoMap")[featureCode]) {
+              // 基础信息标签信息存在则可编辑
               editLabelRef.value?.onOpen(featureCode);
               timer.value = setTimeout(() => {
                 labelOnSelect(exportMap.value, featureCode, true);
