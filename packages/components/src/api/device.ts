@@ -107,3 +107,46 @@ export function getLayerList(params: getLayerListParamsType) {
     }
   );
 }
+
+// 告警接口
+// 获取告警列表
+export function eventList(queryString: string, params: object) {
+  return request.post(`/api/adm-service/view/events${queryString}`, params);
+}
+// 知晓标记
+export function eventAwareness(params: any) {
+  return request.post(`/api/adm-service/view/event/awareness`, params);
+}
+// 知晓详情
+export function eventAwarenessDetail(params: any) {
+  return request.get(`/api/adm-service/view/event/awareness/${params}`);
+}
+// 去处理
+export function eventProcessBatch(params: any) {
+  return request.post(`/api/adm-service/view/event/process/batch`, params);
+}
+// 处理方式option
+export function getHandleTypeOption() {
+  return request.get(`/api/adm-service/view/event/handleType`);
+}
+// 事件性质option
+export function getNatureOption() {
+  return request.get(`/api/adm-service/view/event/nature`);
+}
+// 全部处理
+export function handleAll(params: any) {
+  return request.post(`/api/adm-service/view/event/process/all`, params);
+}
+// 处理记录list
+export function eventProcesses(id: string, queryString: string) {
+  return request.get(`/api/adm-service/view/event/processes/${id}${queryString}`);
+}
+// 实时事件-视频
+export function cameraPalyBackDataVideoZero(params: any) {
+  // 截屏
+  return request.get(`/video-info/api/v1/PbSnapshot${params}`);
+}
+// 实时事件-视频-左边列表
+export function cameraList(params: any) {
+  return request.get(`/api/adm-service/view/event/videos/${params}`);
+}

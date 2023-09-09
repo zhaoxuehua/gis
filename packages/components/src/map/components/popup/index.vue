@@ -50,6 +50,7 @@
         </el-scrollbar>
       </div>
     </div>
+    <AlarmListDialog ref="alarmListRef"></AlarmListDialog>
   </div>
   <el-dialog v-model="state.dialogVisible" title="轨迹查询" width="560px" append-to-body>
     <el-date-picker
@@ -85,6 +86,7 @@ import { useJSONBody } from "../../hooks/useJSONBody";
 import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单个轨迹数据
 import { labelOnSelect } from "../../hooks/index";
 import AddRemarkDialog from "./addRemarkDialog.vue";
+import AlarmListDialog from "./alarmListDialog.vue";
 
 // import { chartData, attrconfigData } from "./popupmock";
 
@@ -101,6 +103,7 @@ const onClosePopup = () => {
 };
 
 const addRemarkRef = ref();
+const alarmListRef = ref();
 const getDOMElement = () => {
   return popupRef.value;
 };
@@ -201,6 +204,13 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注
     getFocusStatus();
   }
+
+  // attrData.linkData.push({
+  //   buttonType: 7,
+  //   action: "告警",
+  //   equipType: 17,
+  //   name: "告警"
+  // });
   attrData.monitorLineAttr = monitorLineAttr.value;
   attrData.monitorJSONbodyMap = monitorJSONbodyMap.value;
   // 获取静态属性数据 监测散点/结构体数据
@@ -278,6 +288,12 @@ const onAction = (actionType: number) => {
   } else if (actionType === 6) {
     // 6 定位（基础引擎有关联关系的及外部对象的定位）
     labelOnSelect(props?.map, props?.data?.featureCode, false, equipInfo.value?.isVisitObject);
+  } else if (actionType === 7) {
+    // 告警
+    alarmListRef?.value?.openDialog({ equipCode: equipInfo.value?.code });
+
+    // mock
+    // alarmListRef?.value?.openDialog({ equipCode: "os0000101" });
   } else {
     let option = {
       ...equipInfo.value,
