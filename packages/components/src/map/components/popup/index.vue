@@ -291,9 +291,6 @@ const onAction = (actionType: number) => {
   } else if (actionType === 7) {
     // 告警
     alarmListRef?.value?.openDialog({ equipCode: equipInfo.value?.code });
-
-    // mock
-    // alarmListRef?.value?.openDialog({ equipCode: "os0000101" });
   } else {
     let option = {
       ...equipInfo.value,

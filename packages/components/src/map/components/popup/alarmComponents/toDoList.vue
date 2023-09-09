@@ -3,7 +3,7 @@
   <div>
     <el-dialog
       title="待处理事件"
-      v-model="open"
+      v-model="state.open"
       width="1150px"
       :close-on-click-modal="false"
       @close="onClose"
@@ -22,12 +22,12 @@
                   start-placeholder="开始日期"
                   end-placeholder="结束日期"
                   value-format="YYYY-MM-DD HH:mm:ss"
-                  :shortcuts="shortcuts"
+                  :shortcuts="state?.shortcuts"
                   @change="query.onQuery"
                   style="width: 400px !important; margin-right: 20px"
                 >
                 </el-date-picker>
-                <el-button class="btn-search" type="primary" @click="query.onQuery"> 搜索 </el-button>
+                <el-button type="primary" @click="query.onQuery"> 搜索 </el-button>
               </el-form-item>
             </el-col>
           </el-row>
@@ -98,130 +98,112 @@
   </div>
 </template>
 
-<script lang="ts">
-import { reactive, toRefs, ref, defineComponent } from "vue";
+<script lang="ts" setup>
+import { reactive, ref } from "vue";
 import { handleParam } from "@/utils/common.js";
 import SingleDeal from "./singleDeal.vue";
 import BatchProcessing from "./batchProcessing.vue";
 import { SHOUT_CUTS } from "./componentConstant";
-
 import { eventList } from "../../../../api/device";
 import VideoDialog from "./videoDialog.vue";
 
-export default defineComponent({
-  name: "UserEdit",
-  components: { SingleDeal, BatchProcessing, VideoDialog },
-  setup(props, { emit }) {
-    const state = reactive({
-      open: false,
-      shortcuts: SHOUT_CUTS,
-      row: null
-    });
+const emits = defineEmits(["successHandle", "successBatch"]);
+const state = reactive({
+  open: false,
+  shortcuts: SHOUT_CUTS,
+  row: null
+});
 
-    const singleDealRef = ref();
-    const batchProcessingRef = ref();
-    const videoDialogRef = ref();
+const singleDealRef = ref();
+const batchProcessingRef = ref();
+const videoDialogRef = ref();
 
-    // 查询条件
-    const defaultParams = JSON.stringify({
-      processState: "1,2",
-      orderByColumn: "",
-      isAsc: "",
-      pageNumber: 1,
-      pageSize: 10
-    });
+// 查询条件
+const defaultParams = JSON.stringify({
+  processState: "1,2",
+  orderByColumn: "",
+  isAsc: "",
+  pageNumber: 1,
+  pageSize: 10
+});
 
-    const query = ref({
-      params: JSON.parse(defaultParams),
-      getPagination: (obj: any) => {
-        query.value.params.pageNumber = obj.page;
-        query.value.params.pageSize = obj.limit;
-        query.value.onQuery();
-      },
-      onQuery: () => {
-        table.value.getTableData();
-      }
-    });
-
-    const handleSizeChange = (val: any) => {
-      query.value.getPagination({ page: 1, limit: val });
-    };
-
-    const handleCurrentChange = (val: any) => {
-      query.value.getPagination({ page: val, limit: query.value.params.pageSize });
-    };
-
-    const table = ref({
-      loading: false,
-      total: 0,
-      ids: [],
-      data: [],
-      getTableData: async () => {
-        table.value.loading = true;
-        let params = JSON.parse(JSON.stringify(query.value.params));
-        const res: any = await eventList(...(handleParam(params) as [string, object]));
-
-        table.value.data = res.data.items;
-        table.value.total = res.data.totalNum;
-        table.value.loading = false;
-      },
-      onSelectionChange: (selection: any) => {
-        table.value.ids = selection.map((item: any) => item.mid);
-      },
-      onEdit: (row: any, type: any) => {
-        if (type == "deal") {
-          singleDealRef.value.openDialog(row);
-        } else if (type == "video") {
-          videoDialogRef.value.openDialog(row);
-        }
-      }
-    });
-
-    const openDialog = (row: any) => {
-      if (row) {
-        state.row = row;
-        query.value.params.equipCode = row.equip;
-        query.value.params.eventCode = row.event;
-        table.value.getTableData();
-      }
-
-      state.open = true;
-    };
-
-    const onClose = () => {
-      state.open = false;
-    };
-
-    const onBatchProcessing = (type: any) => {
-      batchProcessingRef.value.openDialog(type, table.value.ids, null, "dialog", state.row);
-    };
-
-    const successHandle = () => {
-      table.value.getTableData();
-      emit("successHandle");
-    };
-
-    const successBatch = () => {
-      table.value.getTableData();
-      emit("successBatch");
-    };
-
-    return {
-      ...toRefs(state),
-      openDialog,
-      onClose,
-      query,
-      table,
-      singleDealRef,
-      onBatchProcessing,
-      batchProcessingRef,
-      videoDialogRef,
-      successHandle,
-      successBatch,
-      handleSizeChange,
-      handleCurrentChange
-    };
+const query = ref({
+  params: JSON.parse(defaultParams),
+  getPagination: (obj: any) => {
+    query.value.params.pageNumber = obj.page;
+    query.value.params.pageSize = obj.limit;
+    query.value.onQuery();
+  },
+  onQuery: () => {
+    table.value.getTableData();
   }
+});
+
+const handleSizeChange = (val: any) => {
+  query.value.getPagination({ page: 1, limit: val });
+};
+
+const handleCurrentChange = (val: any) => {
+  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
+};
+
+const table = ref({
+  loading: false,
+  total: 0,
+  ids: [],
+  data: [],
+  getTableData: async () => {
+    table.value.loading = true;
+    let params = JSON.parse(JSON.stringify(query.value.params));
+    const res: any = await eventList(...(handleParam(params) as [string, object]));
+
+    table.value.data = res.data.items;
+    table.value.total = res.data.totalNum;
+    table.value.loading = false;
+  },
+  onSelectionChange: (selection: any) => {
+    table.value.ids = selection.map((item: any) => item.mid);
+  },
+  onEdit: (row: any, type: any) => {
+    if (type == "deal") {
+      singleDealRef.value.openDialog(row);
+    } else if (type == "video") {
+      videoDialogRef.value.openDialog(row);
+    }
+  }
+});
+
+const openDialog = (row: any) => {
+  if (row) {
+    state.row = row;
+    query.value.params.equipCode = row.equip;
+    query.value.params.eventCode = row.event;
+    table.value.getTableData();
+  }
+
+  state.open = true;
+};
+
+const onClose = () => {
+  state.open = false;
+};
+
+const onBatchProcessing = (type: any) => {
+  batchProcessingRef.value.openDialog(type, table.value.ids, null, "dialog", state.row);
+};
+
+const successHandle = () => {
+  table.value.getTableData();
+  emits("successHandle");
+};
+
+const successBatch = () => {
+  table.value.getTableData();
+  emits("successBatch");
+};
+
+defineExpose({
+  openDialog
 });
 </script>
 

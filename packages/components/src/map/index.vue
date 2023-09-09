@@ -695,7 +695,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     alarmLayer.set("code", "alarmLayer");
     alarmLayer.set("name", "报警图层");
     map.addLayer(alarmLayer);
-    let alarmRes: any = await getEquipAlarmList(mapId, isId);
+
+    let alarmRes: any;
+    try {
+      alarmRes = await getEquipAlarmList(mapId, isId);
+    } catch (error) {}
     // mock数据
     // let alarmRes: any = {
     //   data: [

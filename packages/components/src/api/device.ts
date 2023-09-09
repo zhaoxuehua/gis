@@ -141,11 +141,6 @@ export function handleAll(params: any) {
 export function eventProcesses(id: string, queryString: string) {
   return request.get(`/api/adm-service/view/event/processes/${id}${queryString}`);
 }
-// 实时事件-视频
-export function cameraPalyBackDataVideoZero(params: any) {
-  // 截屏
-  return request.get(`/video-info/api/v1/PbSnapshot${params}`);
-}
 // 实时事件-视频-左边列表
 export function cameraList(params: any) {
   return request.get(`/api/adm-service/view/event/videos/${params}`);

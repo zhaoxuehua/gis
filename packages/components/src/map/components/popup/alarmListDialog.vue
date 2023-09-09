@@ -1,5 +1,5 @@
 <template>
-  <div class="main-content">
+  <div>
     <el-dialog
       title="告警列表"
       v-model="state.open"
@@ -43,13 +43,13 @@
         <el-table-column label="知晓情况" prop="awarenessStateName"></el-table-column>
         <el-table-column prop="path" label="操作" width="150" fixed="right">
           <template #default="scope">
-            <div class="monitor-alarm-table-option">
-              <div title="待处理事件" class="footer-item-icon-only" @click.stop="table.onEdit(scope.row, 'todo')">
-                <el-badge :value="scope.row.alarmNum" :max="99" class="monitor-alarm-table-badage">
+            <div class="monitor-alarm-table-operate">
+              <div title="待处理事件" class="footer-item-icon-operate" @click.stop="table.onEdit(scope.row, 'todo')">
+                <el-badge :value="scope.row.alarmNum" :max="99" class="monitor-alarm-table-badage-operate">
                   <Icon src="BellFilled" :size="20"></Icon>
                 </el-badge>
               </div>
-              <div title="知晓标记" class="footer-item-icon-only" @click.stop="table.onEdit(scope.row, 'mark')">
+              <div title="知晓标记" class="footer-item-icon-operate" @click.stop="table.onEdit(scope.row, 'mark')">
                 <Icon src="Grid" :size="20" type="primary"></Icon>
               </div>
             </div>
@@ -197,23 +197,23 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.monitor-alarm-table-option {
+.monitor-alarm-table-operate {
   display: flex;
   flex-direction: row;
   align-items: center;
   height: 40px;
   color: var(--el-color-primary);
 }
-.monitor-alarm-table-badage {
+.monitor-alarm-table-badage-operate {
   display: flex;
   align-items: center;
   margin-right: 30px;
 }
-.footer-item-icon-only {
+.footer-item-icon-operate {
   display: flex;
   align-items: center;
 }
-.footer-item-icon-only:hover {
+.footer-item-icon-operate:hover {
   cursor: pointer;
   transition: 0s;
 }
