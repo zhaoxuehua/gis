@@ -6,26 +6,27 @@ import { createGeometry } from "./createGeometry.js";
 import type { VisualMap } from "../type";
 
 export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data: any = []) {
+  if (!map || !data?.length) return;
   let gisStore = useGisStore();
   const relationMap = gisStore?.relationMap;
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let alarmFeatures: any = []; // 报警图层要素
   data?.forEach((item: { [key: string]: any }) => {
-    let { code, name, lon, lat } = item;
+    let { equip, equipName, lon, lat } = item;
     // 如果有经纬度则说明是点，直接绘制报警点，没有则在abelInfoMap中匹配去标签进行绘制新的报警标签
     if (lon && lat) {
       const alarmPointFeature = new Feature({
         geometry: new Point(fromLonLat([lon, lat]))
       });
       alarmPointFeature.set("type", "alarmPoint");
-      alarmPointFeature.set("code", code); // 是否显示标签
-      alarmPointFeature.set("name", name); // 是否显示标签
+      alarmPointFeature.set("code", equip); // 设备编码
+      alarmPointFeature.set("name", equipName); // 设备名称
       alarmPointFeature.set("max", 1);
       alarmFeatures.push(alarmPointFeature);
     } else {
       // 线、面、圆、矩形、环(匹配基础引擎标签）
       for (let key in relationMap) {
-        if (code == relationMap[key]?.code) {
+        if (equip == relationMap[key]?.code) {
           // key是标签的code
           let labelInfo = labelInfoMap[key];
           if (labelInfo) {
@@ -34,8 +35,8 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
               geometry: createGeometry(labelInfo?.labelData)
             });
             labelFeature.set("type", "alarmPoint");
-            labelFeature.set("code", code); // 是否显示标签
-            labelFeature.set("name", name); // 是否显示标签
+            labelFeature.set("code", equip); // 设备编码
+            labelFeature.set("name", equipName); // 设备名称
             labelFeature.set("originLabelType", labelInfo?.labelData?.style?.type);
             labelFeature.set("visible", true);
             alarmFeatures.push(labelFeature);

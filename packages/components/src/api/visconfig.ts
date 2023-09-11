@@ -7,7 +7,7 @@ export function getMapParamsDetail(params: string | number, idId: boolean) {
 
 // 获取设备告警列表
 export function getEquipAlarmList(params: string | number, idId: boolean) {
-  return request.get(`/api/gis-service/alarm/mapParams/config/detail?${idId ? "id" : "code"}=${params}`);
+  return request.get(`/api/gis-service/labelAlarm?${idId ? "appId" : "appCode"}=${params}`);
 }
 
 // 标签

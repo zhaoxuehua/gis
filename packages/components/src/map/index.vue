@@ -686,7 +686,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     }
 
     /*******************************************告警标签（点线面）**********************************************/
-    // 绘制报警点信息
+    // 绘制报警图层信息
     let alarmLayer: any = new VectorLayer({
       source: new VectorSource(),
       zIndex: 9999,
@@ -695,49 +695,21 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     alarmLayer.set("code", "alarmLayer");
     alarmLayer.set("name", "报警图层");
     map.addLayer(alarmLayer);
-
-    let alarmRes: any;
-    try {
-      alarmRes = await getEquipAlarmList(mapId, isId);
-    } catch (error) {}
-    // mock数据
-    // let alarmRes: any = {
-    //   data: [
-    //     {
-    //       lon: 106.22146190350247,
-    //       lat: 38.50491008819031,
-    //       code: "os0000102",
-    //       name: "氧气0000102",
-    //       id: 123
-    //     },
-    //     {
-    //       code: "part00002",
-    //       name: "测试面"
-    //     },
-    //     {
-    //       code: "part00001",
-    //       name: "测试面"
-    //     },
-    //     {
-    //       code: "part00005",
-    //       name: "测试面"
-    //     },
-
-    //     {
-    //       code: "测试线",
-    //       name: "测试线"
-    //     }
-    //   ]
-    // };
-
-    if (alarmRes?.data) {
-      initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data);
-      alarmTimer.value = setInterval(() => {
-        initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data);
-      }, 5000);
-    } else {
-      ElMessage.error("接口异常");
-    }
+    // 实时请求报警数据并绘制
+    const updateAlarmData = async () => {
+      try {
+        const alarmRes: any = await getEquipAlarmList(mapId, isId);
+        if (alarmRes?.code === 200) {
+          initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data || []);
+        } else {
+          ElMessage.error("接口异常");
+        }
+      } catch (error) {}
+    };
+    // 初始化时获取一次数据
+    updateAlarmData();
+    // 每隔10秒更新数据
+    alarmTimer.value = setInterval(updateAlarmData, 10000);
 
     /****************************鼠标经过*************************************************************/
     // 鼠标移动事件

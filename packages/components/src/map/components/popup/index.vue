@@ -205,12 +205,6 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     getFocusStatus();
   }
 
-  // attrData.linkData.push({
-  //   buttonType: 7,
-  //   action: "告警",
-  //   equipType: 17,
-  //   name: "告警"
-  // });
   attrData.monitorLineAttr = monitorLineAttr.value;
   attrData.monitorJSONbodyMap = monitorJSONbodyMap.value;
   // 获取静态属性数据 监测散点/结构体数据

@@ -40,6 +40,10 @@
             <div class="footer-item-icon" title="重新加载" @click="reStartEvent">
               <Icon src="RefreshLeft" :size="14"></Icon>
             </div>
+            <!-- 全屏 -->
+            <div class="footer-item-icon" title="全屏" @click="onFullScreen">
+              <Icon src="FullScreen" :size="14"></Icon>
+            </div>
             <el-select v-model="state.seekVal" size="small" class="speed" @change="seekEvent" style="width: 100px">
               <el-option label="0.5" value="0.5"></el-option>
               <el-option label="1.0" value="1.0"></el-option>
@@ -57,6 +61,8 @@
 
 <script lang="ts" setup>
 import { reactive, ref, watch } from "vue";
+import { ElMessage } from "element-plus";
+import Icon from "../../Icon.vue";
 import { cameraList } from "../../../../api/device";
 
 const state: {
@@ -118,6 +124,49 @@ const playPause = (type: any) => {
   } else if (type == "pause") {
     // 暂停
     videoRef.value && videoRef.value.pause();
+  }
+};
+
+// 全屏
+const onFullScreen = () => {
+  const documentElement = document as Document & {
+    webkitFullscreenEnabled: boolean;
+    webkitFullscreenElement: Element | null;
+    webkitExitFullscreen: () => void;
+    webkitRequestFullscreen: () => void;
+    mozFullScreenEnabled: boolean;
+    mozFullScreenElement: Element | null;
+    msFullscreenEnabled: boolean;
+    msFullscreenElement: Element | null; // 修正此处属性名
+  };
+
+  if (
+    documentElement?.fullscreenEnabled ||
+    documentElement?.webkitFullscreenEnabled ||
+    documentElement?.mozFullScreenEnabled ||
+    documentElement?.msFullscreenEnabled
+  ) {
+    if (
+      documentElement?.fullscreenElement ||
+      documentElement?.webkitFullscreenElement ||
+      documentElement?.mozFullScreenElement ||
+      documentElement?.msFullscreenElement
+    ) {
+      if (document?.exitFullscreen) {
+        document?.exitFullscreen();
+      } else if (documentElement?.webkitExitFullscreen) {
+        documentElement?.webkitExitFullscreen();
+      }
+    } else {
+      const element = fullVideoRef.value;
+      if (element?.requestFullscreen) {
+        element?.requestFullscreen();
+      } else if (element?.webkitRequestFullscreen) {
+        element?.webkitRequestFullscreen();
+      }
+    }
+  } else {
+    ElMessage.error("您的浏览器不支持全屏!");
   }
 };
 

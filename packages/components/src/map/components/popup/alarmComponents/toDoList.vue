@@ -106,6 +106,7 @@ import BatchProcessing from "./batchProcessing.vue";
 import { SHOUT_CUTS } from "./componentConstant";
 import { eventList } from "../../../../api/device";
 import VideoDialog from "./videoDialog.vue";
+import Icon from "../../Icon.vue";
 
 const emits = defineEmits(["successHandle", "successBatch"]);
 const state = reactive({
