@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.58
+
+### Patch Changes
+
+- 增加告警逻辑及部分实时数据逻辑
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.56
+
 ## 1.0.57
 
 ### Patch Changes

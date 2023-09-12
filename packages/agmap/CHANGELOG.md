@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.56
+
+### Patch Changes
+
+- 增加告警逻辑及部分实时数据逻辑
+
 ## 1.0.55
 
 ### Patch Changes
