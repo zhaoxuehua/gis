@@ -85,11 +85,11 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="显示内容"
-            prop="displayContent"
+            label="数据内容"
+            prop="dataContent"
             v-if="form.equipType?.isEquipType && form.dataSource == 'dynamicQuery'"
           >
-            <el-select v-model="form.displayContent" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+            <el-select v-model="form.dataContent" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
               <el-option
                 v-for="(item, index) in displayContentList.data"
                 :key="index"
@@ -318,7 +318,7 @@ const state = reactive({
     dataSource: [{ required: true, message: "请选择数据来源", trigger: ["blur", "change"] }],
     selectStyle: [{ required: true, message: "请选择样式", trigger: ["blur", "change"] }],
     styleObject: [{ required: true, message: "请选择内置样式对象", trigger: ["blur", "change"] }],
-    displayContent: [{ required: true, message: "请选择显示内容", trigger: ["blur", "change"] }],
+    dataContent: [{ required: true, message: "请选择数据内容", trigger: ["blur", "change"] }],
     displayScale: [
       { required: true, message: "显示比例不能为空", trigger: ["blur", "change"] },
       { validator: displayScaleVerification, trigger: ["blur", "change"] }
@@ -404,7 +404,7 @@ const defaultParam = {
   selectStyle: "customStyle", // 样式
   styleObject: "", // 内置样式对象
   dataSource: "draw", // 数据源（自己绘制还是实时请求）
-  displayContent: "" // 数据源是实时查询时关联的属性名
+  dataContent: "" // 数据源是实时查询时关联的属性名
 };
 
 // 表单字段
@@ -422,7 +422,7 @@ let form = ref<
     selectStyle?: string;
     styleObject?: string;
     dataSource?: string;
-    displayContent?: string;
+    dataContent?: string;
   }
 >(defaultParam);
 

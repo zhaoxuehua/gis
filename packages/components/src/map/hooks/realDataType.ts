@@ -45,6 +45,7 @@ interface shipColorParams {
   monitorTime: number;
   colorIndex: number | undefined;
   status: string;
+  styleObject?: string;
 }
 
 export type { configType, getInitMapExportDataType, shipParamsType, shipStyCashType, searchShipDataType, shipColorParams };

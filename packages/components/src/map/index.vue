@@ -751,6 +751,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             popupContentDOMRef.value.innerHTML = infoStr;
             hoverInfoLayer.setPosition(pos);
           } else if (extendsData?.type == "ship") {
+            // 实时标签
             const { mmsi, sog, positionReportTicks } = unref(extendsData);
             popupTitDOMRef.value.innerHTML = name;
             popupContentDOMRef.value.innerHTML = `<p>MMSI : ${mmsi}</p><p>时间 : ${positionReportTicks}</p><p>航速 : ${sog?.toFixed(

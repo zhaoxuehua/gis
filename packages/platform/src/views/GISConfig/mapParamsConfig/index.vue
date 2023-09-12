@@ -125,8 +125,8 @@
       <template #scaleLineUnit="scope">
         {{ scope.row.scaleLineUnit == "metric" ? "米（千米）" : "海里" }}
       </template>
-      <template #navTree="scope">
-        {{ scope.row.navTree == "default" ? "自定义" : "设备树" }}
+      <template #customTreeType="scope">
+        {{ scope.row.customTreeType == "EquipCustomTree" ? "设备树" : "自定义" }}
       </template>
       <template #keywordConfig="scope">
         {{

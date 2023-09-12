@@ -140,7 +140,7 @@ export const GIS_MAPPARAMS_DETAIL = [
   },
   {
     label: "导航树",
-    name: "navTree",
+    name: "customTreeType",
     slot: true
   },
   {
