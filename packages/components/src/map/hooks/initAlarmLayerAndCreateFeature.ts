@@ -5,6 +5,8 @@ import { useGisStore } from "../../stores/modules/gis";
 import { createGeometry } from "./createGeometry.js";
 import type { VisualMap } from "../type";
 
+// 告警
+
 export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data: any = []) {
   if (!map || !data?.length) return;
   let gisStore = useGisStore();
@@ -19,12 +21,13 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
         geometry: new Point(fromLonLat([lon, lat]))
       });
       alarmPointFeature.set("type", "alarmPoint");
+      alarmPointFeature.set("dataType", "1"); // 数据类型
       alarmPointFeature.set("code", equip); // 设备编码
       alarmPointFeature.set("name", equipName); // 设备名称
       alarmPointFeature.set("max", 1);
       alarmFeatures.push(alarmPointFeature);
     } else {
-      // 线、面、圆、矩形、环(匹配基础引擎标签）
+      // 点、文本 线、面、圆、矩形、环(匹配基础引擎标签）
       for (let key in relationMap) {
         if (equip == relationMap[key]?.code) {
           // key是标签的code
@@ -35,10 +38,14 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
               geometry: createGeometry(labelInfo?.labelData)
             });
             labelFeature.set("type", "alarmPoint");
+            labelFeature.set("dataType", labelInfo?.labelData?.style?.type);
             labelFeature.set("code", equip); // 设备编码
             labelFeature.set("name", equipName); // 设备名称
-            labelFeature.set("originLabelType", labelInfo?.labelData?.style?.type);
-            labelFeature.set("visible", true);
+            if (labelInfo?.labelData?.style?.type == "1" || labelInfo?.labelData?.style?.type == "6") {
+              labelFeature.set("max", 1);
+            } else {
+              labelFeature.set("visible", true);
+            }
             alarmFeatures.push(labelFeature);
           }
           break;
@@ -48,7 +55,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   });
   // 先清空数据源
   layer?.getSource()?.clear();
-  layer?.getSource().addFeatures(alarmFeatures);
+  layer?.getSource()?.addFeatures(alarmFeatures);
 
   if (gisStore?.simulateAlarmTimer) {
     clearInterval(gisStore?.simulateAlarmTimer);
@@ -57,16 +64,16 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   gisStore?.setSimulateAlarmTimer(
     setInterval(() => {
       layer?.getSource().forEachFeature((feature: any) => {
-        let originLabelType = feature.get("originLabelType");
-        if (originLabelType) {
+        let dataType = feature.get("dataType");
+        if (dataType == "1" || dataType == "6") {
+          // 点报警要素
+          let max = feature.get("max") || 1;
+          max = max < 3 ? max + 1 : 1;
+          feature.set("max", max);
+        } else {
           // 线面报警要素
           let visible = feature.get("visible");
           feature.set("visible", !visible);
-        } else {
-          // 点报警要素
-          let max = feature.get("max");
-          max = max < 3 ? max + 1 : 1;
-          feature.set("max", max);
         }
       });
     }, 600)

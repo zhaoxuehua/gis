@@ -450,11 +450,16 @@ export function alarmLayerStyle(feature: any) {
   if (Array.isArray(feature?.get("features"))) {
     targetFeature = feature.get("features")[0];
   }
-  const originLabelType = targetFeature.get("originLabelType");
-  if (originLabelType) {
+  const dataType = targetFeature.get("dataType");
+  if (dataType == "1" || dataType == "6") {
+    // 点类型报警
+    const max = targetFeature.get("max");
+    const alarmImg = styleAlarm.pointAlarmSty?.slice(0, max); // 返回3个样式（通过控制数组样式个数）
+    return alarmImg;
+  } else {
     // 其他类型报警
     const visible = targetFeature.get("visible");
-    if (["2", "7"].includes(originLabelType)) {
+    if (["2", "7"].includes(dataType)) {
       // 线样式的渲染(线环)
       if (visible) {
         return [styleAlarm.lineAlarmSty1];
@@ -462,7 +467,7 @@ export function alarmLayerStyle(feature: any) {
         return [styleAlarm.lineAlarmSty2];
       }
     }
-    if (["3", "4", "5"].includes(originLabelType)) {
+    if (["3", "4", "5"].includes(dataType)) {
       // 面样式的渲染（面圆矩形）
       if (visible) {
         return [styleAlarm.polAlarmSty1];
@@ -470,15 +475,10 @@ export function alarmLayerStyle(feature: any) {
         return [styleAlarm.polAlarmSty2];
       }
     }
-  } else {
-    // 点类型报警
-    const max = targetFeature.get("max");
-    const alarmImg = styleAlarm.pointAlarmSty?.slice(0, max); // 返回3个样式（通过控制数组样式个数）
-    return alarmImg;
   }
 }
 
-// 绘制图层的样式及绘制时图标样式
+// 测量绘制图层的样式及绘制时图标样式
 export function measureStyle() {
   let style = new Style({
     fill: new Fill({

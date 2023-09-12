@@ -96,6 +96,7 @@ import {
 import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
 import { getTrackDataByIdFn } from "./hooks/getTrackDataById"; // 获取单个轨迹数据
 import { initAlarmLayerAndCreateFeature } from "./hooks/initAlarmLayerAndCreateFeature";
+import { initRealtimeData, realDataTimerObj } from "./hooks/initRealtimeData";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -331,7 +332,7 @@ const timer: any = ref(null);
 const dynamicTimes: any = ref(null); // 风机、动态线、动态环的定时器
 const alarmTimer: any = ref(null); // 告警列表动态请求
 
-// overlayer
+// Overlay
 const popupDOMRef = ref();
 const popupTitDOMRef = ref();
 const popupContentDOMRef = ref();
@@ -399,7 +400,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
       trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
-      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
+      trackSearchCode: originalData.trackSearchCode, // 轨迹搜索类型code
+      realtimeDataList: originalData?.realtimeDataList // 实时请求列表数据
     };
 
     // 全屏控件
@@ -684,7 +686,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     } else {
       ElMessage.error("接口异常");
     }
-
+    /*******************************************实时数据（船、人、车等）*****************************************/
+    // 根据后端返回的实时数据配置列表请求数据
+    if (defaultOptions?.realtimeDataList && defaultOptions.realtimeDataList?.length) {
+      initRealtimeData(map, defaultOptions.realtimeDataList);
+    }
     /*******************************************告警标签（点线面）**********************************************/
     // 绘制报警图层信息
     let alarmLayer: any = new VectorLayer({
@@ -928,6 +934,15 @@ onBeforeUnmount(() => {
   if (gisStore?.simulateAlarmTimer) {
     clearInterval(gisStore?.simulateAlarmTimer);
     gisStore?.setSimulateAlarmTimer(null);
+  }
+  // 清空实时数据定时器
+  if (realDataTimerObj && Object.keys(realDataTimerObj)) {
+    Object.keys(realDataTimerObj).forEach((timerCode: any) => {
+      if (realDataTimerObj[timerCode]) {
+        clearTimeout(realDataTimerObj[timerCode]);
+        realDataTimerObj[timerCode] = null;
+      }
+    });
   }
 });
 
