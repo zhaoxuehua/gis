@@ -33,7 +33,7 @@ const onClose = () => {
 };
 
 const defaultOptions = computed(() => {
-  let defaultOptions = map.value?.defaultOptions;
+  let defaultOptions = map.value?.defaultOptions || {};
   return defaultOptions;
 });
 const radio = ref<string>();

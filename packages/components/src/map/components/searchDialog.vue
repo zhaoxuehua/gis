@@ -87,7 +87,7 @@ const getFilterALLData = () => {
   let mapInstance = props.map;
   const labelInfoMap = mapInstance?.get("labelInfoMap") || {};
   const trackInfoMap = mapInstance?.get("trackInfoMap") || [];
-  const displaySearchIds = mapInstance.defaultOptions.displaySearchIds?.split(",")?.map((item: string) => Number(item));
+  const displaySearchIds = mapInstance?.defaultOptions?.displaySearchIds?.split(",")?.map((item: string) => Number(item));
   let labelInfoArr: any = Object.values(labelInfoMap) || [];
   const relationMap = gisStore?.relationMap;
   const labelAllData = [...labelInfoArr, ...trackInfoMap];

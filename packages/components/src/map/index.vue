@@ -460,7 +460,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       }).extend(controlsList),
       layers: [normalMap, sateMap, overlayMap],
       view: new View({
-        center: fromLonLat([defaultOptions.center.lon, defaultOptions.center.lat]),
+        center: fromLonLat([defaultOptions?.center?.lon, defaultOptions?.center?.lat]),
         zoom: defaultOptions?.defaultZoom,
         minZoom: defaultOptions?.minZoom,
         maxZoom: defaultOptions?.maxZoom,
