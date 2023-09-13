@@ -174,7 +174,7 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
 const emits = defineEmits(["onClose"]);
 const state = reactive({
   activeIndex: "1",
-  measuringValue: "", //当前选择的测量单位
+  measuringValue: "length", //当前选择的测量单位
   measuringOptions: [
     // 测量下拉选项
     { value: "length", label: "长度" },

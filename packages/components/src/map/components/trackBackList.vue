@@ -25,10 +25,23 @@
             <el-table-column label="操作" width="120">
               <template #default="scope">
                 <span class="between">
-                  <Icon src="View" :size="14" class="operate-icon" v-if="scope.row.viewHide" @click="viewHide(scope.row)"></Icon>
-                  <Icon src="Hide" :size="14" class="operate-icon" v-else @click="viewHide(scope.row)"></Icon>
-                  <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)"></Icon>
-                  <Icon src="DeleteFilled" :size="14" class="operate-icon" @click="deleteRow(scope.row, scope.$index)"></Icon>
+                  <Icon
+                    src="View"
+                    :size="14"
+                    class="operate-icon"
+                    v-if="scope.row.viewHide"
+                    @click="viewHide(scope.row)"
+                    title="显示轨迹"
+                  ></Icon>
+                  <Icon src="Hide" :size="14" class="operate-icon" v-else @click="viewHide(scope.row)" title="隐藏轨迹"></Icon>
+                  <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)" title="定位"></Icon>
+                  <Icon
+                    src="DeleteFilled"
+                    :size="14"
+                    class="operate-icon"
+                    @click="deleteRow(scope.row, scope.$index)"
+                    title="删除"
+                  ></Icon>
                 </span>
               </template>
             </el-table-column>
