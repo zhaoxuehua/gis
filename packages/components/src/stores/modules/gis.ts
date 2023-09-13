@@ -15,6 +15,7 @@ export const useGisStore = defineStore({
     imgIndex: 0, // 动画点图片索引
     isEdit: false, // 地图编辑
     isShowEditLabel: false, // 编辑标签弹框
+    keywordConfig: {}, // 关键词配置
     simulateAlarmTimer: null, // 报警要素样式切换定时器
     mapCase: {}, // 地图实例
     trackColor: ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"] // 轨迹回放的颜色
@@ -57,6 +58,10 @@ export const useGisStore = defineStore({
     },
     setSimulateAlarmTimer(timer: any) {
       this.simulateAlarmTimer = timer;
+    },
+
+    setKeywordConfig(keywordConfig: { [key: string]: any }) {
+      this.keywordConfig = keywordConfig;
     },
 
     // 设置导航树数据及关联关系为空

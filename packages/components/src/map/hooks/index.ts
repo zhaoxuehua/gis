@@ -326,7 +326,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
 
   let zoom = minZoom;
   // 视图缩放策略（点（点文本）取值最大值  线（线、环）平均值  其他均值）  兼容外部对象(外部对象目前没存数据类型)
-  let dataType = labelInfo?.labelType?.dataType;
+  let dataType = labelInfo?.labelType?.dataType || labelInfo?.dataType;
   if (["1", "6"].includes(dataType)) {
     zoom = maxZoom;
   }

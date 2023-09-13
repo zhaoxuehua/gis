@@ -18,9 +18,10 @@ interface shipParamsType {
   color: string[];
   showHeadline?: boolean;
   angle: number;
-  mmsi: number;
+  code: any;
   sog: number;
-  positionReportTicks: number;
+  monitorTime: number;
+  person: any;
 }
 
 interface shipStyCashType {

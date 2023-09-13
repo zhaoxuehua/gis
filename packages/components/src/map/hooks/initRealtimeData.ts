@@ -11,13 +11,15 @@ import { createdCanvasShip } from "./createdCanvasShip"; // 绘制船只
 import { drawCanvasPerson } from "./drawCanvasPerson";
 import { styleAct } from "./styleFunction.js";
 
+/****************************************实时数据****************************************************/
+
 export let realDataTimerObj: { [key: string]: any } = {}; // 定时器，最多有船 人
 
 export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
   if (!map || !realtimeDataList?.length) return;
 
   let realStyCash: shipStyCashType = {}; //  缓存样式
-  // 实时数据处理 每项代表一个实时数据 例如船、人、车
+  // 实时数据处理 每项代表一个实时数据( 例如船、人、车)
   realtimeDataList.forEach(async (item: { [key: string]: any }) => {
     let { code } = item;
     // 获取标签类型信息(用到标签类型id  内置样式对象等)
@@ -59,7 +61,6 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       }
       let extendsData = targetFeature.get("extendsData");
       let selected = targetFeature.get("selected");
-
       const { angle } = extendsData; // 要素扩展字段
       let { shipKey, canvasImg, height } = createLayerStyle(styleObject, extendsData);
       if (!realStyCash[shipKey]) {
@@ -87,13 +88,18 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       if (res?.code == 200) {
         const { data } = res;
         let searchShipData: searchShipDataType = []; // 塞入基础引擎(搜索使用)
-        Object.values(data).forEach(item => {
-          const aisLocation = (item as any)?.[dataContent];
-          const status = (item as any)?.["AISDATA-alarm"]; // 告警（布尔值）
+        // 经度lon 纬度lat 时间monitorTime 船4关注colorIndex  速度sog 都在监测属性中
+        // 名称name 在监测属性同级  编码code（取key值）
+        // 联系人person新加在静态属性中
+        Object.entries(data).forEach(([key, item]) => {
+          const aisLocation = (item as any)?.[dataContent]; // 监测属性
           const staticAttr = (item as any)?.staticAttr || ""; // 静态属性
+          const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）AISDATA-alarm
+          const name = (item as any)?.[`${dataContent}-name`] || ""; // 名称（船名、人的终端名称）
+
           if (aisLocation) {
-            const valStr = aisLocation.value;
             const monitorTime = aisLocation.monitorTime;
+            const valStr = aisLocation.value;
             let valInfo = JSON.parse(valStr);
             if (typeof valInfo == "string") {
               valInfo = JSON.parse(valInfo);
@@ -101,42 +107,42 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
             if (valInfo.category === "基站") {
               return;
             }
-            let name: string = "";
+
+            let person: string = "";
             if (staticAttr) {
-              name = JSON.parse(staticAttr?.value).name || "";
+              person = JSON.parse(staticAttr?.value).person || "";
             }
-            // 需要明确后端数据结构及取值字段
-            const colorArr: any = shipColor({
+
+            const colorArr: any = realFeatureColor({
               monitorTime,
               colorIndex: valInfo.colorIndex,
-              status,
-              styleObject
+              status
             });
 
             const shipInfo = {
               lat: valInfo.lat,
               lon: valInfo.lon,
-              name: name,
-              type: dataType,
-
-              color: colorArr,
-              showHeadline: Boolean(shipHeadLine),
               angle: valInfo.cog,
-              mmsi: valInfo.mmsi,
               sog: valInfo.sog,
-              positionReportTicks: monitorTime
+              monitorTime: monitorTime,
+              color: colorArr,
+              person,
+              code: key,
+              name: name,
+              showHeadline: Boolean(shipHeadLine),
+              type: dataType
             };
             const shipFeature = createdRealDataFeature(shipInfo, dataType, labelTypeCode);
             shipFeatureArr.push(shipFeature);
 
             // 基础引擎搜索使用
             searchShipData.push({
-              code: valInfo.mmsi,
               lat: valInfo.lat,
               lon: valInfo.lon,
+              code: key,
               name: name,
+              isVisitObject: true, // 是否实时标签
               dataType: dataType,
-              isVisitObject: true,
               equipType: equipTypeId, // 设备类型id
               labelTypeId: labelTypeId, // 标签类型id
               layerCode: layerConfigCode // 图层code
@@ -176,7 +182,7 @@ export function createLayerStyle(styleObject: string, extendsData: any) {
   } else if (styleObject == "person") {
     shipKey = color.join();
     canvasImg = drawCanvasPerson(color) as HTMLCanvasElement;
-    height = 80;
+    height = 54;
   }
   return { shipKey, canvasImg, height };
 }
@@ -184,29 +190,30 @@ export function createLayerStyle(styleObject: string, extendsData: any) {
 // 创建要素
 export function createdRealDataFeature(params: shipParamsType, dataType: string, labelTypeCode: string) {
   const shipFeature = new Feature({
-    name: params.name,
+    name: params.name, // 鼠标经过及左击使用
     geometry: new Point(olProj.fromLonLat([params.lon, params.lat])),
     // 图层样式根据要素属性渲染 、鼠标经过时使用
     extendsData: {
+      code: params.code,
+      person: params.person,
+      sog: params.sog,
+      monitorTime: dayjs(params.monitorTime).format("YYYY-MM-DD HH:mm:ss"),
+      type: "realTimeTag", // 实时标签类型
       color: params.color,
       showHeadline: params.showHeadline,
-      angle: params.angle,
-      type: "ship", // 实时标签类型
-      mmsi: params.mmsi,
-      sog: params.sog,
-      positionReportTicks: dayjs(params.positionReportTicks).format("YYYY-MM-DD HH:mm:ss")
+      angle: params.angle
     }
   });
   // 基础引擎，左键点击使用
-  shipFeature.setId(params.mmsi);
+  shipFeature.setId(params.code);
+  shipFeature.set("code", params.code);
   shipFeature.set("type", dataType);
-  shipFeature.set("code", params.mmsi);
   shipFeature.set("labelTypeCode", labelTypeCode);
   return shipFeature;
 }
 
 /************************************************************************
-  获取船只颜色函数
+  获取船只颜色函数（人逻辑相同）
   船只颜色
   01: colorIndex=4 表示是关注船只 => 绿色
   02: monitorTime 和当前时间 new Date()对比
@@ -217,35 +224,30 @@ export function createdRealDataFeature(params: shipParamsType, dataType: string,
       I: 延迟大于8分钟并且是报警  => 灰色 + 红色
 ************************************************************************/
 const eightMinutes = 8 * 60 * 1000;
-export function shipColor(arg: shipColorParams) {
+export function realFeatureColor(arg: shipColorParams) {
   let colorArr: string[] = [];
   const nowTime = +new Date();
-  const { monitorTime, colorIndex, status, styleObject } = arg;
-  if (styleObject == "aisBoat") {
-    if (Number(colorIndex) === 4) {
-      // 关注船只
-      colorArr = ["#00ff00", "#00ff00"];
+  const { monitorTime, colorIndex, status } = arg;
+  if (Number(colorIndex) === 4) {
+    // 关注船只
+    colorArr = ["#00ff00", "#00ff00"];
+  } else {
+    if (monitorTime - nowTime > eightMinutes) {
+      // 延迟大于8分钟
+      colorArr = ["#c0c0c0", "#c0c0c0"];
     } else {
-      if (monitorTime - nowTime > eightMinutes) {
-        // 延迟大于8分钟
-        colorArr = ["#c0c0c0", "#c0c0c0"];
-      } else {
-        // 延迟小于等于8分钟
-        colorArr = ["#ffff00", "#ffff00"];
-      }
+      // 延迟小于等于8分钟
+      colorArr = ["#ffff00", "#ffff00"];
     }
-    if (status) {
-      // 告警船只
-      if (monitorTime - nowTime > eightMinutes) {
-        // 延迟大于8分钟
-        colorArr = ["#c0c0c0", "#ff0000"];
-      } else {
-        colorArr = ["#ff0000", "#ff0000"];
-      }
-    }
-    return colorArr;
-  } else if (styleObject == "person") {
-    // 人的颜色取值逻辑？？？？
-    return ["red"];
   }
+  if (status) {
+    // 告警船只
+    if (monitorTime - nowTime > eightMinutes) {
+      // 延迟大于8分钟
+      colorArr = ["#c0c0c0", "#ff0000"];
+    } else {
+      colorArr = ["#ff0000", "#ff0000"];
+    }
+  }
+  return colorArr;
 }

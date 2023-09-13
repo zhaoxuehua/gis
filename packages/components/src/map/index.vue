@@ -403,6 +403,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
       trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
     };
+    gisStore?.setKeywordConfig(originalData?.keywordConfig || {}); // 关键词配置
     realtimeDataList.value = originalData?.realtimeDataList || [{ code: "aisBoat" }]; // 实时请求列表数据  // mock数据
 
     // 全屏控件
@@ -717,10 +718,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         }
       } catch (error) {}
     };
-    // 初始化时获取一次数据
-    updateAlarmData();
-    // 每隔10秒更新数据
-    alarmTimer.value = setInterval(updateAlarmData, 10000);
+    updateAlarmData(); // 初始化时获取一次数据
+    alarmTimer.value = setInterval(updateAlarmData, 10000); // 每隔10秒更新数据
 
     /****************************鼠标经过*************************************************************/
     // 鼠标移动事件
@@ -755,13 +754,26 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             popupTitDOMRef.value.innerHTML = titleInfo.name;
             popupContentDOMRef.value.innerHTML = infoStr;
             hoverInfoLayer.setPosition(pos);
-          } else if (extendsData?.type == "ship") {
+          } else if (extendsData?.type == "realTimeTag") {
             // 实时标签
-            const { mmsi, sog, positionReportTicks } = unref(extendsData);
-            popupTitDOMRef.value.innerHTML = name;
-            popupContentDOMRef.value.innerHTML = `<p>MMSI : ${mmsi}</p><p>时间 : ${positionReportTicks}</p><p>航速 : ${sog?.toFixed(
-              1
-            )}节</p>`;
+            const { code, sog, monitorTime, person } = unref(extendsData);
+            popupTitDOMRef.value.innerHTML = name; // 标题
+            // 根据关键词配置拼接code person monitorTime sog
+            let contentStr = "";
+            let keywordConfig = gisStore?.keywordConfig;
+            if (keywordConfig?.code) {
+              contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
+            }
+            if (keywordConfig?.monitorTime) {
+              contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
+            }
+            if (keywordConfig?.speed) {
+              contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
+            }
+            if (keywordConfig?.person) {
+              contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
+            }
+            popupContentDOMRef.value.innerHTML = contentStr;
             hoverInfoLayer.setPosition(pos);
           } else {
             hoverInfoLayer.setPosition(undefined);

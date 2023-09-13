@@ -1,9 +1,9 @@
 type createdCanvasShipType = (color: string[]) => HTMLCanvasElement | undefined;
 
-const drawCanvasPerson: createdCanvasShipType = function (color: string[]) {
+const drawCanvasPerson: createdCanvasShipType = function ([headColor, bodyColor]) {
   // 人
-  const width = 40;
-  const height = 80; // 调整为更短的高度
+  const width = 30;
+  const height = 50;
   const canvas = document.createElement("canvas") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
   canvas.width = width;
@@ -11,39 +11,39 @@ const drawCanvasPerson: createdCanvasShipType = function (color: string[]) {
 
   if (ctx) {
     // 绘制头部
-    ctx.fillStyle = color[0];
-    ctx.strokeStyle = color[0];
+    ctx.fillStyle = headColor;
+    ctx.strokeStyle = bodyColor;
     ctx.beginPath();
-    ctx.arc(20, 15, 10, 0, Math.PI * 2);
+    ctx.arc(15, 10, 7.5, 0, Math.PI * 2);
     ctx.fill();
 
     // 绘制身体
-    ctx.fillRect(15, 30, 10, 30);
+    ctx.fillRect(10, 20, 10, 15);
 
     // 绘制左胳膊
-    ctx.lineWidth = 4; // 设置胳膊粗度
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(5, 35);
-    ctx.lineTo(15, 45);
+    ctx.moveTo(3, 22.5);
+    ctx.lineTo(10, 25);
     ctx.stroke();
 
     // 绘制右胳膊
     ctx.beginPath();
-    ctx.moveTo(25, 35);
-    ctx.lineTo(35, 45);
+    ctx.moveTo(20, 22.5);
+    ctx.lineTo(27, 25);
     ctx.stroke();
 
     // 绘制左腿
-    ctx.lineWidth = 4; // 设置腿粗度
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(15, 60);
-    ctx.lineTo(10, 75); // 修改腿下圈圈的位置
+    ctx.moveTo(10, 35);
+    ctx.lineTo(6, 42.5);
     ctx.stroke();
 
     // 绘制右腿
     ctx.beginPath();
-    ctx.moveTo(25, 60);
-    ctx.lineTo(30, 75); // 修改腿下圈圈的位置
+    ctx.moveTo(20, 35);
+    ctx.lineTo(24, 42.5);
     ctx.stroke();
   }
   return canvas;
