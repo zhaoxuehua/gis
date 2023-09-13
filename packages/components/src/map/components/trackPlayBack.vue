@@ -108,8 +108,8 @@
           <el-table-column label="名称" prop="name"></el-table-column>
           <el-table-column label="操作" width="80">
             <template #default="scope">
-              <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)"></Icon>
-              <Icon src="Connection" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)"></Icon>
+              <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)" title="定位"></Icon>
+              <Icon src="Connection" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)" title="轨迹"></Icon>
             </template>
           </el-table-column>
         </el-table>
@@ -326,6 +326,7 @@ function getCoordinateArrByLabelType() {
     coordinateArr[0].forEach((item: number[]) => {
       tempArr.push(`(${toLonLatFN(item).join()})`);
     });
+    tempArr = [tempArr];
   } else if (formData.selectLabel === "all") {
     // 如果选的全部，收集该类型下所有数据
     target = selectLabelList.value.filter(val => val.code !== "all");
@@ -339,7 +340,8 @@ function getCoordinateArrByLabelType() {
       tempArr.push(`[${mapData.toString()}]`);
     }
   });
-  return `[${tempArr.toString()}]`;
+
+  return tempArr;
 }
 
 /****************************************
@@ -429,6 +431,7 @@ const table = ref<TableList>({
       clearSelectionDrawInteraction(map.value);
       table.value.data = data.items;
       table.value.total = data.totalNum;
+      coordinateArr = [];
       if (!data.items.length) {
         return ElMessage.warning("暂无数据");
       }
