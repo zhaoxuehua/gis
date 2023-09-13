@@ -38,10 +38,10 @@ export const styleAct = {
 
 // 报警样式（报警点、线、面）
 export const styleAlarm = {
-  pointAlarmSty: warnFault("#ff0000"), // 报警点
+  pointAlarmSty: warnFault("rgba(255,0,0,0.4)"), // 报警点
   lineAlarmSty1: new Style({
     stroke: new Stroke({
-      color: "rgba(255,0,0,0.7)",
+      color: "rgba(255,0,0,0.4)",
       width: 2
     }),
     zIndex: 10
@@ -57,7 +57,7 @@ export const styleAlarm = {
   // 报警面的动画样式1 2
   polAlarmSty1: new Style({
     fill: new Fill({
-      color: "rgba(255,0,0,0.7)"
+      color: "rgba(255,0,0,0.4)"
     }),
     zIndex: 10
   }),

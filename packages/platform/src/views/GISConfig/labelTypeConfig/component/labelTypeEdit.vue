@@ -73,8 +73,8 @@
         </el-form-item>
         <!-- 点 -->
         <template v-if="form.dataType === '1'">
-          <!-- 只有是设备类型才有数据来源及显示内容  -->
-          <el-form-item label="数据来源" prop="dataSource" v-if="form.equipType?.isEquipType">
+          <!-- 只有是设备类型才有数据来源及数据内容  -->
+          <el-form-item label="数据来源" prop="dataSource" v-if="form.equipType?.id">
             <el-select v-model="form.dataSource" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
               <el-option
                 v-for="(item, index) in dataSourceList.data"
@@ -84,17 +84,13 @@
               ></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item
-            label="数据内容"
-            prop="dataContent"
-            v-if="form.equipType?.isEquipType && form.dataSource == 'dynamicQuery'"
-          >
+          <el-form-item label="数据内容" prop="dataContent" v-if="form.equipType?.id && form.dataSource == 'dynamicQuery'">
             <el-select v-model="form.dataContent" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
               <el-option
-                v-for="(item, index) in displayContentList.data"
+                v-for="(item, index) in dataContentList.data"
                 :key="index"
-                :label="item.name"
-                :value="item.code"
+                :label="item.attributeName"
+                :value="item.attributeCode"
               ></el-option>
             </el-select>
           </el-form-item>
@@ -265,6 +261,7 @@ import {
   editLabelType,
   getLegendConfigList
 } from "@/api/visconfig.js";
+import { getBindAttributeMonitor } from "@/api/device.js";
 import ReferenceMain from "./referenceMain.vue";
 import ReferenceObject from "./referenceObject.vue";
 import { LabelType } from "../../type";
@@ -670,18 +667,19 @@ const layerList = ref<{
   }
 });
 
-// 显示内容（根据关联的对象类型请求属性列表）
-const displayContentList = ref<{
+// 数据内容（根据关联的对象类型请求属性列表）
+const dataContentList = ref<{
   data: Array<{
-    id: number;
-    code: string;
-    name: string;
+    attributeCode: string;
+    attributeName: string;
   }>;
   fetchData: Function;
 }>({
   data: [],
   fetchData: async () => {
-    displayContentList.value.data = [];
+    dataContentList.value.data = [];
+    const res: { [key: string]: any } = await getBindAttributeMonitor(form.value?.equipType?.id); // 传设备类型id
+    dataContentList.value.data = res?.data || [];
   }
 });
 
@@ -763,13 +761,15 @@ const dataSourceList = ref<{
 
 // 监听绑定的设备类型id，当变更后更新显示内容列表
 watch(
-  form.value?.equipType?.id,
+  () => form.value?.equipType?.id,
   val => {
     if (!val) {
-      displayContentList.value.data;
+      form.value.dataSource = "";
+      dataContentList.value.data = [];
     } else {
-      displayContentList.value.fetchData();
+      dataContentList.value.fetchData();
     }
+    form.value.dataContent = ""; // 数据内容
   },
   {
     deep: true,

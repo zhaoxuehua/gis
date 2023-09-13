@@ -331,6 +331,7 @@ let imgIndex = computed(() => gisStore.imgIndex);
 const timer: any = ref(null);
 const dynamicTimes: any = ref(null); // 风机、动态线、动态环的定时器
 const alarmTimer: any = ref(null); // 告警列表动态请求
+let realtimeDataList: any = ref([]); // 实时数据配置list
 
 // Overlay
 const popupDOMRef = ref();
@@ -400,9 +401,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend, // 图例[]
       trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
-      trackSearchCode: originalData.trackSearchCode, // 轨迹搜索类型code
-      realtimeDataList: originalData?.realtimeDataList // 实时请求列表数据
+      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
     };
+    realtimeDataList.value = originalData?.realtimeDataList || [{ code: "aisBoat" }]; // 实时请求列表数据  // mock数据
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
@@ -688,8 +689,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     }
     /*******************************************实时数据（船、人、车等）*****************************************/
     // 根据后端返回的实时数据配置列表请求数据
-    if (defaultOptions?.realtimeDataList && defaultOptions.realtimeDataList?.length) {
-      initRealtimeData(map, defaultOptions.realtimeDataList);
+    if (realtimeDataList.value && realtimeDataList.value?.length) {
+      initRealtimeData(map, realtimeDataList.value);
     }
     /*******************************************告警标签（点线面）**********************************************/
     // 绘制报警图层信息
@@ -703,6 +704,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.addLayer(alarmLayer);
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
+      if (alarmTimer.value) {
+        clearInterval(alarmTimer.value);
+        alarmTimer.value = null;
+      }
       try {
         const alarmRes: any = await getEquipAlarmList(mapId, isId);
         if (alarmRes?.code === 200) {
@@ -893,6 +898,30 @@ const onScadaClose = () => {
   exportMap.value?.closePopup();
 };
 
+const clearAllTimers = () => {
+  if (dynamicTimes.value) {
+    clearInterval(dynamicTimes.value);
+    dynamicTimes.value = null;
+  }
+  if (alarmTimer.value) {
+    clearInterval(alarmTimer.value);
+    alarmTimer.value = null;
+  }
+  if (gisStore?.simulateAlarmTimer) {
+    clearInterval(gisStore?.simulateAlarmTimer);
+    gisStore?.setSimulateAlarmTimer(null);
+  }
+  // 清空实时数据定时器
+  if (realDataTimerObj && Object.keys(realDataTimerObj)) {
+    Object.keys(realDataTimerObj).forEach((timerCode: any) => {
+      if (realDataTimerObj[timerCode]) {
+        clearTimeout(realDataTimerObj[timerCode]);
+        realDataTimerObj[timerCode] = null;
+      }
+    });
+  }
+};
+
 onMounted(() => {
   // 存储sessionId
   localStorage.setItem("sessionId", props?.config?.sessionId);
@@ -920,31 +949,12 @@ onMounted(() => {
   gisStore.setIsEdit(false);
   const mapParams = props?.config?.id || props?.config?.code;
   if (!mapParams) return;
+  clearAllTimers();
   initMap(mapParams, !!props?.config?.id);
 });
 
 onBeforeUnmount(() => {
-  if (dynamicTimes.value) {
-    clearInterval(dynamicTimes.value);
-    dynamicTimes.value = null;
-  }
-  if (alarmTimer.value) {
-    clearInterval(alarmTimer.value);
-    alarmTimer.value = null;
-  }
-  if (gisStore?.simulateAlarmTimer) {
-    clearInterval(gisStore?.simulateAlarmTimer);
-    gisStore?.setSimulateAlarmTimer(null);
-  }
-  // 清空实时数据定时器
-  if (realDataTimerObj && Object.keys(realDataTimerObj)) {
-    Object.keys(realDataTimerObj).forEach((timerCode: any) => {
-      if (realDataTimerObj[timerCode]) {
-        clearTimeout(realDataTimerObj[timerCode]);
-        realDataTimerObj[timerCode] = null;
-      }
-    });
-  }
+  clearAllTimers();
 });
 
 // 自定义框选弹框
@@ -974,18 +984,14 @@ const handlePopLink = (type: any, option: any) => {
   emits(type, option);
 };
 
-// 实时标签样式
-let toolboxCallBack: (arg: boolean) => void;
+// 监听实时标签的船首线
 const toolboxStore = useToolboxStore();
 watch(
   () => toolboxStore.data,
-  n => {
-    typeof toolboxCallBack == "function" && toolboxCallBack(n);
+  () => {
+    initRealtimeData(exportMap.value, realtimeDataList.value);
   }
 );
-const toolBoxSetChange = (fn: () => void) => {
-  toolboxCallBack = fn;
-};
 
 defineExpose({
   getMapElement,
@@ -1004,8 +1010,7 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter,
-  toolBoxSetChange
+  getGeometryCenter
 });
 
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/

@@ -321,8 +321,8 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     layer = map?.get("layerMap")[labelInfo.layerCode];
   }
 
-  const minZoom = Math.ceil(layer.getMinZoom()); // 图层最小层级
-  const maxZoom = Math.floor(layer.getMaxZoom()); // 图层最大层级
+  const minZoom = Math.ceil(layer?.getMinZoom()); // 图层最小层级
+  const maxZoom = Math.floor(layer?.getMaxZoom()); // 图层最大层级
 
   let zoom = minZoom;
   // 视图缩放策略（点（点文本）取值最大值  线（线、环）平均值  其他均值）  兼容外部对象(外部对象目前没存数据类型)
@@ -369,14 +369,10 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       clusterDataSource?.getFeatures()?.forEach(function (clusterFeature: any) {
         clusterFeature.get("features").forEach(function (originalFeature: any) {
           if (originalFeature.get("code") === featureCode) {
-            // 分是否外部对象
-            if (isVisitObject) {
-              layer?.getStyleFunction()(clusterFeature);
-            } else {
-              originalFeature.set("selected", true); // 非聚合图层的可以这样实现
-              originalFeature.changed();
-              map.set("featureSelect", originalFeature);
-            }
+            // 分是否外部对象(实时数据绘制与基础引擎标签)
+            originalFeature.set("selected", true); // 非聚合图层的可以这样实现
+            originalFeature.changed();
+            map.set("featureSelect", originalFeature);
           }
         });
       });
@@ -384,13 +380,9 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       let source = layer.getSource();
       const selectFeature = source?.getFeatureById(featureCode);
       if (selectFeature) {
-        if (isVisitObject) {
-          layer?.getStyleFunction()(selectFeature);
-        } else {
-          selectFeature.set("selected", true); // 非聚合图层的可以这样实现
-          selectFeature.changed();
-          map.set("featureSelect", selectFeature);
-        }
+        selectFeature.set("selected", true); // 非聚合图层的可以这样实现
+        selectFeature.changed();
+        map.set("featureSelect", selectFeature);
       } else {
         ElMessage.warning("当前目标不在地图上!");
       }
@@ -632,8 +624,8 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
       // 选中的各个要素
       let targetFeature: any;
       const { features } = feature?.getProperties(); // 针对聚合要素，聚合要素的话features是数组
-      if (features && features.length) {
-        targetFeature = features[0]; // 取聚合要素的第一个原始要素
+      if (features && features?.length) {
+        targetFeature = features?.[0]; // 取聚合要素的第一个原始要素
       } else {
         targetFeature = feature;
       }
@@ -683,9 +675,9 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
       }
     });
     polygonArr.sort((a, b) => a.area - b.area);
-    currentSelectFeature = polygonArr[0].val;
+    currentSelectFeature = polygonArr?.[0].val;
   } else {
-    currentSelectFeature = typeMap.other[0];
+    currentSelectFeature = typeMap.other?.[0];
   }
   return currentSelectFeature;
 }

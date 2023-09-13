@@ -10,6 +10,7 @@
       :destroy-on-close="true"
     >
       <div>
+        <el-button type="primary" style="margin-bottom: 20px" @click="create">添加</el-button>
         <div v-for="(item, index) in state.keywordConfigList" :key="index">
           <div class="position-box">
             <label> key </label>
@@ -33,7 +34,6 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="create">添加</el-button>
           <el-button type="primary" @click="onConfirm">保存</el-button>
         </span>
       </template>
@@ -80,9 +80,8 @@ const onDelete = (idx: number) => {
 };
 
 const onConfirm = () => {
-  // 不能为空的校验
-  let hasEmpty = false;
-  let hasError = false;
+  let hasEmpty = false; // 不能为空的校验
+  let hasError = false; // key输入值校验
   for (let i = 0; i < state.keywordConfigList.length; i++) {
     if (!state.keywordConfigList[i][0] || !state.keywordConfigList[i][1]) {
       hasEmpty = true;

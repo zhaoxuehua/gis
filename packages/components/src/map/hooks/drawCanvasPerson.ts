@@ -1,9 +1,9 @@
-type createdCanvasShipType = (color: string) => HTMLCanvasElement | undefined;
+type createdCanvasShipType = (color: string[]) => HTMLCanvasElement | undefined;
 
-const drawCanvasPerson: createdCanvasShipType = function (color: string) {
+const drawCanvasPerson: createdCanvasShipType = function (color: string[]) {
   // 人
   const width = 40;
-  const height = 100;
+  const height = 80; // 调整为更短的高度
   const canvas = document.createElement("canvas") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
   canvas.width = width;
@@ -11,8 +11,8 @@ const drawCanvasPerson: createdCanvasShipType = function (color: string) {
 
   if (ctx) {
     // 绘制头部
-    ctx.fillStyle = color;
-    ctx.strokeStyle = color;
+    ctx.fillStyle = color[0];
+    ctx.strokeStyle = color[0];
     ctx.beginPath();
     ctx.arc(20, 15, 10, 0, Math.PI * 2);
     ctx.fill();

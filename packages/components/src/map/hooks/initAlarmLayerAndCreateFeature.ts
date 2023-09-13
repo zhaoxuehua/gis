@@ -56,26 +56,24 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   // 先清空数据源
   layer?.getSource()?.clear();
   layer?.getSource()?.addFeatures(alarmFeatures);
-
   if (gisStore?.simulateAlarmTimer) {
     clearInterval(gisStore?.simulateAlarmTimer);
-    gisStore?.setSimulateAlarmTimer(null);
+    gisStore.simulateAlarmTimer = null;
   }
-  gisStore?.setSimulateAlarmTimer(
-    setInterval(() => {
-      layer?.getSource().forEachFeature((feature: any) => {
-        let dataType = feature.get("dataType");
-        if (dataType == "1" || dataType == "6") {
-          // 点报警要素
-          let max = feature.get("max") || 1;
-          max = max < 3 ? max + 1 : 1;
-          feature.set("max", max);
-        } else {
-          // 线面报警要素
-          let visible = feature.get("visible");
-          feature.set("visible", !visible);
-        }
-      });
-    }, 600)
-  );
+
+  gisStore.simulateAlarmTimer = setInterval(() => {
+    layer?.getSource().forEachFeature((feature: any) => {
+      let dataType = feature.get("dataType");
+      if (dataType == "1" || dataType == "6") {
+        // 点报警要素
+        let max = feature.get("max") || 1;
+        max = max < 3 ? max + 1 : 1;
+        feature.set("max", max);
+      } else {
+        // 线面报警要素
+        let visible = feature.get("visible");
+        feature.set("visible", !visible);
+      }
+    });
+  }, 800);
 }
