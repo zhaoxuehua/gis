@@ -14,7 +14,7 @@
     </el-input>
     <ul class="label-select" v-if="open && table.data.length">
       <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
-        {{ item.name || item.code }}
+        {{ item.label }}
       </li>
     </ul>
   </div>
@@ -70,7 +70,14 @@ const table: any = ref({
         return status.some(item => item);
       });
     }
-    table.value.data = searchData.value;
+    table.value.data = searchData.value.map((item: any) => {
+      if (item.relationEquipCode || item.relationEquipName) {
+        item.label = item.relationEquipName + "_" + item.relationEquipCode;
+      } else {
+        item.label = item.name;
+      }
+      return item;
+    });
   },
   panToFeature: ({ code, isVisitObject = false }: any) => {
     inputParam.value = code;
