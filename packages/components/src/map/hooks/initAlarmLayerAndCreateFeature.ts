@@ -28,27 +28,24 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
       alarmFeatures.push(alarmPointFeature);
     } else {
       // 点、文本 线、面、圆、矩形、环(匹配基础引擎标签）
-      for (let key in relationMap) {
-        if (equip == relationMap[key]?.code) {
-          // key是标签的code
-          let labelInfo = labelInfoMap[key];
-          if (labelInfo) {
-            // 绘制要素
-            const labelFeature = new Feature({
-              geometry: createGeometry(labelInfo?.labelData)
-            });
-            labelFeature.set("type", "alarmPoint");
-            labelFeature.set("dataType", labelInfo?.labelData?.style?.type);
-            labelFeature.set("code", equip); // 设备编码
-            labelFeature.set("name", equipName); // 设备名称
-            if (labelInfo?.labelData?.style?.type == "1" || labelInfo?.labelData?.style?.type == "6") {
-              labelFeature.set("max", 1);
-            } else {
-              labelFeature.set("visible", true);
-            }
-            alarmFeatures.push(labelFeature);
+      const matchedKey = Object.keys(relationMap).find(key => equip === relationMap[key]?.code);
+      if (matchedKey) {
+        const labelInfo = labelInfoMap[matchedKey];
+        if (labelInfo) {
+          // 绘制要素
+          const labelFeature = new Feature({
+            name: equipName, // 设备名称
+            geometry: createGeometry(labelInfo?.labelData)
+          });
+          labelFeature.set("code", equip); // 设备编码
+          labelFeature.set("type", "alarmPoint");
+          labelFeature.set("dataType", labelInfo?.labelData?.style?.type);
+          if (["1", "6"].includes(labelInfo?.labelData?.style?.type)) {
+            labelFeature.set("max", 1);
+          } else {
+            labelFeature.set("visible", true);
           }
-          break;
+          alarmFeatures.push(labelFeature);
         }
       }
     }
