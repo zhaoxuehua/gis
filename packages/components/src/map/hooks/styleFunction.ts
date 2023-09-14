@@ -57,7 +57,7 @@ export const styleAlarm = {
   // 报警面的动画样式1 2
   polAlarmSty1: new Style({
     fill: new Fill({
-      color: "rgba(255,0,0,0.4)"
+      color: "rgba(255,0,0,0.03)"
     }),
     zIndex: 10
   }),

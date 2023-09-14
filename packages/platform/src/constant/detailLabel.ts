@@ -130,10 +130,6 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
-    label: "显示外部对象类型",
-    name: "trackSearchName"
-  },
-  {
     label: "距离单位",
     name: "scaleLineUnit",
     slot: true

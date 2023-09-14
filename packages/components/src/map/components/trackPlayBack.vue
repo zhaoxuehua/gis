@@ -28,6 +28,12 @@
             >
             </el-date-picker>
           </el-form-item>
+          <el-form-item label="查询对象" required>
+            <el-select v-model="formData.objectTypeId" placeholder="请选择..." style="width: 200px">
+              <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="查询模式" prop="selectMode">
             <el-select
               v-model="formData.selectMode"
@@ -74,7 +80,7 @@
           <el-form-item
             label="告警"
             prop="alarmLevel"
-            v-if="formData.selectMode && formData.selectMode != 'shape' && defaultOptions?.trackSearchId"
+            v-if="formData.selectMode && formData.selectMode != 'shape' && formData?.objectTypeId"
           >
             <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable style="width: 200px">
               <el-option
@@ -105,7 +111,8 @@
           stripe
           border
         >
-          <el-table-column label="名称" prop="name"></el-table-column>
+          <el-table-column :label="keywordConfig?.code || '编码'" prop="code"></el-table-column>
+          <el-table-column :label="keywordConfig?.name || '名称'" prop="name"></el-table-column>
           <el-table-column label="操作" width="80">
             <template #default="scope">
               <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)" title="定位"></Icon>
@@ -122,6 +129,7 @@
             v-model:page-size="formData.pageSize"
             layout="prev, pager, next"
             :total="table.total"
+            :pager-count="5"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
           />
@@ -142,6 +150,7 @@ import { eventListByObjType, getTrackListData } from "../../api/device";
 
 // ⤵ type
 import type { VisualMap, TableList, selectModeListType } from "../type";
+import { useGisStore } from "../../stores/modules/gis";
 
 // ⤵ 辅助函数
 import { selectionAddDrawInteraction } from "../hooks/index"; // 框选方法
@@ -157,9 +166,19 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; i
   isShow: () => false
 });
 const { map, index } = toRefs(props);
+const gisStore = useGisStore();
 
 // 传递的事件
 const emits = defineEmits(["onEditLabel", "onClose"]);
+
+// 实时查询对象类型列表
+const realtimeDataList = computed(() => {
+  return gisStore?.realtimeDataList || [];
+});
+// 关键词配置
+const keywordConfig = computed(() => {
+  return gisStore?.keywordConfig;
+});
 
 // 关闭轨迹回放
 const onClose = () => {
@@ -179,6 +198,8 @@ let coordinateArr: any[] = []; // 坐标点集合
 const formData = reactive({
   beginTime: moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"),
   endTime: moment().format("YYYY-MM-DD HH:mm:ss"),
+  objectTypeId:
+    gisStore?.realtimeDataList && gisStore?.realtimeDataList?.length ? gisStore?.realtimeDataList?.[0]?.id : undefined, // 查询对象初始值
   selectMode: "shape", // 查询模式
   boxSelectMode: "", // 框选模式（查询模式是图形时）
   selectLabel: "", // 选择的标签
@@ -192,8 +213,8 @@ let rulesForm: any = {
   beginTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
   endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
   selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
-  // boxSelectMode: [{ required: true, message: "请选择框选模式", trigger: ["blur", "change"] }],
-  selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }]
+  selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }],
+  objectTypeId: [{ required: true, message: "查询对象不能为空", trigger: ["blur", "change"] }]
 };
 
 // 时间限制
@@ -258,15 +279,6 @@ const selectModeChange = (value: string) => {
   selectLabelList.value = labelArr;
 };
 
-// 地图上的默认参数
-const defaultOptions = computed(() => {
-  const mapDefaultOptions = map.value?.defaultOptions;
-  if (mapDefaultOptions?.trackSearchId || mapDefaultOptions?.trackSearchId === 0) {
-    getAlarmListOptions(mapDefaultOptions.trackSearchId);
-  }
-  return mapDefaultOptions;
-});
-
 // 获取告警options
 async function getAlarmListOptions(id: number) {
   try {
@@ -309,6 +321,18 @@ watch(
       },
       true
     );
+  }
+);
+
+// 根据实时对象id(查询对象)请求告警列表
+watch(
+  () => formData.objectTypeId,
+  n => {
+    if (!n) {
+      alarmList.value = [];
+    } else {
+      getAlarmListOptions(n);
+    }
   }
 );
 
@@ -371,6 +395,7 @@ const trackPlayBack = (row: { [key: string]: any }) => {
   getTrackDataByIdFn({
     code: row.code,
     name: row.name,
+    objectTypeCode: row?.visitObjectTypeCode, // 实时数据对象类型
     beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
     endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss")
   });
@@ -402,10 +427,13 @@ const table = ref<TableList>({
     if (!regions.length) {
       return ElMessage.warning("请先设置选区,暂无选区数据！");
     }
+
     const params = {
       regions,
       beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
       endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
+      visitObjectType: formData.objectTypeId,
+      // 查询对象
       pageSize: formData.pageSize,
       pageNumber: formData.pageNumber
     };
@@ -431,7 +459,7 @@ const table = ref<TableList>({
       clearSelectionDrawInteraction(map.value);
       table.value.data = data.items;
       table.value.total = data.totalNum;
-      coordinateArr = [];
+      // coordinateArr = [];  // 清空后没法翻页了
       if (!data.items.length) {
         return ElMessage.warning("暂无数据");
       }

@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, nextTick, computed, watch } from "vue";
+import { ref, reactive, nextTick, watch } from "vue";
 import Icon from "../Icon.vue";
 import { getEquipData, lineRealTimeCurveApi, getEquipDetail } from "../../../api/device";
 import dayjs from "dayjs";
@@ -127,7 +127,8 @@ const equipInfo: any = ref({
   equipType: 0,
   code: "",
   isVisitObject: false,
-  associationInfo: {}
+  associationInfo: {},
+  realObjectTypeCode: "" // 实时查询对象code（只有关注使用，关注只针对实时数据对象）
 });
 
 const state = reactive({
@@ -315,12 +316,12 @@ const focusMap: { [key: string]: string } = {
   1: "关注",
   2: "取消关注"
 };
-const trackSearchCode = computed(() => props.map?.defaultOptions?.trackSearchCode);
+
 const getFocusStatus = async () => {
   const res: any = await getAttentionList(
     {
       objectCode: equipInfo.value.code,
-      objectTypeCode: trackSearchCode.value
+      objectTypeCode: equipInfo.value.realObjectTypeCode
     },
     {
       params: {
@@ -347,7 +348,7 @@ const handleFocus = () => {
 const onFocus = async () => {
   const res: any = await addAttentionApi({
     objectCode: equipInfo.value.code,
-    objectTypeCode: trackSearchCode.value
+    objectTypeCode: equipInfo.value.realObjectTypeCode
   });
   if (res.code === 200) {
     ElMessage.success("关注成功");
@@ -358,7 +359,7 @@ const onFocus = async () => {
 const cancelFocus = async () => {
   const res: any = await deleteDialogAttentionApi({
     objectCode: equipInfo.value.code,
-    objectType: trackSearchCode.value
+    objectType: equipInfo.value.realObjectTypeCode
   });
   if (res.code === 200) {
     ElMessage.success("取消关注成功");

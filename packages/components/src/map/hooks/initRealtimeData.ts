@@ -21,11 +21,11 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
   let realStyCash: shipStyCashType = {}; //  缓存样式
   // 实时数据处理 每项代表一个实时数据( 例如船、人、车)
   realtimeDataList.forEach(async (item: { [key: string]: any }) => {
-    let { code } = item;
+    let { code: realObjectTypeCode } = item;
     // 获取标签类型信息(用到标签类型id  内置样式对象等)
-    let realLabelType: { [key: string]: any } = await getRealLabelTypeInfo(code, {});
+    let realLabelType: { [key: string]: any } = await getRealLabelTypeInfo(realObjectTypeCode, {});
     // 获取设备类型信息
-    let realEquipType: { [key: string]: any } = await getRealEquipTypeInfo(code, {});
+    let realEquipType: { [key: string]: any } = await getRealEquipTypeInfo(realObjectTypeCode, {});
     if (realLabelType?.code != 200 || realEquipType?.code != 200) {
       ElMessage.error("接口异常");
       return;
@@ -84,7 +84,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 
     async function getShipListDataFn() {
       let shipFeatureArr: Feature[] = [];
-      let res: { [key: string]: any } = await getRealDataList(code, {});
+      let res: { [key: string]: any } = await getRealDataList(realObjectTypeCode, {});
       if (res?.code == 200) {
         const { data } = res;
         let searchShipData: searchShipDataType = []; // 塞入基础引擎(搜索使用)
@@ -135,7 +135,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
             const shipFeature = createdRealDataFeature(shipInfo, dataType, labelTypeCode);
             shipFeatureArr.push(shipFeature);
 
-            // 基础引擎搜索使用
+            // 基础引擎搜索、左键使用
             searchShipData.push({
               lat: valInfo.lat,
               lon: valInfo.lon,
@@ -145,7 +145,8 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
               dataType: dataType,
               equipType: equipTypeId, // 设备类型id
               labelTypeId: labelTypeId, // 标签类型id
-              layerCode: layerConfigCode // 图层code
+              layerCode: layerConfigCode, // 图层code
+              realObjectTypeCode: realObjectTypeCode // 实时数据对象code
             });
           }
         });
@@ -154,11 +155,11 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         realDataSource?.addFeatures(shipFeatureArr);
 
         map.set("trackInfoMap", searchShipData);
-        if (realDataTimerObj[code]) {
-          clearTimeout(realDataTimerObj[code]);
-          realDataTimerObj[code] = null;
+        if (realDataTimerObj[realObjectTypeCode]) {
+          clearTimeout(realDataTimerObj[realObjectTypeCode]);
+          realDataTimerObj[realObjectTypeCode] = null;
         }
-        realDataTimerObj[code] = setTimeout(function () {
+        realDataTimerObj[realObjectTypeCode] = setTimeout(function () {
           getShipListDataFn();
         }, 1000 * 10);
       } else {

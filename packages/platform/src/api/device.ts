@@ -1,10 +1,5 @@
 import request from "@/api";
 
-// 外部对象类型列表
-export function objTypeList(queryString: string, params: object) {
-  return request.post(`/api/equipment-service/equip/visitObjectType/list${queryString}`, params);
-}
-
 // 设备自定义树列表接口
 export function customTreeList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/view/custom/tree/list${queryString}`, params);

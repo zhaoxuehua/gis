@@ -15,6 +15,7 @@ export const useGisStore = defineStore({
     imgIndex: 0, // 动画点图片索引
     isEdit: false, // 地图编辑
     isShowEditLabel: false, // 编辑标签弹框
+    realtimeDataList: [], // 实时数据配置list
     keywordConfig: {}, // 关键词配置
     simulateAlarmTimer: null, // 报警要素样式切换定时器
     mapCase: {}, // 地图实例
@@ -62,6 +63,9 @@ export const useGisStore = defineStore({
 
     setKeywordConfig(keywordConfig: { [key: string]: any }) {
       this.keywordConfig = keywordConfig;
+    },
+    setRealtimeDataList(realtimeDataList: any[]) {
+      this.realtimeDataList = realtimeDataList;
     },
 
     // 设置导航树数据及关联关系为空

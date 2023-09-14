@@ -331,7 +331,6 @@ let imgIndex = computed(() => gisStore.imgIndex);
 const timer: any = ref(null);
 const dynamicTimes: any = ref(null); // 风机、动态线、动态环的定时器
 const alarmTimer: any = ref(null); // 告警列表动态请求
-let realtimeDataList: any = ref([]); // 实时数据配置list
 
 // Overlay
 const popupDOMRef = ref();
@@ -399,12 +398,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       scaleLineUnit: originalData?.scaleLineUnit, // 距离单位（该配置对比例尺及测距生效）
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
-      displayLegend: originalData.displayLegend, // 图例[]
-      trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
-      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
+      displayLegend: originalData.displayLegend // 图例[]
     };
-    gisStore?.setKeywordConfig(originalData?.keywordConfig || {}); // 关键词配置
-    realtimeDataList.value = originalData?.realtimeDataList || [{ code: "aisBoat" }]; // 实时请求列表数据  // mock数据
+    // mock数据{ code: "aisBoat", name: "船舶", id: 17 }   { code: "MMSI", name: "船名" }
+    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据 // mock数据
+    gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置 // mock数据
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
@@ -690,8 +688,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     }
     /*******************************************实时数据（船、人、车等）*****************************************/
     // 根据后端返回的实时数据配置列表请求数据
-    if (realtimeDataList.value && realtimeDataList.value?.length) {
-      initRealtimeData(map, realtimeDataList.value);
+    if (gisStore?.realtimeDataList && gisStore?.realtimeDataList?.length) {
+      initRealtimeData(map, gisStore?.realtimeDataList);
     }
     /*******************************************告警标签（点线面）**********************************************/
     // 绘制报警图层信息
@@ -1001,7 +999,7 @@ const toolboxStore = useToolboxStore();
 watch(
   () => toolboxStore.data,
   () => {
-    initRealtimeData(exportMap.value, realtimeDataList.value);
+    initRealtimeData(exportMap.value, gisStore?.realtimeDataList);
   }
 );
 

@@ -39,6 +39,7 @@ interface searchShipType {
   labelTypeId: number;
   isVisitObject: boolean;
   layerCode: string;
+  realObjectTypeCode?: string;
 }
 type searchShipDataType = searchShipType[];
 

@@ -50,6 +50,7 @@ export interface shipTrackDataItemType {
   equipCode: string;
   equipName: string;
   position: string;
+  [key: string]: any;
 }
 
 export interface trackDataByIdResponseType {

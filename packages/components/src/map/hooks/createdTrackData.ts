@@ -58,11 +58,10 @@ const createdTrackData = async function (param: trackLayerParamType) {
   // mapCase地图实例 => 获取指定做轨迹回放的标签类型
   const gisStore = useGisStore();
   const mapCase = gisStore.mapCase;
-  const trackSearchCode = mapCase?.defaultOptions?.trackSearchCode; //标签类型code
 
   // 轨迹的标签类型
   if (!labelTypeInfoCash?.success) {
-    labelTypeInfoCash = await getTrackTypeInfo({ code: trackSearchCode });
+    labelTypeInfoCash = await getTrackTypeInfo({ code: param?.objectTypeCode });
     if (Number(labelTypeInfoCash.code) !== 200) {
       ElMessage.error("接口报错");
       return;

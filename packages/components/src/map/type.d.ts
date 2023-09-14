@@ -135,6 +135,7 @@ export type createdFeatureType = (data: createdFeatureArgType) => Feature;
 export interface trackLayerParamType {
   id: number | string;
   name: string;
+  objectTypeCode?: any;
   data: any[];
 }
 
