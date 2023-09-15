@@ -93,9 +93,9 @@ export function lineRealTimeCurveApi(params: object) {
   return request.post(`/api/adm-service/view/lineData/realtime/curve`, params);
 }
 
-// 左键弹窗 查看配置属性
-export function labelDetailAttr(equipTypeId: number, currentType: string) {
-  return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}`);
+// 查看左键弹窗配置的属性
+export function labelDetailAttr(equipTypeId: number, currentType: string, equipCode: string) {
+  return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}?equipCode=${equipCode}`);
 }
 
 // 获取图层列表

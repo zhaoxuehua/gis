@@ -128,6 +128,9 @@
       <template #customTreeType="scope">
         {{ scope.row.customTreeType == "EquipCustomTree" ? "设备树" : "自定义" }}
       </template>
+      <template #customTreeCode="scope">
+        {{ scope.row.customTreeType == "EquipCustomTree" ? scope.row.customTreeCode : "" }}
+      </template>
       <template #keywordConfig="scope">
         {{
           scope.row.keywordConfig

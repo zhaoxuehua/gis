@@ -15,6 +15,7 @@
         <el-button v-if="currentId && currentType && currentType !== 'EquipCategory'" type="primary" @click="editTitle"
           >保存</el-button
         >
+        <span class="tip-box"></span>
       </div>
       <p class="title title-box">属性配置</p>
       <AttrConfig
@@ -147,6 +148,12 @@ onMounted(() => {
       width: 240px;
       margin: 0 10px;
     }
+  }
+  .tip-box {
+    padding-left: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    color: red;
   }
 }
 </style>

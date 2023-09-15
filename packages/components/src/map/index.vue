@@ -401,8 +401,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       displayLegend: originalData.displayLegend // 图例[]
     };
     // mock数据{ code: "aisBoat", name: "船舶", id: 17 }   { code: "MMSI", name: "船名" }
-    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据 // mock数据
-    gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置 // mock数据
+    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || [{ code: "aisBoat", name: "船舶", id: 17 }]); // 实时请求列表数据 // mock数据
+    gisStore?.setKeywordConfig(
+      originalData?.keywordConfig || { code: "MMSI", name: "船名", searchPlaceholder: "请输入设备名称或编码" }
+    ); // 关键词配置 // mock数据
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });

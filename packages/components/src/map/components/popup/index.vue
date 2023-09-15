@@ -204,7 +204,7 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   //   isVisitObject
   // };
   // 获取绑定的属性
-  await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject });
+  await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject, equipCode: equipInfo.value?.code });
   attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3); // 关注
   if (attrData.hasFocusBtn) {
     attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注

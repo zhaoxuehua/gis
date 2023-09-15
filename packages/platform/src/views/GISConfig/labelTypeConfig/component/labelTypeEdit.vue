@@ -74,7 +74,17 @@
         <!-- 点 -->
         <template v-if="form.dataType === '1'">
           <!-- 只有是设备类型才有数据来源及数据内容  -->
-          <el-form-item label="数据来源" prop="dataSource" v-if="form.equipType?.id">
+          <el-form-item prop="dataSource" v-if="form.equipType?.id">
+            <template #label>
+              <div style="display: flex; align-items: center">
+                <span>数据来源</span>
+                <div style="display: flex; align-items: center">
+                  <el-tooltip effect="dark" content="实时请求的的数据还是基础引擎绘制的数据" placement="top">
+                    <Icon src="WarningFilled" :size="16" color="#e6a23c"></Icon>
+                  </el-tooltip>
+                </div>
+              </div>
+            </template>
             <el-select v-model="form.dataSource" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
               <el-option
                 v-for="(item, index) in dataSourceList.data"
@@ -84,7 +94,17 @@
               ></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="数据内容" prop="dataContent" v-if="form.equipType?.id && form.dataSource == 'dynamicQuery'">
+          <el-form-item prop="dataContent" v-if="form.equipType?.id && form.dataSource == 'dynamicQuery'">
+            <template #label>
+              <div style="display: flex; align-items: center">
+                <span>数据内容</span>
+                <div style="display: flex; align-items: center">
+                  <el-tooltip effect="dark" content="选择绑定的监测属性" placement="top">
+                    <Icon src="WarningFilled" :size="16" color="#e6a23c"></Icon>
+                  </el-tooltip>
+                </div>
+              </div>
+            </template>
             <el-select v-model="form.dataContent" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
               <el-option
                 v-for="(item, index) in dataContentList.data"
@@ -423,6 +443,8 @@ let form = ref<
   }
 >(defaultParam);
 
+const timer: any = ref(null);
+
 // 关联设备信息
 // 没绑定展示空
 // 光设备类型 展示 设备类型名
@@ -470,6 +492,12 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
       form.value.isVisitObject = !!res.data?.reference.includes("VisitObject");
     }
     form.value.id = row.id;
+    // 首次进来需要执行数据内容接口请求会将其值清空
+    timer.value = setTimeout(() => {
+      form.value.dataContent = JSON.parse(JSON.stringify(res.data))?.dataContent;
+      clearTimeout(timer.value);
+      timer.value = null;
+    });
   } else {
     state.dialogType = 0;
     form.value = { ...defaultParam };

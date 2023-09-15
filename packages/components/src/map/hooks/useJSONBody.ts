@@ -44,11 +44,11 @@ export const useJSONBody = () => {
    * @param param0 equipType  设备类型id   isVisitObject   是否是外部对象
    * @returns
    */
-  const getBindAttr = async ({ equipType, isVisitObject }: any) => {
+  const getBindAttr = async ({ equipType, isVisitObject, equipCode }: any) => {
     // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
     const currentType = isVisitObject ? "VisitObjectType" : "EquipType";
     // 获取配置的绑定属性
-    const detailRes: any = await labelDetailAttr(equipType, currentType);
+    const detailRes: any = await labelDetailAttr(equipType, currentType, equipCode);
     if (detailRes.code !== 200) return;
     state.configInfo = detailRes.data;
     state.linkData = state.configInfo?.linkConfig || [];

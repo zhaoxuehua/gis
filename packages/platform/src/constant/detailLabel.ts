@@ -140,6 +140,11 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
+    label: "设备树",
+    name: "customTreeCode",
+    slot: true
+  },
+  {
     label: "关键词显示配置",
     name: "keywordConfig",
     slot: true

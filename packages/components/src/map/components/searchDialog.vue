@@ -2,7 +2,7 @@
   <div class="search-label-box">
     <el-input
       v-model="inputParam"
-      :placeholder="'请输入' + placeholderText.slice(0, 6) + '...'"
+      :placeholder="keywordConfig?.searchPlaceholder || '请输入' + placeholderText.slice(0, 6) + '...'"
       clearable
       :title="placeholderText + '搜索'"
       @input="search"
@@ -35,6 +35,11 @@ const props = withDefaults(defineProps<{ map: any }>(), {
 });
 let mapInstance: VisualMap;
 const open = ref<boolean>(false);
+
+// 关键词配置
+const keywordConfig = computed(() => {
+  return gisStore?.keywordConfig;
+});
 
 const inputParam = ref("");
 const placeholderText = computed(() => (props.map?.defaultOptions?.displaySearch?.map((item: any) => item.name) || []).join(","));
