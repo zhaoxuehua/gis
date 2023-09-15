@@ -8,8 +8,16 @@ import type { VisualMap } from "../type";
 // 告警
 
 export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data: any = []) {
-  if (!map || !data?.length) return;
   let gisStore = useGisStore();
+  if (!map || !data?.length) {
+    // 空数据时需要清空图层数据源及样式定时器，与有数据分开是因为减少中间空白
+    layer?.getSource()?.clear();
+    if (gisStore?.simulateAlarmTimer) {
+      clearInterval(gisStore?.simulateAlarmTimer);
+      gisStore?.setSimulateAlarmTimer(null);
+    }
+  }
+
   const relationMap = gisStore?.relationMap;
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let alarmFeatures: any = []; // 报警图层要素

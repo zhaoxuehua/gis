@@ -1,11 +1,5 @@
 import { Style } from "ol/style";
-interface configType {
-  id?: number;
-  code?: string;
-  navSourceCode: string; // 导航树配置
-  sessionId: string; //
-  isCustomSearchDialog?: boolean;
-}
+
 type getInitMapExportDataType = (map: any) => void;
 
 // 创建船函数
@@ -50,4 +44,4 @@ interface shipColorParams {
   styleObject?: string;
 }
 
-export type { configType, getInitMapExportDataType, shipParamsType, shipStyCashType, searchShipDataType, shipColorParams };
+export type { getInitMapExportDataType, shipParamsType, shipStyCashType, searchShipDataType, shipColorParams };

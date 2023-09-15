@@ -10,7 +10,7 @@ export const useGisStore = defineStore({
   state: (): any => ({
     navigationTree: [], // 导航树
     relationMap: {}, // 关联关系
-    sourceCode: "",
+    mapIdentificationConfig: { mapParams: "", isId: false }, // 应用场景id/code及是否是id
     isDynamicLine: false, // 线环闪烁维护字段
     imgIndex: 0, // 动画点图片索引
     isEdit: false, // 地图编辑
@@ -24,7 +24,7 @@ export const useGisStore = defineStore({
   actions: {
     // 导航树及关联关系
     fetchNavigationTree() {
-      getGisCustomTree(this.sourceCode).then(
+      getGisCustomTree(this.mapIdentificationConfig?.mapParams, this.mapIdentificationConfig?.isId).then(
         (res: any) => {
           if (res.code === 200 && res.data) {
             const { treeNodeVOList } = res.data;
@@ -41,9 +41,9 @@ export const useGisStore = defineStore({
         }
       );
     },
-    // 存储导航树的sourceCode
-    setSourceCode(sourceCode: string = "") {
-      this.sourceCode = sourceCode;
+    // 存储应用场景的编码或id
+    setMapIdentification({ mapParams, isId }: { mapParams: string | number; isId: boolean }) {
+      this.mapIdentificationConfig = { mapParams: mapParams, isId: isId };
     },
     setIsDynamicLine(isDynamicLine: boolean) {
       this.isDynamicLine = isDynamicLine;

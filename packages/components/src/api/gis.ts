@@ -1,8 +1,8 @@
 import request from "@/api";
 
-// 导航树
-export function getGisCustomTree(params: string | number) {
-  return request.get(`/api/gis-service/equip/getGisEquipCategoryAndEquipTypeCustomTree?sourceCode=${params}`);
+// 导航树(场景编码)
+export function getGisCustomTree(params: string | number, idId: boolean) {
+  return request.get(`/api/gis-service/equip/getGisEquipCategoryAndEquipTypeCustomTree?${idId ? "appId" : "appCode"}=${params}`);
 }
 
 // 根据设备id查找已绘制的标签信息

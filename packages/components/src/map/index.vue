@@ -400,11 +400,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend // 图例[]
     };
-    // mock数据{ code: "aisBoat", name: "船舶", id: 17 }   { code: "MMSI", name: "船名" }
-    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || [{ code: "aisBoat", name: "船舶", id: 17 }]); // 实时请求列表数据 // mock数据
-    gisStore?.setKeywordConfig(
-      originalData?.keywordConfig || { code: "MMSI", name: "船名", searchPlaceholder: "请输入设备名称或编码" }
-    ); // 关键词配置 // mock数据
+    // mock数据{ code: "aisBoat", name: "船舶", id: 17 }   { code: "MMSI", name: "船名",searchPlaceholder: "请输入设备名称或编码" }
+    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据
+    gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
@@ -705,10 +703,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.addLayer(alarmLayer);
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
-      if (alarmTimer.value) {
-        clearInterval(alarmTimer.value);
-        alarmTimer.value = null;
-      }
       try {
         const alarmRes: any = await getEquipAlarmList(mapId, isId);
         if (alarmRes?.code === 200) {
@@ -937,12 +931,6 @@ const clearAllTimers = () => {
 onMounted(() => {
   // 存储sessionId
   localStorage.setItem("sessionId", props?.config?.sessionId);
-  // 存储导航树应用id
-  const sourceCode = props?.config?.navSourceCode;
-  gisStore.setSourceCode(sourceCode);
-  // 设置并请求导航树、关联关系
-  gisStore.setNavTreeAndRelation(); // 清空导航树数据
-  gisStore.fetchNavigationTree(); // 获取导航树数据
   // 拼接控件扩展 是数组[]
   if (props?.config?.leftControl) {
     if (props?.config?.leftControlIndex || props?.config?.leftControlIndex == 0) {
@@ -961,6 +949,11 @@ onMounted(() => {
   gisStore.setIsEdit(false);
   const mapParams = props?.config?.id || props?.config?.code;
   if (!mapParams) return;
+  // 存储应用场景id或code
+  gisStore.setMapIdentification({ mapParams: mapParams, isId: !!props?.config?.id });
+  // 设置并请求导航树、关联关系
+  gisStore.setNavTreeAndRelation(); // 清空导航树数据
+  gisStore.fetchNavigationTree(); // 获取导航树数据
   clearAllTimers();
   initMap(mapParams, !!props?.config?.id);
 });

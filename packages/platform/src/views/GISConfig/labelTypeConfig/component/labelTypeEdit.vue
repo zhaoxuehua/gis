@@ -706,7 +706,7 @@ const dataContentList = ref<{
   data: [],
   fetchData: async () => {
     dataContentList.value.data = [];
-    const res: { [key: string]: any } = await getBindAttributeMonitor(form.value?.equipType?.id); // 传设备类型id
+    const res: { [key: string]: any } = await getBindAttributeMonitor(form.value?.equipType?.id, form?.value.isVisitObject); // 传设备类型id
     dataContentList.value.data = res?.data || [];
   }
 });

@@ -5,9 +5,11 @@ export function customTreeList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/view/custom/tree/list${queryString}`, params);
 }
 
-// 获取配置绑定属性列表-监测属性列表(传设备类型id)
-export function getBindAttributeMonitor(params: number) {
-  return request.get(`/api/equipment-service/equip/equipType/getBindAttribute/monitor/${params}`);
+// 获取配置绑定属性列表-监测属性列表(传设备类型id)---设备类型还是外部对象类型
+export function getBindAttributeMonitor(params: number, isVisitObject: boolean) {
+  return request.get(
+    `/api/equipment-service/equip/${isVisitObject ? "visitObjectType" : "equipType"}/getBindAttribute/monitor/${params}`
+  );
 }
 
 // 关联对象配置查询接口
