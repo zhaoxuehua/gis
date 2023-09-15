@@ -40,7 +40,7 @@
           :columns="table.columns"
           layout="total, prev, pager, next"
           :class="['json-body-table', table.data.length ? '' : 'no-data-table', table.data.length >= 5 ? 'data-table' : '']"
-          :pagination="table.data.length ? table.pagination : false"
+          :pagination="table.data.length ? { ...table.pagination, pageSizes: [5, 10, 20, 30, 50, 100] } : false"
           @page-current-change="val => handleCurrentChange(val, index)"
         ></Table>
       </template>

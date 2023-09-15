@@ -64,7 +64,7 @@
         </template>
       </el-table>
       <el-pagination
-        v-if="props.isPageable"
+        v-if="Object.keys(props.pagination).length"
         :background="pagination.background"
         :total="pagination.total"
         :layout="pagination.layout"

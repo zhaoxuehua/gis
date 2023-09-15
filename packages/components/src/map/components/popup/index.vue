@@ -21,6 +21,11 @@
           </ul>
           <div class="monitor-sequence-data" v-if="attrData.monitorSequenceData.length">
             <ul class="list">
+              <li class="list-item">
+                <span class="label">属性名称</span>
+                <span class="label">属性值</span>
+                <span class="label">采集时间</span>
+              </li>
               <li v-for="item in attrData.monitorSequenceData" :key="item.code" class="list-item">
                 <span class="label">{{ item.name }}{{ item.unit ? `(${item.unit})` : "" }}</span>
                 <span class="value">{{ item.value }}</span>
@@ -254,6 +259,7 @@ const getMonitorLine = async () => {
           xAxisType: "category", //x轴类型  默认'category'
           xAxisName: countCharts[key][0].xaxis || "时间",
           yAxisName: countCharts[key][0].yaxis,
+          color: countCharts[key].map((item: any) => item.color),
           data: countCharts[key].map((item: any) => {
             return {
               name: item.name,

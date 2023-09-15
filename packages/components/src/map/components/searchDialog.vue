@@ -70,17 +70,15 @@ const table: any = ref({
         return status.some(item => item);
       });
     }
-    table.value.data = searchData.value.map((item: any) => {
-      if (item.relationEquipCode || item.relationEquipName) {
-        item.label = item.relationEquipName + "_" + item.relationEquipCode;
-      } else {
-        item.label = item.name;
-      }
-      return item;
-    });
+    table.value.data = searchData.value;
   },
-  panToFeature: ({ code, isVisitObject = false }: any) => {
-    inputParam.value = code;
+  panToFeature: (item: any) => {
+    let { code, isVisitObject = false } = item;
+    if (item.relationEquipCode || item.relationEquipName) {
+      inputParam.value = item.relationEquipName + "_" + item.relationEquipCode;
+    } else {
+      inputParam.value = item.name;
+    }
     open.value = false;
     // 定位到标签位置
     labelOnSelect(mapInstance, code, false, isVisitObject);
