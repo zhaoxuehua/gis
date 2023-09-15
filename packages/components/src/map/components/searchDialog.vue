@@ -14,7 +14,7 @@
     </el-input>
     <ul class="label-select" v-if="open && table.data.length">
       <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
-        {{ item.label }}
+        {{ item.name || item.code }}
       </li>
     </ul>
   </div>
@@ -77,7 +77,7 @@ const table: any = ref({
     if (item.relationEquipCode || item.relationEquipName) {
       inputParam.value = item.relationEquipName + "_" + item.relationEquipCode;
     } else {
-      inputParam.value = item.name;
+      inputParam.value = item.name || item.code;
     }
     open.value = false;
     // 定位到标签位置
