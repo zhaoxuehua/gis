@@ -90,12 +90,9 @@
       >
         <template v-for="(item, index) in state.columns" :key="index">
           <el-table-column :label="`${Object.values(item)?.[0]}`" :prop="Object.keys(item)?.[0]" :min-width="150">
-            <template v-if="['position', 'positionReportTicks'].includes(Object.keys(item)[0])" #default="scope">
-              <span v-if="Object.keys(item)[0] === 'position'">
+            <template v-if="['position'].includes(Object.keys(item)[0])" #default="scope">
+              <span>
                 {{ scope?.row.position ? moment(scope?.row.position).format("YYYY-MM-DD HH:mm:ss") : "" }}
-              </span>
-              <span v-else>
-                {{ scope?.row.positionReportTicks ? moment(scope?.row.positionReportTicks).format("YYYY-MM-DD HH:mm:ss") : "" }}
               </span>
             </template>
           </el-table-column>

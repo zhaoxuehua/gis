@@ -205,8 +205,7 @@ let coordinateArr: any[] = []; // 坐标点集合
 const formData = reactive({
   beginTime: moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"),
   endTime: moment().format("YYYY-MM-DD HH:mm:ss"),
-  objectTypeId:
-    gisStore?.realtimeDataList && gisStore?.realtimeDataList?.length ? gisStore?.realtimeDataList?.[0]?.id : undefined, // 查询对象初始值
+  objectTypeId: realtimeDataList.value?.length ? realtimeDataList.value[0]?.id : undefined, // 查询对象初始值
   selectMode: "shape", // 查询模式
   boxSelectMode: "", // 框选模式（查询模式是图形时）
   selectLabel: "", // 选择的标签

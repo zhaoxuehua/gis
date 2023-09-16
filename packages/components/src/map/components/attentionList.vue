@@ -93,7 +93,7 @@ const keywordConfig = computed(() => {
 
 const form = ref({
   objectCode: "",
-  objectTypeCode: gisStore?.realtimeDataList && gisStore?.realtimeDataList?.length ? gisStore?.realtimeDataList?.[0]?.code : "" // 初始值
+  objectTypeCode: realtimeDataList.value?.length ? realtimeDataList.value[0]?.code : "" // 初始值
 });
 const tableData = ref([]);
 const ids = ref<number[]>([]);

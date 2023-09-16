@@ -1,54 +1,69 @@
 <template>
-  <div class="white-list-box">
-    <el-dialog
-      :title="['创建白名单', '编辑白名单'][state.dialogType]"
-      v-model="state.open"
-      width="560px"
-      :close-on-click-modal="false"
-      append-to-body
-      @close="onClose"
-      :destroy-on-close="true"
-    >
-      <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
-        <el-form-item label="对象编码" prop="objectCode">
-          <el-input placeholder="请输入..." v-model="form.objectCode" clearable style="width: 230px" />
-        </el-form-item>
-        <el-form-item label="开始时间" prop="beginTime">
-          <el-date-picker v-model="form.beginTime" type="datetime" placeholder="选择开始时间" style="width: 230px">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="结束时间" prop="endTime">
-          <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" style="width: 230px">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input type="textarea" style="width: 230px" v-model="form.remark" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">保存</el-button>
-        </span>
-      </template>
-    </el-dialog>
-  </div>
+  <el-dialog
+    :title="['创建白名单', '编辑白名单'][state.dialogType]"
+    v-model="state.open"
+    width="560px"
+    :close-on-click-modal="false"
+    append-to-body
+    @close="onClose"
+    :destroy-on-close="true"
+    class="white-list-box"
+  >
+    <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
+      <el-form-item label="查询对象" prop="objectTypeCode">
+        <el-select v-model="form.objectTypeCode" placeholder="请选择...">
+          <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.code" />
+        </el-select>
+      </el-form-item>
+      <el-form-item :label="keywordConfig?.code || '对象编码'" prop="objectCode">
+        <el-input placeholder="请输入..." v-model="form.objectCode" clearable />
+      </el-form-item>
+      <el-form-item label="开始时间" prop="beginTime">
+        <el-date-picker v-model="form.beginTime" type="datetime" placeholder="选择开始时间"> </el-date-picker>
+      </el-form-item>
+      <el-form-item label="结束时间" prop="endTime">
+        <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间"> </el-date-picker>
+      </el-form-item>
+      <el-form-item label="备注" prop="remark">
+        <el-input type="textarea" v-model="form.remark" style="width: 230px" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="onClose">取消</el-button>
+        <el-button type="primary" @click="onConfirm">保存</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from "vue";
+import { reactive, ref, computed } from "vue";
 import { ElMessage } from "element-plus";
 import moment from "moment";
 import { whiteListEdit, whiteListAdd } from "../../api/device";
+import { useGisStore } from "../../stores/modules/gis";
 
 const emit = defineEmits(["successAdd"]);
+const gisStore = useGisStore();
+
+// 实时查询对象类型列表
+const realtimeDataList = computed(() => {
+  return gisStore?.realtimeDataList || [];
+});
+
+// 关键词配置
+const keywordConfig = computed(() => {
+  return gisStore?.keywordConfig;
+});
 
 const state = reactive({
   dialogType: 0,
   open: false,
   // 弹窗表单验证
   rulesForm: {
-    objectCode: [{ required: true, message: "对象编码不能为空", trigger: ["blur", "change"] }],
+    objectTypeCode: [{ required: true, message: "查询对象不能为空", trigger: ["blur", "change"] }],
+    objectCode: [{ required: true, message: `${keywordConfig.value?.code || "对象编码"}不能为空`, trigger: ["blur", "change"] }],
     beginTime: [{ required: true, message: "开始时间不能为空", trigger: ["blur", "change"] }],
     endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }]
   }
@@ -56,6 +71,7 @@ const state = reactive({
 const refForm: any = ref();
 
 const defaultParam = {
+  objectTypeCode: realtimeDataList.value?.length ? realtimeDataList.value[0]?.code : "", // 查询对象（实时数据list）
   objectCode: "",
   beginTime: moment().format("YYYY-MM-DD HH:mm:ss"),
   endTime: moment().endOf("day").format("YYYY-MM-DD HH:mm:ss"),
@@ -64,6 +80,7 @@ const defaultParam = {
 
 let form = ref<{
   id?: number;
+  objectTypeCode: string;
   objectCode: string;
   beginTime: string;
   endTime: string;
@@ -138,4 +155,13 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.white-list-box {
+  .el-form,
+  .el-form .el-select {
+    :deep(.el-input) {
+      width: 230px;
+    }
+  }
+}
+</style>
