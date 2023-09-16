@@ -15,6 +15,9 @@ import type { getTrackDataByIdFnParamType, anyObjectType } from "../type";
 
 const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
   const store = useTrackListStore();
+  if (store.data?.length >= 5) {
+    return ElMessage.warning("轨迹列表最多5条");
+  }
   const trackResult = await getTrackDataById({
     equipCodes: row.code,
     isVisitObject: true,

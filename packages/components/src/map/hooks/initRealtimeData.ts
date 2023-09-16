@@ -73,8 +73,8 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
           })
         });
       }
-      // 如果是船有角度(船特有)
-      if (styleObject == "aisBoat") {
+      // 角度
+      if (angle) {
         realStyCash[shipKey].getImage().setRotation((angle * Math.PI) / 180);
       }
       return selected ? [realStyCash[shipKey]].concat(styleAct.selectAct) : [realStyCash[shipKey]];

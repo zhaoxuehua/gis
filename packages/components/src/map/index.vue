@@ -817,6 +817,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       emits("onCloseRightMenu"); // 关闭右键菜单
       editLabelRef.value?.onClose(); // 关闭编辑标签弹框
       clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)
+      // 框选或测量模式下不触发左键
+      if (map?.get("boxSelectionDrawInteraction") || map?.get("measureDrawInteraction")) {
+        return;
+      }
+
       let pixel = map.getEventPixel(evt.originalEvent);
       let hit = map.hasFeatureAtPixel(pixel, {
         hitTolerance: 5

@@ -111,11 +111,18 @@
           stripe
           border
         >
-          <el-table-column :label="keywordConfig?.code || '编码'" prop="code"></el-table-column>
-          <el-table-column :label="keywordConfig?.name || '名称'" prop="name"></el-table-column>
-          <el-table-column label="操作" width="80">
+          <el-table-column :label="keywordConfig?.code || '编码'" prop="code" :min-width="100"></el-table-column>
+          <el-table-column :label="keywordConfig?.name || '名称'" prop="name" :min-width="110"></el-table-column>
+          <el-table-column label="操作" width="70">
             <template #default="scope">
-              <Icon src="Location" :size="14" class="operate-icon" @click="toLocation(scope.row)" title="定位"></Icon>
+              <Icon
+                src="Location"
+                :size="14"
+                class="operate-icon"
+                style="margin-right: 12px"
+                @click="toLocation(scope.row)"
+                title="定位"
+              ></Icon>
               <Icon src="Connection" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)" title="轨迹"></Icon>
             </template>
           </el-table-column>
@@ -478,7 +485,7 @@ onMounted(() => {});
   flex-direction: column;
   width: 320px;
   min-height: 500px;
-  max-height: 700px;
+  max-height: 750px;
 
   // height: 700px;
   overflow: auto;
@@ -503,7 +510,6 @@ onMounted(() => {});
     padding: 20px;
   }
   .operate-icon {
-    margin-right: 12px !important;
     color: var(--el-color-primary);
     cursor: pointer;
   }

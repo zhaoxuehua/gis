@@ -210,7 +210,7 @@ const deleteRow = (row: { [key: string]: any }, index: number) => {
   tableData.value.splice(index, 1);
 };
 
-// 监测数据个数据
+// 监测数据个数据（控制列表的显示隐藏及隐藏实时数据图层）
 watch(
   () => tableData.value.length,
   n => {
