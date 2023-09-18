@@ -166,9 +166,9 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
   // 取树节点的设备名称
   _featureType.name = node.name;
 
-  createLabel(props.map, _featureType, function (result: any, feature: any, drawFeature: any) {
+  createLabel(props.map, _featureType, false, function (result: any, feature: any, drawFeature: any) {
     if (!result) {
-      ElMessage.error("创建标签失败");
+      ElMessage.error("新增标签失败");
       return;
     }
 
@@ -181,7 +181,6 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
     let featureTypeGroup = props?.map.get("featureTypeGroup");
     featureTypeGroup[result.labelType.code].push(feature);
     props.map?.set("featureTypeGroup", featureTypeGroup);
-    ElMessage.success("新增标签成功");
     // 新增关联关系
     addAssociation({
       associationType: 5,
@@ -193,11 +192,11 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
         if (!res) return;
         // 更新导航树及关联关系
         gisStore.fetchNavigationTree();
-        ElMessage.success("保存成功");
+        ElMessage.success("新增标签成功");
       },
       (err: any) => {
         console.warn(err);
-        ElMessage.error("保存失败");
+        ElMessage.success("新增标签失败");
       }
     );
   });

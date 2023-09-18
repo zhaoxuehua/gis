@@ -162,9 +162,9 @@ const onAdd = (node: { [key: string]: any }, data: { [key: string]: any }) => {
       return;
     }
   });
-  createLabel(props.map, featureType, function (result: any, feature: any, drawFeature: any) {
+  createLabel(props.map, featureType, true, function (result: any, feature: any, drawFeature: any) {
     if (!result) {
-      ElMessage.error("创建标签失败");
+      ElMessage.error("新增标签失败");
       return;
     }
     // 创建成功后的回调逻辑
@@ -177,7 +177,7 @@ const onAdd = (node: { [key: string]: any }, data: { [key: string]: any }) => {
     let featureTypeGroup = props?.map.get("featureTypeGroup");
     featureTypeGroup[result.labelType.code].push(feature);
     props.map?.set("featureTypeGroup", featureTypeGroup);
-    ElMessage.success("创建标签成功");
+    ElMessage.success("新增标签成功");
   });
 };
 

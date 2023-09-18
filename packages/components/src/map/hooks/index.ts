@@ -14,9 +14,10 @@ import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, L
 import { MAP_DATA_TYPE, getGeometryCenter, getCoordinate, getLonLatCoordinate } from "./createGeometry.js";
 import { createStyle, selectBoxStyle } from "./styleFunction.js";
 import { fromLonLat } from "ol/proj";
+import moment from "moment";
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
-export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: Function) {
+export function createLabel(map: VisualMap, featureType: LabelType, isTagTreeAdd: boolean, callbackFn: Function) {
   ElMessage({
     message: "进入绘制模式，退出绘制请按 ESC 键",
     type: "success"
@@ -124,7 +125,7 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
 
     let featureParams = {
       code: "GIS" + dataTypeString + +new Date(),
-      name: featureType.name, // 标签类型名称
+      name: isTagTreeAdd ? `${featureType.name}_${moment().format("YYYY-MM-DD HH:mm:ss")}` : featureType.name, // 标签类型名称(导航树取设备名、标签树取标签类型名+时间)
       labelTypeId: featureType.id,
       labelType: {
         // 标签类型
@@ -205,7 +206,7 @@ export function removeLabel(label: LabelInfoData, map: any) {
         let labelInfoMap = map?.get("labelInfoMap") || {};
         delete labelInfoMap[label.code];
         map.set("labelInfoMap", labelInfoMap);
-        ElMessage.success("删除标签成功");
+        // ElMessage.success("删除标签成功");
         // 同时删除关联关系(标签树中的删除可能有关联关系删除可能没，导航树中的删除一定有关联关系删除)
         removeRelation(label);
       } else {
@@ -219,7 +220,7 @@ export function removeLabel(label: LabelInfoData, map: any) {
   );
 }
 
-// 删除关联关系(导航树的删除一定存在关联关系的删除。标签树的删除可能存在可能不存在)
+// 删除关联关系(导航树的删除一定存在关联关系的删除。标签树的删除可能存在可能不存在---提示都改成标签的提示且两个接口提示一次)
 export function removeRelation(label: LabelInfoData) {
   let gisStore = useGisStore();
   const relationMap = gisStore?.relationMap;
@@ -232,15 +233,16 @@ export function removeRelation(label: LabelInfoData) {
     (res: any) => {
       if (res.code === 200) {
         gisStore?.fetchNavigationTree(); // 更新导航树及关联关系
-        ElMessage.success("删除关联关系成功");
+        ElMessage.success("删除标签成功");
+        // ElMessage.success("删除关联关系成功");
       } else {
         console.warn(res);
-        ElMessage.error("删除关联关系失败");
+        ElMessage.error("删除标签失败");
       }
     },
     (err: any) => {
       console.warn(err);
-      ElMessage.error("删除关联关系失败");
+      ElMessage.error("删除标签失败");
     }
   );
 }

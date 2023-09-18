@@ -234,7 +234,7 @@ const disabledDateFun = (time: Date) => {
 
 let selectModeList: Ref<selectModeListType[]> = ref([
   {
-    name: "图形",
+    name: "框选",
     code: "shape"
   }
 ]); //查询模式
@@ -248,7 +248,7 @@ Object.values(labelTypeMap)?.forEach((obj: any) => {
   if (obj?.dataType == "3" || obj?.dataType == "5") {
     selectModeList.value.push({
       code: obj.code,
-      name: obj.name
+      name: `按${obj.name}查询`
     });
   }
 });
