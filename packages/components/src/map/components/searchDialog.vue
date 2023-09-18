@@ -18,7 +18,7 @@
           {{ item.name ? item.code + "_" + item.name : item.code }}
         </template>
         <template v-else>
-          {{ item.name || item.code }}
+          {{ item.filterName || item.filterCode }}
         </template>
       </li>
     </ul>

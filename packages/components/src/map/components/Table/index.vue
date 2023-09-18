@@ -65,10 +65,7 @@
       </el-table>
       <el-pagination
         v-if="Object.keys(props.pagination).length"
-        :background="pagination.background"
-        :total="pagination.total"
-        :layout="pagination.layout"
-        :page-sizes="pagination.pageSizes"
+        v-bind="pagination"
         v-model:current-page="pagination.currentPage"
         v-model:page-size="pagination.currentPageSize"
         small
