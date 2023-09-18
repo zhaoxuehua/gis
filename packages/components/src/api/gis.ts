@@ -92,10 +92,6 @@ export function deleteDialogAttentionApi({ objectCode, objectType }: any) {
 export function getRealLabelTypeInfo(code: string, params: any) {
   return request.get(`/api/gis-service/equip/gisLabel/type/getByVisitObjectType/${code}`, params);
 }
-// 获取实时数据设备类型信息
-export function getRealEquipTypeInfo(code: string, params: any) {
-  return request.get(`/api/equipment-service/equip/visitObjectType/getByCode/${code}`, params);
-}
 // 获取实时列表数据  equip/equip/getRealtimeData/
 export function getRealDataList(code: string, params: any) {
   return request.get(`/api/equipment-service/equip/visitObject/getAliveObject/${code}`, params, {

@@ -29,7 +29,7 @@
           ref="treeRef"
           :expand-on-click-node="false"
           :default-expanded-keys="state.expandedKeys"
-          node-key="code"
+          node-key="id"
         >
           <template #default="{ node, data }">
             <span class="custom-tree-node" :class="{ active: !!data.associationInfo }">
@@ -206,7 +206,7 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
 const getParentNode = (node: { [key: string]: any }) => {
   // 找父节点塞数据
   const parentNode: { [key: string]: any } = node?.parent;
-  const parentNodeCode: string | undefined = parentNode?.data?.code;
+  const parentNodeCode: string | undefined = parentNode?.data?.id;
   if (parentNodeCode) {
     state.expandedKeys = [parentNodeCode];
   }
