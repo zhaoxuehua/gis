@@ -29,7 +29,7 @@
               </li>
               <li v-for="item in attrData.monitorSequenceData" :key="item.code" class="list-item">
                 <span class="label">{{ item.name }}{{ item.unit ? `(${item.unit})` : "" }}</span>
-                <span class="value">{{ item.value }}</span>
+                <span class="value" :style="{ color: BUTTON_COLOR_MAP[item.monitorState] }">{{ item.value }}</span>
                 <span class="time">{{ item.time }}</span>
               </li>
             </ul>
@@ -93,6 +93,7 @@ import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单�
 import { labelOnSelect } from "../../hooks/index";
 import AddRemarkDialog from "./addRemarkDialog.vue";
 import AlarmListDialog from "./alarmListDialog.vue";
+import { BUTTON_COLOR_MAP } from "../../../constant/index";
 
 // import { chartData, attrconfigData } from "./popupmock";
 
