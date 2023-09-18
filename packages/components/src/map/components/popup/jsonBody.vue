@@ -40,8 +40,9 @@
           :columns="table.columns"
           layout="total, prev, pager, next"
           :class="['json-body-table', table.data.length ? '' : 'no-data-table', table.data.length >= 5 ? 'data-table' : '']"
-          :pagination="table.data.length ? { ...table.pagination, pageSizes: [5, 10, 20, 30, 50, 100] } : false"
+          :pagination="table.data.length ? { ...table.pagination, pageSizes: [5, 10, 20, 30, 50, 100], pagerCount: 3 } : false"
           @page-current-change="val => handleCurrentChange(val, index)"
+          @page-size-change="val => handlePageSizeChange(val, index)"
         ></Table>
       </template>
       <template v-else>
@@ -67,6 +68,14 @@ const { tableBodyData, handleBodyValue } = useJSONBody();
 const handleCurrentChange = (val: number, index: number) => {
   const current = tableBodyData.value[index];
   current.pagination.page = val;
+  current.pageData = current.data.slice(
+    (current.pagination.page - 1) * current.pagination.pageSize,
+    current.pagination.page * current.pagination.pageSize
+  );
+};
+const handlePageSizeChange = (val: number, index: number) => {
+  const current = tableBodyData.value[index];
+  current.pagination.pageSize = val;
   current.pageData = current.data.slice(
     (current.pagination.page - 1) * current.pagination.pageSize,
     current.pagination.page * current.pagination.pageSize
