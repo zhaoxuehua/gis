@@ -2,7 +2,8 @@
   <div class="map-popup" ref="popupRef">
     <div :class="['popup-box', state.isRelationBody ? 'popup-custom-box' : '']" v-if="props?.data?.featureCode">
       <div class="map-popup-header">
-        <span>{{ configInfo?.label || "标签信息" }} </span>
+        <span v-if="state.isRelationBody">{{ dialogTitle + " " + (configInfo?.label || "") }} </span>
+        <span v-else>{{ "标签信息" }} </span>
         <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
       </div>
       <div class="map-popup-body" v-if="!state.isRelationBody">
@@ -109,6 +110,7 @@ const onClosePopup = () => {
 
 const addRemarkRef = ref();
 const alarmListRef = ref();
+const dialogTitle = ref("");
 const getDOMElement = () => {
   return popupRef.value;
 };
@@ -191,6 +193,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   state.isRelationBody = true;
 
+  dialogTitle.value = relationMap?.name || "";
+
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
   equipInfo.value = relationMap;
@@ -219,7 +223,7 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     staticAttr.value.concat(monitorSeqAttr.value, Object.keys(monitorJSONbodyMap.value)).join(",")
   );
   if (res.code === 200) {
-    const data = res.data.items[0];
+    const data = res.data.items?.[0];
     let telemetryData = data?.telemetry || []; //监测的
     let descriptionsData = data?.descriptions || []; //静态的
     attrData.staticData = descriptionsData;
