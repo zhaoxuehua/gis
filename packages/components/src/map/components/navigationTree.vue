@@ -206,9 +206,9 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
 const getParentNode = (node: { [key: string]: any }) => {
   // 找父节点塞数据
   const parentNode: { [key: string]: any } = node?.parent;
-  const parentNodeCode: string | undefined = parentNode?.data?.id;
-  if (parentNodeCode) {
-    state.expandedKeys = [parentNodeCode];
+  const parentNodeId: string | undefined = parentNode?.data?.id;
+  if (parentNodeId) {
+    state.expandedKeys = [parentNodeId];
   }
 };
 

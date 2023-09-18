@@ -314,6 +314,7 @@ const onTrack = () => {
   getTrackDataByIdFn({
     code: equipInfo.value.code,
     name: equipInfo.value.name,
+    objectTypeCode: equipInfo.value?.realObjectTypeCode, // 实时数据对象类型
     beginTime: state.dateTimes[0],
     endTime: state.dateTimes[1]
   });
