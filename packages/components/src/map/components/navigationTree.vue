@@ -238,7 +238,7 @@ onMounted(() => {});
 .nav-tree {
   display: flex;
   flex-direction: column;
-  width: 300px;
+  width: 320px;
   height: 500px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);

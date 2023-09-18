@@ -163,6 +163,7 @@ export interface setToMapCenterType {
 export interface selectModeListType {
   code: string;
   name: string;
+  labelName?: string;
   coordinates?: any[];
   id?: number | string;
 }

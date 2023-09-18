@@ -207,7 +207,7 @@ const formData = reactive({
   endTime: moment().format("YYYY-MM-DD HH:mm:ss"),
   objectTypeId: realtimeDataList.value?.length ? realtimeDataList.value[0]?.id : undefined, // 查询对象初始值
   selectMode: "shape", // 查询模式
-  boxSelectMode: "", // 框选模式（查询模式是图形时）
+  boxSelectMode: "", // 框选模式（查询模式是框选时）
   selectLabel: "", // 选择的标签
   alarmLevel: "", // 告警等级（只有配置了外部对象及查询模式不是图形时显示）
   pageNumber: 1,
@@ -248,7 +248,8 @@ Object.values(labelTypeMap)?.forEach((obj: any) => {
   if (obj?.dataType == "3" || obj?.dataType == "5") {
     selectModeList.value.push({
       code: obj.code,
-      name: `按${obj.name}查询`
+      name: `按${obj.name}查询`,
+      labelName: obj.name
     });
   }
 });
@@ -262,7 +263,7 @@ const selectModeChange = (value: string) => {
 
   // 获取类型name
   let selectType = selectModeList.value.find(item => `${item.code}` == `${value}`);
-  selectLabelTypeName.value = selectType?.name;
+  selectLabelTypeName.value = selectType?.labelName;
 
   // 标签类型下的标签列表
   let labelArr = [
@@ -470,6 +471,12 @@ const table = ref<TableList>({
         return ElMessage.warning("暂无数据");
       }
     } catch (error) {
+      // 报错时清除选框及数据
+      formData.boxSelectMode = "";
+      clearSelectionDrawInteraction(map.value);
+      coordinateArr = [];
+      table.value.data = [];
+      table.value.total = 0;
       console.log(error);
     }
   }

@@ -24,7 +24,7 @@ import { setToMapCenter } from "./setToMapCenter"; // 设置地图中心点
 import arrow from "../img/arrow.png";
 
 // ⤵ API
-import { getTrackTypeInfo, getTrackLayerInfo } from "../../api/trackList"; // 设置地图中心点
+import { getRealLabelTypeInfo, getTrackLayerInfo } from "../../api/gis"; // 设置地图中心点
 
 /******************************************************************************************************/
 
@@ -61,7 +61,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
 
   // 轨迹的标签类型
   if (!labelTypeInfoCash?.success) {
-    labelTypeInfoCash = await getTrackTypeInfo({ code: param?.objectTypeCode });
+    labelTypeInfoCash = await getRealLabelTypeInfo(param?.objectTypeCode, {});
     if (Number(labelTypeInfoCash.code) !== 200) {
       ElMessage.error("接口报错");
       return;
@@ -88,7 +88,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
    创建要素
   ****************************************************/
   const { data, id } = param;
-  const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = trackLayerCash.data;
+  const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = trackLayerCash.data; // 图层信息
   const strategyTime = 10 * 60 * 1000; //分钟(策略时间，用于是否绘制虚线)
   const trackLineFeatureArr: Feature[] = [];
   const trackLineCircleFeatureArr: Feature[] = [];

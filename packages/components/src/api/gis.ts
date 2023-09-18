@@ -88,7 +88,7 @@ export function deleteDialogAttentionApi({ objectCode, objectType }: any) {
 }
 
 // 实时数据
-// 获取实时数据所树的标签类型信息
+// 获取实时数据所属的标签类型信息
 export function getRealLabelTypeInfo(code: string, params: any) {
   return request.get(`/api/gis-service/equip/gisLabel/type/getByVisitObjectType/${code}`, params);
 }
@@ -96,9 +96,15 @@ export function getRealLabelTypeInfo(code: string, params: any) {
 export function getRealEquipTypeInfo(code: string, params: any) {
   return request.get(`/api/equipment-service/equip/visitObjectType/getByCode/${code}`, params);
 }
-// 获取实时列表数据
+// 获取实时列表数据  equip/equip/getRealtimeData/
 export function getRealDataList(code: string, params: any) {
   return request.get(`/api/equipment-service/equip/visitObject/getAliveObject/${code}`, params, {
     noLoading: true
   });
 }
+
+// 轨迹
+// 轨迹layer信息 => 用来将轨迹数据绘制该layer上
+export const getTrackLayerInfo = (params: any) => {
+  return request.get(`/api/gis-service/equip/layerConfig/getById/${params.id}`);
+};
