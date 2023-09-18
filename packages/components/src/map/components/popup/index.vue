@@ -2,7 +2,7 @@
   <div class="map-popup" ref="popupRef">
     <div :class="['popup-box', state.isRelationBody ? 'popup-custom-box' : '']" v-if="props?.data?.featureCode">
       <div class="map-popup-header">
-        <span v-if="state.isRelationBody">{{ dialogTitle + " " + (configInfo?.label || "") }} </span>
+        <span v-if="state.isRelationBody">{{ dialogTitle + " " + (configInfo?.label || "标签信息") }} </span>
         <span v-else>{{ "标签信息" }} </span>
         <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
       </div>
