@@ -14,7 +14,12 @@
     </el-input>
     <ul class="label-select" v-if="open && table.data.length">
       <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
-        {{ item.name || item.code }}
+        <template v-if="item.isVisitObject">
+          {{ item.name ? item.code + "_" + item.name : item.code }}
+        </template>
+        <template v-else>
+          {{ item.name || item.code }}
+        </template>
       </li>
     </ul>
   </div>
@@ -65,25 +70,15 @@ const table: any = ref({
     getFilterALLData();
     if (inputParam.value) {
       // 根据标签name及code过滤数据  还有关联设备的code和name
-      searchData.value = searchData.value.filter((item: { [ket: string]: any }) => {
-        const status = [
-          item?.name?.includes(inputParam.value),
-          String(item?.code).includes(inputParam.value),
-          item?.relationEquipName?.includes(inputParam.value),
-          item?.relationEquipCode?.includes(inputParam.value)
-        ];
-        return status.some(item => item);
+      searchData.value = searchData.value.filter((item: { [key: string]: any }) => {
+        return item?.filterName?.includes(inputParam.value) || String(item?.filterCode).includes(inputParam.value);
       });
+      table.value.data = searchData.value;
     }
-    table.value.data = searchData.value;
   },
   panToFeature: (item: any) => {
     let { code, isVisitObject = false } = item;
-    if (item.relationEquipCode || item.relationEquipName) {
-      inputParam.value = item.relationEquipName + "_" + item.relationEquipCode;
-    } else {
-      inputParam.value = item.name || item.code;
-    }
+    inputParam.value = item.filterName ? item.filterCode + "_" + item.filterName : item.filterCode;
     open.value = false;
     // 定位到标签位置
     labelOnSelect(mapInstance, code, false, isVisitObject);
@@ -113,8 +108,11 @@ const getFilterALLData = () => {
   });
   filteredData = filteredData.map(item => {
     if (relationMap[item.code]) {
-      item.relationEquipCode = relationMap[item.code].code;
-      item.relationEquipName = relationMap[item.code].name;
+      item.filterCode = relationMap[item.code].code;
+      item.filterName = relationMap[item.code].name;
+    } else {
+      item.filterCode = item.code;
+      item.filterName = item.name;
     }
     return item;
   });

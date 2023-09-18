@@ -82,7 +82,7 @@ export const useJSONBody = () => {
       } catch (error) {
         item.value = "";
       }
-      let fieldList = jsonbodyMap?.[item.code][0]?.children;
+      let fieldList = jsonbodyMap?.[item.code]?.[0]?.children;
       let tableColumn = fieldList?.map((val: any) => {
         return {
           prop: val.field,
@@ -90,7 +90,7 @@ export const useJSONBody = () => {
         };
       });
       let tableBodyItem = {
-        tile: jsonbodyMap?.[item.code][0]?.tile,
+        tile: jsonbodyMap?.[item.code]?.[0]?.tile,
         name: item.name,
         code: item.code,
         columns: tableColumn,

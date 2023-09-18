@@ -2,7 +2,8 @@
   <div class="map-popup" ref="popupRef">
     <div :class="['popup-box', state.isRelationBody ? 'popup-custom-box' : '']" v-if="props?.data?.featureCode">
       <div class="map-popup-header">
-        <span>{{ configInfo?.label || "标签信息" }} </span>
+        <span v-if="state.isRelationBody">{{ dialogTitle + " " + (configInfo?.label || "标签信息") }} </span>
+        <span v-else>{{ "标签信息" }} </span>
         <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
       </div>
       <div class="map-popup-body" v-if="!state.isRelationBody">
@@ -28,7 +29,7 @@
               </li>
               <li v-for="item in attrData.monitorSequenceData" :key="item.code" class="list-item">
                 <span class="label">{{ item.name }}{{ item.unit ? `(${item.unit})` : "" }}</span>
-                <span class="value">{{ item.value }}</span>
+                <span class="value" :style="{ color: BUTTON_COLOR_MAP[item.monitorState] }">{{ item.value }}</span>
                 <span class="time">{{ item.time }}</span>
               </li>
             </ul>
@@ -92,6 +93,7 @@ import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单�
 import { labelOnSelect } from "../../hooks/index";
 import AddRemarkDialog from "./addRemarkDialog.vue";
 import AlarmListDialog from "./alarmListDialog.vue";
+import { BUTTON_COLOR_MAP } from "../../../constant/index";
 
 // import { chartData, attrconfigData } from "./popupmock";
 
@@ -109,6 +111,7 @@ const onClosePopup = () => {
 
 const addRemarkRef = ref();
 const alarmListRef = ref();
+const dialogTitle = ref("");
 const getDOMElement = () => {
   return popupRef.value;
 };
@@ -191,6 +194,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   state.isRelationBody = true;
 
+  dialogTitle.value = relationMap?.name || "";
+
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isVisitObject = false } = relationMap || {};
   equipInfo.value = relationMap;
@@ -219,7 +224,7 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     staticAttr.value.concat(monitorSeqAttr.value, Object.keys(monitorJSONbodyMap.value)).join(",")
   );
   if (res.code === 200) {
-    const data = res.data.items[0];
+    const data = res.data.items?.[0];
     let telemetryData = data?.telemetry || []; //监测的
     let descriptionsData = data?.descriptions || []; //静态的
     attrData.staticData = descriptionsData;
