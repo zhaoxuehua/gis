@@ -11,12 +11,12 @@
   >
     <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
       <el-form-item label="查询对象" prop="objectTypeCode">
-        <el-select v-model="form.objectTypeCode" placeholder="请选择...">
+        <el-select v-model="form.objectTypeCode" placeholder="请选择..." :disabled="state.dialogType == 1">
           <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.code" />
         </el-select>
       </el-form-item>
       <el-form-item :label="keywordConfig?.code || '对象编码'" prop="objectCode">
-        <el-input placeholder="请输入..." v-model="form.objectCode" clearable />
+        <el-input placeholder="请输入..." v-model="form.objectCode" clearable :disabled="state.dialogType == 1" />
       </el-form-item>
       <el-form-item label="开始时间" prop="beginTime">
         <el-date-picker v-model="form.beginTime" type="datetime" placeholder="选择开始时间"> </el-date-picker>

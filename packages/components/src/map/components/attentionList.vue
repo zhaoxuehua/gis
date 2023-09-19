@@ -45,7 +45,7 @@
             @click.stop="labelOnSelect(props.map, scope.row.objectCode, false, true)"
             ><el-icon :size="14"><Location /></el-icon
           ></el-link>
-          <el-link type="primary" class="my-el-link" title="轨迹回放" :underline="false" @click.stop="trackPlayBack"
+          <el-link type="primary" class="my-el-link" title="轨迹回放" :underline="false" @click.stop="onTrack(scope.row)"
             ><el-icon :size="14"><Connection /></el-icon
           ></el-link>
           <el-link
@@ -59,6 +59,25 @@
         </template>
       </Table>
     </div>
+    <el-dialog v-model="state.dialogVisible" title="轨迹查询" width="560px" append-to-body>
+      <el-date-picker
+        v-model="state.dateTimes"
+        type="datetimerange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+        value-format="YYYY-MM-DD HH:mm:ss"
+        popper-class="canvas-date-picker"
+        style="width: 400px !important"
+      >
+      </el-date-picker>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="trackPlayBack">查询</el-button>
+          <el-button @click="onTrackClose">取消</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup lang="ts" name="attentionList">
@@ -71,7 +90,6 @@ import { labelOnSelect } from "../hooks/index";
 import { getTrackDataByIdFn } from "../hooks/getTrackDataById"; // 获取单个轨迹数据
 import Icon from "./Icon.vue";
 import { useGisStore } from "../../stores/modules/gis";
-import moment from "moment";
 
 const gisStore = useGisStore();
 
@@ -89,6 +107,13 @@ const realtimeDataList = computed(() => {
 // 关键词配置
 const keywordConfig = computed(() => {
   return gisStore?.keywordConfig;
+});
+
+// 轨迹弹框
+const state = reactive({
+  dialogVisible: false,
+  dateTimes: [] as any,
+  row: {} as any // 轨迹回放行数据
 });
 
 const form = ref({
@@ -179,15 +204,25 @@ const deleteAttention = async (id?: number[]) => {
   }
 };
 
+const onTrack = (row: { [key: string]: any }) => {
+  state.row = row;
+  state.dialogVisible = true;
+};
+
+const onTrackClose = () => {
+  state.dialogVisible = false;
+};
+
 // 轨迹回放
-const trackPlayBack = (row: { [key: string]: any }) => {
+const trackPlayBack = () => {
   getTrackDataByIdFn({
-    code: row.objectCode,
-    name: row.objectName,
-    objectTypeCode: row.objectTypeCode, // 实时数据对象类型
-    beginTime: moment(row.beginTime).format("YYYY-MM-DD HH:mm:ss"),
-    endTime: moment(row.endTime).format("YYYY-MM-DD HH:mm:ss")
+    code: state.row?.objectCode,
+    name: state.row?.objectName,
+    objectTypeCode: state.row?.objectTypeCode, // 实时数据对象类型
+    beginTime: state.dateTimes[0],
+    endTime: state.dateTimes[1]
   });
+  onTrackClose();
 };
 
 onMounted(() => {

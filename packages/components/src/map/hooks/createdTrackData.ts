@@ -24,7 +24,7 @@ import { setToMapCenter } from "./setToMapCenter"; // 设置地图中心点
 import arrow from "../img/arrow.png";
 
 // ⤵ API
-import { getRealLabelTypeInfo, getTrackLayerInfo } from "../../api/gis"; // 设置地图中心点
+import { getRealLabelTypeInfo } from "../../api/gis";
 
 /******************************************************************************************************/
 
@@ -33,9 +33,6 @@ const cashFeatureStyle: cashFeatureStyleType = {};
 
 // 轨迹标签类型(缓存)
 let labelTypeInfoCash: any = {};
-
-// 轨迹layer(缓存)
-let trackLayerCash: any = {};
 
 // 轨迹动画时长
 let setNumArr: any[] = []; // 定时器指针(清除动画)
@@ -68,15 +65,6 @@ const createdTrackData = async function (param: trackLayerParamType) {
     }
   }
 
-  // layer的基本信息
-  if (!trackLayerCash?.success) {
-    trackLayerCash = await getTrackLayerInfo({ id: labelTypeInfoCash?.data?.layerConfigId });
-    if (Number(trackLayerCash.code) !== 200) {
-      ElMessage.error("接口报错");
-      return;
-    }
-  }
-
   /*****************************************************
    设置颜色(根据trackList个数取索引)
   ****************************************************/
@@ -88,7 +76,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
    创建要素
   ****************************************************/
   const { data, id } = param;
-  const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = trackLayerCash.data; // 图层信息
+  const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = labelTypeInfoCash?.data?.layerConfigVO; // 图层信息
   const strategyTime = 10 * 60 * 1000; //分钟(策略时间，用于是否绘制虚线)
   const trackLineFeatureArr: Feature[] = [];
   const trackLineCircleFeatureArr: Feature[] = [];

@@ -340,6 +340,10 @@ watch(
     } else {
       getAlarmListOptions(n);
     }
+  },
+  {
+    immediate: true,
+    deep: true
   }
 );
 
@@ -439,8 +443,7 @@ const table = ref<TableList>({
       regions,
       beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
       endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
-      visitObjectType: formData.objectTypeId,
-      // 查询对象
+      objectTypeCode: realtimeDataList.value?.find((item: any) => item.id == formData.objectTypeId)?.code, // 查询对象code
       pageSize: formData.pageSize,
       pageNumber: formData.pageNumber
     };

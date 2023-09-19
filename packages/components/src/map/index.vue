@@ -743,7 +743,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             let infoStr = "";
             let infoData = detailInfo as [[string, any]];
             infoData.forEach(val => {
-              infoStr += `<p>${val[0]}:${val[1]}</p>`;
+              infoStr += `<p>${val[0]}: ${val[1]}</p>`;
             });
             popupTitDOMRef.value.innerHTML = titleInfo.name;
             popupContentDOMRef.value.innerHTML = infoStr;
@@ -801,7 +801,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (gisStore?.isEdit) {
         return;
       }
-      // 获取标签关联的设备信息|| 实时数据（船、人通过isVisitObject区分）
+      // 获取标签关联的设备信息|| 实时数据（船、人通过isRealTimeData区分）
       const trackInfoMap = map.get("trackInfoMap") || [];
       const currentTrack = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0]; // code有时字符串有时数字
       popupData.featureCode = featureCode;
@@ -858,7 +858,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
               }, 200);
             }
           } else {
-            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isVisitObject); // 选中（还需要判断是否外部对象的选中）
+            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
           }
         }
       }

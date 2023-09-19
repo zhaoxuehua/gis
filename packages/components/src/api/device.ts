@@ -1,8 +1,6 @@
 import request from "@/api";
 // ⤵ type
 import type {
-  trackDataByIdParamsType,
-  trackDataByIdResponseType,
   trackListDataParamsType,
   trackListDataResponseType,
   getTrackDataFieldMapType,
@@ -15,12 +13,7 @@ export function getTrackListData(params: trackListDataParamsType) {
   return request.post<trackListDataResponseType>(`/api/adm-service/view/common/getObjectByRegion`, params);
 }
 
-// 轨迹回放(单个详情数据,每次请求前，需要查询轨迹列表数据，有没有超过5条数据，超过提示)
-export function getTrackDataById(params: trackDataByIdParamsType) {
-  return request.post<trackDataByIdResponseType>(`/api/adm-service/view/common/getEquipData`, params);
-}
-
-// 轨迹返沪数据的中文映射字段
+// 轨迹返回数据的中文映射字段
 export function getTrackDataFieldMap(params: getTrackDataFieldMapType) {
   return request.get<getTrackDataFieldMapResponseType>(`/api/gis-service/equip/gisLabelPopupInfo/getSavedJsonConfig`, params);
 }
@@ -73,7 +66,7 @@ export function editVisitObject(params: object) {
   return request.put(`/api/equipment-service/equip/visitObject`, params);
 }
 
-// 左键弹窗 获取设备数据
+// 左键弹窗 获取设备数据（轨迹回放(单个详情数据,每次请求前，需要查询轨迹列表数据，有没有超过5条数据，超过提示)）
 export function getEquipData(params: object) {
   return request.post(`/api/adm-service/view/common/getEquipData`, params);
 }
@@ -83,19 +76,18 @@ export function getEquipDetail(id: number) {
   return request.get(`/api/equipment-service/equip/equip/getById/${id}`);
 }
 
-// 左键弹窗 获取设备信息
-// export function getEquipInfo(params: object) {
-//   return request.post(`/api/adm-service/view/common/getEquipInfo`, params);
-// }
-
 // 左键弹窗 线性实时曲线
 export function lineRealTimeCurveApi(params: object) {
   return request.post(`/api/adm-service/view/lineData/realtime/curve`, params);
 }
 
-// 查看左键弹窗配置的属性
-export function labelDetailAttr(equipTypeId: number, currentType: string, equipCode: string) {
-  return request.get(`/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}/${currentType}?equipCode=${equipCode}`);
+// 查看左键弹窗配置的属性(有objectTypeCode代表实时数据无是资产)
+export function labelDetailAttr(equipTypeId: number, objectTypeCode: string, equipCode: string) {
+  return request.get(
+    `/api/gis-service/equip/gisLabelPopupInfo/getAll/${equipTypeId}?equipCode=${equipCode}&objectTypeCode=${
+      objectTypeCode ? objectTypeCode : ""
+    }`
+  );
 }
 
 // 获取图层列表

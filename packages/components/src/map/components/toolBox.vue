@@ -113,7 +113,7 @@
           </el-form-item>
 
           <el-form-item label="轨迹回放隐藏船" label-width="110">
-            <el-select v-model="state.shipShowHideByTrack">
+            <el-select v-model="state.shipShowHideByTrack" clearable>
               <el-option
                 v-for="item in state.shipShowHideByTrackOption"
                 :key="item?.name"

@@ -295,13 +295,13 @@ export function transformLabelType(originalData: LabelType) {
 
 const clearSelectFeatureTimer = ref<number>();
 // 标签树、导航树选中label(是标签树或导航树的点击还是地图上的点击)
-export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isVisitObject?: boolean) {
+export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isRealTimeData?: boolean) {
   if (!map || !featureCode) {
     return;
   }
 
   let labelInfo: any;
-  if (!isVisitObject) {
+  if (!isRealTimeData) {
     let labelInfoMap = map?.get("labelInfoMap") || {};
     labelInfo = labelInfoMap[featureCode];
   } else {
@@ -317,7 +317,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     return;
   }
   let layer: any = null;
-  if (!isVisitObject) {
+  if (!isRealTimeData) {
     layer = map?.get("layerMap")[labelInfo.refLayer?.code];
   } else {
     layer = map?.get("layerMap")[labelInfo.layerCode];
@@ -337,7 +337,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   }
 
   let center: any = null;
-  if (!isVisitObject) {
+  if (!isRealTimeData) {
     const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
     center = getGeometryCenter(labelData);
   } else {

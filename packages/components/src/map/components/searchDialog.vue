@@ -14,7 +14,7 @@
     </el-input>
     <ul class="label-select" v-if="open && table.data.length">
       <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
-        <template v-if="item.isVisitObject">
+        <template v-if="item.isRealTimeData">
           {{ item.name ? item.code + "_" + item.name : item.code }}
         </template>
         <template v-else>
@@ -77,11 +77,11 @@ const table: any = ref({
     }
   },
   panToFeature: (item: any) => {
-    let { code, isVisitObject = false } = item;
+    let { code, isRealTimeData = false } = item;
     inputParam.value = item.filterName ? item.filterCode + "_" + item.filterName : item.filterCode;
     open.value = false;
     // 定位到标签位置
-    labelOnSelect(mapInstance, code, false, isVisitObject);
+    labelOnSelect(mapInstance, code, false, isRealTimeData);
   },
   showDetails: (row: any) => {
     emits("onEquipDetail", row);

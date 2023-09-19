@@ -71,8 +71,10 @@
     >
     </el-date-picker>
     <template #footer>
-      <el-button type="primary" @click="onTrack">查询</el-button>
-      <el-button @click="onTrackClose">取消</el-button>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="onTrack">查询</el-button>
+        <el-button @click="onTrackClose">取消</el-button>
+      </div>
     </template>
   </el-dialog>
   <AddRemarkDialog ref="addRemarkRef"></AddRemarkDialog>
@@ -134,7 +136,7 @@ const attrData: any = reactive({
 const equipInfo: any = ref({
   equipType: 0,
   code: "",
-  isVisitObject: false,
+  isRealTimeData: false,
   associationInfo: {},
   realObjectTypeCode: "" // 实时查询对象code（只有关注使用，关注只针对实时数据对象）
 });
@@ -154,12 +156,12 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
       equipCodes, // 设备编码集合
       attributes,
       isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
-      isVisitObject: equipInfo.value.isVisitObject, // 是否是外部对象（船）
+      // objectTypeCode: equipInfo.value?.realObjectTypeCode, // 实时数据对象类型
+      isVisitObject: equipInfo.value.isRealTimeData,
       isLineData: false, // 是否线性数据--数据类型
       dataTime: state.currentTime, //数据时间，针对具体时间
       tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
     });
-    // const res = attrconfigData;
     if (res.code === 200) {
       resolve(res);
     } else {
@@ -197,19 +199,20 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   dialogTitle.value = relationMap?.name || "";
 
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
-  const { isVisitObject = false } = relationMap || {};
+  const { isRealTimeData = false } = relationMap || {};
   equipInfo.value = relationMap;
-  // 获取设备类型id
-  if (!isVisitObject && relationMap?.model.toLocaleLowerCase() === "eam_eqp_equip") {
+  // 获取设备类型id（非实时数据需要获取设备类型id）
+  if (!isRealTimeData && relationMap?.model.toLocaleLowerCase() === "eam_eqp_equip") {
     await getEquipType(equipInfo.value.id);
   }
-  // equipInfo.value = {
-  //   equipType: 761,
-  //   code: "tunnel01",
-  //   isVisitObject
-  // };
+
   // 获取绑定的属性
-  await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject, equipCode: equipInfo.value?.code });
+  await getBindAttr({
+    equipType: equipInfo.value.equipType, // 类型id
+    objectTypeCode: equipInfo.value?.realObjectTypeCode, // 实时数据类型code(传了代表是实时数据，后端需要自己看是否外部对象)
+    equipCode: equipInfo.value?.code
+  });
+
   attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3); // 关注
   if (attrData.hasFocusBtn) {
     attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注
@@ -293,7 +296,7 @@ const onAction = (actionType: number) => {
     });
   } else if (actionType === 6) {
     // 6 定位（基础引擎有关联关系的及外部对象的定位）
-    labelOnSelect(props?.map, props?.data?.featureCode, false, equipInfo.value?.isVisitObject);
+    labelOnSelect(props?.map, props?.data?.featureCode, false, equipInfo.value?.isRealTimeData);
   } else if (actionType === 7) {
     // 告警
     alarmListRef?.value?.openDialog({ equipCode: equipInfo.value?.code });
@@ -318,6 +321,7 @@ const onTrack = () => {
     beginTime: state.dateTimes[0],
     endTime: state.dateTimes[1]
   });
+  onTrackClose();
 };
 const onTrackClose = () => {
   state.dialogVisible = false;
@@ -383,15 +387,7 @@ watch(
   () => props.data.featureCode,
   () => {
     getLabelDialogConfigInfo(props.data.relationMap);
-    // getLabelDialogConfigInfo({
-    //   equipType: 761,
-    //   code: "tunnel01",
-    //   isVisitObject: false
-    // });
   }
-  // {
-  //   immediate: true
-  // }
 );
 
 defineExpose({

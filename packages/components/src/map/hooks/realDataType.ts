@@ -31,7 +31,7 @@ interface searchShipType {
   name: string;
   equipType: number;
   labelTypeId: number;
-  isVisitObject: boolean;
+  isRealTimeData: boolean;
   layerCode: string;
   realObjectTypeCode?: string;
 }

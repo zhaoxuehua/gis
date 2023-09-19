@@ -29,13 +29,14 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       return;
     }
     let {
-      layerConfigCode = "seaMap", // 图层编码
       styleObject = "aisBoat", // 内置样式对象
       dataType = "1", // 数据类型
       code: labelTypeCode, // 标签类型code
       dataContent = "AISDATA", // 实时查询时配置的监测属性(数据内容)
-      id: labelTypeId // 标签类型id
+      id: labelTypeId, // 标签类型id
+      layerConfigVO // 图层信息
     } = realLabelType?.data; // 标签类型信息
+    let layerConfigCode = layerConfigVO?.code || "seaMap"; // 图层编码
 
     // 图层信息
     let realDataLayer = map.get("layerMap")?.[layerConfigCode];
@@ -90,9 +91,9 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         // 联系人person新加在静态属性中
         Object.entries(data).forEach(([key, item]) => {
           const aisLocation = (item as any)?.[dataContent]; // 监测属性
-          const staticAttr = (item as any)?.staticAttr || ""; // 静态属性
-          const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）AISDATA-alarm
-          const name = (item as any)?.[`${dataContent}-name`] || ""; // 名称（船名、人的终端名称）
+          const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）eg、AISDATA-alarm
+          const name = (item as any)?.name || ""; // 名称（船名、人的终端名称）
+          const person = (item as any)?.person || ""; // 联系人
 
           if (aisLocation) {
             const monitorTime = aisLocation.monitorTime;
@@ -103,11 +104,6 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
             }
             if (valInfo.category === "基站") {
               return;
-            }
-
-            let person: string = "";
-            if (staticAttr) {
-              person = JSON.parse(staticAttr?.value).person || "";
             }
 
             const colorArr: any = realFeatureColor({
@@ -138,7 +134,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
               lon: valInfo.lon,
               code: key,
               name: name,
-              isVisitObject: true, // 是否实时标签
+              isRealTimeData: true, // 是否实时标签
               dataType: dataType,
               equipType: equipTypeId, // 设备类型id
               labelTypeId: labelTypeId, // 标签类型id

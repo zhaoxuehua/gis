@@ -5,7 +5,7 @@ import moment from "moment";
 import { useTrackListStore } from "../../stores/modules/trackList";
 
 // ⤵ 接口
-import { getTrackDataById, getTrackDataFieldMap } from "../../api/device";
+import { getEquipData, getTrackDataFieldMap } from "../../api/device";
 
 // ⤵ 辅助函数
 import { createdTrackData } from "../hooks/createdTrackData"; // 绘制轨迹
@@ -18,8 +18,9 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
   if (store.data?.length >= 5) {
     return ElMessage.warning("轨迹列表最多5条");
   }
-  const trackResult = await getTrackDataById({
+  const trackResult: any = await getEquipData({
     equipCodes: row.code,
+    // objectTypeCode: row?.objectTypeCode,
     isVisitObject: true,
     isHistory: true,
     beginTime: moment(row.beginTime).format("YYYY-MM-DD HH:mm:ss"),
@@ -51,7 +52,7 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
     fieldMap[key] = val[key];
   });
   const trackDetailListData: any[] = []; // 轨迹列表的详情时用
-  const transData = trackResult.data.items.map(val => {
+  const transData = trackResult.data.items.map((val: any) => {
     const aisLocation = val?.[attributeCode]; // 监测属性 eg AISDATA
     const aisInfo = JSON.parse(aisLocation);
     trackDetailListData.push({
