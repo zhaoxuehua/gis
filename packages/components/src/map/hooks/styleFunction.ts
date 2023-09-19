@@ -450,8 +450,8 @@ export function alarmLayerStyle(feature: any) {
   if (Array.isArray(feature?.get("features"))) {
     targetFeature = feature.get("features")[0];
   }
-  const dataType = targetFeature.get("dataType");
-  if (dataType == "1" || dataType == "6") {
+  const type = targetFeature.get("type");
+  if (type == "1" || type == "6") {
     // 点类型报警
     const max = targetFeature.get("max");
     const alarmImg = styleAlarm.pointAlarmSty?.slice(0, max); // 返回3个样式（通过控制数组样式个数）
@@ -459,7 +459,7 @@ export function alarmLayerStyle(feature: any) {
   } else {
     // 其他类型报警
     const visible = targetFeature.get("visible");
-    if (["2", "7"].includes(dataType)) {
+    if (["2", "7"].includes(type)) {
       // 线样式的渲染(线环)
       if (visible) {
         return [styleAlarm.lineAlarmSty1];
@@ -467,7 +467,7 @@ export function alarmLayerStyle(feature: any) {
         return [styleAlarm.lineAlarmSty2];
       }
     }
-    if (["3", "4", "5"].includes(dataType)) {
+    if (["3", "4", "5"].includes(type)) {
       // 面样式的渲染（面圆矩形）
       if (visible) {
         return [styleAlarm.polAlarmSty1];

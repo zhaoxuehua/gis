@@ -90,7 +90,7 @@ export function deleteDialogAttentionApi({ objectCode, objectType }: any) {
 // 实时数据
 // 获取实时数据所属的标签类型信息
 export function getRealLabelTypeInfo(code: string, params: any) {
-  return request.get(`/api/gis-service/equip/gisLabel/type/getByVisitObjectType/${code}`, params);
+  return request.get(`/api/gis-service/equip/gisLabel/type/getByObjectType/${code}`, params);
 }
 // 获取实时列表数据  equip/equip/getRealtimeData/
 export function getRealDataList(code: string, params: any) {

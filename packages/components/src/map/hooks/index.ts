@@ -614,8 +614,7 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
 export function getSelectedFeature(map: VisualMap, pixel: any) {
   if (!map || !pixel) return;
   let typeMap: any = {
-    alarmPoint: [], // 报警点  取第一个
-    point: [], // 1 6  (船也是点)  取第一个
+    point: [], // 1 6  (点)  取第一个
     line: [], // 2  7 线（环） 取第一个
     polygon: [], // 3 4 5  面（圆、矩形、面）  分取最小的面
     other: [] // 其他
@@ -633,9 +632,7 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
       }
       if (targetFeature) {
         const type = targetFeature.get("type");
-        if (type == "alarmPoint") {
-          typeMap["alarmPoint"].push(targetFeature);
-        } else if (type == "1" || type == "6") {
+        if (type == "1" || type == "6") {
           typeMap["point"].push(targetFeature);
         } else if (type == "2" || type == "7") {
           typeMap["line"].push(targetFeature);
@@ -646,14 +643,11 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
         }
       }
     },
-    { hitTolerance: 5 } // 设置捏合度为 20 像素
+    { hitTolerance: 5 } // 设置捏合度为 5 像素
   );
   // 判断类型下要素优先级看选哪个
   let currentSelectFeature = null;
-  if (typeMap.alarmPoint.length) {
-    // 如果有报警点: 使用第一个
-    currentSelectFeature = typeMap.alarmPoint[0];
-  } else if (typeMap.point.length) {
+  if (typeMap.point.length) {
     // 如果有点 使用第一个
     currentSelectFeature = typeMap.point[0];
   } else if (typeMap.line.length) {

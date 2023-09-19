@@ -832,10 +832,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         let featureCode = currentSelectFeature?.get("code");
         let featureName = currentSelectFeature?.get("name");
         let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
-
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
-        let type = currentSelectFeature?.get("type");
-        if (type == "alarmPoint") {
+        let typeStats = currentSelectFeature?.get("typeStats");
+        if (typeStats == "alarmPoint") {
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
           labelTypeCode = featureLabelType;

@@ -26,12 +26,12 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
     // 如果有经纬度则说明是点，直接绘制报警点，没有则在abelInfoMap中匹配去标签进行绘制新的报警标签
     if (lon && lat) {
       const alarmPointFeature = new Feature({
+        name: equipName,
         geometry: new Point(fromLonLat([lon, lat]))
       });
-      alarmPointFeature.set("type", "alarmPoint");
-      alarmPointFeature.set("dataType", "1"); // 数据类型
       alarmPointFeature.set("code", equip); // 设备编码
-      alarmPointFeature.set("name", equipName); // 设备名称
+      alarmPointFeature.set("typeStats", "alarmPoint");
+      alarmPointFeature.set("type", "1"); // 数据类型
       alarmPointFeature.set("max", 1);
       alarmFeatures.push(alarmPointFeature);
     } else {
@@ -46,8 +46,8 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
             geometry: createGeometry(labelInfo?.labelData)
           });
           labelFeature.set("code", equip); // 设备编码
-          labelFeature.set("type", "alarmPoint");
-          labelFeature.set("dataType", labelInfo?.labelData?.style?.type);
+          labelFeature.set("typeStats", "alarmPoint");
+          labelFeature.set("type", labelInfo?.labelData?.style?.type);
           if (["1", "6"].includes(labelInfo?.labelData?.style?.type)) {
             labelFeature.set("max", 1);
           } else {
@@ -68,8 +68,8 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
 
   gisStore.simulateAlarmTimer = setInterval(() => {
     layer?.getSource().forEachFeature((feature: any) => {
-      let dataType = feature.get("dataType");
-      if (dataType == "1" || dataType == "6") {
+      let type = feature.get("type");
+      if (type == "1" || type == "6") {
         // 点报警要素
         let max = feature.get("max") || 1;
         max = max < 3 ? max + 1 : 1;
