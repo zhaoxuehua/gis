@@ -400,7 +400,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend // 图例[]
     };
-    // mock数据{ code: "aisBoat", name: "船舶", id: 17 }   { code: "MMSI", name: "船名",searchPlaceholder: "请输入设备名称或编码" }
     gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据
     gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
 

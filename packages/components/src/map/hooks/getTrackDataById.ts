@@ -18,10 +18,10 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
   if (store.data?.length >= 5) {
     return ElMessage.warning("轨迹列表最多5条");
   }
+  // 获取轨迹数据
   const trackResult: any = await getEquipData({
     equipCodes: row.code,
-    // objectTypeCode: row?.objectTypeCode,
-    isVisitObject: true,
+    equipType: row?.objectTypeCode,
     isHistory: true,
     beginTime: moment(row.beginTime).format("YYYY-MM-DD HH:mm:ss"),
     endTime: moment(row.endTime).format("YYYY-MM-DD HH:mm:ss"),

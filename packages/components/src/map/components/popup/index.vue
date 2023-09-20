@@ -151,17 +151,19 @@ const state = reactive({
 
 // 获取设备数据
 const getDataFromAttr = (equipCodes: string, attributes: string) => {
+  let param: any = {
+    equipCodes, // 设备编码集合
+    attributes,
+    isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
+    isLineData: false, // 是否线性数据--数据类型
+    dataTime: state.currentTime, //数据时间，针对具体时间
+    tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
+  };
+  if (equipInfo.value?.realObjectTypeCode) {
+    param.equipType = equipInfo.value?.realObjectTypeCode;
+  }
   return new Promise(async (resolve, reject) => {
-    const res: any = await getEquipData({
-      equipCodes, // 设备编码集合
-      attributes,
-      isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
-      // objectTypeCode: equipInfo.value?.realObjectTypeCode, // 实时数据对象类型
-      isVisitObject: equipInfo.value.isRealTimeData,
-      isLineData: false, // 是否线性数据--数据类型
-      dataTime: state.currentTime, //数据时间，针对具体时间
-      tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
-    });
+    const res: any = await getEquipData(param);
     if (res.code === 200) {
       resolve(res);
     } else {
@@ -295,10 +297,10 @@ const onAction = (actionType: number) => {
       ...equipInfo.value
     });
   } else if (actionType === 6) {
-    // 6 定位（基础引擎有关联关系的及外部对象的定位）
+    // 6 定位（基础引擎有关联关系的实时数据对象的定位）
     labelOnSelect(props?.map, props?.data?.featureCode, false, equipInfo.value?.isRealTimeData);
   } else if (actionType === 7) {
-    // 告警
+    // 7 告警
     alarmListRef?.value?.openDialog({ equipCode: equipInfo.value?.code });
   } else {
     let option = {
