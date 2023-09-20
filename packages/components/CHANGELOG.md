@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.57
+
+### Patch Changes
+
+- 增加人员定位功能
+
 ## 1.0.56
 
 ### Patch Changes
