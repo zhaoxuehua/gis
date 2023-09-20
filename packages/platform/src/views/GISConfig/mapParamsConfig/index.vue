@@ -125,6 +125,21 @@
       <template #scaleLineUnit="scope">
         {{ scope.row.scaleLineUnit == "metric" ? "米（千米）" : "海里" }}
       </template>
+      <template #customTreeType="scope">
+        {{ scope.row.customTreeType == "EquipCustomTree" ? "设备树" : "自定义" }}
+      </template>
+      <template #customTreeCode="scope">
+        {{ scope.row.customTreeType == "EquipCustomTree" ? scope.row.customTreeCode : "" }}
+      </template>
+      <template #keywordConfig="scope">
+        {{
+          scope.row.keywordConfig
+            ? Object.entries(scope.row.keywordConfig)
+                .map(([key, value]) => `${key}:${value}`)
+                .join("; ")
+            : ""
+        }}
+      </template>
       <template #isEdit="scope">
         {{ scope.row.isEdit ? "是" : "否" }}
       </template>

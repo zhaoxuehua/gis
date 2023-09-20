@@ -135,6 +135,7 @@ export type createdFeatureType = (data: createdFeatureArgType) => Feature;
 export interface trackLayerParamType {
   id: number | string;
   name: string;
+  objectTypeCode?: any;
   data: any[];
 }
 
@@ -162,6 +163,7 @@ export interface setToMapCenterType {
 export interface selectModeListType {
   code: string;
   name: string;
+  labelName?: string;
   coordinates?: any[];
   id?: number | string;
 }

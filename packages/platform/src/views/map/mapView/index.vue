@@ -14,7 +14,6 @@ const mapRef = ref<InstanceType<typeof AgMap>>();
 const userStore = useUserStore();
 
 let config: { [key: string]: any } = reactive({
-  navSourceCode: "Default", // CABLE_HL等
   sessionId: userStore.token
 });
 

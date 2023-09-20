@@ -13,16 +13,25 @@
           <el-button type="primary" @click="onRefresh">刷新</el-button>
         </div>
         <div class="right-operate">
-          <span>对象编码</span>
-          <el-input
-            clearable
-            placeholder="请输入"
-            style="width: 200px; margin-right: 12px"
-            v-model="query.params.objectCode"
-            @keyup.enter.stop="querySearch"
-            @input="querySearch"
-          >
-          </el-input>
+          <el-form :model="query.params" inline>
+            <el-form-item label="查询对象" required>
+              <el-select v-model="query.params.objectTypeCode" placeholder="请选择..." @change="querySearch">
+                <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.code" />
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="keywordConfig?.code || '对象编码'">
+              <el-input
+                clearable
+                placeholder="请输入"
+                style="width: 200px; margin-right: 12px"
+                v-model="query.params.objectCode"
+                @keyup.enter.stop="querySearch"
+                @input="querySearch"
+              >
+              </el-input>
+            </el-form-item>
+          </el-form>
+
           <el-button type="primary" @click="querySearch">搜索</el-button>
         </div>
       </div>
@@ -38,8 +47,8 @@
           stripe
           border
         >
-          <el-table-column label="对象编码" prop="objectCode"></el-table-column>
-          <el-table-column label="对象名称" prop="objectName"></el-table-column>
+          <el-table-column :label="keywordConfig?.code || '对象编码'" prop="objectCode"></el-table-column>
+          <el-table-column :label="keywordConfig?.name || '对象名称'" prop="objectName"></el-table-column>
           <el-table-column label="开始免监控时间" prop="beginTime" width="180"> </el-table-column>
           <el-table-column label="结束免监控时间" prop="endTime" width="180"> </el-table-column>
           <el-table-column label="状态" prop="status" width="100">
@@ -77,14 +86,17 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { handleParam } from "@/utils/common.js";
 import type { VisualMap, TableList } from "../type";
 import WhiteListEdit from "./whiteListEdit.vue";
 import moment from "moment";
+import { useGisStore } from "../../stores/modules/gis";
 import { getWhiteList, whiteListDelete } from "../../api/device";
 import Icon from "./Icon.vue";
+
+const gisStore = useGisStore();
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -98,6 +110,16 @@ const whiteListEditRef = ref<InstanceType<typeof WhiteListEdit>>();
 const onClose = () => {
   emits("onClose", props.index);
 };
+
+// 实时查询对象类型列表
+const realtimeDataList = computed(() => {
+  return gisStore?.realtimeDataList || [];
+});
+
+// 关键词配置
+const keywordConfig = computed(() => {
+  return gisStore?.keywordConfig;
+});
 
 const displayStatus = (beginTime: string, endTime: string) => {
   let currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -114,6 +136,7 @@ const displayStatus = (beginTime: string, endTime: string) => {
 const query = ref({
   params: {
     objectCode: "", // 对象编码
+    objectTypeCode: realtimeDataList.value?.length ? realtimeDataList.value[0]?.code : "", // 查询对象初始code
     orderByColumn: "",
     isAsc: "",
     pageNumber: 1,
@@ -148,6 +171,7 @@ const table = ref<TableList>({
   ids: [],
   data: [],
   getTableData: async () => {
+    if (!query.value.params?.objectTypeCode) return ElMessage.warning("请选择查询对象");
     table.value.loading = true;
     const res: { [key: string]: any } = await getWhiteList(...(handleParam(query.value.params) as [string, object]));
     if (res.code == 200) {
@@ -237,17 +261,20 @@ onMounted(() => {
       display: flex;
       flex: 1;
       flex-direction: row;
-      align-items: center;
+
+      // align-items: center;
       justify-content: flex-end;
-      span {
-        padding-right: 20px;
-        color: #606266;
-      }
+
+      // span {
+      //   padding-right: 20px;
+      //   color: #606266;
+      // }
     }
   }
   .list-area {
     width: 100%;
-    margin-top: 20px;
+
+    // margin-top: 20px;
     .header-table {
       background-color: #f7f7fa;
     }

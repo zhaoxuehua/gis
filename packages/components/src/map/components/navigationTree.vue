@@ -29,7 +29,7 @@
           ref="treeRef"
           :expand-on-click-node="false"
           :default-expanded-keys="state.expandedKeys"
-          node-key="code"
+          node-key="id"
         >
           <template #default="{ node, data }">
             <span class="custom-tree-node" :class="{ active: !!data.associationInfo }">
@@ -166,9 +166,9 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
   // 取树节点的设备名称
   _featureType.name = node.name;
 
-  createLabel(props.map, _featureType, function (result: any, feature: any, drawFeature: any) {
+  createLabel(props.map, _featureType, false, function (result: any, feature: any, drawFeature: any) {
     if (!result) {
-      ElMessage.error("创建标签失败");
+      ElMessage.error("新增标签失败");
       return;
     }
 
@@ -181,7 +181,6 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
     let featureTypeGroup = props?.map.get("featureTypeGroup");
     featureTypeGroup[result.labelType.code].push(feature);
     props.map?.set("featureTypeGroup", featureTypeGroup);
-    ElMessage.success("新增标签成功");
     // 新增关联关系
     addAssociation({
       associationType: 5,
@@ -193,11 +192,11 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
         if (!res) return;
         // 更新导航树及关联关系
         gisStore.fetchNavigationTree();
-        ElMessage.success("保存成功");
+        ElMessage.success("新增标签成功");
       },
       (err: any) => {
         console.warn(err);
-        ElMessage.error("保存失败");
+        ElMessage.success("新增标签失败");
       }
     );
   });
@@ -207,9 +206,9 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
 const getParentNode = (node: { [key: string]: any }) => {
   // 找父节点塞数据
   const parentNode: { [key: string]: any } = node?.parent;
-  const parentNodeCode: string | undefined = parentNode?.data?.code;
-  if (parentNodeCode) {
-    state.expandedKeys = [parentNodeCode];
+  const parentNodeId: string | undefined = parentNode?.data?.id;
+  if (parentNodeId) {
+    state.expandedKeys = [parentNodeId];
   }
 };
 
@@ -239,7 +238,7 @@ onMounted(() => {});
 .nav-tree {
   display: flex;
   flex-direction: column;
-  width: 300px;
+  width: 320px;
   height: 500px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);

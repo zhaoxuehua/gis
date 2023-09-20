@@ -10,29 +10,19 @@ import selectImg from "../img/select.png";
 export const styleAct = {
   lineStyAct: new Style({
     stroke: new Stroke({
-      color: "rgba(255,0,0,1)",
-      width: 2
-    }),
-    zIndex: 1
-  }),
-
-  lineDashStyAct: new Style({
-    // 线激活后为红色的虚线
-    stroke: new Stroke({
-      color: "rgba(255,0,0,1)",
-      lineDash: [8, 8],
-      width: 2
+      color: "rgba(0,150,255,0.5)",
+      width: 3
     }),
     zIndex: 1
   }),
 
   polStyAct: new Style({
     fill: new Fill({
-      color: "rgba(255,0,0,0.8)"
+      color: "rgba(0,150,255,0.5)"
     }),
     stroke: new Stroke({
-      color: "rgba(0,150,255,1)",
-      width: 4
+      color: "rgba(0,150,255,0.8)",
+      width: 3
     })
   }),
 
@@ -43,6 +33,39 @@ export const styleAct = {
       rotation: 0
     }),
     zIndex: 1
+  })
+};
+
+// 报警样式（报警点、线、面）
+export const styleAlarm = {
+  pointAlarmSty: warnFault("rgba(255,0,0,1)"), // 报警点
+  lineAlarmSty1: new Style({
+    stroke: new Stroke({
+      color: "rgba(255,0,0,0.7)",
+      width: 2
+    }),
+    zIndex: 10
+  }),
+  // 报警线的动画样式1 2
+  lineAlarmSty2: new Style({
+    stroke: new Stroke({
+      color: "rgba(255,255,255,0)",
+      width: 2
+    }),
+    zIndex: 10
+  }),
+  // 报警面的动画样式1 2
+  polAlarmSty1: new Style({
+    fill: new Fill({
+      color: "rgba(255,0,0,0.3)"
+    }),
+    zIndex: 10
+  }),
+  polAlarmSty2: new Style({
+    fill: new Fill({
+      color: "rgba(255,255,255,0)"
+    }),
+    zIndex: 10
   })
 };
 
@@ -377,31 +400,6 @@ export function publicLabelStyle(name: string = "") {
   return labelStyle;
 }
 
-// 报警点样式
-export function warnStyle(feature: any, max: number) {
-  const isSelected = feature.get("selected"); // 获取要素的 selected 属性
-  const type = feature.get("type");
-  if (type == "alarmPoint") {
-    const name = feature.get("name");
-    const alarmStyle = new Style({
-      text: new Text({
-        textAlign: "left", // 位置
-        textBaseline: "bottom", // 基准线
-        font: "normal 15px 微软雅黑", // 文字样式
-        text: name, // 文本内容
-        fill: new Fill({ color: "#ff0000" }), // 文本填充样式（即文字颜色）
-        stroke: new Stroke({ color: "#ffcc33", width: 2 }),
-        offsetX: -10,
-        offsetY: -10
-      })
-    });
-    const alarmImg = warnFault("#ff0000").slice(0, max); // 返回3个样式（通过控制数组样式个数）
-    return isSelected ? alarmImg.concat(alarmStyle, styleAct.selectAct) : alarmImg.concat(alarmStyle);
-  } else {
-    return [];
-  }
-}
-
 export function warnFault(color: string) {
   let radius = 10;
   let point = new Style({
@@ -412,7 +410,8 @@ export function warnFault(color: string) {
       radius: radius * 0.4,
       points: radius * 2,
       scale: 1
-    })
+    }),
+    zIndex: 10
   });
   let border1 = new Style({
     image: new RegularShape({
@@ -425,7 +424,8 @@ export function warnFault(color: string) {
       points: 50,
       scale: 1,
       rotation: Math.PI / (180 / 30)
-    })
+    }),
+    zIndex: 10
   });
   let border2 = new Style({
     image: new RegularShape({
@@ -438,12 +438,47 @@ export function warnFault(color: string) {
       points: 50,
       rotation: Math.PI / (180 / 45),
       scale: 1
-    })
+    }),
+    zIndex: 10
   });
   return [point, border1, border2];
 }
 
-// 绘制图层的样式及绘制时图标样式
+// 报警点图层样式
+export function alarmLayerStyle(feature: any) {
+  let targetFeature = feature;
+  if (Array.isArray(feature?.get("features"))) {
+    targetFeature = feature.get("features")[0];
+  }
+  const type = targetFeature.get("type");
+  if (type == "1" || type == "6") {
+    // 点类型报警
+    const max = targetFeature.get("max");
+    const alarmImg = styleAlarm.pointAlarmSty?.slice(0, max); // 返回3个样式（通过控制数组样式个数）
+    return alarmImg;
+  } else {
+    // 其他类型报警
+    const visible = targetFeature.get("visible");
+    if (["2", "7"].includes(type)) {
+      // 线样式的渲染(线环)
+      if (visible) {
+        return [styleAlarm.lineAlarmSty1];
+      } else {
+        return [styleAlarm.lineAlarmSty2];
+      }
+    }
+    if (["3", "4", "5"].includes(type)) {
+      // 面样式的渲染（面圆矩形）
+      if (visible) {
+        return [styleAlarm.polAlarmSty1];
+      } else {
+        return [styleAlarm.polAlarmSty2];
+      }
+    }
+  }
+}
+
+// 测量绘制图层的样式及绘制时图标样式
 export function measureStyle() {
   let style = new Style({
     fill: new Fill({

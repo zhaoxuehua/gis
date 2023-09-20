@@ -113,7 +113,7 @@
           </el-form-item>
 
           <el-form-item label="轨迹回放隐藏船" label-width="110">
-            <el-select v-model="state.shipShowHideByTrack">
+            <el-select v-model="state.shipShowHideByTrack" clearable>
               <el-option
                 v-for="item in state.shipShowHideByTrackOption"
                 :key="item?.name"
@@ -174,7 +174,7 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
 const emits = defineEmits(["onClose"]);
 const state = reactive({
   activeIndex: "1",
-  measuringValue: "", //当前选择的测量单位
+  measuringValue: "length", //当前选择的测量单位
   measuringOptions: [
     // 测量下拉选项
     { value: "length", label: "长度" },
@@ -192,7 +192,7 @@ const state = reactive({
 
   // 实时标签样式
   shipHeadLine: false,
-  shipShowHideByTrack: true,
+  shipShowHideByTrack: "",
   shipShowHideByTrackOption: [] as any,
   trackSpeed: ""
 });
@@ -222,7 +222,7 @@ const trackSpeedOption = ref([
 
 //测量
 const measureMode = ref<Array<any>>([]); // 测量的数据数组
-const measureDrawFeature = ref<Draw>(); // 测量交互器
+const measureDrawFeature: any = ref<Draw>(); // 测量交互器
 const measureVectorLayer = ref(); // 测量图层
 const measureSource = ref(); // 测量图层数据源
 const measureOverlays = ref<Array<any>>([]); // 测量距离显示覆盖物数组
@@ -259,6 +259,8 @@ const measureAddInteraction = (value: string) => {
     style: measureStyle
   });
   props.map.addInteraction(measureDrawFeature.value);
+  // 存储测量交互器
+  props.map?.set("measureDrawInteraction", measureDrawFeature.value);
   createMeasureTooltip();
 
   // 计算线的长度以及面的面积
@@ -354,7 +356,8 @@ const onClearMeasuring = () => {
 const measureRemoveInteraction = () => {
   if (props.map && measureDrawFeature.value) {
     props.map.removeInteraction(measureDrawFeature.value);
-    measureDrawFeature.value = undefined;
+    measureDrawFeature.value = null;
+    props.map?.set("measureDrawInteraction", null);
     props.map?.removeLayer(measureVectorLayer.value);
     measureOverlays.value.forEach(item => {
       props.map && props.map?.removeOverlay(item);

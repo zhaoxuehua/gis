@@ -10,18 +10,21 @@ export const useGisStore = defineStore({
   state: (): any => ({
     navigationTree: [], // 导航树
     relationMap: {}, // 关联关系
-    sourceCode: "",
+    mapIdentificationConfig: { mapParams: "", isId: false }, // 应用场景id/code及是否是id
     isDynamicLine: false, // 线环闪烁维护字段
     imgIndex: 0, // 动画点图片索引
     isEdit: false, // 地图编辑
     isShowEditLabel: false, // 编辑标签弹框
+    realtimeDataList: [], // 实时数据配置list
+    keywordConfig: {}, // 关键词配置
+    simulateAlarmTimer: null, // 报警要素样式切换定时器
     mapCase: {}, // 地图实例
     trackColor: ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"] // 轨迹回放的颜色
   }),
   actions: {
     // 导航树及关联关系
     fetchNavigationTree() {
-      getGisCustomTree(this.sourceCode).then(
+      getGisCustomTree(this.mapIdentificationConfig?.mapParams, this.mapIdentificationConfig?.isId).then(
         (res: any) => {
           if (res.code === 200 && res.data) {
             const { treeNodeVOList } = res.data;
@@ -38,9 +41,9 @@ export const useGisStore = defineStore({
         }
       );
     },
-    // 存储导航树的sourceCode
-    setSourceCode(sourceCode: string = "") {
-      this.sourceCode = sourceCode;
+    // 存储应用场景的编码或id
+    setMapIdentification({ mapParams, isId }: { mapParams: string | number; isId: boolean }) {
+      this.mapIdentificationConfig = { mapParams: mapParams, isId: isId };
     },
     setIsDynamicLine(isDynamicLine: boolean) {
       this.isDynamicLine = isDynamicLine;
@@ -54,6 +57,17 @@ export const useGisStore = defineStore({
     setIsShowEditLabel(isShowEditLabel: boolean) {
       this.isShowEditLabel = isShowEditLabel;
     },
+    setSimulateAlarmTimer(timer: any) {
+      this.simulateAlarmTimer = timer;
+    },
+
+    setKeywordConfig(keywordConfig: { [key: string]: any }) {
+      this.keywordConfig = keywordConfig;
+    },
+    setRealtimeDataList(realtimeDataList: any[]) {
+      this.realtimeDataList = realtimeDataList;
+    },
+
     // 设置导航树数据及关联关系为空
     setNavTreeAndRelation() {
       this.navigationTree = [];

@@ -11,6 +11,7 @@
         title=""
         :data="unBindLinkData"
         :columns="unSelectTableColumns"
+        :is-pageable="false"
         @selection-change="handleSelectionChange"
       >
       </Table>

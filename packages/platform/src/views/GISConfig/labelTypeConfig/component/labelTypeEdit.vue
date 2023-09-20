@@ -71,13 +71,74 @@
             ></el-option>
           </el-select>
         </el-form-item>
-
         <!-- 点 -->
         <template v-if="form.dataType === '1'">
-          <el-form-item label="显示比例" prop="displayScale">
+          <!-- 只有是设备类型才有数据来源及数据内容  -->
+          <el-form-item prop="dataSource" v-if="form.equipType?.id">
+            <template #label>
+              <div style="display: flex; align-items: center">
+                <span>数据来源</span>
+                <div style="display: flex; align-items: center">
+                  <el-tooltip effect="dark" content="实时请求的的数据还是基础引擎绘制的数据" placement="top">
+                    <Icon src="WarningFilled" :size="16" color="#e6a23c"></Icon>
+                  </el-tooltip>
+                </div>
+              </div>
+            </template>
+            <el-select v-model="form.dataSource" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+              <el-option
+                v-for="(item, index) in dataSourceList.data"
+                :key="index"
+                :label="item.name"
+                :value="item.code"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="dataContent" v-if="form.equipType?.id && form.dataSource == 'dynamicQuery'">
+            <template #label>
+              <div style="display: flex; align-items: center">
+                <span>数据内容</span>
+                <div style="display: flex; align-items: center">
+                  <el-tooltip effect="dark" content="选择绑定的监测属性" placement="top">
+                    <Icon src="WarningFilled" :size="16" color="#e6a23c"></Icon>
+                  </el-tooltip>
+                </div>
+              </div>
+            </template>
+            <el-select v-model="form.dataContent" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+              <el-option
+                v-for="(item, index) in dataContentList.data"
+                :key="index"
+                :label="item.attributeName"
+                :value="item.attributeCode"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="样式" prop="selectStyle">
+            <el-select v-model="form.selectStyle" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+              <el-option
+                v-for="(item, index) in selectStyleList.data"
+                :key="index"
+                :label="item.name"
+                :value="item.code"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="内置样式对象" prop="styleObject" v-if="form.selectStyle == 'builtInStyle'">
+            <el-select v-model="form.styleObject" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+              <el-option
+                v-for="(item, index) in styleObjectList.data"
+                :key="index"
+                :label="item.name"
+                :value="item.code"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="显示比例" prop="displayScale" v-if="form.selectStyle == 'customStyle'">
             <el-input type="number" v-model="form.displayScale" :disabled="state.dialogType == 2" />
           </el-form-item>
-          <el-form-item label="标签类型图片" prop="labelTypeImagePath">
+          <el-form-item label="标签类型图片" prop="labelTypeImagePath" v-if="form.selectStyle == 'customStyle'">
             <el-select
               v-model="form.labelTypeImagePath"
               :multiple="true"
@@ -208,7 +269,7 @@
 </template>
 
 <script lang="ts" setup name="LabelTypeEdit">
-import { reactive, onMounted, ref, computed } from "vue";
+import { reactive, onMounted, ref, computed, watch } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
@@ -220,6 +281,7 @@ import {
   editLabelType,
   getLegendConfigList
 } from "@/api/visconfig.js";
+import { getBindAttributeMonitor } from "@/api/device.js";
 import ReferenceMain from "./referenceMain.vue";
 import ReferenceObject from "./referenceObject.vue";
 import { LabelType } from "../../type";
@@ -270,6 +332,10 @@ const state = reactive({
     ],
     layerConfigId: [{ required: true, message: "请选择所属图层", trigger: ["blur", "change"] }],
     dataType: [{ required: true, message: "请选择数据类型", trigger: ["blur", "change"] }],
+    dataSource: [{ required: true, message: "请选择数据来源", trigger: ["blur", "change"] }],
+    selectStyle: [{ required: true, message: "请选择样式", trigger: ["blur", "change"] }],
+    styleObject: [{ required: true, message: "请选择内置样式对象", trigger: ["blur", "change"] }],
+    dataContent: [{ required: true, message: "请选择数据内容", trigger: ["blur", "change"] }],
     displayScale: [
       { required: true, message: "显示比例不能为空", trigger: ["blur", "change"] },
       { validator: displayScaleVerification, trigger: ["blur", "change"] }
@@ -351,7 +417,11 @@ const defaultParam = {
   backGroundColor: "rgba(0,0,0,0.3)",
   isTrackSetting: false, // 轨迹设置
   animationSetting: "", // 动画设置
-  trackLineStyle: null // 轨迹线样式
+  trackLineStyle: null, // 轨迹线样式
+  selectStyle: "customStyle", // 样式
+  styleObject: "", // 内置样式对象
+  dataSource: "draw", // 数据源（自己绘制还是实时请求）
+  dataContent: "" // 数据源是实时查询时关联的属性名
 };
 
 // 表单字段
@@ -366,8 +436,14 @@ let form = ref<
     trackLineStyle: any;
     isVisitObject?: any;
     speedUnit: string;
+    selectStyle?: string;
+    styleObject?: string;
+    dataSource?: string;
+    dataContent?: string;
   }
 >(defaultParam);
+
+const timer: any = ref(null);
 
 // 关联设备信息
 // 没绑定展示空
@@ -416,6 +492,12 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
       form.value.isVisitObject = !!res.data?.reference.includes("VisitObject");
     }
     form.value.id = row.id;
+    // 首次进来需要执行数据内容接口请求会将其值清空
+    timer.value = setTimeout(() => {
+      form.value.dataContent = JSON.parse(JSON.stringify(res.data))?.dataContent;
+      clearTimeout(timer.value);
+      timer.value = null;
+    });
   } else {
     state.dialogType = 0;
     form.value = { ...defaultParam };
@@ -613,6 +695,22 @@ const layerList = ref<{
   }
 });
 
+// 数据内容（根据关联的对象类型请求属性列表）
+const dataContentList = ref<{
+  data: Array<{
+    attributeCode: string;
+    attributeName: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    dataContentList.value.data = [];
+    const res: { [key: string]: any } = await getBindAttributeMonitor(form.value?.equipType?.id, form?.value.isVisitObject); // 传设备类型id
+    dataContentList.value.data = res?.data || [];
+  }
+});
+
 // 动画配置
 const animationList = ref<{
   data: Array<{
@@ -631,6 +729,81 @@ const animationList = ref<{
     }
   ]
 });
+
+// 样式选择
+const selectStyleList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "customStyle",
+      name: "自定义样式"
+    },
+    {
+      code: "builtInStyle",
+      name: "内置样式"
+    }
+  ]
+});
+
+// 内置样式对象
+const styleObjectList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "person",
+      name: "人"
+    },
+    {
+      code: "aisBoat",
+      name: "船"
+    }
+  ]
+});
+
+// 数据来源
+const dataSourceList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "draw",
+      name: "绘制"
+    },
+    {
+      code: "dynamicQuery",
+      name: "实时查询"
+    }
+  ]
+});
+
+// 监听绑定的设备类型id，当变更后更新显示内容列表
+watch(
+  () => form.value?.equipType?.id,
+  val => {
+    if (!val) {
+      form.value.dataSource = "";
+      dataContentList.value.data = [];
+    } else {
+      dataContentList.value.fetchData();
+    }
+    form.value.dataContent = ""; // 数据内容
+  },
+  {
+    deep: true,
+    flush: "post"
+  }
+);
 
 onMounted(() => {
   dataTypeList.value.fetchData();

@@ -1,5 +1,45 @@
 # adm-gis-platform
 
+## 1.0.62
+
+### Patch Changes
+
+- 升包
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.60
+
+## 1.0.61
+
+### Patch Changes
+
+- 升包
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.59
+
+## 1.0.60
+
+### Patch Changes
+
+- 升包-人员定位修改
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.58
+
+## 1.0.59
+
+### Patch Changes
+
+- 增加人员定位功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.57
+
+## 1.0.58
+
+### Patch Changes
+
+- 增加告警逻辑及部分实时数据逻辑
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.56
+
 ## 1.0.57
 
 ### Patch Changes

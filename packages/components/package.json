@@ -1,6 +1,6 @@
 {
   "name": "@adm-gis-ui/components",
-  "version": "1.0.55",
+  "version": "1.0.60",
   "private": true,
   "main": "index.ts",
   "scripts": {

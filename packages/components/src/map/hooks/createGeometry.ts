@@ -17,7 +17,7 @@ export function multiArray(array: any) {
 
 export function createGeometry(labelData: LabelData) {
   let geometry;
-  let type = labelData.style.type;
+  let type = labelData?.style?.type;
   if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
     type = MAP_DATA_TYPE[type]?.value;
   }

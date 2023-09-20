@@ -43,9 +43,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 50px;
     padding: 0 20px;
-    background-color: #f7f7fa;
+    background-color: var(--el-color-primary-light-9);
     span {
       font-size: 16px;
     }
