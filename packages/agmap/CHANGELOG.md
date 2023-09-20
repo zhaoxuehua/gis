@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.58
+
+### Patch Changes
+
+- 升包-人员定位修改
+
 ## 1.0.57
 
 ### Patch Changes
