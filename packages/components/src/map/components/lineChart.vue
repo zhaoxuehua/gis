@@ -16,6 +16,13 @@ const initOption = (chartData?: any) => {
       trigger: "axis",
       position: function (pt: any) {
         return [pt[0], "10%"];
+      },
+      formatter(params: any) {
+        let str = `${params[0].data[0]}${chartData?.xAxisUnit}<br/>`;
+        params.forEach((item: any) => {
+          str += `${item.marker}${item.seriesName}：${item.data[1]}${chartData?.yAxisUnit}<br/>`;
+        });
+        return str;
       }
     },
     title: {
@@ -24,12 +31,18 @@ const initOption = (chartData?: any) => {
     },
     legend: {},
     xAxis: {
-      name: chartData?.xAxisName || "",
+      name:
+        chartData?.xAxisName && chartData?.xAxisUnit
+          ? `${chartData?.xAxisName}(${chartData?.xAxisUnit})`
+          : chartData?.xAxisName || chartData?.xAxisUnit || "",
       type: chartData?.xAxisType || "category",
       boundaryGap: false
     },
     yAxis: {
-      name: chartData?.yAxisName || "",
+      name:
+        chartData?.yAxisName && chartData?.yAxisUnit
+          ? `${chartData?.yAxisName}(${chartData?.yAxisUnit})`
+          : chartData?.yAxisName || chartData?.yAxisUnit || "",
       type: "value",
       boundaryGap: [0, "100%"]
     },
