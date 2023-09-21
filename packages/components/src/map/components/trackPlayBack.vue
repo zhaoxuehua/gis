@@ -473,7 +473,7 @@ const table = ref<TableList>({
       table.value.data = data.items;
       table.value.total = data.totalNum;
       // coordinateArr = [];  // 清空后没法翻页了
-      if (!data.items.length) {
+      if (!data?.items?.length) {
         return ElMessage.warning("暂无数据");
       }
     } catch (error) {
