@@ -168,15 +168,13 @@ export function createLayerStyle(styleObject: string, extendsData: any) {
   const { color, showHeadline } = extendsData; // 要素扩展字段
   let shipKey;
   let canvasImg: any;
-  let height;
+  let height = 44;
   if (styleObject == "aisBoat") {
     shipKey = showHeadline + color.join();
     canvasImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
-    height = 44;
   } else if (styleObject == "person") {
     shipKey = color.join();
     canvasImg = drawCanvasPerson(color) as HTMLCanvasElement;
-    height = 54;
   }
   return { shipKey, canvasImg, height };
 }

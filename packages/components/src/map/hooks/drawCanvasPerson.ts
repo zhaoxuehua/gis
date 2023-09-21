@@ -14,10 +14,11 @@ const drawCanvasPerson: createdCanvasShipType = function ([headColor, bodyColor]
     ctx.fillStyle = headColor;
     ctx.strokeStyle = bodyColor;
     ctx.beginPath();
-    ctx.arc(15, 11, 6.5, 0, Math.PI * 2);
+    ctx.arc(15, 12, 6.5, 0, Math.PI * 2);
     ctx.fill();
 
     // 绘制身体
+    ctx.fillStyle = bodyColor;
     ctx.fillRect(10, 20, 10, 15);
 
     // 绘制左胳膊

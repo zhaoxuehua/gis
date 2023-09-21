@@ -170,7 +170,9 @@ const onFullScreen = () => {
   }
 };
 
-const seekEvent = () => {};
+const seekEvent = () => {
+  console.log(1);
+};
 
 // 重新播放
 const reStartEvent = () => {

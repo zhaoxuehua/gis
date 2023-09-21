@@ -220,8 +220,8 @@ watch(
 <style lang="scss" scoped>
 .trackListBox {
   position: absolute;
-  top: 70px;
-  right: 20px;
+  top: 60px;
+  right: 15px;
   z-index: 10;
   background: #ffffff;
   box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
