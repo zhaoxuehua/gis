@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.62
+
+### Patch Changes
+
+- 修复 bug
+
 ## 1.0.61
 
 ### Patch Changes
