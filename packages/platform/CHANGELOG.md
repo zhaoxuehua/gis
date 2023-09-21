@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.63
+
+### Patch Changes
+
+- 联调人员定位按区域查询块修改
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.61
+
 ## 1.0.62
 
 ### Patch Changes
