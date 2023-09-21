@@ -13,7 +13,7 @@
               v-model="formData.beginTime"
               type="datetime"
               placeholder="选择开始时间"
-              style="width: 200px"
+              style="width: 220px"
               :disabledDate="disabledDateFun"
             >
             </el-date-picker>
@@ -23,13 +23,13 @@
               v-model="formData.endTime"
               type="datetime"
               placeholder="选择结束时间"
-              style="width: 200px"
+              style="width: 220px"
               :disabledDate="disabledDateFun"
             >
             </el-date-picker>
           </el-form-item>
           <el-form-item label="查询对象" required>
-            <el-select v-model="formData.objectTypeId" placeholder="请选择..." style="width: 200px">
+            <el-select v-model="formData.objectTypeId" placeholder="请选择..." style="width: 220px">
               <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -41,7 +41,7 @@
               placeholder="请选择..."
               @change="selectModeChange"
               filterable
-              style="width: 200px"
+              style="width: 220px"
             >
               <el-option
                 v-for="(optionItem, idx) in selectModeList"
@@ -66,7 +66,7 @@
             prop="selectLabel"
             v-if="formData.selectMode && formData.selectMode != 'shape'"
           >
-            <el-select v-model="formData.selectLabel" clearable placeholder="请选择..." filterable style="width: 200px">
+            <el-select v-model="formData.selectLabel" clearable placeholder="请选择..." filterable style="width: 220px">
               <el-option
                 v-for="(optionItem, idx) in selectLabelList"
                 :key="idx"
@@ -82,7 +82,7 @@
             prop="alarmLevel"
             v-if="formData.selectMode && formData.selectMode != 'shape' && formData?.objectTypeId"
           >
-            <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable style="width: 200px">
+            <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable style="width: 220px">
               <el-option
                 v-for="(optionItem, idx) in alarmList"
                 :key="idx"
@@ -111,7 +111,7 @@
           stripe
           border
         >
-          <el-table-column :label="keywordConfig?.code || '编码'" prop="code" :min-width="100"></el-table-column>
+          <el-table-column :label="keywordConfig?.code || '编码'" prop="code" :min-width="90"></el-table-column>
           <el-table-column :label="keywordConfig?.name || '名称'" prop="name" :min-width="110"></el-table-column>
           <el-table-column label="操作" width="70">
             <template #default="scope">
@@ -495,11 +495,9 @@ onMounted(() => {});
 .track-back {
   display: flex;
   flex-direction: column;
-  width: 320px;
+  width: 340px;
   min-height: 500px;
   max-height: 750px;
-
-  // height: 700px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
   .title {
@@ -507,7 +505,7 @@ onMounted(() => {});
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: 60px;
+    min-height: 60px;
     padding: 0 20px;
     background-color: #f7f7fa;
     span {
@@ -520,6 +518,7 @@ onMounted(() => {});
   .track-back-content {
     height: calc(100% - 60px);
     padding: 20px;
+    overflow-y: auto;
   }
   .operate-icon {
     color: var(--el-color-primary);
