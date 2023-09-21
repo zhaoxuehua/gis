@@ -44,7 +44,7 @@
             <div class="footer-item-icon" title="全屏" @click="onFullScreen">
               <Icon src="FullScreen" :size="14"></Icon>
             </div>
-            <el-select v-model="state.seekVal" size="small" class="speed" @change="seekEvent" style="width: 100px">
+            <el-select v-model="state.seekVal" size="small" class="speed" style="width: 100px">
               <el-option label="0.5" value="0.5"></el-option>
               <el-option label="1.0" value="1.0"></el-option>
               <el-option label="2.0" value="2.0"></el-option>
@@ -168,10 +168,6 @@ const onFullScreen = () => {
   } else {
     ElMessage.error("您的浏览器不支持全屏!");
   }
-};
-
-const seekEvent = () => {
-  console.log(1);
 };
 
 // 重新播放

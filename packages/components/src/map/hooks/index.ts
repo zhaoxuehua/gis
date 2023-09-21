@@ -383,7 +383,6 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       let source = layer.getSource();
       const selectFeature = source?.getFeatureById(featureCode);
       if (selectFeature) {
-        console.log(55666);
         selectFeature.set("selected", true); // 非聚合图层的可以这样实现
         selectFeature.changed();
         map.set("featureSelect", selectFeature);

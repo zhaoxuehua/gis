@@ -846,16 +846,19 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           map.popupInfo({ featureCode, featureName, center });
           // 以下是选中+编辑要素逻辑
           // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
-          if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
-            if (map?.get("labelInfoMap")[featureCode]) {
-              // 基础信息标签信息存在则可编辑
-              editLabelRef.value?.onOpen(featureCode);
-              timer.value = setTimeout(() => {
-                labelOnSelect(exportMap.value, featureCode, true);
-                clearTimeout(timer);
-                timer.value = null;
-              }, 200);
-            }
+          if (
+            labelTypeCode &&
+            labelTypeMap[labelTypeCode]?.isHang &&
+            gisStore?.isEdit &&
+            map?.get("labelInfoMap")?.[featureCode]
+          ) {
+            // 应用场景下基础引擎绘制标签存在则可编辑
+            editLabelRef.value?.onOpen(featureCode);
+            timer.value = setTimeout(() => {
+              labelOnSelect(exportMap.value, featureCode, true);
+              clearTimeout(timer);
+              timer.value = null;
+            }, 200);
           } else {
             labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
           }
