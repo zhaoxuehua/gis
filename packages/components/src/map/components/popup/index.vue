@@ -219,6 +219,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   if (attrData.hasFocusBtn) {
     attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注
     getFocusStatus();
+  } else {
+    attrData.linkData = linkData.value;
   }
 
   attrData.monitorLineAttr = monitorLineAttr.value;

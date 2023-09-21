@@ -363,7 +363,6 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
 
   // 选中及弹框
   function SelectFeatureAndPopData() {
-    console.log(5);
     const isTagAgg = layer.get("isTagAgg"); // 是否聚合图层
     clearSelectedFeature(map);
     if (isTagAgg) {
