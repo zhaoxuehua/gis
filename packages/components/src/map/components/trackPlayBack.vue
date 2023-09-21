@@ -443,12 +443,15 @@ const table = ref<TableList>({
       regions,
       beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
       endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss"),
-      objectTypeCode: realtimeDataList.value?.find((item: any) => item.id == formData.objectTypeId)?.code, // 查询对象code
+      equipType: realtimeDataList.value?.find((item: any) => item.id == formData.objectTypeId)?.code, // 查询对象code
       pageSize: formData.pageSize,
       pageNumber: formData.pageNumber
     };
     if (formData.alarmLevel) {
       (params as any).eventType = formData.alarmLevel;
+    }
+    if (!formData.objectTypeId) {
+      return ElMessage.warning("查询对象不能为空！");
     }
 
     // 时间判断(3天的数据)
