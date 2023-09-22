@@ -219,6 +219,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   if (attrData.hasFocusBtn) {
     attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注
     getFocusStatus();
+  } else {
+    attrData.linkData = linkData.value;
   }
 
   attrData.monitorLineAttr = monitorLineAttr.value;
@@ -267,12 +269,12 @@ const getMonitorLine = async () => {
       Object.keys(countCharts).forEach((key, index) => {
         lineChartRef.value[index].setOption({
           xAxisType: "category", //x轴类型  默认'category'
-          xAxisName: countCharts[key][0].xaxis || "时间",
-          yAxisName: countCharts[key][0].yaxis,
+          xAxisUnit: countCharts[key][0].xaxis || "时间",
+          yAxisUnit: countCharts[key][0].yaxis,
           color: countCharts[key].map((item: any) => item.color),
           data: countCharts[key].map((item: any) => {
             return {
-              name: item.name,
+              name: item.time + " " + item.name,
               data: item.values
             };
           })

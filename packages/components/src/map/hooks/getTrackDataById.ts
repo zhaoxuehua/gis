@@ -33,7 +33,7 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
   if (Number(trackResult.code) !== 200) {
     return ElMessage.error("获取数据报错");
   }
-  if (!trackResult.data.items.length) {
+  if (!trackResult.data?.items?.length) {
     return ElMessage.warning("暂无轨迹数据");
   }
 

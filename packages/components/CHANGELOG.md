@@ -1,5 +1,17 @@
 # @adm-gis-ui/components
 
+## 1.0.62
+
+### Patch Changes
+
+- 修复 bug
+
+## 1.0.61
+
+### Patch Changes
+
+- 联调人员定位按区域查询块修改
+
 ## 1.0.60
 
 ### Patch Changes
