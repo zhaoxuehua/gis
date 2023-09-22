@@ -1,19 +1,21 @@
 <template>
   <div class="map-popup" ref="popupRef">
-    <div :class="['popup-box', state.isRelationBody ? 'popup-custom-box' : '']" v-if="props?.data?.featureCode">
+    <div :class="['popup-box', 'popup-custom-box']" v-if="props?.data?.featureCode">
       <div class="map-popup-header">
-        <span v-if="state.isRelationBody">{{ dialogTitle || configInfo?.label || "标签信息" }} </span>
+        <span v-if="state.isRelationBody">{{ state.dialogTitle || configInfo?.label || "标签信息" }} </span>
         <span v-else>{{ "标签信息" }} </span>
         <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
       </div>
-      <div class="map-popup-body" v-if="!state.isRelationBody">
-        <div class="content">
+      <div class="map-popup-body">
+        <div class="content" v-if="!state.isRelationBody">
           <span>名称：{{ props?.data?.featureName || "" }}</span>
           <span>编码：{{ props?.data?.featureCode || "" }}</span>
         </div>
-      </div>
-      <div v-else class="map-popup-body map-attr-data">
-        <el-scrollbar>
+        <div class="content has-config-attr-content" v-if="state.isRelationBody && !state.hasConfigAttr">
+          <span v-if="!equipInfo.isRealTimeData">监测状态：{{ state.statusName }}</span>
+          <span>编码：{{ state.equipCode || "" }}</span>
+        </div>
+        <div v-if="state.isRelationBody && state.hasConfigAttr">
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
@@ -53,7 +55,7 @@
             }}</el-button>
             <el-button v-if="attrData.hasFocusBtn" type="primary" @click="handleFocus">{{ focusMap[focusType] }}</el-button>
           </div>
-        </el-scrollbar>
+        </div>
       </div>
     </div>
     <AlarmListDialog ref="alarmListRef"></AlarmListDialog>
@@ -113,7 +115,7 @@ const onClosePopup = () => {
 
 const addRemarkRef = ref();
 const alarmListRef = ref();
-const dialogTitle = ref("");
+
 const getDOMElement = () => {
   return popupRef.value;
 };
@@ -146,7 +148,11 @@ const state = reactive({
   currentTime: "", // 当前时间
   countCharts: {}, // 图表集合
   dialogVisible: false, // 轨迹时间选择弹窗
-  dateTimes: [] as any
+  dateTimes: [] as any,
+  dialogTitle: "",
+  hasConfigAttr: false, // 关联设备是否配置了标签弹窗属性
+  statusName: "", //监测状态
+  equipCode: ""
 });
 
 // 获取设备数据
@@ -198,7 +204,7 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   state.isRelationBody = true;
 
-  dialogTitle.value = relationMap?.name || "";
+  state.dialogTitle = relationMap?.name || "";
 
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const { isRealTimeData = false } = relationMap || {};
@@ -215,6 +221,13 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     equipCode: equipInfo.value?.code
   });
 
+  // 拿到返回值
+  // 是否配置了属性
+  state.hasConfigAttr = !![
+    ...configInfo.value.linkConfig,
+    ...configInfo.value.monitorAttribute,
+    ...configInfo.value.staticAttribute
+  ].length;
   attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3); // 关注
   if (attrData.hasFocusBtn) {
     attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注
@@ -222,7 +235,6 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   } else {
     attrData.linkData = linkData.value;
   }
-
   attrData.monitorLineAttr = monitorLineAttr.value;
   attrData.monitorJSONbodyMap = monitorJSONbodyMap.value;
   // 获取静态属性数据 监测散点/结构体数据
@@ -232,6 +244,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   );
   if (res.code === 200) {
     const data = res.data.items?.[0];
+    state.statusName = data?.statusName || "";
+    state.equipCode = data?.equipCode || "";
     let telemetryData = data?.telemetry || []; //监测的
     let descriptionsData = data?.descriptions || []; //静态的
     attrData.staticData = descriptionsData;
