@@ -3,6 +3,7 @@
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
     <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
+    <!-- <div class="target-all-count" title="目标总数">{{ objectAllCount }}</div> -->
 
     <!-- 左侧控件 -->
     <LeftActionBox
@@ -125,6 +126,7 @@ const emits = defineEmits([
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
 const currentLevel = ref(); // 当前视图层级
+// const objectAllCount = ref(0); // 目标总数
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -1195,5 +1197,24 @@ watch(
     border: 1px solid #cccccc;
     transform: scale(0.8);
   }
+
+  /* 目标总数 */
+  // .target-all-count {
+  //   position: absolute;
+  //   right: 6px;
+  //   bottom: 36px;
+  //   z-index: 10000;
+  //   width: 40px;
+  //   height: 40px;
+  //   font-size: 14px;
+  //   line-height: 40px;
+  //   color: #ffffff;
+  //   text-align: center;
+  //   cursor: pointer;
+  //   background: rgb(0 0 0 / 60%);
+  //   border: 1px solid #333333;
+  //   border-radius: 50%;
+  //   transform: scale(0.8);
+  // }
 }
 </style>
