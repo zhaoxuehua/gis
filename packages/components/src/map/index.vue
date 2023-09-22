@@ -877,8 +877,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (currentSelectFeature) {
         let featureCode = currentSelectFeature?.get("code");
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
-        let type = currentSelectFeature?.get("type");
-        if (type == "alarmPoint") {
+        let typeStats = currentSelectFeature?.get("typeStats");
+        if (typeStats == "alarmPoint") {
           let { featureLabelCode } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
         }
@@ -1029,7 +1029,7 @@ defineExpose({
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
 const outsideTreeNodeSelect = (node: any) => {
   const { tupleList = [], model } = node;
-  const equipId = Number(tupleList[0]);
+  const equipId = Number(tupleList?.[0]);
   if (model.toLocaleLowerCase() === "eam_eqp_equip") {
     const res = find(gisStore?.relationMap, (item: any) => {
       return item.id === equipId;

@@ -1,6 +1,6 @@
 <template>
   <div class="map-view">
-    <ag-map :config="config" v-if="config.id" ref="mapRef"> </ag-map>
+    <ag-map :config="config" v-if="config.id" ref="mapRef" @on-open-right-menu="onOpenRightMenu"> </ag-map>
   </div>
 </template>
 <script lang="ts" setup name="mapView">
@@ -16,6 +16,14 @@ const userStore = useUserStore();
 let config: { [key: string]: any } = reactive({
   sessionId: userStore.token
 });
+
+const onOpenRightMenu = async (option: { [key: string]: any }) => {
+  let { featureCode, relationMap } = option;
+  let equipId = relationMap[featureCode as string]?.id;
+  if (equipId) {
+    console.log(equipId, "右键选中的设备id${equipId}");
+  }
+};
 
 onMounted(() => {
   config.id = route.query?.id as string | number | null;
