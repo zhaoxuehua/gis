@@ -3,6 +3,7 @@
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
     <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
+    <!-- <div class="target-all-count" title="目标总数">{{ objectAllCount }}</div> -->
 
     <!-- 左侧控件 -->
     <LeftActionBox
@@ -125,6 +126,7 @@ const emits = defineEmits([
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
 const currentLevel = ref(); // 当前视图层级
+// const objectAllCount = ref(0); // 目标总数
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -816,8 +818,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       emits("onCloseRightMenu"); // 关闭右键菜单
       editLabelRef.value?.onClose(); // 关闭编辑标签弹框
       clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)
-      // 框选或测量模式下不触发左键
-      if (map?.get("boxSelectionDrawInteraction") || map?.get("measureDrawInteraction")) {
+      // 框选或测量、绘制模式下不触发左键
+      if (map?.get("boxSelectionDrawInteraction") || map?.get("measureDrawInteraction") || map?.get("drawFeature")) {
         return;
       }
 
@@ -875,8 +877,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (currentSelectFeature) {
         let featureCode = currentSelectFeature?.get("code");
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
-        let type = currentSelectFeature?.get("type");
-        if (type == "alarmPoint") {
+        let typeStats = currentSelectFeature?.get("typeStats");
+        if (typeStats == "alarmPoint") {
           let { featureLabelCode } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
         }
@@ -1027,7 +1029,7 @@ defineExpose({
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
 const outsideTreeNodeSelect = (node: any) => {
   const { tupleList = [], model } = node;
-  const equipId = Number(tupleList[0]);
+  const equipId = Number(tupleList?.[0]);
   if (model.toLocaleLowerCase() === "eam_eqp_equip") {
     const res = find(gisStore?.relationMap, (item: any) => {
       return item.id === equipId;
@@ -1195,5 +1197,24 @@ watch(
     border: 1px solid #cccccc;
     transform: scale(0.8);
   }
+
+  /* 目标总数 */
+  // .target-all-count {
+  //   position: absolute;
+  //   right: 6px;
+  //   bottom: 36px;
+  //   z-index: 10000;
+  //   width: 40px;
+  //   height: 40px;
+  //   font-size: 14px;
+  //   line-height: 40px;
+  //   color: #ffffff;
+  //   text-align: center;
+  //   cursor: pointer;
+  //   background: rgb(0 0 0 / 60%);
+  //   border: 1px solid #333333;
+  //   border-radius: 50%;
+  //   transform: scale(0.8);
+  // }
 }
 </style>

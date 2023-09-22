@@ -56,7 +56,6 @@
         </el-scrollbar>
       </div>
     </div>
-    <AlarmListDialog ref="alarmListRef"></AlarmListDialog>
   </div>
   <el-dialog v-model="state.dialogVisible" title="轨迹查询" width="560px" append-to-body>
     <el-date-picker
@@ -78,6 +77,7 @@
     </template>
   </el-dialog>
   <AddRemarkDialog ref="addRemarkRef"></AddRemarkDialog>
+  <AlarmListDialog ref="alarmListRef"></AlarmListDialog>
 </template>
 
 <script lang="ts" setup>
