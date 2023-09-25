@@ -350,7 +350,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       { zoom: zoom },
       { center: center },
       {
-        duration: 500
+        // duration: 500
       },
       function () {
         setTimeout(() => {

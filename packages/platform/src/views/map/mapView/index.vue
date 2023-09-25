@@ -21,7 +21,7 @@ const onOpenRightMenu = async (option: { [key: string]: any }) => {
   let { featureCode, relationMap } = option;
   let equipId = relationMap[featureCode as string]?.id;
   if (equipId) {
-    console.log(equipId, "右键选中的设备id${equipId}");
+    console.log(equipId, `右键选中的设备id${equipId}`);
   }
 };
 
