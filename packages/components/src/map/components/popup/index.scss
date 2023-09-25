@@ -97,7 +97,7 @@
     }
     .monitor-sequence-data {
       margin-top: 10px;
-      overflow-x: scroll;
+      overflow-x: auto;
       .list {
         display: flex;
         flex-wrap: nowrap;
