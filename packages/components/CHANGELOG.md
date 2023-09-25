@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.63
+
+### Patch Changes
+
+- 修复右键功能
+
 ## 1.0.62
 
 ### Patch Changes

@@ -36,11 +36,14 @@
     width: 450px;
   }
   .popup-custom-box {
+    display: flex;
+    flex-direction: column;
     width: 560px;
-    height: 300px;
+    max-height: 300px;
   }
   .map-popup-header {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
     height: 50px;
@@ -54,13 +57,21 @@
     }
   }
   .map-popup-body {
-    padding: 20px;
+    flex: 1;
+    margin: 20px;
+    overflow-y: auto;
     font-size: 14px;
     .content {
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
+    }
+    .has-config-attr-content {
+      span {
+        display: inline-block;
+        width: 50%;
+      }
     }
     .static-data {
       display: flex;
@@ -123,13 +134,11 @@
     .monitor-curve-data {
       height: 260px;
       margin-top: 10px;
+      overflow: hidden;
     }
     .link-config {
       margin-top: 20px;
       text-align: center;
     }
-  }
-  .map-attr-data {
-    height: 240px;
   }
 }

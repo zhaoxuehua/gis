@@ -14,6 +14,7 @@ const initOption = (chartData?: any) => {
     color: chartData?.color || colorStyle,
     tooltip: {
       trigger: "axis",
+      confine: true,
       position: function (pt: any) {
         return [pt[0], "10%"];
       },
@@ -29,7 +30,12 @@ const initOption = (chartData?: any) => {
       left: "center",
       text: chartData?.ordinateName
     },
-    legend: {},
+    legend: {
+      textStyle: {
+        width: 120,
+        overflow: "break"
+      }
+    },
     xAxis: {
       name:
         chartData?.xAxisName && chartData?.xAxisUnit
