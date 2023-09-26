@@ -45,7 +45,6 @@
             ></lineChart>
           </div>
           <jsonBody
-            v-if="attrData.monitorJSONbodyData.length"
             class="monitor-jsonbody-data"
             :jsonbodyData="attrData.monitorJSONbodyData"
             :jsonbodyMap="attrData.monitorJSONbodyMap"
