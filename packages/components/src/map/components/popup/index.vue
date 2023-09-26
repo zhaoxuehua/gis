@@ -45,11 +45,12 @@
             ></lineChart>
           </div>
           <jsonBody
+            v-if="attrData.monitorJSONbodyData.length"
             class="monitor-jsonbody-data"
             :jsonbodyData="attrData.monitorJSONbodyData"
             :jsonbodyMap="attrData.monitorJSONbodyMap"
           ></jsonBody>
-          <div class="link-config">
+          <div class="link-config" v-if="linkData.length">
             <el-button v-for="btn in attrData.linkData" :key="btn.name" type="primary" @click="onAction(btn.buttonType)">{{
               btn.name
             }}</el-button>

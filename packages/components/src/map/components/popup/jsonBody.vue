@@ -105,7 +105,7 @@ watch(
   height: 244px;
 }
 .monitor-jsonbody-data {
-  margin-top: 10px;
+  margin-bottom: 10px;
   .title-box {
     display: flex;
     align-items: center;

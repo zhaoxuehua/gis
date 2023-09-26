@@ -249,8 +249,6 @@ onMounted(() => {});
   justify-content: space-between;
   width: 100%;
   height: 60px;
-
-  // background-color: var(--el-color-primary-light-8);
   background-color: #f7f7fa;
 }
 .title span {

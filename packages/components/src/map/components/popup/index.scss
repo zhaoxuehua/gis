@@ -76,6 +76,7 @@
     .static-data {
       display: flex;
       flex-wrap: wrap;
+      margin-bottom: 10px;
       font-size: 14px;
       .list-item {
         display: flex;
@@ -96,8 +97,8 @@
       }
     }
     .monitor-sequence-data {
-      margin-top: 10px;
-      overflow-x: scroll;
+      margin-bottom: 10px;
+      overflow-x: auto;
       .list {
         display: flex;
         flex-wrap: nowrap;
@@ -133,11 +134,11 @@
     }
     .monitor-curve-data {
       height: 260px;
-      margin-top: 10px;
+      margin-bottom: 10px;
       overflow: hidden;
     }
     .link-config {
-      margin-top: 20px;
+      margin-bottom: 10px;
       text-align: center;
     }
   }
