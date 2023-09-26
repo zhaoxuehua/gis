@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { GlobalState } from "@/stores/interface";
 import { DEFAULT_PRIMARY } from "@/config";
-// import piniaPersistConfig from "@/config/piniaPersist";
+import piniaPersistConfig from "@/config/piniaPersist";
 
 export const useGlobalStore = defineStore({
   id: "gis-global",
@@ -44,6 +44,6 @@ export const useGlobalStore = defineStore({
     setGlobalState(...args: ObjToKeyValArray<GlobalState>) {
       this.$patch({ [args[0]]: args[1] });
     }
-  }
-  // persist: piniaPersistConfig("gis-global", ["primary", "isDark"])
+  },
+  persist: piniaPersistConfig("gis-global", ["primary", "isDark"])
 });
