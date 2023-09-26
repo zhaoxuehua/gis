@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.64
+
+### Patch Changes
+
+- 修改 iframe 嵌入后主题色问题
+
 ## 1.0.63
 
 ### Patch Changes
