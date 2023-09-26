@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.65
+
+### Patch Changes
+
+- 左键弹框逻辑
+
 ## 1.0.64
 
 ### Patch Changes
