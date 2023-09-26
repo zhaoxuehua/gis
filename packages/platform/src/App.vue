@@ -34,6 +34,10 @@ onMounted(() => {
       router.push(path);
     });
     changePrimary(window.$wujie?.props?.theme);
+  } else {
+    let primary = JSON.parse(localStorage.getItem("udp-global") || "{}")?.primary;
+    let admPrimary = JSON.parse(localStorage.getItem("themeConfig") || "{}")?.primary;
+    changePrimary(primary || admPrimary || "#009688");
   }
 
   const language = globalStore.language ?? getBrowserLang();
