@@ -195,7 +195,7 @@ const onClose = () => {
 
 // 标签类型
 const labelTypeMap = map.value?.get("labelTypeMap") || {};
-const labelList: any[] = Object.values(map.value?.get("labelInfoMap"));
+const labelList: any[] = Object.values(map.value?.get("labelInfoMap") || {});
 
 /***************************************
               查询表单数据
@@ -317,7 +317,6 @@ watch(
     if (!n) {
       return;
     }
-    clearSelectionDrawInteraction(map.value);
     selectionAddDrawInteraction(
       map.value,
       n,

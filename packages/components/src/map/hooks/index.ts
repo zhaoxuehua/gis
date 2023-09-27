@@ -13,6 +13,7 @@ import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, getGeometryCenter, getCoordinate, getLonLatCoordinate } from "./createGeometry.js";
 import { createStyle, selectBoxStyle } from "./styleFunction.js";
+import { clearSelectionDrawInteraction } from "./clearSelectionDrawInteraction";
 import { fromLonLat } from "ol/proj";
 import moment from "moment";
 
@@ -511,25 +512,11 @@ export function clearSelectedFeature(map: VisualMap) {
 
 // 实现框选
 export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function, isTrue?: boolean) {
-  let boxSelectionSource: any = map?.get("boxSelectionSource");
-  let boxSelectionVectorLayer = map?.get("boxSelectionSource");
-  let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
   if (!map) return;
-  if (boxSelectionDrawInteraction) {
-    map?.removeInteraction(boxSelectionDrawInteraction);
-    map?.set("boxSelectionDrawInteraction", null);
-    boxSelectionDrawInteraction = null;
-  }
-  if (boxSelectionVectorLayer) {
-    map?.removeLayer(boxSelectionVectorLayer);
-    map?.set("selectionVectorLayer", null);
-    boxSelectionVectorLayer = null;
-  }
-  if (boxSelectionSource) {
-    boxSelectionSource?.clear();
-    map?.set("boxSelectionSource", null);
-    boxSelectionSource = null;
-  }
+  clearSelectionDrawInteraction(map);
+  let boxSelectionSource: any = map?.get("boxSelectionSource"); // 框选图层数据源
+  let boxSelectionVectorLayer = map?.get("boxSelectionVectorLayer"); // 框选图层
+  let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
 
   boxSelectionSource = new VectorSource();
   boxSelectionVectorLayer = new VectorLayer({
