@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.66
+
+### Patch Changes
+
+- 修复样式问题
+
 ## 1.0.65
 
 ### Patch Changes
