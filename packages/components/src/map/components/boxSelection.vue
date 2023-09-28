@@ -43,7 +43,8 @@ watch(
   () => isShow.value,
   isShowVal => {
     if (isShowVal) {
-      selectionAddDrawInteraction(map.value, radio.value, handleSelectionFeatures);
+      radio.value = "Circle"; // 框选展示时默认是矩形
+      selectionAddDrawInteraction(map.value, radio.value, handleSelectionFeatures, false, closeBtnOverlay);
     } else {
       clearSelectionDrawInteraction(map.value);
     }
@@ -56,13 +57,16 @@ watch(
 
 const boxSelectRadioChange = (val: any) => {
   radio.value = val;
-  clearSelectionDrawInteraction(map.value);
-  selectionAddDrawInteraction(map.value, val, handleSelectionFeatures);
+  selectionAddDrawInteraction(map.value, val, handleSelectionFeatures, false, closeBtnOverlay);
 };
 const handleSelectionFeatures = (selectionFeatures: any[]) => {
   const searchCode = map.value?.defaultOptions?.displaySearch.map((item: any) => item.code);
-  selectionFeatures = selectionFeatures.filter(item => searchCode?.includes(item.get("labelTypeCode")));
+  selectionFeatures = selectionFeatures?.filter(item => searchCode?.includes(item?.get("labelTypeCode")));
   emits("onBoxSelection", selectionFeatures);
+};
+// 框选关闭Overlay的回调
+const closeBtnOverlay = () => {
+  radio.value = "";
 };
 </script>
 

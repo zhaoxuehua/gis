@@ -15,6 +15,11 @@ const clearSelectionDrawInteraction = (mapCase: VisualMap) => {
     mapCase?.removeLayer(mapCase?.get("boxSelectionVectorLayer"));
     mapCase?.set("boxSelectionVectorLayer", null);
   }
+  // 清除overlay
+  if (mapCase?.get("closeBtnOverlay")) {
+    mapCase?.removeOverlay(mapCase?.get("closeBtnOverlay"));
+    mapCase?.set("closeBtnOverlay", null);
+  }
 };
 
 export { clearSelectionDrawInteraction };

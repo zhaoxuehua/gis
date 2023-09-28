@@ -321,11 +321,14 @@ watch(
       map.value,
       n,
       (coordinates: any[]) => {
-        coordinates[0].pop();
+        coordinates?.[0]?.pop();
         coordinateArr = coordinates;
-        formData.boxSelectMode = "";
       },
-      true
+      true,
+      () => {
+        // 框选overlay关闭的回调
+        formData.boxSelectMode = "";
+      }
     );
   }
 );
@@ -385,6 +388,10 @@ const searchForm = function () {
   // 校验必填项
   refForm.value?.validate(async (valid: boolean) => {
     if (valid) {
+      // 校验是框选时地图上有框选区域才可以搜索(搜索校验，翻页不校验)
+      if (formData.selectMode == "shape" && !formData.boxSelectMode) {
+        return ElMessage.warning("请框选查询区域！");
+      }
       formData.pageNumber = 1;
       formData.pageSize = 6;
       table.value.getTableData();
@@ -469,9 +476,8 @@ const table = ref<TableList>({
       // 清除绘制区域
       formData.boxSelectMode = "";
       clearSelectionDrawInteraction(map.value);
-      table.value.data = data.items;
-      table.value.total = data.totalNum;
-      // coordinateArr = [];  // 清空后没法翻页了
+      table.value.data = data?.items || [];
+      table.value.total = data?.totalNum;
       if (!data?.items?.length) {
         return ElMessage.warning("暂无数据");
       }

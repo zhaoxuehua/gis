@@ -6,6 +6,7 @@ import { ref } from "vue";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Circle } from "ol/geom";
+import Overlay from "ol/Overlay";
 import type { FeatureLike } from "ol/Feature";
 import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
@@ -126,7 +127,7 @@ export function createLabel(map: VisualMap, featureType: LabelType, isTagTreeAdd
 
     let featureParams = {
       code: "GIS" + dataTypeString + +new Date(),
-      name: isTagTreeAdd ? `${featureType.name}_${moment().format("YYYY-MM-DD HH:mm:ss")}` : featureType.name, // 标签类型名称(导航树取设备名、标签树取标签类型名+时间)
+      name: isTagTreeAdd ? `${featureType.name}_${moment().format("YYYYMMDDHHmmss")}` : featureType.name, // 标签类型名称(导航树取设备名、标签树取标签类型名+时间)
       labelTypeId: featureType.id,
       labelType: {
         // 标签类型
@@ -511,12 +512,19 @@ export function clearSelectedFeature(map: VisualMap) {
 }
 
 // 实现框选
-export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function, isTrue?: boolean) {
+export function selectionAddDrawInteraction(
+  map: VisualMap,
+  value: any,
+  callback: Function,
+  isTrue: boolean, // 是否只能框选一次不能连续框
+  closeBtnOverlayCallback?: Function
+) {
   if (!map) return;
   clearSelectionDrawInteraction(map);
   let boxSelectionSource: any = map?.get("boxSelectionSource"); // 框选图层数据源
   let boxSelectionVectorLayer = map?.get("boxSelectionVectorLayer"); // 框选图层
   let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
+  let closeBtnOverlay = map?.get("closeBtnOverlay"); // 框选附加信息关闭按钮
 
   boxSelectionSource = new VectorSource();
   boxSelectionVectorLayer = new VectorLayer({
@@ -549,17 +557,48 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
   map?.set("boxSelectionDrawInteraction", boxSelectionDrawInteraction);
 
   boxSelectionDrawInteraction.on("drawstart", function () {
-    boxSelectionSource?.clear(); //不写的话可以绘制多次，添加后只能绘制一次
+    boxSelectionSource?.clear(); //不写的话可以绘制多次框选，添加后只能绘制一个
+    // 清空附加的关闭按钮
+    if (map?.get("closeBtnOverlay")) {
+      map?.removeOverlay(map?.get("closeBtnOverlay"));
+      map?.set("closeBtnOverlay", null);
+    }
+    // 动态创建overLayer
+    let overDiv: any = document?.createElement("div"); // 创建div
+    overDiv.id = "ol-over-close"; // 给div增加id
+    overDiv.innerHTML = "X"; // div的内容是取消的x
+    overDiv.style.display = "block"; // 样式
+    document.body?.appendChild(overDiv); // 将动态div添加至document
+
+    closeBtnOverlay = new Overlay({
+      element: overDiv,
+      autoPan: true,
+      offset: [-10, -10]
+    });
+    map?.addOverlay(closeBtnOverlay);
+    map?.set("closeBtnOverlay", closeBtnOverlay);
+
+    // 关闭
+    overDiv.onclick = function () {
+      clearSelectionDrawInteraction(map);
+      overDiv = null;
+      closeBtnOverlayCallback && closeBtnOverlayCallback();
+    };
   });
 
   boxSelectionDrawInteraction.on("drawend", function (evt: DrawEvent) {
     const polygon = evt.feature?.getGeometry();
     if (!polygon || !map) return;
+    // 框选关闭按钮逻辑
+    let cor = (polygon as any)?.getCoordinates();
+    let closeBtnOverlay = map?.get("closeBtnOverlay");
+    value == "Polygon" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][0]);
+    value == "Circle" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][1]);
+
+    // 框选要素或者区域
     const extent = polygon?.getExtent();
     const currentZoom = map?.getView()?.getZoom(); // 当前层级
     let selectionFeatures = [];
-
-    // 框选的要素
     let layerMap = map?.get("layerMap");
     for (let key in layerMap) {
       let layer: any = layerMap[key]; // 每个图层
