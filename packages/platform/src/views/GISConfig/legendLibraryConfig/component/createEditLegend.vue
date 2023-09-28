@@ -178,7 +178,7 @@ defineExpose({
     }
   }
   ::v-deep(.el-upload:hover) {
-    border-color: var(--color-primary);
+    border-color: var(--el-color-primary);
   }
   .avatar {
     max-width: 100%;

@@ -1,7 +1,3 @@
-@import "../mixins/function.scss";
-@import "../mixins/element-mixins.scss";
-@import "../mixins/mixins.scss";
-
 @font-face {
   font-family: sourcehansans; /* 这个名字可以自己定义 */
   font-style: normal;
@@ -18,29 +14,11 @@
   // PingFang SC
   font-family: "PingFang SC";
 }
-.config-form {
-  display: flex;
-  align-items: center;
-  .el-input {
-    width: 126px !important;
-  }
-  .el-select {
-    width: 126px !important;
-  }
-}
 .dialog-footer {
   display: flex;
   justify-content: center;
 }
-.option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 32px;
-  margin-bottom: 20px;
-}
 
-// $--el-color-primary
 // 树的样式
 .el-tree {
   height: 100%;
@@ -96,6 +74,7 @@
   }
 }
 .el-form {
+  border-radius: 0;
   .el-form-item {
     padding-right: 0;
     .el-form-item__label {
@@ -119,48 +98,14 @@
 
 // popover的样式
 .el-popover.el-popper {
-  background-color: var(--color-whites);
+  background-color: var(--el-color-white);
 }
 .editor-content-cfg {
   .el-tabs {
     .el-tabs__item {
-      color: var(--color-whites);
+      color: var(--el-color-white);
     }
   }
-}
-
-// 可视化部分tab样式
-.tabs {
-  width: 100%;
-  height: 100%;
-  .el-tabs__header {
-    height: 100%;
-    .el-tabs__nav-wrap {
-      height: 100%;
-      .el-tabs__nav-scroll {
-        height: 100%;
-        .el-tabs__nav {
-          display: flex;
-          height: 100%;
-          .el-tabs__item {
-            display: flex;
-            align-items: center;
-            height: 100%;
-          }
-        }
-      }
-    }
-  }
-}
-
-// 全局详情标题样式
-.menu-detail-common {
-  margin-bottom: 20px;
-}
-.menu-detail-common .el-descriptions__title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--el-text-color-regular);
 }
 .dialog-title {
   margin-bottom: 20px;
@@ -168,115 +113,12 @@
   font-weight: 600;
   color: var(--el-text-color-regular);
 }
-div.jsoneditor-outer {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-// global-delete-message
-
-// primary
-.global-delete-message .el-button--primary {
-  @include Button(whites, primary, primary);
-  &:hover,
-  &:focus {
-    @include Button(whites, primary-light-3, primary-light-3);
-  }
-}
-.global-delete-message .el-button--primary.is-plain {
-  @include Button(primary, primary-light-8, primary-light-6);
-  &:hover,
-  &:focus {
-    @include Button(whites, primary, primary);
-  }
-}
-.global-delete-message .el-button--primary.is-disabled,
-.global-delete-message .el-button--primary.is-disabled:active,
-.global-delete-message .el-button--primary.is-disabled:focus,
-.global-delete-message .el-button--primary.is-disabled:hover {
-  @include Button(whites, primary-light-7, primary-light-7);
-}
-.global-delete-message .el-button--primary.is-active,
-.global-delete-message .el-button--primary:active {
-  @include Button(whites, primary, primary);
-}
-
-/* Radio 单选框
-------------------------------- */
-.global-delete-message .el-radio__input.is-checked + .el-radio__label,
-.global-delete-message .el-radio-button__inner:hover {
-  color: set-color(primary);
-}
-.global-delete-message .el-radio__input.is-checked .el-radio__inner {
-  @include RadioCheckbox(primary);
-}
-.global-delete-message .el-radio-button__orig-radio:checked + .el-radio-button__inner {
-  color: set-color(whites);
-
-  @include RadioCheckbox(primary);
-
-  box-shadow: -1px 0 0 0 set-color(primary);
-}
-.global-delete-message .el-radio.is-bordered.is-checked,
-.global-delete-message .el-radio__inner:hover {
-  border-color: set-color(primary);
-}
-
-// 普通搜索
-.normal-search-filter-form {
-  display: flex;
-}
-.normal-search-filter-form .btn-search {
-  height: 32px;
-}
-.normal-search-filter-form .el-form-item {
-  margin-right: 20px;
-}
-/* stylelint-disable-next-line no-duplicate-selectors */
-.el-form {
-  border-radius: 0;
-  .el-input,
-  .el-select,
-  .el-cascader,
-  .el-date-picker,
-  .el-date-editor,
-  el-date-editor--datetime {
-    /* width: 310px; */
-    .el-input__inner {
-      /* width: 310px; */
-    }
-  }
-}
 .footer-item-icon-only {
   height: 20px;
 }
 .footer-item-icon-only:hover {
   cursor: pointer;
   transition: 0s;
-}
-.form-label-icon {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-.form-label-icon i {
-  margin-right: 4px;
-  color: var(--color-warning);
-}
-.form-label-icon .span {
-  /* width: 92px; */
-}
-
-// 设置时间选择器popover的定位
-.dialog-date-popover {
-  left: 460px !important;
-}
-.canvas-bg-upload {
-  width: 100%;
-  .el-upload {
-    width: 80px;
-    height: 100px;
-  }
 }
 .el-pagination {
   display: flex;
