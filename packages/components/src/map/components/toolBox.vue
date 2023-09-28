@@ -108,11 +108,11 @@
       <!-- 实时标签样式 -->
       <div class="measuring-tools" v-show="state.activeIndex == '3'" @click.stop>
         <div class="coordinate-position-box">
-          <el-form-item label="船首线" label-width="110">
+          <el-form-item label="船首线" label-width="130">
             <el-checkbox v-model="state.shipHeadLine"></el-checkbox>
           </el-form-item>
 
-          <el-form-item label="轨迹回放隐藏船" label-width="110">
+          <el-form-item label="轨迹回放隐藏内容" label-width="130">
             <el-select v-model="state.shipShowHideByTrack" clearable>
               <el-option
                 v-for="item in state.shipShowHideByTrackOption"
@@ -123,7 +123,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="轨迹回放动画" label-width="110">
+          <el-form-item label="轨迹回放动画" label-width="130">
             <el-select v-model="state.trackSpeed">
               <el-option v-for="item in trackSpeedOption" :key="item.name" :label="item.name" :value="item.value" />
             </el-select>
@@ -470,7 +470,7 @@ if (shipTagsData) {
   display: flex;
   flex-direction: column;
   width: 430px;
-  height: 320px;
+  min-height: 320px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 }
@@ -479,7 +479,7 @@ if (shipTagsData) {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 60px;
+  min-height: 60px;
   padding: 0 20px;
   background-color: #f7f7fa;
   span {

@@ -51,11 +51,6 @@ export function whiteListDelete(id: number) {
   return request.delete(`/api/equipment-service/object/whitelist/remove/${id}`);
 }
 
-// 获取水深
-export function getDepthWater(params: object) {
-  return request.post(`/api/equipment-service/object/whitelist`, params);
-}
-
 // 获取外部对象详情
 export function getVisitObjectDetail(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/visitObject/list${queryString}`, params);
@@ -136,4 +131,18 @@ export function eventProcesses(id: string, queryString: string) {
 // 实时事件-视频-左边列表
 export function cameraList(params: any) {
   return request.get(`/api/adm-service/view/event/videos/${params}`);
+}
+
+// 获取水深功能块
+// 获取设备类型（不带翻页）
+export function getAllEquipTypeList(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/equip/equipType/list${queryString}`, params);
+}
+// 获取设备
+export function getEquipListByType(equipTypeCodes: string) {
+  return request.get(`/api/equipment-service/equip/equip/getByEquipTypes/${equipTypeCodes}`);
+}
+// 获取水深
+export function getDepthWater(params: object) {
+  return request.post(`/api/custom-service/buriedDepth/open/fillWaterValue`, params);
 }
