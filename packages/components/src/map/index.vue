@@ -1071,8 +1071,9 @@ watch(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 40px;
+    max-height: 40px;
     padding: 0 20px;
+    line-height: 40px;
     color: #ffffff;
     background: var(--el-color-primary);
   }
