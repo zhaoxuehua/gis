@@ -1,5 +1,71 @@
 # @adm-gis-ui/agmap
 
+## 1.0.66
+
+### Patch Changes
+
+- 修复样式问题
+
+## 1.0.65
+
+### Patch Changes
+
+- 左键弹框逻辑
+
+## 1.0.64
+
+### Patch Changes
+
+- 修改 iframe 嵌入后主题色问题
+
+## 1.0.63
+
+### Patch Changes
+
+- 修复右键功能
+
+## 1.0.62
+
+### Patch Changes
+
+- 修复 bug
+
+## 1.0.61
+
+### Patch Changes
+
+- 联调人员定位按区域查询块修改
+
+## 1.0.60
+
+### Patch Changes
+
+- 升包
+
+## 1.0.59
+
+### Patch Changes
+
+- 升包
+
+## 1.0.58
+
+### Patch Changes
+
+- 升包-人员定位修改
+
+## 1.0.57
+
+### Patch Changes
+
+- 增加人员定位功能
+
+## 1.0.56
+
+### Patch Changes
+
+- 增加告警逻辑及部分实时数据逻辑
+
 ## 1.0.55
 
 ### Patch Changes

@@ -31,25 +31,13 @@ export interface trackListDataResponseType {
   items: trackListDataItemType[];
 }
 
-/*****************************************单个的轨迹数据****************************************/
-export interface trackDataByIdParamsType {
-  equipCodes: string;
-  ascDesc: string;
-  isVisitObject: boolean;
-  isHistory: boolean;
-  beginTime: string;
-  endTime: string;
-  attributes?: string;
-  pageNumber: 1;
-  pageSize: 1000000;
-}
-
 // 轨迹数据格式
 export interface shipTrackDataItemType {
   AISDATA: string;
   equipCode: string;
   equipName: string;
   position: string;
+  [key: string]: any;
 }
 
 export interface trackDataByIdResponseType {

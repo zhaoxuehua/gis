@@ -41,14 +41,13 @@ export const useJSONBody = () => {
   };
   /**
    * 获取绑定的属性
-   * @param param0 equipType  设备类型id   isVisitObject   是否是外部对象
+   * @param param0 equipType  设备类型id   objectTypeCode   实时数据code
    * @returns
    */
-  const getBindAttr = async ({ equipType, isVisitObject }: any) => {
-    // 设备类别 EquipCategory  设备类型 EquipType  外部设备类型 VisitObjectType
-    const currentType = isVisitObject ? "VisitObjectType" : "EquipType";
+  const getBindAttr = async ({ equipType, objectTypeCode, equipCode }: any) => {
     // 获取配置的绑定属性
-    const detailRes: any = await labelDetailAttr(equipType, currentType);
+    const detailRes: any = await labelDetailAttr(equipType, objectTypeCode, equipCode);
+
     if (detailRes.code !== 200) return;
     state.configInfo = detailRes.data;
     state.linkData = state.configInfo?.linkConfig || [];
@@ -82,7 +81,7 @@ export const useJSONBody = () => {
       } catch (error) {
         item.value = "";
       }
-      let fieldList = jsonbodyMap?.[item.code][0]?.children;
+      let fieldList = jsonbodyMap?.[item.code]?.[0]?.children;
       let tableColumn = fieldList?.map((val: any) => {
         return {
           prop: val.field,
@@ -90,7 +89,7 @@ export const useJSONBody = () => {
         };
       });
       let tableBodyItem = {
-        tile: jsonbodyMap?.[item.code][0]?.tile,
+        tile: jsonbodyMap?.[item.code]?.[0]?.tile,
         name: item.name,
         code: item.code,
         columns: tableColumn,

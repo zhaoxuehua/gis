@@ -6,6 +6,7 @@ import { ref } from "vue";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { Circle } from "ol/geom";
+import Overlay from "ol/Overlay";
 import type { FeatureLike } from "ol/Feature";
 import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
@@ -13,10 +14,12 @@ import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, getGeometryCenter, getCoordinate, getLonLatCoordinate } from "./createGeometry.js";
 import { createStyle, selectBoxStyle } from "./styleFunction.js";
+import { clearSelectionDrawInteraction } from "./clearSelectionDrawInteraction";
 import { fromLonLat } from "ol/proj";
+import moment from "moment";
 
 // 创建标签(标签树、导航树新增标签  featureType 标签类型配置的数据)
-export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: Function) {
+export function createLabel(map: VisualMap, featureType: LabelType, isTagTreeAdd: boolean, callbackFn: Function) {
   ElMessage({
     message: "进入绘制模式，退出绘制请按 ESC 键",
     type: "success"
@@ -124,7 +127,7 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
 
     let featureParams = {
       code: "GIS" + dataTypeString + +new Date(),
-      name: featureType.name, // 标签类型名称
+      name: isTagTreeAdd ? `${featureType.name}_${moment().format("YYYYMMDDHHmmss")}` : featureType.name, // 标签类型名称(导航树取设备名、标签树取标签类型名+时间)
       labelTypeId: featureType.id,
       labelType: {
         // 标签类型
@@ -147,7 +150,6 @@ export function createLabel(map: VisualMap, featureType: LabelType, callbackFn: 
     event.feature.set("layerCode", featureParams.refLayer.code); // 所属图层编码
     event.feature.set("labelTypeCode", featureParams.labelType.code); // 所属标签类型编码
     event.feature.set("type", labelData?.style?.type); // 数字型
-    event.feature.set("isShow", true); // 是否显示标签
     event.feature.set("labelData", labelData); // 标签绘制数据Json格式
     let typeStats = getTypeStatsByLabelType(featureType, dataType);
     event.feature.set("typeStats", typeStats); // 标签绘制数据
@@ -206,7 +208,7 @@ export function removeLabel(label: LabelInfoData, map: any) {
         let labelInfoMap = map?.get("labelInfoMap") || {};
         delete labelInfoMap[label.code];
         map.set("labelInfoMap", labelInfoMap);
-        ElMessage.success("删除标签成功");
+        // ElMessage.success("删除标签成功");
         // 同时删除关联关系(标签树中的删除可能有关联关系删除可能没，导航树中的删除一定有关联关系删除)
         removeRelation(label);
       } else {
@@ -220,7 +222,7 @@ export function removeLabel(label: LabelInfoData, map: any) {
   );
 }
 
-// 删除关联关系(导航树的删除一定存在关联关系的删除。标签树的删除可能存在可能不存在)
+// 删除关联关系(导航树的删除一定存在关联关系的删除。标签树的删除可能存在可能不存在---提示都改成标签的提示且两个接口提示一次)
 export function removeRelation(label: LabelInfoData) {
   let gisStore = useGisStore();
   const relationMap = gisStore?.relationMap;
@@ -233,15 +235,16 @@ export function removeRelation(label: LabelInfoData) {
     (res: any) => {
       if (res.code === 200) {
         gisStore?.fetchNavigationTree(); // 更新导航树及关联关系
-        ElMessage.success("删除关联关系成功");
+        ElMessage.success("删除标签成功");
+        // ElMessage.success("删除关联关系成功");
       } else {
         console.warn(res);
-        ElMessage.error("删除关联关系失败");
+        ElMessage.error("删除标签失败");
       }
     },
     (err: any) => {
       console.warn(err);
-      ElMessage.error("删除关联关系失败");
+      ElMessage.error("删除标签失败");
     }
   );
 }
@@ -294,13 +297,13 @@ export function transformLabelType(originalData: LabelType) {
 
 const clearSelectFeatureTimer = ref<number>();
 // 标签树、导航树选中label(是标签树或导航树的点击还是地图上的点击)
-export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isVisitObject?: boolean) {
+export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isRealTimeData?: boolean) {
   if (!map || !featureCode) {
     return;
   }
 
   let labelInfo: any;
-  if (!isVisitObject) {
+  if (!isRealTimeData) {
     let labelInfoMap = map?.get("labelInfoMap") || {};
     labelInfo = labelInfoMap[featureCode];
   } else {
@@ -316,18 +319,18 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     return;
   }
   let layer: any = null;
-  if (!isVisitObject) {
+  if (!isRealTimeData) {
     layer = map?.get("layerMap")[labelInfo.refLayer?.code];
   } else {
     layer = map?.get("layerMap")[labelInfo.layerCode];
   }
 
-  const minZoom = Math.ceil(layer.getMinZoom()); // 图层最小层级
-  const maxZoom = Math.floor(layer.getMaxZoom()); // 图层最大层级
+  const minZoom = Math.ceil(layer?.getMinZoom()); // 图层最小层级
+  const maxZoom = Math.floor(layer?.getMaxZoom()); // 图层最大层级
 
   let zoom = minZoom;
   // 视图缩放策略（点（点文本）取值最大值  线（线、环）平均值  其他均值）  兼容外部对象(外部对象目前没存数据类型)
-  let dataType = labelInfo?.labelType?.dataType;
+  let dataType = labelInfo?.labelType?.dataType || labelInfo?.dataType;
   if (["1", "6"].includes(dataType)) {
     zoom = maxZoom;
   }
@@ -336,7 +339,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   }
 
   let center: any = null;
-  if (!isVisitObject) {
+  if (!isRealTimeData) {
     const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
     center = getGeometryCenter(labelData);
   } else {
@@ -349,7 +352,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       { zoom: zoom },
       { center: center },
       {
-        duration: 500
+        // duration: 500
       },
       function () {
         setTimeout(() => {
@@ -370,14 +373,10 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       clusterDataSource?.getFeatures()?.forEach(function (clusterFeature: any) {
         clusterFeature.get("features").forEach(function (originalFeature: any) {
           if (originalFeature.get("code") === featureCode) {
-            // 分是否外部对象
-            if (isVisitObject) {
-              layer?.getStyleFunction()(clusterFeature);
-            } else {
-              originalFeature.set("selected", true); // 非聚合图层的可以这样实现
-              originalFeature.changed();
-              map.set("featureSelect", originalFeature);
-            }
+            // 分是否外部对象(实时数据绘制与基础引擎标签)
+            originalFeature.set("selected", true); // 非聚合图层的可以这样实现
+            originalFeature.changed();
+            map.set("featureSelect", originalFeature);
           }
         });
       });
@@ -385,13 +384,9 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       let source = layer.getSource();
       const selectFeature = source?.getFeatureById(featureCode);
       if (selectFeature) {
-        if (isVisitObject) {
-          layer?.getStyleFunction()(selectFeature);
-        } else {
-          selectFeature.set("selected", true); // 非聚合图层的可以这样实现
-          selectFeature.changed();
-          map.set("featureSelect", selectFeature);
-        }
+        selectFeature.set("selected", true); // 非聚合图层的可以这样实现
+        selectFeature.changed();
+        map.set("featureSelect", selectFeature);
       } else {
         ElMessage.warning("当前目标不在地图上!");
       }
@@ -435,12 +430,11 @@ export function featureUpdate(labelData: any, map: VisualMap) {
   }
 
   feature.setId(labelData.code);
-  feature.set("code", labelData.code); // 是否显示标签
+  feature.set("code", labelData.code);
   feature.set("name", labelData.name);
   feature.set("layerCode", labelData.refLayer.code); // 所属图层编码
   feature.set("labelTypeCode", labelData.labelType.code); // 所属标签类型编码
   feature.set("type", labelData?.labelType?.dataType); // 数字型
-  feature.set("isShow", true); // 是否显示标签
   feature.set("labelData", labelData.labelData); // 标签绘制数据Json格式
   let typeStats = getTypeStatsByLabelType(labelData.labelType, dataType);
   feature.set("typeStats", typeStats); // 标签绘制数据
@@ -518,26 +512,19 @@ export function clearSelectedFeature(map: VisualMap) {
 }
 
 // 实现框选
-export function selectionAddDrawInteraction(map: VisualMap, value: any, callback: Function, isTrue?: boolean) {
-  let boxSelectionSource: any = map?.get("boxSelectionSource");
-  let boxSelectionVectorLayer = map?.get("boxSelectionSource");
-  let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
+export function selectionAddDrawInteraction(
+  map: VisualMap,
+  value: any,
+  callback: Function,
+  isTrue: boolean, // 是否只能框选一次不能连续框
+  closeBtnOverlayCallback?: Function
+) {
   if (!map) return;
-  if (boxSelectionDrawInteraction) {
-    map?.removeInteraction(boxSelectionDrawInteraction);
-    map?.set("boxSelectionDrawInteraction", null);
-    boxSelectionDrawInteraction = null;
-  }
-  if (boxSelectionVectorLayer) {
-    map?.removeLayer(boxSelectionVectorLayer);
-    map?.set("selectionVectorLayer", null);
-    boxSelectionVectorLayer = null;
-  }
-  if (boxSelectionSource) {
-    boxSelectionSource?.clear();
-    map?.set("boxSelectionSource", null);
-    boxSelectionSource = null;
-  }
+  clearSelectionDrawInteraction(map);
+  let boxSelectionSource: any = map?.get("boxSelectionSource"); // 框选图层数据源
+  let boxSelectionVectorLayer = map?.get("boxSelectionVectorLayer"); // 框选图层
+  let boxSelectionDrawInteraction = map?.get("boxSelectionDrawInteraction"); // 框选交互控件
+  let closeBtnOverlay = map?.get("closeBtnOverlay"); // 框选附加信息关闭按钮
 
   boxSelectionSource = new VectorSource();
   boxSelectionVectorLayer = new VectorLayer({
@@ -570,17 +557,48 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
   map?.set("boxSelectionDrawInteraction", boxSelectionDrawInteraction);
 
   boxSelectionDrawInteraction.on("drawstart", function () {
-    boxSelectionSource?.clear(); //不写的话可以绘制多次，添加后只能绘制一次
+    boxSelectionSource?.clear(); //不写的话可以绘制多次框选，添加后只能绘制一个
+    // 清空附加的关闭按钮
+    if (map?.get("closeBtnOverlay")) {
+      map?.removeOverlay(map?.get("closeBtnOverlay"));
+      map?.set("closeBtnOverlay", null);
+    }
+    // 动态创建overLayer
+    let overDiv: any = document?.createElement("div"); // 创建div
+    overDiv.id = "ol-over-close"; // 给div增加id
+    overDiv.innerHTML = "X"; // div的内容是取消的x
+    overDiv.style.display = "block"; // 样式
+    document.body?.appendChild(overDiv); // 将动态div添加至document
+
+    closeBtnOverlay = new Overlay({
+      element: overDiv,
+      autoPan: true,
+      offset: [-10, -10]
+    });
+    map?.addOverlay(closeBtnOverlay);
+    map?.set("closeBtnOverlay", closeBtnOverlay);
+
+    // 关闭
+    overDiv.onclick = function () {
+      clearSelectionDrawInteraction(map);
+      overDiv = null;
+      closeBtnOverlayCallback && closeBtnOverlayCallback();
+    };
   });
 
   boxSelectionDrawInteraction.on("drawend", function (evt: DrawEvent) {
     const polygon = evt.feature?.getGeometry();
     if (!polygon || !map) return;
+    // 框选关闭按钮逻辑
+    let cor = (polygon as any)?.getCoordinates();
+    let closeBtnOverlay = map?.get("closeBtnOverlay");
+    value == "Polygon" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][0]);
+    value == "Circle" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][1]);
+
+    // 框选要素或者区域
     const extent = polygon?.getExtent();
     const currentZoom = map?.getView()?.getZoom(); // 当前层级
     let selectionFeatures = [];
-
-    // 框选的要素
     let layerMap = map?.get("layerMap");
     for (let key in layerMap) {
       let layer: any = layerMap[key]; // 每个图层
@@ -622,8 +640,7 @@ export function selectionAddDrawInteraction(map: VisualMap, value: any, callback
 export function getSelectedFeature(map: VisualMap, pixel: any) {
   if (!map || !pixel) return;
   let typeMap: any = {
-    alarmPoint: [], // 报警点  取第一个
-    point: [], // 1 6  (船也是点)  取第一个
+    point: [], // 1 6  (点)  取第一个
     line: [], // 2  7 线（环） 取第一个
     polygon: [], // 3 4 5  面（圆、矩形、面）  分取最小的面
     other: [] // 其他
@@ -634,16 +651,14 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
       // 选中的各个要素
       let targetFeature: any;
       const { features } = feature?.getProperties(); // 针对聚合要素，聚合要素的话features是数组
-      if (features && features.length) {
-        targetFeature = features[0]; // 取聚合要素的第一个原始要素
+      if (features && features?.length) {
+        targetFeature = features?.[0]; // 取聚合要素的第一个原始要素
       } else {
         targetFeature = feature;
       }
       if (targetFeature) {
         const type = targetFeature.get("type");
-        if (type == "alarmPoint") {
-          typeMap["alarmPoint"].push(targetFeature);
-        } else if (type == "1" || type == "6") {
+        if (type == "1" || type == "6") {
           typeMap["point"].push(targetFeature);
         } else if (type == "2" || type == "7") {
           typeMap["line"].push(targetFeature);
@@ -654,14 +669,11 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
         }
       }
     },
-    { hitTolerance: 5 } // 设置捏合度为 20 像素
+    { hitTolerance: 5 } // 设置捏合度为 5 像素
   );
   // 判断类型下要素优先级看选哪个
   let currentSelectFeature = null;
-  if (typeMap.alarmPoint.length) {
-    // 如果有报警点: 使用第一个
-    currentSelectFeature = typeMap.alarmPoint[0];
-  } else if (typeMap.point.length) {
+  if (typeMap.point.length) {
     // 如果有点 使用第一个
     currentSelectFeature = typeMap.point[0];
   } else if (typeMap.line.length) {
@@ -685,9 +697,28 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
       }
     });
     polygonArr.sort((a, b) => a.area - b.area);
-    currentSelectFeature = polygonArr[0].val;
+    currentSelectFeature = polygonArr?.[0].val;
   } else {
-    currentSelectFeature = typeMap.other[0];
+    currentSelectFeature = typeMap.other?.[0];
   }
   return currentSelectFeature;
+}
+
+// 根据设备code查标签code（报警要素点击时需要查到对应设备的标签）
+export function getFeatureCodeByEquipCode(equipCode: string, map: VisualMap) {
+  let featureInfo: { [key: string]: any } = {};
+  let labelInfoMap = map?.get("labelInfoMap") || {};
+  let gisStore = useGisStore();
+  const relationMap = gisStore?.relationMap;
+  for (let key in relationMap) {
+    // 标签设备关联关系
+    if (equipCode == relationMap[key].code) {
+      // key是标签的code(报警弹出对应设备的信息)
+      featureInfo.featureLabelCode = key;
+      let labelInfo = labelInfoMap[key];
+      featureInfo.featureLabelType = labelInfo?.labelType?.code;
+      break;
+    }
+  }
+  return featureInfo;
 }

@@ -36,16 +36,19 @@
     width: 450px;
   }
   .popup-custom-box {
+    display: flex;
+    flex-direction: column;
     width: 560px;
-    height: 300px;
+    max-height: 300px;
   }
   .map-popup-header {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 50px;
     padding: 0 20px;
-    background-color: #f7f7fa;
+    background-color: var(--el-color-primary-light-9);
     span {
       font-size: 16px;
     }
@@ -54,7 +57,9 @@
     }
   }
   .map-popup-body {
-    padding: 20px;
+    flex: 1;
+    margin: 20px;
+    overflow-y: auto;
     font-size: 14px;
     .content {
       display: flex;
@@ -62,9 +67,16 @@
       align-items: center;
       justify-content: space-between;
     }
+    .has-config-attr-content {
+      span {
+        display: inline-block;
+        width: 50%;
+      }
+    }
     .static-data {
       display: flex;
       flex-wrap: wrap;
+      margin-bottom: 10px;
       font-size: 14px;
       .list-item {
         display: flex;
@@ -85,8 +97,8 @@
       }
     }
     .monitor-sequence-data {
-      margin-top: 10px;
-      overflow-x: scroll;
+      margin-bottom: 10px;
+      overflow-x: auto;
       .list {
         display: flex;
         flex-wrap: nowrap;
@@ -121,15 +133,13 @@
       }
     }
     .monitor-curve-data {
-      height: 240px;
-      margin-top: 10px;
+      height: 260px;
+      margin-bottom: 10px;
+      overflow: hidden;
     }
     .link-config {
-      margin-top: 20px;
+      margin-bottom: 10px;
       text-align: center;
     }
-  }
-  .map-attr-data {
-    height: 240px;
   }
 }

@@ -17,19 +17,32 @@
           </div>
         </div>
       </div>
-      <!-- 内容部分 -->
+      <!-- 内容部分(关注列表和白名单不想使用v-show  而其他工具箱需要v-show) -->
       <div class="right-content">
         <div v-for="(item, index) in props.rightBoxData" :key="index">
-          <component
-            :is="item.component"
-            v-if="item.visible"
-            v-show="item.isShow && item?.label !== '编辑'"
-            :map="props.map"
-            :index="index"
-            :isShow="item.isShow"
-            @on-close="rightBoxClick"
-            @on-box-selection="onBoxSelection"
-          ></component>
+          <div v-if="item?.label == '关注列表' || item?.label == '白名单'">
+            <component
+              :is="item.component"
+              v-if="item.isShow"
+              :map="props.map"
+              :index="index"
+              :isShow="item.isShow"
+              @on-close="rightBoxClick"
+              @on-box-selection="onBoxSelection"
+            ></component>
+          </div>
+          <div v-else>
+            <component
+              :is="item.component"
+              v-if="item.visible"
+              v-show="item.isShow && item?.label !== '编辑'"
+              :map="props.map"
+              :index="index"
+              :isShow="item.isShow"
+              @on-close="rightBoxClick"
+              @on-box-selection="onBoxSelection"
+            ></component>
+          </div>
         </div>
       </div>
     </div>

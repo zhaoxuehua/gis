@@ -1,5 +1,93 @@
 # adm-gis-platform
 
+## 1.0.68
+
+### Patch Changes
+
+- 修复样式问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.66
+
+## 1.0.67
+
+### Patch Changes
+
+- 左键弹框逻辑
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.65
+
+## 1.0.66
+
+### Patch Changes
+
+- 修改 iframe 嵌入后主题色问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.64
+
+## 1.0.65
+
+### Patch Changes
+
+- 修复右键功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.63
+
+## 1.0.64
+
+### Patch Changes
+
+- 修复 bug
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.62
+
+## 1.0.63
+
+### Patch Changes
+
+- 联调人员定位按区域查询块修改
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.61
+
+## 1.0.62
+
+### Patch Changes
+
+- 升包
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.60
+
+## 1.0.61
+
+### Patch Changes
+
+- 升包
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.59
+
+## 1.0.60
+
+### Patch Changes
+
+- 升包-人员定位修改
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.58
+
+## 1.0.59
+
+### Patch Changes
+
+- 增加人员定位功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.57
+
+## 1.0.58
+
+### Patch Changes
+
+- 增加告警逻辑及部分实时数据逻辑
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.56
+
 ## 1.0.57
 
 ### Patch Changes

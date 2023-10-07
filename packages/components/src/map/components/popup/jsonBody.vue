@@ -40,8 +40,9 @@
           :columns="table.columns"
           layout="total, prev, pager, next"
           :class="['json-body-table', table.data.length ? '' : 'no-data-table', table.data.length >= 5 ? 'data-table' : '']"
-          :pagination="table.data.length ? table.pagination : false"
+          :pagination="table.data.length ? { ...table.pagination, pageSizes: [5, 10, 20, 30, 50, 100], pagerCount: 3 } : false"
           @page-current-change="val => handleCurrentChange(val, index)"
+          @page-size-change="val => handlePageSizeChange(val, index)"
         ></Table>
       </template>
       <template v-else>
@@ -72,6 +73,14 @@ const handleCurrentChange = (val: number, index: number) => {
     current.pagination.page * current.pagination.pageSize
   );
 };
+const handlePageSizeChange = (val: number, index: number) => {
+  const current = tableBodyData.value[index];
+  current.pagination.pageSize = val;
+  current.pageData = current.data.slice(
+    (current.pagination.page - 1) * current.pagination.pageSize,
+    current.pagination.page * current.pagination.pageSize
+  );
+};
 const onSwitch = (type: string, table: any) => {
   if (type === "prev") {
     table.currentDescIndex--;
@@ -96,7 +105,7 @@ watch(
   height: 244px;
 }
 .monitor-jsonbody-data {
-  margin-top: 10px;
+  margin-bottom: 10px;
   .title-box {
     display: flex;
     align-items: center;

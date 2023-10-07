@@ -211,7 +211,7 @@ defineExpose({
 }
 .reference-side-tab {
   width: 180px;
-  border-right: var(--border-color) solid 1px;
+  border-right: #eeeeee solid 1px;
   .reference-side-tab-item {
     height: 40px;
     font-size: 14px;
@@ -221,8 +221,8 @@ defineExpose({
     background-color: #f0f5f5;
     &.active {
       font-weight: bold;
-      color: var(--color-primary);
-      background-color: var(--color-primary-tran-1);
+      color: var(--el-color-primary);
+      background-color: var(--el-color-primary-light-1);
     }
   }
 }

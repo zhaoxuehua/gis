@@ -130,14 +130,26 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
-    label: "显示外部对象类型",
-    name: "trackSearchName"
-  },
-  {
     label: "距离单位",
     name: "scaleLineUnit",
     slot: true
   },
+  {
+    label: "导航树",
+    name: "customTreeType",
+    slot: true
+  },
+  {
+    label: "设备树",
+    name: "customTreeCode",
+    slot: true
+  },
+  {
+    label: "关键词显示配置",
+    name: "keywordConfig",
+    slot: true
+  },
+
   {
     label: "是否可编辑",
     name: "isEdit",

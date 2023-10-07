@@ -1,8 +1,8 @@
 import request from "@/api";
 
-// 导航树
-export function getGisCustomTree(params: string | number) {
-  return request.get(`/api/gis-service/equip/getGisEquipCategoryAndEquipTypeCustomTree?sourceCode=${params}`);
+// 导航树(场景编码)
+export function getGisCustomTree(params: string | number, idId: boolean) {
+  return request.get(`/api/gis-service/equip/getGisEquipCategoryAndEquipTypeCustomTree?${idId ? "appId" : "appCode"}=${params}`);
 }
 
 // 根据设备id查找已绘制的标签信息
@@ -85,4 +85,16 @@ export function deleteAttentionApi(ids: string) {
 // 弹窗里面的取消关注
 export function deleteDialogAttentionApi({ objectCode, objectType }: any) {
   return request.delete(`/api/equipment-service/object/attentionList/remove/${objectCode}/${objectType}`);
+}
+
+// 实时数据
+// 获取实时数据所属的标签类型信息
+export function getRealLabelTypeInfo(code: string, params: any) {
+  return request.get(`/api/gis-service/equip/gisLabel/type/getByObjectType/${code}`, params);
+}
+// 获取实时列表数据
+export function getRealDataList(code: string, params: any) {
+  return request.get(`/api/equipment-service/equip/equip/getRealtimeData/type/${code}`, params, {
+    noLoading: true
+  });
 }

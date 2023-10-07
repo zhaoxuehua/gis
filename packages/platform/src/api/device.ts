@@ -1,9 +1,15 @@
-// 图层
 import request from "@/api";
 
-// 外部对象类型列表
-export function objTypeList(queryString: string, params: object) {
-  return request.post(`/api/equipment-service/equip/visitObjectType/list${queryString}`, params);
+// 设备自定义树列表接口
+export function customTreeList(queryString: string, params: object) {
+  return request.post(`/api/equipment-service/view/custom/tree/list${queryString}`, params);
+}
+
+// 获取配置绑定属性列表-监测属性列表(传设备类型id)---设备类型还是外部对象类型
+export function getBindAttributeMonitor(params: number, isVisitObject: boolean) {
+  return request.get(
+    `/api/equipment-service/equip/${isVisitObject ? "visitObjectType" : "equipType"}/getBindAttribute/monitor/${params}`
+  );
 }
 
 // 关联对象配置查询接口

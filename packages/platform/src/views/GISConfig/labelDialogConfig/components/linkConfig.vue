@@ -11,6 +11,7 @@
         title=""
         :data="unBindLinkData"
         :columns="unSelectTableColumns"
+        :is-pageable="false"
         @selection-change="handleSelectionChange"
       >
       </Table>
@@ -46,9 +47,6 @@ const state = reactive({
 const unBindLinkData = ref([]);
 const bindLinkData: any = ref([]);
 const tableColumns = [
-  // {
-  //   type: "selection"
-  // },
   {
     prop: "name",
     label: "按钮名称"
@@ -84,7 +82,7 @@ const getUnBindLink = async () => {
   const id = props.equipTypeId || props.visitObjectTypeId;
   const res: any = await getUnBindLinkApi(id!, props.currentType!);
   if (res.code === 200) {
-    unBindLinkData.value = res.data;
+    unBindLinkData.value = res?.data?.filter((item: any) => item?.buttonType != 7);
   }
 };
 const onOpen = () => {

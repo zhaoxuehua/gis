@@ -198,7 +198,7 @@ defineExpose({
   .reference-attribute-side {
     width: 180px;
     max-height: 400px;
-    border-right: var(--border-color) solid 1px;
+    border-right: #eeeeee solid 1px;
     .reference-attribute-side-item {
       height: 40px;
       font-size: 12px;
@@ -206,8 +206,8 @@ defineExpose({
       text-align: center;
       cursor: pointer;
       &.active {
-        color: var(--color-primary);
-        background-color: var(--color-primary-tran-1);
+        color: var(--el-color-primary);
+        background-color: var(--el-color-primary-light-1);
       }
     }
   }

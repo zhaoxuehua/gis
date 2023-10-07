@@ -3,6 +3,7 @@
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
     <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
+    <!-- <div class="target-all-count" title="目标总数">{{ objectAllCount }}</div> -->
 
     <!-- 左侧控件 -->
     <LeftActionBox
@@ -75,18 +76,28 @@ import { fromLonLat } from "ol/proj";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
-import { getMapParamsDetail, getLabelList } from "../api/visconfig";
+import { getMapParamsDetail, getLabelList, getEquipAlarmList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
 import { useToolboxStore } from "../stores/modules/toolBox";
 
-import { layerStyle, createStyle } from "./hooks/styleFunction.js";
+import { layerStyle, createStyle, alarmLayerStyle } from "./hooks/styleFunction.js";
 import { createGeometry, getGeometryCenter } from "./hooks/createGeometry.js";
 import { createdFeature } from "./hooks/createdFeature.js";
-import { clearSelectedFeature, labelOnSelect, createLabel, removeLabel, getFeature, getSelectedFeature } from "./hooks/index";
+import {
+  clearSelectedFeature,
+  labelOnSelect,
+  createLabel,
+  removeLabel,
+  getFeature,
+  getSelectedFeature,
+  getFeatureCodeByEquipCode
+} from "./hooks/index";
 import { createdTrackData, showHideTrackData, delTrackData } from "./hooks/createdTrackData.js";
 import { getTrackDataByIdFn } from "./hooks/getTrackDataById"; // 获取单个轨迹数据
+import { initAlarmLayerAndCreateFeature } from "./hooks/initAlarmLayerAndCreateFeature";
+import { initRealtimeData, realDataTimerObj } from "./hooks/initRealtimeData";
 import LeftActionBox from "./components/LeftActionBox.vue";
 import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
@@ -115,6 +126,7 @@ const emits = defineEmits([
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
 const currentLevel = ref(); // 当前视图层级
+// const objectAllCount = ref(0); // 目标总数
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -320,8 +332,9 @@ let isDynamicLine = computed(() => gisStore.isDynamicLine);
 let imgIndex = computed(() => gisStore.imgIndex);
 const timer: any = ref(null);
 const dynamicTimes: any = ref(null); // 风机、动态线、动态环的定时器
+const alarmTimer: any = ref(null); // 告警列表动态请求
 
-// overlayer
+// Overlay
 const popupDOMRef = ref();
 const popupTitDOMRef = ref();
 const popupContentDOMRef = ref();
@@ -387,10 +400,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       scaleLineUnit: originalData?.scaleLineUnit, // 距离单位（该配置对比例尺及测距生效）
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
-      displayLegend: originalData.displayLegend, // 图例[]
-      trackSearchId: originalData.trackSearchId, // 轨迹搜索类型id
-      trackSearchCode: originalData.trackSearchCode // 轨迹搜索类型code
+      displayLegend: originalData.displayLegend // 图例[]
     };
+    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据
+    gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
@@ -446,7 +459,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       }).extend(controlsList),
       layers: [normalMap, sateMap, overlayMap],
       view: new View({
-        center: fromLonLat([defaultOptions.center.lon, defaultOptions.center.lat]),
+        center: fromLonLat([defaultOptions?.center?.lon, defaultOptions?.center?.lat]),
         zoom: defaultOptions?.defaultZoom,
         minZoom: defaultOptions?.minZoom,
         maxZoom: defaultOptions?.maxZoom,
@@ -588,10 +601,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             geometry: createGeometry(item.labelData)
           });
 
-          labelFeature.setId(item.code); // 是否显示标签
-          labelFeature.set("code", item.code); // 是否显示标签
-          labelFeature.set("type", item.labelData?.style?.type); // 旧数据Point  新数据 1
-          labelFeature.set("isShow", true); // 是否显示标签
+          labelFeature.setId(item.code);
+          labelFeature.set("code", item.code);
+          labelFeature.set("type", item.labelData?.style?.type); // 标签类型
           labelFeature.set("labelData", item?.labelData); // 标签绘制数据
           labelFeature.set("layerCode", item.refLayer.code); // 所属图层编码
           labelFeature.set("labelTypeCode", item.labelType.code); // 所属标签类型编码
@@ -675,6 +687,34 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     } else {
       ElMessage.error("接口异常");
     }
+    /*******************************************实时数据（船、人、车等）*****************************************/
+    // 根据后端返回的实时数据配置列表请求数据
+    if (gisStore?.realtimeDataList && gisStore?.realtimeDataList?.length) {
+      initRealtimeData(map, gisStore?.realtimeDataList);
+    }
+    /*******************************************告警标签（点线面）**********************************************/
+    // 绘制报警图层信息
+    let alarmLayer: any = new VectorLayer({
+      source: new VectorSource(),
+      zIndex: 9999,
+      style: (feature: FeatureLike) => alarmLayerStyle(feature)
+    });
+    alarmLayer.set("code", "alarmLayer");
+    alarmLayer.set("name", "报警图层");
+    map.addLayer(alarmLayer);
+    // 实时请求报警数据并绘制
+    const updateAlarmData = async () => {
+      try {
+        const alarmRes: any = await getEquipAlarmList(mapId, isId);
+        if (alarmRes?.code === 200) {
+          initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data || []);
+        } else {
+          ElMessage.error("接口异常");
+        }
+      } catch (error) {}
+    };
+    updateAlarmData(); // 初始化时获取一次数据
+    alarmTimer.value = setInterval(updateAlarmData, 10000); // 每隔10秒更新数据
 
     /****************************鼠标经过*************************************************************/
     // 鼠标移动事件
@@ -704,17 +744,31 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             let infoStr = "";
             let infoData = detailInfo as [[string, any]];
             infoData.forEach(val => {
-              infoStr += `<p>${val[0]}:${val[1]}</p>`;
+              infoStr += `<p>${val[0]}: ${val[1]}</p>`;
             });
             popupTitDOMRef.value.innerHTML = titleInfo.name;
             popupContentDOMRef.value.innerHTML = infoStr;
             hoverInfoLayer.setPosition(pos);
-          } else if (extendsData?.type == "ship") {
-            const { mmsi, sog, positionReportTicks } = unref(extendsData);
-            popupTitDOMRef.value.innerHTML = name;
-            popupContentDOMRef.value.innerHTML = `<p>MMSI : ${mmsi}</p><p>时间 : ${positionReportTicks}</p><p>航速 : ${sog?.toFixed(
-              1
-            )}节</p>`;
+          } else if (extendsData?.type == "realTimeTag") {
+            // 实时标签
+            const { code, sog, monitorTime, person } = unref(extendsData);
+            popupTitDOMRef.value.innerHTML = name; // 标题
+            // 根据关键词配置拼接code person monitorTime sog
+            let contentStr = "";
+            let keywordConfig = gisStore?.keywordConfig;
+            if (keywordConfig?.code) {
+              contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
+            }
+            if (keywordConfig?.monitorTime) {
+              contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
+            }
+            if (keywordConfig?.speed) {
+              contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
+            }
+            if (keywordConfig?.person) {
+              contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
+            }
+            popupContentDOMRef.value.innerHTML = contentStr;
             hoverInfoLayer.setPosition(pos);
           } else {
             hoverInfoLayer.setPosition(undefined);
@@ -748,7 +802,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (gisStore?.isEdit) {
         return;
       }
-      // 获取船的数据
+      // 获取标签关联的设备信息|| 实时数据（船、人通过isRealTimeData区分）
       const trackInfoMap = map.get("trackInfoMap") || [];
       const currentTrack = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0]; // code有时字符串有时数字
       popupData.featureCode = featureCode;
@@ -764,34 +818,51 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       emits("onCloseRightMenu"); // 关闭右键菜单
       editLabelRef.value?.onClose(); // 关闭编辑标签弹框
       clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)
+      // 框选或测量、绘制模式下不触发左键
+      if (map?.get("boxSelectionDrawInteraction") || map?.get("measureDrawInteraction") || map?.get("drawFeature")) {
+        return;
+      }
+
       let pixel = map.getEventPixel(evt.originalEvent);
       let hit = map.hasFeatureAtPixel(pixel, {
         hitTolerance: 5
       }); // 当前点击处是否有要素
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
-        // 对选则的要素做弹框弹出及选中样式、编辑弹框
-        const featureCode = currentSelectFeature?.get("code");
-        const featureName = currentSelectFeature?.get("name");
-        const labelTypeCode = currentSelectFeature?.get("labelTypeCode");
+        // 对选择的要素做弹框弹出及选中样式、编辑弹框
+        let featureCode = currentSelectFeature?.get("code");
+        let featureName = currentSelectFeature?.get("name");
+        let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
+        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
+        let typeStats = currentSelectFeature?.get("typeStats");
+        if (typeStats == "alarmPoint") {
+          let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
+          featureCode = featureLabelCode || featureCode;
+          labelTypeCode = featureLabelType;
+        }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
           // 获取船的数据
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           map.popupInfo({ featureCode, featureName, center });
-          // 在编辑状态下才可以编辑标签且挂载在标签树的才可以操作编辑标签的功能（例如船不可以） 它弹出会让选中消失
-          if (labelTypeCode && labelTypeMap[labelTypeCode]?.isHang && gisStore?.isEdit) {
-            if (map?.get("labelInfoMap")[featureCode]) {
-              editLabelRef.value?.onOpen(featureCode);
-              timer.value = setTimeout(() => {
-                labelOnSelect(exportMap.value, featureCode, true);
-                clearTimeout(timer);
-                timer.value = null;
-              }, 200);
-            }
+          // 以下是选中+编辑要素逻辑
+          // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
+          if (
+            labelTypeCode &&
+            labelTypeMap[labelTypeCode]?.isHang &&
+            gisStore?.isEdit &&
+            map?.get("labelInfoMap")?.[featureCode]
+          ) {
+            // 应用场景下基础引擎绘制标签存在则可编辑
+            editLabelRef.value?.onOpen(featureCode);
+            timer.value = setTimeout(() => {
+              labelOnSelect(exportMap.value, featureCode, true);
+              clearTimeout(timer);
+              timer.value = null;
+            }, 200);
           } else {
-            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isVisitObject); // 选中（还需要判断是否外部对象的选中）
+            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
           }
         }
       }
@@ -804,7 +875,13 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       let pixel = map?.getEventPixel(evt);
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
-        const featureCode = currentSelectFeature?.get("code");
+        let featureCode = currentSelectFeature?.get("code");
+        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
+        let typeStats = currentSelectFeature?.get("typeStats");
+        if (typeStats == "alarmPoint") {
+          let { featureLabelCode } = getFeatureCodeByEquipCode(featureCode, map);
+          featureCode = featureLabelCode || featureCode;
+        }
         emits("onOpenRightMenu", {
           featureCode,
           relationMap: gisStore?.relationMap,
@@ -835,15 +912,33 @@ const onScadaClose = () => {
   exportMap.value?.closePopup();
 };
 
+const clearAllTimers = () => {
+  if (dynamicTimes.value) {
+    clearInterval(dynamicTimes.value);
+    dynamicTimes.value = null;
+  }
+  if (alarmTimer.value) {
+    clearInterval(alarmTimer.value);
+    alarmTimer.value = null;
+  }
+  if (gisStore?.simulateAlarmTimer) {
+    clearInterval(gisStore?.simulateAlarmTimer);
+    gisStore?.setSimulateAlarmTimer(null);
+  }
+  // 清空实时数据定时器
+  if (realDataTimerObj && Object.keys(realDataTimerObj)) {
+    Object.keys(realDataTimerObj).forEach((timerCode: any) => {
+      if (realDataTimerObj[timerCode]) {
+        clearTimeout(realDataTimerObj[timerCode]);
+        realDataTimerObj[timerCode] = null;
+      }
+    });
+  }
+};
+
 onMounted(() => {
   // 存储sessionId
   localStorage.setItem("sessionId", props?.config?.sessionId);
-  // 存储导航树应用id
-  const sourceCode = props?.config?.navSourceCode;
-  gisStore.setSourceCode(sourceCode);
-  // 设置并请求导航树、关联关系
-  gisStore.setNavTreeAndRelation(); // 清空导航树数据
-  gisStore.fetchNavigationTree(); // 获取导航树数据
   // 拼接控件扩展 是数组[]
   if (props?.config?.leftControl) {
     if (props?.config?.leftControlIndex || props?.config?.leftControlIndex == 0) {
@@ -862,14 +957,17 @@ onMounted(() => {
   gisStore.setIsEdit(false);
   const mapParams = props?.config?.id || props?.config?.code;
   if (!mapParams) return;
+  // 存储应用场景id或code
+  gisStore.setMapIdentification({ mapParams: mapParams, isId: !!props?.config?.id });
+  // 设置并请求导航树、关联关系
+  gisStore.setNavTreeAndRelation(); // 清空导航树数据
+  gisStore.fetchNavigationTree(); // 获取导航树数据
+  clearAllTimers();
   initMap(mapParams, !!props?.config?.id);
 });
 
 onBeforeUnmount(() => {
-  if (dynamicTimes.value) {
-    clearInterval(dynamicTimes.value);
-    dynamicTimes.value = null;
-  }
+  clearAllTimers();
 });
 
 // 自定义框选弹框
@@ -899,18 +997,14 @@ const handlePopLink = (type: any, option: any) => {
   emits(type, option);
 };
 
-// 实时标签样式
-let toolboxCallBack: (arg: boolean) => void;
+// 监听实时标签的船首线
 const toolboxStore = useToolboxStore();
 watch(
   () => toolboxStore.data,
-  n => {
-    typeof toolboxCallBack == "function" && toolboxCallBack(n);
+  () => {
+    initRealtimeData(exportMap.value, gisStore?.realtimeDataList);
   }
 );
-const toolBoxSetChange = (fn: () => void) => {
-  toolboxCallBack = fn;
-};
 
 defineExpose({
   getMapElement,
@@ -929,14 +1023,13 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter,
-  toolBoxSetChange
+  getGeometryCenter
 });
 
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
 const outsideTreeNodeSelect = (node: any) => {
   const { tupleList = [], model } = node;
-  const equipId = Number(tupleList[0]);
+  const equipId = Number(tupleList?.[0]);
   if (model.toLocaleLowerCase() === "eam_eqp_equip") {
     const res = find(gisStore?.relationMap, (item: any) => {
       return item.id === equipId;
@@ -978,8 +1071,9 @@ watch(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 40px;
+    max-height: 40px;
     padding: 0 20px;
+    line-height: 40px;
     color: #ffffff;
     background: var(--el-color-primary);
   }
@@ -1104,5 +1198,24 @@ watch(
     border: 1px solid #cccccc;
     transform: scale(0.8);
   }
+
+  /* 目标总数 */
+  // .target-all-count {
+  //   position: absolute;
+  //   right: 6px;
+  //   bottom: 36px;
+  //   z-index: 10000;
+  //   width: 40px;
+  //   height: 40px;
+  //   font-size: 14px;
+  //   line-height: 40px;
+  //   color: #ffffff;
+  //   text-align: center;
+  //   cursor: pointer;
+  //   background: rgb(0 0 0 / 60%);
+  //   border: 1px solid #333333;
+  //   border-radius: 50%;
+  //   transform: scale(0.8);
+  // }
 }
 </style>

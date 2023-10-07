@@ -1,18 +1,21 @@
 <template>
   <div class="map-popup" ref="popupRef">
-    <div :class="['popup-box', state.isRelationBody ? 'popup-custom-box' : '']" v-if="props?.data?.featureCode">
+    <div :class="['popup-box', 'popup-custom-box']" v-if="props?.data?.featureCode">
       <div class="map-popup-header">
-        <span>{{ configInfo?.label || "标签信息" }} </span>
+        <span v-if="state.isRelationBody">{{ state.dialogTitle || configInfo?.label || "标签信息" }} </span>
+        <span v-else>{{ "标签信息" }} </span>
         <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
       </div>
-      <div class="map-popup-body" v-if="!state.isRelationBody">
-        <div class="content">
+      <div class="map-popup-body">
+        <div class="content" v-if="!state.isRelationBody">
           <span>名称：{{ props?.data?.featureName || "" }}</span>
           <span>编码：{{ props?.data?.featureCode || "" }}</span>
         </div>
-      </div>
-      <div v-else class="map-popup-body map-attr-data">
-        <el-scrollbar>
+        <div class="content has-config-attr-content" v-if="state.isRelationBody && !state.hasConfigAttr">
+          <span v-if="!equipInfo.isRealTimeData">监测状态：{{ state.statusName }}</span>
+          <span>编码：{{ state.equipCode || "" }}</span>
+        </div>
+        <div v-if="state.isRelationBody && state.hasConfigAttr">
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
@@ -21,9 +24,14 @@
           </ul>
           <div class="monitor-sequence-data" v-if="attrData.monitorSequenceData.length">
             <ul class="list">
+              <li class="list-item">
+                <span class="label">属性名称</span>
+                <span class="label">属性值</span>
+                <span class="label">采集时间</span>
+              </li>
               <li v-for="item in attrData.monitorSequenceData" :key="item.code" class="list-item">
                 <span class="label">{{ item.name }}{{ item.unit ? `(${item.unit})` : "" }}</span>
-                <span class="value">{{ item.value }}</span>
+                <span class="value" :style="{ color: BUTTON_COLOR_MAP[item.monitorState] }">{{ item.value }}</span>
                 <span class="time">{{ item.time }}</span>
               </li>
             </ul>
@@ -41,13 +49,13 @@
             :jsonbodyData="attrData.monitorJSONbodyData"
             :jsonbodyMap="attrData.monitorJSONbodyMap"
           ></jsonBody>
-          <div class="link-config">
+          <div class="link-config" v-if="linkData.length">
             <el-button v-for="btn in attrData.linkData" :key="btn.name" type="primary" @click="onAction(btn.buttonType)">{{
               btn.name
             }}</el-button>
             <el-button v-if="attrData.hasFocusBtn" type="primary" @click="handleFocus">{{ focusMap[focusType] }}</el-button>
           </div>
-        </el-scrollbar>
+        </div>
       </div>
     </div>
   </div>
@@ -64,15 +72,18 @@
     >
     </el-date-picker>
     <template #footer>
-      <el-button type="primary" @click="onTrack">查询</el-button>
-      <el-button @click="onTrackClose">取消</el-button>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="onTrack">查询</el-button>
+        <el-button @click="onTrackClose">取消</el-button>
+      </div>
     </template>
   </el-dialog>
   <AddRemarkDialog ref="addRemarkRef"></AddRemarkDialog>
+  <AlarmListDialog ref="alarmListRef"></AlarmListDialog>
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, nextTick, computed, watch } from "vue";
+import { ref, reactive, nextTick, watch } from "vue";
 import Icon from "../Icon.vue";
 import { getEquipData, lineRealTimeCurveApi, getEquipDetail } from "../../../api/device";
 import dayjs from "dayjs";
@@ -85,6 +96,8 @@ import { useJSONBody } from "../../hooks/useJSONBody";
 import { getTrackDataByIdFn } from "../../hooks/getTrackDataById"; // 获取单个轨迹数据
 import { labelOnSelect } from "../../hooks/index";
 import AddRemarkDialog from "./addRemarkDialog.vue";
+import AlarmListDialog from "./alarmListDialog.vue";
+import { BUTTON_COLOR_MAP } from "../../../constant/index";
 
 // import { chartData, attrconfigData } from "./popupmock";
 
@@ -101,6 +114,8 @@ const onClosePopup = () => {
 };
 
 const addRemarkRef = ref();
+const alarmListRef = ref();
+
 const getDOMElement = () => {
   return popupRef.value;
 };
@@ -123,8 +138,9 @@ const attrData: any = reactive({
 const equipInfo: any = ref({
   equipType: 0,
   code: "",
-  isVisitObject: false,
-  associationInfo: {}
+  isRealTimeData: false,
+  associationInfo: {},
+  realObjectTypeCode: "" // 实时查询对象code（只有关注使用，关注只针对实时数据对象）
 });
 
 const state = reactive({
@@ -132,22 +148,28 @@ const state = reactive({
   currentTime: "", // 当前时间
   countCharts: {}, // 图表集合
   dialogVisible: false, // 轨迹时间选择弹窗
-  dateTimes: [] as any
+  dateTimes: [] as any,
+  dialogTitle: "",
+  hasConfigAttr: false, // 关联设备是否配置了标签弹窗属性
+  statusName: "", //监测状态
+  equipCode: ""
 });
 
 // 获取设备数据
 const getDataFromAttr = (equipCodes: string, attributes: string) => {
+  let param: any = {
+    equipCodes, // 设备编码集合
+    attributes,
+    isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
+    isLineData: false, // 是否线性数据--数据类型
+    dataTime: state.currentTime, //数据时间，针对具体时间
+    tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
+  };
+  if (equipInfo.value?.realObjectTypeCode) {
+    param.equipType = equipInfo.value?.realObjectTypeCode;
+  }
   return new Promise(async (resolve, reject) => {
-    const res: any = await getEquipData({
-      equipCodes, // 设备编码集合
-      attributes,
-      isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
-      isVisitObject: equipInfo.value.isVisitObject, // 是否是外部对象（船）
-      isLineData: false, // 是否线性数据--数据类型
-      dataTime: state.currentTime, //数据时间，针对具体时间
-      tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
-    });
-    // const res = attrconfigData;
+    const res: any = await getEquipData(param);
     if (res.code === 200) {
       resolve(res);
     } else {
@@ -182,24 +204,36 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   state.isRelationBody = true;
 
+  state.dialogTitle = relationMap?.name || "";
+
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
-  const { isVisitObject = false } = relationMap || {};
+  const { isRealTimeData = false } = relationMap || {};
   equipInfo.value = relationMap;
-  // 获取设备类型id
-  if (!isVisitObject && relationMap?.model.toLocaleLowerCase() === "eam_eqp_equip") {
+  // 获取设备类型id（非实时数据需要获取设备类型id）
+  if (!isRealTimeData && relationMap?.model.toLocaleLowerCase() === "eam_eqp_equip") {
     await getEquipType(equipInfo.value.id);
   }
-  // equipInfo.value = {
-  //   equipType: 761,
-  //   code: "tunnel01",
-  //   isVisitObject
-  // };
+
   // 获取绑定的属性
-  await getBindAttr({ equipType: equipInfo.value.equipType, isVisitObject });
+  await getBindAttr({
+    equipType: equipInfo.value.equipType, // 类型id
+    objectTypeCode: equipInfo.value?.realObjectTypeCode, // 实时数据类型code(传了代表是实时数据，后端需要自己看是否外部对象)
+    equipCode: equipInfo.value?.code
+  });
+
+  // 拿到返回值
+  // 是否配置了属性
+  state.hasConfigAttr = !![
+    ...configInfo.value.linkConfig,
+    ...configInfo.value.monitorAttribute,
+    ...configInfo.value.staticAttribute
+  ].length;
   attrData.hasFocusBtn = !!linkData.value.find((item: any) => item.buttonType === 3); // 关注
   if (attrData.hasFocusBtn) {
     attrData.linkData = linkData.value.filter((item: any) => item.buttonType !== 3); // 按钮链接除关注
     getFocusStatus();
+  } else {
+    attrData.linkData = linkData.value;
   }
   attrData.monitorLineAttr = monitorLineAttr.value;
   attrData.monitorJSONbodyMap = monitorJSONbodyMap.value;
@@ -209,7 +243,9 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
     staticAttr.value.concat(monitorSeqAttr.value, Object.keys(monitorJSONbodyMap.value)).join(",")
   );
   if (res.code === 200) {
-    const data = res.data.items[0];
+    const data = res.data.items?.[0];
+    state.statusName = data?.statusName || "";
+    state.equipCode = data?.equipCode || "";
     let telemetryData = data?.telemetry || []; //监测的
     let descriptionsData = data?.descriptions || []; //静态的
     attrData.staticData = descriptionsData;
@@ -247,11 +283,12 @@ const getMonitorLine = async () => {
       Object.keys(countCharts).forEach((key, index) => {
         lineChartRef.value[index].setOption({
           xAxisType: "category", //x轴类型  默认'category'
-          xAxisName: countCharts[key][0].xaxis || "时间",
-          yAxisName: countCharts[key][0].yaxis,
+          xAxisUnit: countCharts[key][0].xaxis || "时间",
+          yAxisUnit: countCharts[key][0].yaxis,
+          color: countCharts[key].map((item: any) => item.color),
           data: countCharts[key].map((item: any) => {
             return {
-              name: item.name,
+              name: item.time + " " + item.name,
               data: item.values
             };
           })
@@ -276,8 +313,11 @@ const onAction = (actionType: number) => {
       ...equipInfo.value
     });
   } else if (actionType === 6) {
-    // 6 定位（基础引擎有关联关系的及外部对象的定位）
-    labelOnSelect(props?.map, props?.data?.featureCode, false, equipInfo.value?.isVisitObject);
+    // 6 定位（基础引擎有关联关系的实时数据对象的定位）
+    labelOnSelect(props?.map, props?.data?.featureCode, false, equipInfo.value?.isRealTimeData);
+  } else if (actionType === 7) {
+    // 7 告警
+    alarmListRef?.value?.openDialog({ equipCode: equipInfo.value?.code });
   } else {
     let option = {
       ...equipInfo.value,
@@ -295,9 +335,11 @@ const onTrack = () => {
   getTrackDataByIdFn({
     code: equipInfo.value.code,
     name: equipInfo.value.name,
+    objectTypeCode: equipInfo.value?.realObjectTypeCode, // 实时数据对象类型
     beginTime: state.dateTimes[0],
     endTime: state.dateTimes[1]
   });
+  onTrackClose();
 };
 const onTrackClose = () => {
   state.dialogVisible = false;
@@ -308,12 +350,12 @@ const focusMap: { [key: string]: string } = {
   1: "关注",
   2: "取消关注"
 };
-const trackSearchCode = computed(() => props.map?.defaultOptions?.trackSearchCode);
+
 const getFocusStatus = async () => {
   const res: any = await getAttentionList(
     {
       objectCode: equipInfo.value.code,
-      objectTypeCode: trackSearchCode.value
+      objectTypeCode: equipInfo.value.realObjectTypeCode
     },
     {
       params: {
@@ -340,7 +382,7 @@ const handleFocus = () => {
 const onFocus = async () => {
   const res: any = await addAttentionApi({
     objectCode: equipInfo.value.code,
-    objectTypeCode: trackSearchCode.value
+    objectTypeCode: equipInfo.value.realObjectTypeCode
   });
   if (res.code === 200) {
     ElMessage.success("关注成功");
@@ -351,7 +393,7 @@ const onFocus = async () => {
 const cancelFocus = async () => {
   const res: any = await deleteDialogAttentionApi({
     objectCode: equipInfo.value.code,
-    objectType: trackSearchCode.value
+    objectType: equipInfo.value.realObjectTypeCode
   });
   if (res.code === 200) {
     ElMessage.success("取消关注成功");
@@ -363,15 +405,7 @@ watch(
   () => props.data.featureCode,
   () => {
     getLabelDialogConfigInfo(props.data.relationMap);
-    // getLabelDialogConfigInfo({
-    //   equipType: 761,
-    //   code: "tunnel01",
-    //   isVisitObject: false
-    // });
   }
-  // {
-  //   immediate: true
-  // }
 );
 
 defineExpose({

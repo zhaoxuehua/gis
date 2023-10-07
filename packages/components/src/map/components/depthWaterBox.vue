@@ -10,6 +10,16 @@
       <el-form-item label="水深间隔(m)" prop="depth">
         <el-input placeholder="正整数" v-model="form.depth" clearable style="width: 200px" />
       </el-form-item>
+      <el-form-item label="设备类型" prop="equipType">
+        <el-select v-model="form.equipType" placeholder="请选择..." @change="equipTypeChange" style="width: 200px">
+          <el-option v-for="(item, idx) in equipTypeList.data" :key="idx" :label="item?.name" :value="item.code" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="设备" prop="equipCodes">
+        <el-select v-model="form.equipCodes" multiple collapse-tags placeholder="请选择..." style="width: 200px">
+          <el-option v-for="(item, idx) in equipList.data" :key="idx" :label="item.name" :value="item.code" />
+        </el-select>
+      </el-form-item>
     </el-form>
     <span class="dialog-footer">
       <el-button type="primary" @click="onConfirm">确认</el-button>
@@ -18,9 +28,10 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
-import { getDepthWater } from "../../api/device";
+import { getDepthWater, getAllEquipTypeList, getEquipListByType } from "../../api/device";
+import { handleParam } from "@/utils/common.js";
 
 const state = reactive({
   // 弹窗表单验证
@@ -64,7 +75,9 @@ const state = reactive({
         },
         trigger: ["blur", "change"]
       }
-    ]
+    ],
+    equipType: [{ required: true, message: "设备类型不能为空", trigger: ["blur", "change"] }],
+    equipCodes: [{ required: true, message: "设备不能为空", trigger: ["blur", "change"] }]
   }
 });
 const refForm: any = ref();
@@ -72,19 +85,42 @@ const refForm: any = ref();
 const defaultParam = {
   host: "",
   port: "",
-  depth: ""
+  depth: "",
+  equipType: "",
+  equipCodes: []
 };
 
 let form = ref<{
   host: string;
   port: string;
   depth: string;
+  equipType: string;
+  equipCodes: any;
 }>(defaultParam);
+
+const equipTypeChange = (val: any) => {
+  equipList.value.data = [];
+  form.value.equipCodes = [];
+  equipList.value?.fetchData(val);
+};
 
 const onConfirm = () => {
   refForm.value?.validate(async (valid: any) => {
     if (valid) {
-      let param: { [key: string]: any } = { ...form.value };
+      let { host, port, depth, equipCodes } = { ...form.value };
+      let param: { [key: string]: any } = {
+        host,
+        port,
+        depth
+      };
+      // 设备选择全部时处理逻辑
+      if (equipCodes?.includes("all")) {
+        param.equipCodes = equipList.value?.data
+          ?.filter((item: { [key: string]: any }) => item?.code != "all")
+          ?.map((item: { [key: string]: any }) => item?.code);
+      } else {
+        param.equipCodes = equipCodes;
+      }
       const res: { [key: string]: any } = await getDepthWater(param);
       if (res.code == 200) {
         ElMessage.success("操作成功");
@@ -97,6 +133,58 @@ const onConfirm = () => {
     }
   });
 };
+
+// 设备类型
+const equipTypeList = ref<{
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getAllEquipTypeList(
+      ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+    );
+    if (res?.items) {
+      equipTypeList.value.data = res.items || [];
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
+// 根据设备类型获取设备
+const equipList = ref<{
+  data: Array<{
+    id?: number;
+    code: string;
+    name: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async (equipTypeCode: string) => {
+    const res: { [key: string]: any } = await getEquipListByType(equipTypeCode);
+    if (res?.code == 200) {
+      if (res?.data?.length) {
+        // 增加全部的逻辑
+        let allItem = [{ code: "all", name: "全部" }];
+        equipList.value.data = allItem.concat(res.data);
+      } else {
+        equipList.value.data = res?.data || [];
+      }
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
+onMounted(() => {
+  equipTypeList.value?.fetchData();
+});
 </script>
 
 <style lang="scss" scoped></style>

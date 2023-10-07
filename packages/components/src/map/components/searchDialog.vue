@@ -2,7 +2,7 @@
   <div class="search-label-box">
     <el-input
       v-model="inputParam"
-      :placeholder="'请输入' + placeholderText.slice(0, 6) + '...'"
+      :placeholder="keywordConfig?.searchPlaceholder || '请输入' + placeholderText.slice(0, 6) + '...'"
       clearable
       :title="placeholderText + '搜索'"
       @input="search"
@@ -14,7 +14,12 @@
     </el-input>
     <ul class="label-select" v-if="open && table.data.length">
       <li class="label-select-item" v-for="item in table.data" :key="item" @click="table.panToFeature(item)">
-        {{ item.name || item.code }}
+        <template v-if="item.isRealTimeData">
+          {{ item.name ? item.code + "_" + item.name : item.code }}
+        </template>
+        <template v-else>
+          {{ item.filterName || item.filterCode }}
+        </template>
       </li>
     </ul>
   </div>
@@ -35,6 +40,11 @@ const props = withDefaults(defineProps<{ map: any }>(), {
 });
 let mapInstance: VisualMap;
 const open = ref<boolean>(false);
+
+// 关键词配置
+const keywordConfig = computed(() => {
+  return gisStore?.keywordConfig;
+});
 
 const inputParam = ref("");
 const placeholderText = computed(() => (props.map?.defaultOptions?.displaySearch?.map((item: any) => item.name) || []).join(","));
@@ -60,23 +70,18 @@ const table: any = ref({
     getFilterALLData();
     if (inputParam.value) {
       // 根据标签name及code过滤数据  还有关联设备的code和name
-      searchData.value = searchData.value.filter((item: { [ket: string]: any }) => {
-        const status = [
-          item?.name?.includes(inputParam.value),
-          String(item?.code).includes(inputParam.value),
-          item?.relationEquipName?.includes(inputParam.value),
-          item?.relationEquipCode?.includes(inputParam.value)
-        ];
-        return status.some(item => item);
+      searchData.value = searchData.value.filter((item: { [key: string]: any }) => {
+        return item?.filterName?.includes(inputParam.value) || String(item?.filterCode).includes(inputParam.value);
       });
+      table.value.data = searchData.value;
     }
-    table.value.data = searchData.value;
   },
-  panToFeature: ({ code, isVisitObject = false }: any) => {
-    inputParam.value = code;
+  panToFeature: (item: any) => {
+    let { code, isRealTimeData = false } = item;
+    inputParam.value = item.filterName ? item.filterCode + "_" + item.filterName : item.filterCode;
     open.value = false;
     // 定位到标签位置
-    labelOnSelect(mapInstance, code, false, isVisitObject);
+    labelOnSelect(mapInstance, code, false, isRealTimeData);
   },
   showDetails: (row: any) => {
     emits("onEquipDetail", row);
@@ -87,7 +92,7 @@ const getFilterALLData = () => {
   let mapInstance = props.map;
   const labelInfoMap = mapInstance?.get("labelInfoMap") || {};
   const trackInfoMap = mapInstance?.get("trackInfoMap") || [];
-  const displaySearchIds = mapInstance.defaultOptions.displaySearchIds?.split(",")?.map((item: string) => Number(item));
+  const displaySearchIds = mapInstance?.defaultOptions?.displaySearchIds?.split(",")?.map((item: string) => Number(item));
   let labelInfoArr: any = Object.values(labelInfoMap) || [];
   const relationMap = gisStore?.relationMap;
   const labelAllData = [...labelInfoArr, ...trackInfoMap];
@@ -103,8 +108,11 @@ const getFilterALLData = () => {
   });
   filteredData = filteredData.map(item => {
     if (relationMap[item.code]) {
-      item.relationEquipCode = relationMap[item.code].code;
-      item.relationEquipName = relationMap[item.code].name;
+      item.filterCode = relationMap[item.code].code;
+      item.filterName = relationMap[item.code].name;
+    } else {
+      item.filterCode = item.code;
+      item.filterName = item.name;
     }
     return item;
   });

@@ -9,6 +9,7 @@
       ref="jsonTableRef"
       class="json-table"
       row-key="tempId"
+      :is-pageable="false"
       :data="state.JsonBodyData"
       :columns="jsonBodyColumns"
       default-expand-all

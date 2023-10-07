@@ -24,7 +24,7 @@ import I18n from "@/languages/index";
 // pinia store
 import pinia from "@/stores";
 // errorHandler
-import errorHandler from "@/utils/errorHandler";
+// import errorHandler from "@/utils/errorHandler";
 // Pagination
 import Pagination from "@/components/pagination/index.vue";
 // Icon
@@ -37,7 +37,7 @@ import Popover from "@/components/popover/index.vue";
 import Agmap from "@adm-gis-ui/components";
 
 const app = createApp(App);
-app.config.errorHandler = errorHandler;
+// app.config.errorHandler = errorHandler;
 
 // register the element Icons component
 Object.keys(Icons).forEach(key => {

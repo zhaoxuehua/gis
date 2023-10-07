@@ -108,12 +108,12 @@
       <!-- 实时标签样式 -->
       <div class="measuring-tools" v-show="state.activeIndex == '3'" @click.stop>
         <div class="coordinate-position-box">
-          <el-form-item label="船首线" label-width="110">
+          <el-form-item label="船首线" label-width="130">
             <el-checkbox v-model="state.shipHeadLine"></el-checkbox>
           </el-form-item>
 
-          <el-form-item label="轨迹回放隐藏船" label-width="110">
-            <el-select v-model="state.shipShowHideByTrack">
+          <el-form-item label="轨迹回放隐藏内容" label-width="130">
+            <el-select v-model="state.shipShowHideByTrack" clearable>
               <el-option
                 v-for="item in state.shipShowHideByTrackOption"
                 :key="item?.name"
@@ -123,7 +123,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="轨迹回放动画" label-width="110">
+          <el-form-item label="轨迹回放动画" label-width="130">
             <el-select v-model="state.trackSpeed">
               <el-option v-for="item in trackSpeedOption" :key="item.name" :label="item.name" :value="item.value" />
             </el-select>
@@ -174,7 +174,7 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
 const emits = defineEmits(["onClose"]);
 const state = reactive({
   activeIndex: "1",
-  measuringValue: "", //当前选择的测量单位
+  measuringValue: "length", //当前选择的测量单位
   measuringOptions: [
     // 测量下拉选项
     { value: "length", label: "长度" },
@@ -222,7 +222,7 @@ const trackSpeedOption = ref([
 
 //测量
 const measureMode = ref<Array<any>>([]); // 测量的数据数组
-const measureDrawFeature = ref<Draw>(); // 测量交互器
+const measureDrawFeature: any = ref<Draw>(); // 测量交互器
 const measureVectorLayer = ref(); // 测量图层
 const measureSource = ref(); // 测量图层数据源
 const measureOverlays = ref<Array<any>>([]); // 测量距离显示覆盖物数组
@@ -259,6 +259,8 @@ const measureAddInteraction = (value: string) => {
     style: measureStyle
   });
   props.map.addInteraction(measureDrawFeature.value);
+  // 存储测量交互器
+  props.map?.set("measureDrawInteraction", measureDrawFeature.value);
   createMeasureTooltip();
 
   // 计算线的长度以及面的面积
@@ -354,7 +356,8 @@ const onClearMeasuring = () => {
 const measureRemoveInteraction = () => {
   if (props.map && measureDrawFeature.value) {
     props.map.removeInteraction(measureDrawFeature.value);
-    measureDrawFeature.value = undefined;
+    measureDrawFeature.value = null;
+    props.map?.set("measureDrawInteraction", null);
     props.map?.removeLayer(measureVectorLayer.value);
     measureOverlays.value.forEach(item => {
       props.map && props.map?.removeOverlay(item);
@@ -467,7 +470,7 @@ if (shipTagsData) {
   display: flex;
   flex-direction: column;
   width: 430px;
-  height: 320px;
+  min-height: 320px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 }
@@ -476,7 +479,7 @@ if (shipTagsData) {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 60px;
+  min-height: 60px;
   padding: 0 20px;
   background-color: #f7f7fa;
   span {
