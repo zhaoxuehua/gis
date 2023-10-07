@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.67
+
+### Patch Changes
+
+- 删除无用样式及样式变量命名变更
+
 ## 1.0.66
 
 ### Patch Changes

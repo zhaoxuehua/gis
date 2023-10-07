@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.69
+
+### Patch Changes
+
+- 删除无用样式及样式变量命名变更
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.67
+
 ## 1.0.68
 
 ### Patch Changes
