@@ -55,7 +55,7 @@
 <script lang="ts" setup>
 import {
   onMounted,
-  onBeforeUnmount,
+  // onBeforeUnmount,
   ref,
   defineAsyncComponent,
   reactive,
@@ -63,7 +63,8 @@ import {
   shallowRef,
   useSlots,
   watch,
-  unref
+  unref,
+  onDeactivated
 } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
@@ -843,7 +844,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
-          // 获取船的数据
+          // 获取实时数据（判断点击的是实时数据还是绘制数据）
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           map.popupInfo({ featureCode, featureName, center });
@@ -967,7 +968,7 @@ onMounted(() => {
   initMap(mapParams, !!props?.config?.id);
 });
 
-onBeforeUnmount(() => {
+onDeactivated(() => {
   clearAllTimers();
 });
 
@@ -1055,10 +1056,19 @@ watch(
 
 /***********************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***************************************************************/
 const outsideTableRowDataSelect = (node: any) => {
-  const { equip } = node; // 设备code
-  let featureCode = gisStore?.relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code进行定位选中功能
+  const { equip } = node; // 设备code或实时数据code
+  let featureCode: any;
+  // 判断是否实时数据
+  const trackInfoMap = exportMap.value?.get("trackInfoMap") || [];
+  const currentTrack = trackInfoMap?.filter((item: any) => item.code == equip)?.[0];
+  let isRealTimeData = !!currentTrack?.isRealTimeData;
+  if (isRealTimeData) {
+    featureCode = equip; // 实时数据设备code同标签code
+  } else {
+    featureCode = gisStore?.relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code进行定位选中功能
+  }
   if (featureCode) {
-    labelOnSelect(exportMap.value, featureCode, false); // 默认都不是实时数据的选中
+    labelOnSelect(exportMap.value, featureCode, false, isRealTimeData);
   }
 };
 watch(
