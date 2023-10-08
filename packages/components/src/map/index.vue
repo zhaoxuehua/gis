@@ -108,9 +108,10 @@ defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
 const gisStore = useGisStore();
-const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any }>(), {
+const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any; outsideTableRowData: any }>(), {
   config: () => {},
-  outsideTreeNode: () => null
+  outsideTreeNode: () => null,
+  outsideTableRowData: () => null
 });
 
 const emits = defineEmits([
@@ -1031,6 +1032,7 @@ const outsideTreeNodeSelect = (node: any) => {
   const { tupleList = [], model } = node;
   const equipId = Number(tupleList?.[0]);
   if (model.toLocaleLowerCase() === "eam_eqp_equip") {
+    // 根据设备id匹配标签code
     const res = find(gisStore?.relationMap, (item: any) => {
       return item.id === equipId;
     });
@@ -1044,6 +1046,26 @@ watch(
   node => {
     if (node) {
       outsideTreeNodeSelect(node);
+    }
+  },
+  {
+    deep: true
+  }
+);
+
+/***********************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***************************************************************/
+const outsideTableRowDataSelect = (node: any) => {
+  const { equip } = node; // 设备code
+  let featureCode = gisStore?.relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code进行定位选中功能
+  if (featureCode) {
+    labelOnSelect(exportMap.value, featureCode, false); // 默认都不是实时数据的选中
+  }
+};
+watch(
+  () => props.outsideTableRowData,
+  node => {
+    if (node) {
+      outsideTableRowDataSelect(node);
     }
   },
   {

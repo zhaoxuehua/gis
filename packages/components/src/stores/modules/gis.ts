@@ -9,7 +9,8 @@ export const useGisStore = defineStore({
   id: "gis",
   state: (): any => ({
     navigationTree: [], // 导航树
-    relationMap: {}, // 关联关系
+    relationMap: {}, // 关联关系{标签code:{设备对象数据}}
+    relationMapKeyIsEquipCode: {}, // 关联关系{设备code:标签code}
     mapIdentificationConfig: { mapParams: "", isId: false }, // 应用场景id/code及是否是id
     isDynamicLine: false, // 线环闪烁维护字段
     imgIndex: 0, // 动画点图片索引
@@ -31,7 +32,8 @@ export const useGisStore = defineStore({
             const navigationTree = cloneDeep(formatTree(treeNodeVOList));
             this.navigationTree = navigationTree;
             const relationMap = collectRelation(treeNodeVOList);
-            this.relationMap = relationMap;
+            this.relationMap = relationMap?.mapKeyIsFeatureCode || {};
+            this.relationMapKeyIsEquipCode = relationMap?.mapKeyIsEquipCode || {};
           } else {
             ElMessage.error("接口异常");
           }
@@ -103,7 +105,10 @@ const formatTree = (tree: any[]) => {
 const collectRelation = (nodes: any[]) => {
   // 递归
   const collectBindRelation = (function () {
-    const result: { [key: string]: any } = {};
+    const result: { mapKeyIsFeatureCode: { [key: string]: any }; mapKeyIsEquipCode: { [key: string]: any } } = {
+      mapKeyIsFeatureCode: {},
+      mapKeyIsEquipCode: {}
+    };
     return function collect(tree: any[], equipType: { equipType: number; equipTypeName: string } | null) {
       if (Array.isArray(tree) && tree.length > 0) {
         tree.forEach(function (element) {
@@ -121,7 +126,8 @@ const collectRelation = (nodes: any[]) => {
 
           // 如果是设备并且已绘制标签
           if (equipNodeFlag && associationInfo) {
-            result[associationInfo.associationObjectCode] = {
+            // 标签code映射设备信息对象
+            result["mapKeyIsFeatureCode"][associationInfo.associationObjectCode] = {
               id,
               name,
               code,
@@ -130,6 +136,8 @@ const collectRelation = (nodes: any[]) => {
               model: nodeRelatedModel,
               ...equipType
             };
+            // 设备code映射标签code
+            result["mapKeyIsEquipCode"][code] = associationInfo.associationObjectCode;
           }
 
           if (Array.isArray(children) && children.length > 0) {
