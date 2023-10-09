@@ -109,7 +109,7 @@ defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
 const gisStore = useGisStore();
-const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any; outsideTableRowData: any }>(), {
+const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any; outsideTableRowData?: any }>(), {
   config: () => {},
   outsideTreeNode: () => null,
   outsideTableRowData: () => null
@@ -1030,12 +1030,11 @@ defineExpose({
 
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
 const outsideTreeNodeSelect = (node: any) => {
-  const { tupleList = [], model } = node;
-  const equipId = Number(tupleList?.[0]);
+  const { tuple, model } = node;
   if (model.toLocaleLowerCase() === "eam_eqp_equip") {
     // 根据设备id匹配标签code
     const res = find(gisStore?.relationMap, (item: any) => {
-      return item.id === equipId;
+      return item.id == tuple; // 设备id
     });
     if (res && res.associationInfo && exportMap.value) {
       labelOnSelect(exportMap.value, res.associationInfo.associationObjectCode, false);
