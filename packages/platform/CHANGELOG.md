@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.70
+
+### Patch Changes
+
+- 增加事件表格双击定位的功能及修改优化 bug
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.68
+
 ## 1.0.69
 
 ### Patch Changes

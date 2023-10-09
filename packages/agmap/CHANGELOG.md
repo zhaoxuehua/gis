@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.68
+
+### Patch Changes
+
+- 增加事件表格双击定位的功能及修改优化 bug
+
 ## 1.0.67
 
 ### Patch Changes
