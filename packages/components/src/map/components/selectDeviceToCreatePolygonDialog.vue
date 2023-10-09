@@ -198,4 +198,11 @@ onMounted(() => {
     justify-content: flex-end;
   }
 }
+:deep(.el-pagination) {
+  padding: 0;
+  .el-pagination__sizes {
+    margin-right: 0 !important;
+    margin-left: 16px !important;
+  }
+}
 </style>
