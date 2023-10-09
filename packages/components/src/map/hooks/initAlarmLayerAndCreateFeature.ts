@@ -18,7 +18,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
     }
   }
 
-  const relationMap = gisStore?.relationMap;
+  const relationMapKeyIsEquipCode = gisStore?.relationMapKeyIsEquipCode; // 设备code与标签code关联map
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let alarmFeatures: any = []; // 报警图层要素
   data?.forEach((item: { [key: string]: any }) => {
@@ -36,7 +36,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
       alarmFeatures.push(alarmPointFeature);
     } else {
       // 点、文本 线、面、圆、矩形、环(匹配基础引擎标签）
-      const matchedKey = Object.keys(relationMap).find(key => equip === relationMap[key]?.code);
+      const matchedKey = relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code
       if (matchedKey) {
         const labelInfo = labelInfoMap[matchedKey];
         if (labelInfo) {

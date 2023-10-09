@@ -24,6 +24,11 @@ const onOpenRightMenu = async (option: { [key: string]: any }) => {
     console.log(equipId, `右键选中的设备id${equipId}`);
   }
 };
+// mock事件表格数据
+// const outsideTableRowData: any = ref(null);
+// setTimeout(() => {
+//   outsideTableRowData.value = { equip: "413843476" };
+// }, 7000);
 
 onMounted(() => {
   config.id = route.query?.id as string | number | null;
@@ -34,6 +39,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   padding: 20px;
-  background: var(--background-color);
+  background: #ffffff;
 }
 </style>

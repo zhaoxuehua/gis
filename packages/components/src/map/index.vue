@@ -55,7 +55,7 @@
 <script lang="ts" setup>
 import {
   onMounted,
-  onBeforeUnmount,
+  // onBeforeUnmount,
   ref,
   defineAsyncComponent,
   reactive,
@@ -63,7 +63,8 @@ import {
   shallowRef,
   useSlots,
   watch,
-  unref
+  unref,
+  onDeactivated
 } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
@@ -108,9 +109,10 @@ defineOptions({ name: "AgMap" });
 
 const customContent = useSlots()?.customContent;
 const gisStore = useGisStore();
-const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any }>(), {
+const props = withDefaults(defineProps<{ config: any; outsideTreeNode?: any; outsideTableRowData?: any }>(), {
   config: () => {},
-  outsideTreeNode: () => null
+  outsideTreeNode: () => null,
+  outsideTableRowData: () => null
 });
 
 const emits = defineEmits([
@@ -842,7 +844,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
-          // 获取船的数据
+          // 获取实时数据（判断点击的是实时数据还是绘制数据）
           const trackInfoMap = map.get("trackInfoMap") || [];
           const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
           map.popupInfo({ featureCode, featureName, center });
@@ -966,7 +968,7 @@ onMounted(() => {
   initMap(mapParams, !!props?.config?.id);
 });
 
-onBeforeUnmount(() => {
+onDeactivated(() => {
   clearAllTimers();
 });
 
@@ -1028,11 +1030,11 @@ defineExpose({
 
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
 const outsideTreeNodeSelect = (node: any) => {
-  const { tupleList = [], model } = node;
-  const equipId = Number(tupleList?.[0]);
+  const { tuple, model } = node;
   if (model.toLocaleLowerCase() === "eam_eqp_equip") {
+    // 根据设备id匹配标签code
     const res = find(gisStore?.relationMap, (item: any) => {
-      return item.id === equipId;
+      return item.id == tuple; // 设备id
     });
     if (res && res.associationInfo && exportMap.value) {
       labelOnSelect(exportMap.value, res.associationInfo.associationObjectCode, false);
@@ -1044,6 +1046,35 @@ watch(
   node => {
     if (node) {
       outsideTreeNodeSelect(node);
+    }
+  },
+  {
+    deep: true
+  }
+);
+
+/***********************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***************************************************************/
+const outsideTableRowDataSelect = (node: any) => {
+  const { equip } = node; // 设备code或实时数据code
+  let featureCode: any;
+  // 判断是否实时数据
+  const trackInfoMap = exportMap.value?.get("trackInfoMap") || [];
+  const currentTrack = trackInfoMap?.filter((item: any) => item.code == equip)?.[0];
+  let isRealTimeData = !!currentTrack?.isRealTimeData;
+  if (isRealTimeData) {
+    featureCode = equip; // 实时数据设备code同标签code
+  } else {
+    featureCode = gisStore?.relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code进行定位选中功能
+  }
+  if (featureCode) {
+    labelOnSelect(exportMap.value, featureCode, false, isRealTimeData);
+  }
+};
+watch(
+  () => props.outsideTableRowData,
+  node => {
+    if (node) {
+      outsideTableRowDataSelect(node);
     }
   },
   {

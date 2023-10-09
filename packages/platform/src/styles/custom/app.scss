@@ -36,7 +36,7 @@ body,
     height: initial;
     overflow-x: hidden !important;
     /* stylelint-disable-next-line custom-property-pattern */
-    background: var(--bg-menuBar);
+    background: #f7f8fa;
     box-shadow: 2px 0 6px rgb(0 21 41 / 1%);
     .el-scrollbar__view {
       overflow: hidden;
@@ -118,7 +118,7 @@ body,
 #nprogress {
   .bar {
     z-index: 9999999 !important;
-    background: var(--color-primary) !important;
+    background: var(--el-color-primary) !important;
   }
 }
 
@@ -176,19 +176,19 @@ body,
 /* 颜色值
 ------------------------------- */
 .color-primary {
-  color: var(--color-primary);
+  color: var(--el-color-primary);
 }
 .color-success {
-  color: var(--color-success);
+  color: var(--el-color-success);
 }
 .color-warning {
-  color: var(--color-warning);
+  color: var(--el-color-warning);
 }
 .color-danger {
-  color: var(--color-danger);
+  color: var(--el-color-danger);
 }
 .color-info {
-  color: var(--color-info);
+  color: var(--el-color-info);
 }
 
 /* 字体大小全局样式

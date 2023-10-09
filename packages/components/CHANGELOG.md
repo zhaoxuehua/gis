@@ -1,5 +1,17 @@
 # @adm-gis-ui/components
 
+## 1.0.68
+
+### Patch Changes
+
+- 增加事件表格双击定位的功能及修改优化 bug
+
+## 1.0.67
+
+### Patch Changes
+
+- 删除无用样式及样式变量命名变更
+
 ## 1.0.66
 
 ### Patch Changes
