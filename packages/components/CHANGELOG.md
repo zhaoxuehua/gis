@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.69
+
+### Patch Changes
+
+- 测试告警列表的样式
+
 ## 1.0.68
 
 ### Patch Changes
