@@ -1,5 +1,17 @@
 # @adm-gis-ui/agmap
 
+## 1.0.70
+
+### Patch Changes
+
+- 修复监控中引入 gis 弹框中的翻页样式问题
+
+## 1.0.69
+
+### Patch Changes
+
+- 测试告警列表的样式
+
 ## 1.0.68
 
 ### Patch Changes

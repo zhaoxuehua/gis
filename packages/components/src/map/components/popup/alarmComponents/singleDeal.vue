@@ -206,8 +206,15 @@ defineExpose({
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .single-deal-footer {
   margin: 2px 0 20px;
+}
+:deep(.el-pagination) {
+  padding: 0;
+  .el-pagination__sizes {
+    margin-right: 0 !important;
+    margin-left: 16px !important;
+  }
 }
 </style>

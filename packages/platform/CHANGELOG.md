@@ -1,5 +1,21 @@
 # adm-gis-platform
 
+## 1.0.72
+
+### Patch Changes
+
+- 修复监控中引入 gis 弹框中的翻页样式问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.70
+
+## 1.0.71
+
+### Patch Changes
+
+- 测试告警列表的样式
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.69
+
 ## 1.0.70
 
 ### Patch Changes

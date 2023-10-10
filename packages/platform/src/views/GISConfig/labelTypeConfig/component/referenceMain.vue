@@ -3,7 +3,7 @@
     <el-dialog
       :title="'关联对象'"
       v-model="open"
-      width="900px"
+      width="1140px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
@@ -202,10 +202,19 @@ defineExpose({
     text-align: center;
     cursor: pointer;
     background-color: #f0f5f5;
+
+    /* 鼠标悬停时的样式 */
+    &:hover {
+      font-weight: bold;
+      color: var(--el-menu-hover-color) !important;
+      background-color: var(--el-menu-hover-bg-color) !important;
+    }
+
+    /* 鼠标激活时的样式 */
     &.active {
       font-weight: bold;
-      color: var(--el-color-primary);
-      background-color: var(--el-color-primary-light-1);
+      color: var(--el-menu-active-color) !important;
+      background-color: var(--el-menu-active-bg-color) !important;
     }
   }
 }
