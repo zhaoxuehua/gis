@@ -207,7 +207,6 @@ defineExpose({
     &:hover {
       font-weight: bold;
       color: var(--el-menu-hover-color) !important;
-      background-color: var(--el-menu-hover-bg-color) !important;
     }
 
     /* 鼠标激活时的样式 */

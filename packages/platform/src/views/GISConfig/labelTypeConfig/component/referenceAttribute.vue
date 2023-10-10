@@ -210,7 +210,7 @@ defineExpose({
       &:hover {
         font-weight: bold;
         color: var(--el-menu-hover-color) !important;
-        background-color: var(--el-menu-hover-bg-color) !important;
+        background-color: var(--el-color-primary-light-9) !important;
       }
       &.active {
         color: var(--el-menu-active-color) !important;
