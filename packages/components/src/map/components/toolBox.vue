@@ -359,6 +359,7 @@ const measureRemoveInteraction = () => {
     measureOverlays.value.forEach(item => {
       props.map && props.map?.removeOverlay(item);
     });
+    measureOverlays.value = [];
   }
 };
 
