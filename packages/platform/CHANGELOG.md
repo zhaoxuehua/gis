@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.73
+
+### Patch Changes
+
+- 修复鼠标经过时没有 name 的没有 header 条的问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.71
+
 ## 1.0.72
 
 ### Patch Changes
