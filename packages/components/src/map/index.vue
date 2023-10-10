@@ -741,6 +741,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           }
 
           let { extendsData, type, name } = targetFeature.getProperties();
+          popupTitDOMRef.value.style.height = "40px";
           if (type == "trackPoint" || type == "trackShip") {
             const { detailInfo, titleInfo } = unref(extendsData);
             let infoStr = "";
@@ -748,13 +749,13 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             infoData.forEach(val => {
               infoStr += `<p>${val[0]}: ${val[1]}</p>`;
             });
-            popupTitDOMRef.value.innerHTML = titleInfo.name;
+            popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
             popupContentDOMRef.value.innerHTML = infoStr;
             hoverInfoLayer.setPosition(pos);
           } else if (extendsData?.type == "realTimeTag") {
             // 实时标签
             const { code, sog, monitorTime, person } = unref(extendsData);
-            popupTitDOMRef.value.innerHTML = name; // 标题
+            popupTitDOMRef.value.innerHTML = name || ""; // 标题
             // 根据关键词配置拼接code person monitorTime sog
             let contentStr = "";
             let keywordConfig = gisStore?.keywordConfig;

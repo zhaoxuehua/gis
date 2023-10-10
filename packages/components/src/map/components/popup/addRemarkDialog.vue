@@ -75,7 +75,7 @@ const openDialog = async (row?: { [key: string]: any }) => {
         state.open = true;
       } else {
         ElMessage({
-          type: "error",
+          type: "warning",
           message: "未查询到数据"
         });
       }
