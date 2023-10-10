@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.72
+
+### Patch Changes
+
+- 优化测量卡顿问题
+
 ## 1.0.71
 
 ### Patch Changes

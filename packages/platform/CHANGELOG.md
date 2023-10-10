@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.74
+
+### Patch Changes
+
+- 优化测量卡顿问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.72
+
 ## 1.0.73
 
 ### Patch Changes
