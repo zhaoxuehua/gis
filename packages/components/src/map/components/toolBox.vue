@@ -22,7 +22,7 @@
           <el-select v-model="state.measuringValue" placeholder="请选择..." clearable>
             <el-option v-for="item in state.measuringOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-button type="primary" @click="onClearMeasuring" v-if="measureMode?.length">清除</el-button>
+          <el-button type="primary" @click="onClearMeasuring" v-if="isMeasure">清除</el-button>
           <el-button type="primary" @click="onMeasuring" v-else>测量</el-button>
         </div>
       </div>
@@ -223,20 +223,20 @@ const trackSpeedOption = ref([
 ]);
 
 //测量
-const measureMode = ref<Array<any>>([]); // 测量的数据数组
-const measureDrawFeature: any = ref<Draw>(); // 测量交互器
+let isMeasure = ref(false);
 const measureVectorLayer = ref(); // 测量图层
 const measureSource = ref(); // 测量图层数据源
 const measureOverlays = ref<Array<any>>([]); // 测量距离显示覆盖物数组
 // 点击测量按钮
 const onMeasuring = () => {
+  isMeasure.value = !isMeasure.value;
   if (state.measuringValue) {
     onMeasuringFun(state.measuringValue);
   }
 };
 // 进入测量模式
 const onMeasuringFun = (value: string) => {
-  if (measureDrawFeature.value) {
+  if (props.map?.get("measureDrawInteraction")) {
     // 测量交互器
     measureRemoveInteraction();
     return;
@@ -255,14 +255,14 @@ const measureAddInteraction = (value: string) => {
   if (!props.map) return;
   let measureTooltipElement: any;
   let measureTooltip: any;
-  measureDrawFeature.value = new Draw({
+  let measureDrawInteraction = new Draw({
     source: measureSource.value, // 绘制图层的数据源
     type: value == "area" ? "Polygon" : "LineString", // 绘制类型
     style: measureStyle
   });
-  props.map.addInteraction(measureDrawFeature.value);
+  props.map.addInteraction(measureDrawInteraction);
   // 存储测量交互器
-  props.map?.set("measureDrawInteraction", measureDrawFeature.value);
+  props.map?.set("measureDrawInteraction", measureDrawInteraction);
   createMeasureTooltip();
 
   // 计算线的长度以及面的面积
@@ -318,7 +318,7 @@ const measureAddInteraction = (value: string) => {
 
   let sketch;
   let listener: any;
-  measureDrawFeature.value.on("drawstart", (evt: any) => {
+  measureDrawInteraction.on("drawstart", (evt: any) => {
     sketch = evt.feature;
     let tooltipCoord = evt.coordinate;
 
@@ -337,11 +337,7 @@ const measureAddInteraction = (value: string) => {
     });
   });
 
-  measureDrawFeature.value.on("drawend", function () {
-    measureMode.value.push({
-      type: "类型：" + (value == "area" ? "面" : "线"),
-      value: (value == "area" ? "面积：" : "长度：") + measureTooltipElement.innerHTML
-    });
+  measureDrawInteraction.on("drawend", function () {
     measureTooltip.setOffset([0, -7]);
     sketch = null;
     measureTooltipElement = null;
@@ -352,18 +348,18 @@ const measureAddInteraction = (value: string) => {
 // 点击清楚按钮
 const onClearMeasuring = () => {
   measureRemoveInteraction();
-  measureMode.value = [];
+  isMeasure.value = !isMeasure.value;
 };
 // 清除已绘制的图形
 const measureRemoveInteraction = () => {
-  if (props.map && measureDrawFeature.value) {
-    props.map.removeInteraction(measureDrawFeature.value);
-    measureDrawFeature.value = null;
+  if (props.map && props.map?.get("measureDrawInteraction")) {
+    props.map.removeInteraction(props.map?.get("measureDrawInteraction"));
     props.map?.set("measureDrawInteraction", null);
     props.map?.removeLayer(measureVectorLayer.value);
     measureOverlays.value.forEach(item => {
       props.map && props.map?.removeOverlay(item);
     });
+    measureOverlays.value = [];
   }
 };
 

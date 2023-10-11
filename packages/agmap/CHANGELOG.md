@@ -1,5 +1,17 @@
 # @adm-gis-ui/agmap
 
+## 1.0.72
+
+### Patch Changes
+
+- 优化测量卡顿问题
+
+## 1.0.71
+
+### Patch Changes
+
+- 修复鼠标经过时没有 name 的没有 header 条的问题
+
 ## 1.0.70
 
 ### Patch Changes
