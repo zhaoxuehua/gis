@@ -9,7 +9,7 @@ import { unByKey } from "ol/Observable";
 import { shallowRef } from "vue";
 
 // 计算长度
-let formatLength = function (line: LineString, unit: string) {
+export function formatLength(line: LineString, unit: string) {
   let length = getLength(line); // 获取线的长度（每个部分长度和），默认米meters
   let output;
   if (length > 1000) {
@@ -20,10 +20,10 @@ let formatLength = function (line: LineString, unit: string) {
     output = unit == "metric" ? `${outputMetric.toFixed(2)}米` : `${(outputMetric / 1000 / 1.852).toFixed(2)}海里`; // 1海里=1.852千米;
   }
   return output;
-};
+}
 
 // 计算面积的函数
-let formatArea = function (polygon: Polygon, unit: string) {
+export function formatArea(polygon: Polygon, unit: string) {
   let area = getArea(polygon); // 面积（以米为单位）
   let output;
 
@@ -35,7 +35,7 @@ let formatArea = function (polygon: Polygon, unit: string) {
     output = unit == "metric" ? `${outputMetric.toFixed(2)}平方米` : `${(outputMetric / 1000000 / 3.429904).toFixed(2)}平方海里`; // 1海里=1.852千米;
   }
   return output;
-};
+}
 
 //  面积||长度弹框
 let measureTooltipElement: HTMLElement; // overLayer的Dom
