@@ -230,7 +230,7 @@ export function removeRelation(label: LabelInfoData) {
   const node = find(relationMap, (item: any) => {
     return item.associationInfo && item.associationInfo.associationObjectCode === label.code;
   });
-  if (!node || !node.associationInfo) return;
+  if (!node || !node.associationInfo) return ElMessage.success("删除标签成功"); // 纯标签的删除提示
   deleteAssociation([node.associationInfo.id]).then(
     (res: any) => {
       if (res.code === 200) {

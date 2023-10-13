@@ -150,11 +150,11 @@ import { Draw } from "ol/interaction";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { LineString, Polygon, Point } from "ol/geom";
-import { getArea, getLength } from "ol/sphere";
 import Overlay from "ol/Overlay";
 import { unByKey } from "ol/Observable";
 import { Style, Icon as IconStyle } from "ol/style";
 import { measureStyle } from "../hooks/styleFunction";
+import { formatLength, formatArea } from "../hooks/createMeasure";
 import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
@@ -174,6 +174,11 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
   index: () => 0
 });
 const emits = defineEmits(["onClose"]);
+// 关闭地图类型
+const onClose = () => {
+  emits("onClose", props.index);
+};
+
 const state = reactive({
   activeIndex: "1",
   measuringValue: "length", //当前选择的测量单位
@@ -222,6 +227,7 @@ const trackSpeedOption = ref([
   }
 ]);
 
+/*******************************************测距********************************************/
 //测量
 let isMeasure = ref(false);
 const measureVectorLayer = ref(); // 测量图层
@@ -265,37 +271,9 @@ const measureAddInteraction = (value: string) => {
   props.map?.set("measureDrawInteraction", measureDrawInteraction);
   createMeasureTooltip();
 
-  // 计算线的长度以及面的面积
-  // 计算长度的函数
+  // 计算单位
   let defaultOptions = props.map?.defaultOptions;
   let unit = defaultOptions?.scaleLineUnit; // "metric"米千米或者海里
-  let formatLength = function (line: LineString) {
-    let length = getLength(line); // 获取线的长度（每个部分长度和），默认米meters
-    let output;
-    if (length > 1000) {
-      let outputKilometer: number = Math.round((length / 1000) * 1000) / 1000; // 千米 四舍五入
-      output = unit == "metric" ? `${outputKilometer.toFixed(2)}千米` : `${(outputKilometer / 1.852).toFixed(2)}海里`; // 1海里=1.852千米;
-    } else {
-      let outputMetric: number = Math.round(length * 1000) / 1000; // 米
-      output = unit == "metric" ? `${outputMetric.toFixed(2)}米` : `${(outputMetric / 1000 / 1.852).toFixed(2)}海里`; // 1海里=1.852千米;
-    }
-    return output;
-  };
-  // 计算面积的函数
-  let formatArea = function (polygon: Polygon) {
-    let area = getArea(polygon); // 面积（以米为单位）
-    let output;
-
-    if (area > 10000) {
-      let outputKilometer: number = Math.round((area / 1000000) * 100) / 100; // 平方千米
-      output = unit == "metric" ? `${outputKilometer.toFixed(2)}平方千米` : `${(outputKilometer / 3.429904).toFixed(2)}平方海里`; // 1海里=1.852千米;
-    } else {
-      let outputMetric: number = Math.round(area * 100) / 100; // 平方米
-      output =
-        unit == "metric" ? `${outputMetric.toFixed(2)}平方米` : `${(outputMetric / 1000000 / 3.429904).toFixed(2)}平方海里`; // 1海里=1.852千米;
-    }
-    return output;
-  };
 
   // 创建展示面积或者长度的弹框
   function createMeasureTooltip() {
@@ -326,10 +304,10 @@ const measureAddInteraction = (value: string) => {
       let geom = evt.target;
       let output;
       if (geom instanceof Polygon) {
-        output = formatArea(geom);
+        output = formatArea(geom, unit);
         tooltipCoord = geom.getInteriorPoint().getCoordinates();
       } else if (geom instanceof LineString) {
-        output = formatLength(geom);
+        output = formatLength(geom, unit);
         tooltipCoord = geom.getLastCoordinate();
       }
       measureTooltipElement.innerHTML = output;
@@ -362,13 +340,10 @@ const measureRemoveInteraction = () => {
     measureOverlays.value = [];
   }
 };
+/*******************************************测距结束********************************************/
 
-// 关闭地图类型
-const onClose = () => {
-  emits("onClose", props.index);
-};
-
-// 切换时清空度分秒绑定值
+/*******************************************坐标定位********************************************/
+// 切换定位tab时清空度分秒绑定值
 const handleTabClick = () => {
   state.lonDegree = ""; // 经度-度
   state.lonMin = ""; // 经度-分
@@ -425,10 +400,12 @@ const mapCenterByPic = (lon: any, lat: any) => {
     positionPointLayer?.getSource()?.addFeature(pointFeature);
     setTimeout(() => {
       positionPointLayer?.getSource()?.removeFeature(pointFeature);
-    }, 2000);
+    }, 3000);
   }
 };
+/*******************************************坐标定位结束********************************************/
 
+/*******************************************回到地图中心点******************************************/
 const toMapCenter = () => {
   // 中心点
   if (!props?.map) {

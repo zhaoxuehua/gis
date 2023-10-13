@@ -15,7 +15,7 @@
           <span v-if="!equipInfo.isRealTimeData">监测状态：{{ state.statusName }}</span>
           <span>编码：{{ state.equipCode || "" }}</span>
         </div>
-        <div v-if="state.isRelationBody && state.hasConfigAttr">
+        <div v-if="state.isRelationBody && state.hasConfigAttr" class="relation-content">
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>

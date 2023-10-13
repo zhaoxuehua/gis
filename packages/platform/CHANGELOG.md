@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.75
+
+### Patch Changes
+
+- 左键弹框样式修改
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.73
+
 ## 1.0.74
 
 ### Patch Changes
