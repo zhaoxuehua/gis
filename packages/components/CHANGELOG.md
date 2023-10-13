@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.75
+
+### Patch Changes
+
+- 增加统计目标总数及更改实时数据存储问题
+
 ## 1.0.74
 
 ### Patch Changes
