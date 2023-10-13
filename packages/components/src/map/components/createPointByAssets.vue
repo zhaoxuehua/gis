@@ -85,7 +85,7 @@ import { onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { cloneDeep } from "lodash";
 import { handleParam } from "@/utils/common.js";
-import { deviceEquipList } from "../../api/device";
+import { getAssetDeviceEquipList } from "../../api/device";
 import { getLabelInfoByEquipId, addLabelBatch, deleteLabelBatch } from "../../api/gis.js";
 import Icon from "./Icon.vue";
 import type { TableList } from "../type";
@@ -126,7 +126,7 @@ const table = ref<TableList & { chooseList: any[] }>({
   getTableData: async () => {
     table.value.loading = true;
     const [queryString, params] = handleParam(query.value.params);
-    const res: { [key: string]: any } = await deviceEquipList(queryString, params);
+    const res: { [key: string]: any } = await getAssetDeviceEquipList(queryString, params);
 
     if (res && res.items) {
       const equipList = cloneDeep(res.items); // 当前页的数据
@@ -199,30 +199,39 @@ const onDelete = () => {
 // 批量绘制点
 const drawHandler = () => {
   // 生成接口所需的数据结构
-  const result = table.value.chooseList.map((item, index) => {
-    const { id, name, gisLabelConfig } = item;
-    const lonLat = item.gisCoord.split(",");
-    if (name) {
-      gisLabelConfig.name = name;
-    }
-    const labelData = createLabelData(gisLabelConfig, lonLat);
-    let type = gisLabelConfig.dataType;
-    if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
-      type = MAP_DATA_TYPE[type]?.value;
-    }
-    const labelCode = "GIS" + type + +new Date() + "_" + index;
+  const result = table.value.chooseList
+    // 过滤选择列表中未绘制的(无gisLabelInfo)
+    .filter(item => {
+      return !item.gisLabelInfo && item.gisLabelConfig;
+    })
+    .map((item, index) => {
+      const { id, name, gisLabelConfig } = item;
+      const lonLat = item.gisCoord.split(",");
+      if (name) {
+        gisLabelConfig.name = name;
+      }
+      const labelData = createLabelData(gisLabelConfig, lonLat);
+      let type = gisLabelConfig.dataType;
+      if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+        type = MAP_DATA_TYPE[type]?.value;
+      }
+      const labelCode = "GIS" + type + +new Date() + "_" + index;
 
-    return {
-      assetId: String(id),
-      assetModel: "EAM_EQP_EQUIP",
-      code: labelCode,
-      name: name, // 标签名称
-      associationType: 5,
-      layer: gisLabelConfig.layerConfigId,
-      type: gisLabelConfig.id,
-      labelData: JSON.stringify(labelData) // 标签数据
-    };
-  });
+      return {
+        assetId: String(id),
+        assetModel: "EAM_EQP_EQUIP",
+        code: labelCode,
+        name: name, // 标签名称
+        associationType: 5,
+        layer: gisLabelConfig.layerConfigId,
+        type: gisLabelConfig.id,
+        labelData: JSON.stringify(labelData) // 标签数据
+      };
+    });
+  if (result?.length === 0) {
+    ElMessage.warning("选择的设备均已绘制或未找到对应的标签配置");
+    return;
+  }
 
   addLabelBatch(result).then(
     () => {
