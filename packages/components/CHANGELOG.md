@@ -1,5 +1,47 @@
 # @adm-gis-ui/components
 
+## 1.0.73
+
+### Patch Changes
+
+- 左键弹框样式修改
+
+## 1.0.72
+
+### Patch Changes
+
+- 优化测量卡顿问题
+
+## 1.0.71
+
+### Patch Changes
+
+- 修复鼠标经过时没有 name 的没有 header 条的问题
+
+## 1.0.70
+
+### Patch Changes
+
+- 修复监控中引入 gis 弹框中的翻页样式问题
+
+## 1.0.69
+
+### Patch Changes
+
+- 测试告警列表的样式
+
+## 1.0.68
+
+### Patch Changes
+
+- 增加事件表格双击定位的功能及修改优化 bug
+
+## 1.0.67
+
+### Patch Changes
+
+- 删除无用样式及样式变量命名变更
+
 ## 1.0.66
 
 ### Patch Changes

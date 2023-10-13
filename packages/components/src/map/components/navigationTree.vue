@@ -196,7 +196,7 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
       },
       (err: any) => {
         console.warn(err);
-        ElMessage.success("新增标签失败");
+        ElMessage.error("新增标签失败");
       }
     );
   });

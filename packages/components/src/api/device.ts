@@ -28,6 +28,11 @@ export function deviceEquipList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
 }
 
+// 快速创建（按资产创建获取设备列表）
+export function getAssetDeviceEquipList(queryString: string, params: object) {
+  return request.post(`/api/gis-service/equip/2DGis/listEquipFilterEmptyGisCoord${queryString}`, params);
+}
+
 export function eventListByObjType(id: number | string) {
   return request.get(`/api/equipment-service/equip/visitObject/events/${id}`);
 }

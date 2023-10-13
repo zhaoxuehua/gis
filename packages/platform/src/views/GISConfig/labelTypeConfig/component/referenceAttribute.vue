@@ -30,7 +30,7 @@
           <el-table-column label="序号" type="index" width="60"></el-table-column>
           <el-table-column label="属性编码" prop="name"></el-table-column>
           <el-table-column label="属性名称" prop="label"></el-table-column>
-          <el-table-column label="属性值" width="210">
+          <el-table-column label="属性值" width="225">
             <template #default="scope">
               <el-input
                 v-model="scope.row.bindValue"
@@ -205,9 +205,16 @@ defineExpose({
       line-height: 40px;
       text-align: center;
       cursor: pointer;
+
+      /* 鼠标悬停时的样式 */
+      &:hover {
+        font-weight: bold;
+        color: var(--el-menu-hover-color) !important;
+        background-color: var(--el-color-primary-light-9) !important;
+      }
       &.active {
-        color: var(--el-color-primary);
-        background-color: var(--el-color-primary-light-1);
+        color: var(--el-menu-active-color) !important;
+        background-color: var(--el-menu-active-bg-color) !important;
       }
     }
   }

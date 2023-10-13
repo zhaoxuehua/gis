@@ -228,4 +228,11 @@ defineExpose({
 .monitor-todo-list-table .deal-icon {
   margin-right: 20px;
 }
+:deep(.el-pagination) {
+  padding: 0;
+  .el-pagination__sizes {
+    margin-right: 0 !important;
+    margin-left: 16px !important;
+  }
+}
 </style>

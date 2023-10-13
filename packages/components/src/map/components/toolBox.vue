@@ -22,7 +22,7 @@
           <el-select v-model="state.measuringValue" placeholder="请选择..." clearable>
             <el-option v-for="item in state.measuringOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-button type="primary" @click="onClearMeasuring" v-if="measureMode?.length">清除</el-button>
+          <el-button type="primary" @click="onClearMeasuring" v-if="isMeasure">清除</el-button>
           <el-button type="primary" @click="onMeasuring" v-else>测量</el-button>
         </div>
       </div>
@@ -108,26 +108,28 @@
       <!-- 实时标签样式 -->
       <div class="measuring-tools" v-show="state.activeIndex == '3'" @click.stop>
         <div class="coordinate-position-box">
-          <el-form-item label="船首线" label-width="130">
-            <el-checkbox v-model="state.shipHeadLine"></el-checkbox>
-          </el-form-item>
+          <el-form :model="state" label-width="130">
+            <el-form-item label="船首线" label-width="130">
+              <el-checkbox v-model="state.shipHeadLine"></el-checkbox>
+            </el-form-item>
 
-          <el-form-item label="轨迹回放隐藏内容" label-width="130">
-            <el-select v-model="state.shipShowHideByTrack" clearable>
-              <el-option
-                v-for="item in state.shipShowHideByTrackOption"
-                :key="item?.name"
-                :label="item?.name"
-                :value="item?.code"
-              />
-            </el-select>
-          </el-form-item>
+            <el-form-item label="轨迹回放隐藏内容" label-width="130">
+              <el-select v-model="state.shipShowHideByTrack" clearable>
+                <el-option
+                  v-for="item in state.shipShowHideByTrackOption"
+                  :key="item?.name"
+                  :label="item?.name"
+                  :value="item?.code"
+                />
+              </el-select>
+            </el-form-item>
 
-          <el-form-item label="轨迹回放动画" label-width="130">
-            <el-select v-model="state.trackSpeed">
-              <el-option v-for="item in trackSpeedOption" :key="item.name" :label="item.name" :value="item.value" />
-            </el-select>
-          </el-form-item>
+            <el-form-item label="轨迹回放动画" label-width="130">
+              <el-select v-model="state.trackSpeed">
+                <el-option v-for="item in trackSpeedOption" :key="item.name" :label="item.name" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-form>
         </div>
       </div>
 
@@ -148,11 +150,11 @@ import { Draw } from "ol/interaction";
 import { Vector as VectorLayer } from "ol/layer";
 import { Vector as VectorSource } from "ol/source";
 import { LineString, Polygon, Point } from "ol/geom";
-import { getArea, getLength } from "ol/sphere";
 import Overlay from "ol/Overlay";
 import { unByKey } from "ol/Observable";
 import { Style, Icon as IconStyle } from "ol/style";
 import { measureStyle } from "../hooks/styleFunction";
+import { formatLength, formatArea } from "../hooks/createMeasure";
 import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
@@ -172,6 +174,11 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>
   index: () => 0
 });
 const emits = defineEmits(["onClose"]);
+// 关闭地图类型
+const onClose = () => {
+  emits("onClose", props.index);
+};
+
 const state = reactive({
   activeIndex: "1",
   measuringValue: "length", //当前选择的测量单位
@@ -220,21 +227,22 @@ const trackSpeedOption = ref([
   }
 ]);
 
+/*******************************************测距********************************************/
 //测量
-const measureMode = ref<Array<any>>([]); // 测量的数据数组
-const measureDrawFeature: any = ref<Draw>(); // 测量交互器
+let isMeasure = ref(false);
 const measureVectorLayer = ref(); // 测量图层
 const measureSource = ref(); // 测量图层数据源
 const measureOverlays = ref<Array<any>>([]); // 测量距离显示覆盖物数组
 // 点击测量按钮
 const onMeasuring = () => {
+  isMeasure.value = !isMeasure.value;
   if (state.measuringValue) {
     onMeasuringFun(state.measuringValue);
   }
 };
 // 进入测量模式
 const onMeasuringFun = (value: string) => {
-  if (measureDrawFeature.value) {
+  if (props.map?.get("measureDrawInteraction")) {
     // 测量交互器
     measureRemoveInteraction();
     return;
@@ -253,47 +261,19 @@ const measureAddInteraction = (value: string) => {
   if (!props.map) return;
   let measureTooltipElement: any;
   let measureTooltip: any;
-  measureDrawFeature.value = new Draw({
+  let measureDrawInteraction = new Draw({
     source: measureSource.value, // 绘制图层的数据源
     type: value == "area" ? "Polygon" : "LineString", // 绘制类型
     style: measureStyle
   });
-  props.map.addInteraction(measureDrawFeature.value);
+  props.map.addInteraction(measureDrawInteraction);
   // 存储测量交互器
-  props.map?.set("measureDrawInteraction", measureDrawFeature.value);
+  props.map?.set("measureDrawInteraction", measureDrawInteraction);
   createMeasureTooltip();
 
-  // 计算线的长度以及面的面积
-  // 计算长度的函数
+  // 计算单位
   let defaultOptions = props.map?.defaultOptions;
   let unit = defaultOptions?.scaleLineUnit; // "metric"米千米或者海里
-  let formatLength = function (line: LineString) {
-    let length = getLength(line); // 获取线的长度（每个部分长度和），默认米meters
-    let output;
-    if (length > 1000) {
-      let outputKilometer: number = Math.round((length / 1000) * 1000) / 1000; // 千米 四舍五入
-      output = unit == "metric" ? `${outputKilometer.toFixed(2)}千米` : `${(outputKilometer / 1.852).toFixed(2)}海里`; // 1海里=1.852千米;
-    } else {
-      let outputMetric: number = Math.round(length * 1000) / 1000; // 米
-      output = unit == "metric" ? `${outputMetric.toFixed(2)}米` : `${(outputMetric / 1000 / 1.852).toFixed(2)}海里`; // 1海里=1.852千米;
-    }
-    return output;
-  };
-  // 计算面积的函数
-  let formatArea = function (polygon: Polygon) {
-    let area = getArea(polygon); // 面积（以米为单位）
-    let output;
-
-    if (area > 10000) {
-      let outputKilometer: number = Math.round((area / 1000000) * 100) / 100; // 平方千米
-      output = unit == "metric" ? `${outputKilometer.toFixed(2)}平方千米` : `${(outputKilometer / 3.429904).toFixed(2)}平方海里`; // 1海里=1.852千米;
-    } else {
-      let outputMetric: number = Math.round(area * 100) / 100; // 平方米
-      output =
-        unit == "metric" ? `${outputMetric.toFixed(2)}平方米` : `${(outputMetric / 1000000 / 3.429904).toFixed(2)}平方海里`; // 1海里=1.852千米;
-    }
-    return output;
-  };
 
   // 创建展示面积或者长度的弹框
   function createMeasureTooltip() {
@@ -316,7 +296,7 @@ const measureAddInteraction = (value: string) => {
 
   let sketch;
   let listener: any;
-  measureDrawFeature.value.on("drawstart", (evt: any) => {
+  measureDrawInteraction.on("drawstart", (evt: any) => {
     sketch = evt.feature;
     let tooltipCoord = evt.coordinate;
 
@@ -324,10 +304,10 @@ const measureAddInteraction = (value: string) => {
       let geom = evt.target;
       let output;
       if (geom instanceof Polygon) {
-        output = formatArea(geom);
+        output = formatArea(geom, unit);
         tooltipCoord = geom.getInteriorPoint().getCoordinates();
       } else if (geom instanceof LineString) {
-        output = formatLength(geom);
+        output = formatLength(geom, unit);
         tooltipCoord = geom.getLastCoordinate();
       }
       measureTooltipElement.innerHTML = output;
@@ -335,11 +315,7 @@ const measureAddInteraction = (value: string) => {
     });
   });
 
-  measureDrawFeature.value.on("drawend", function () {
-    measureMode.value.push({
-      type: "类型：" + (value == "area" ? "面" : "线"),
-      value: (value == "area" ? "面积：" : "长度：") + measureTooltipElement.innerHTML
-    });
+  measureDrawInteraction.on("drawend", function () {
     measureTooltip.setOffset([0, -7]);
     sketch = null;
     measureTooltipElement = null;
@@ -350,27 +326,24 @@ const measureAddInteraction = (value: string) => {
 // 点击清楚按钮
 const onClearMeasuring = () => {
   measureRemoveInteraction();
-  measureMode.value = [];
+  isMeasure.value = !isMeasure.value;
 };
 // 清除已绘制的图形
 const measureRemoveInteraction = () => {
-  if (props.map && measureDrawFeature.value) {
-    props.map.removeInteraction(measureDrawFeature.value);
-    measureDrawFeature.value = null;
+  if (props.map && props.map?.get("measureDrawInteraction")) {
+    props.map.removeInteraction(props.map?.get("measureDrawInteraction"));
     props.map?.set("measureDrawInteraction", null);
     props.map?.removeLayer(measureVectorLayer.value);
     measureOverlays.value.forEach(item => {
       props.map && props.map?.removeOverlay(item);
     });
+    measureOverlays.value = [];
   }
 };
+/*******************************************测距结束********************************************/
 
-// 关闭地图类型
-const onClose = () => {
-  emits("onClose", props.index);
-};
-
-// 切换时清空度分秒绑定值
+/*******************************************坐标定位********************************************/
+// 切换定位tab时清空度分秒绑定值
 const handleTabClick = () => {
   state.lonDegree = ""; // 经度-度
   state.lonMin = ""; // 经度-分
@@ -427,10 +400,12 @@ const mapCenterByPic = (lon: any, lat: any) => {
     positionPointLayer?.getSource()?.addFeature(pointFeature);
     setTimeout(() => {
       positionPointLayer?.getSource()?.removeFeature(pointFeature);
-    }, 2000);
+    }, 3000);
   }
 };
+/*******************************************坐标定位结束********************************************/
 
+/*******************************************回到地图中心点******************************************/
 const toMapCenter = () => {
   // 中心点
   if (!props?.map) {
