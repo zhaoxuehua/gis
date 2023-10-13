@@ -3,7 +3,13 @@
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
     <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
-    <!-- <div class="target-all-count" title="目标总数">{{ objectAllCount }}</div> -->
+    <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
+      <div v-for="(item, index) in realtimeDataCountList" :key="index">
+        <div class="target-all-count" :style="{ right: targetAllCountRight(index) }" :title="`${item.name}目标总数`">
+          {{ item.count }}
+        </div>
+      </div>
+    </div>
 
     <!-- 左侧控件 -->
     <LeftActionBox
@@ -55,7 +61,7 @@
 <script lang="ts" setup>
 import {
   onMounted,
-  // onBeforeUnmount,
+  onBeforeUnmount,
   ref,
   defineAsyncComponent,
   reactive,
@@ -63,8 +69,7 @@ import {
   shallowRef,
   useSlots,
   watch,
-  unref,
-  onDeactivated
+  unref
 } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
@@ -79,7 +84,7 @@ import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
 import { getMapParamsDetail, getLabelList, getEquipAlarmList } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
-import { find } from "lodash";
+import { find, cloneDeep } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
 import { useToolboxStore } from "../stores/modules/toolBox";
 
@@ -128,7 +133,16 @@ const emits = defineEmits([
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
 const currentLevel = ref(); // 当前视图层级
-// const objectAllCount = ref(0); // 目标总数
+
+// 实时数据统计(目标总数)
+let realtimeDataCountList = computed(() => {
+  return gisStore?.realtimeDataCountList || [];
+});
+// 目标总数根据索引计算位置(右边定位值的计算)
+let targetAllCountRight = (index: number) => {
+  return `${6 + index * 45}px`;
+};
+
 // 控件区域数据维护
 const state = reactive({
   leftBoxData: [
@@ -404,8 +418,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend // 图例[]
     };
-    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据
+    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}]
     gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
+    gisStore?.setRealtimeDataCountList(cloneDeep(originalData?.realtimeDataList || [])); // 实时请求统计
 
     // 全屏控件
     const fullScreen = new FullScreen({ className: "ol-full-screen", tipLabel: "全屏" });
@@ -969,7 +984,7 @@ onMounted(() => {
   initMap(mapParams, !!props?.config?.id);
 });
 
-onDeactivated(() => {
+onBeforeUnmount(() => {
   clearAllTimers();
 });
 
@@ -1232,22 +1247,22 @@ watch(
   }
 
   /* 目标总数 */
-  // .target-all-count {
-  //   position: absolute;
-  //   right: 6px;
-  //   bottom: 36px;
-  //   z-index: 10000;
-  //   width: 40px;
-  //   height: 40px;
-  //   font-size: 14px;
-  //   line-height: 40px;
-  //   color: #ffffff;
-  //   text-align: center;
-  //   cursor: pointer;
-  //   background: rgb(0 0 0 / 60%);
-  //   border: 1px solid #333333;
-  //   border-radius: 50%;
-  //   transform: scale(0.8);
-  // }
+  .target-all-count {
+    position: absolute;
+    right: 6px;
+    bottom: 36px;
+    z-index: 10000;
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    line-height: 40px;
+    color: #ffffff;
+    text-align: center;
+    cursor: pointer;
+    background: rgb(0 0 0 / 60%);
+    border: 1px solid #333333;
+    border-radius: 50%;
+    transform: scale(0.8);
+  }
 }
 </style>
