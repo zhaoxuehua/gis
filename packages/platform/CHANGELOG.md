@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.76
+
+### Patch Changes
+
+- 修改快速绘制按资产会绘制接口及增加批量绘制时过滤已绘制标签
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.74
+
 ## 1.0.75
 
 ### Patch Changes
