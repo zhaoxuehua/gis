@@ -6,10 +6,11 @@ import * as olProj from "ol/proj";
 import dayjs from "dayjs";
 import { getRealLabelTypeInfo, getRealDataList } from "../../api/gis";
 import type { VisualMap } from "../type";
-import type { shipStyCashType, shipParamsType, shipColorParams, searchShipDataType } from "./realDataType";
+import type { shipStyCashType, shipParamsType, shipColorParams } from "./realDataType";
 import { createdCanvasShip } from "./createdCanvasShip"; // 绘制船只
 import { drawCanvasPerson } from "./drawCanvasPerson";
 import { styleAct } from "./styleFunction.js";
+import { useGisStore } from "../../stores/modules/gis";
 
 /****************************************实时数据****************************************************/
 
@@ -17,8 +18,10 @@ export let realDataTimerObj: { [key: string]: any } = {}; // 定时器，最多�
 
 export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
   if (!map || !realtimeDataList?.length) return;
-
+  let gisStore = useGisStore();
   let realStyCash: shipStyCashType = {}; //  缓存样式
+  let realDataInfoCash: any = {}; // 按类型存储实时数据{aisBoat:[]} 每次定时器清除该类型下的数据重新存储
+
   // 实时数据处理 每项代表一个实时数据( 例如船、人、车)
   realtimeDataList.forEach(async (item: { [key: string]: any }) => {
     let { code: equipTypeCode, id: equipTypeId } = item;
@@ -52,7 +55,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
     }
 
     // 设置内置对象的layer样式
-    realDataLayer.setStyle(function (feature: any) {
+    realDataLayer?.setStyle(function (feature: any) {
       let targetFeature = feature;
       if (Array.isArray(feature.get("features"))) {
         targetFeature = feature.get("features")?.[0];
@@ -85,7 +88,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       let res: { [key: string]: any } = await getRealDataList(equipTypeCode, {});
       if (res?.code == 200) {
         const { data } = res;
-        let searchShipData: searchShipDataType = []; // 塞入基础引擎(搜索使用)
+        realDataInfoCash[equipTypeCode] = []; // 清除该类型标签的存储数据重新存储（塞入基础引擎搜索定位等使用）
         // 经度lon 纬度lat 时间monitorTime 船4关注colorIndex  速度sog 都在监测属性中
         // 名称name 在监测属性同级  编码code（取key值）
         // 联系人person新加在静态属性中
@@ -129,7 +132,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
             shipFeatureArr.push(shipFeature);
 
             // 基础引擎搜索、左键使用
-            searchShipData.push({
+            realDataInfoCash?.[equipTypeCode].push({
               lat: valInfo.lat,
               lon: valInfo.lon,
               code: key,
@@ -146,8 +149,9 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 
         realDataSource?.clear();
         realDataSource?.addFeatures(shipFeatureArr);
+        gisStore?.updateRealtimeDataCountList(equipTypeCode, shipFeatureArr?.length || 0); // 更新存储实时数据的数量count
 
-        map.set("trackInfoMap", searchShipData);
+        map.set("trackInfoMap", Object.values(realDataInfoCash)?.flat()); // 基础引擎定位、搜索、弹框等处使用
         if (realDataTimerObj[equipTypeCode]) {
           clearTimeout(realDataTimerObj[equipTypeCode]);
           realDataTimerObj[equipTypeCode] = null;

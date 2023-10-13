@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.74
+
+### Patch Changes
+
+- 修改快速绘制按资产会绘制接口及增加批量绘制时过滤已绘制标签
+
 ## 1.0.73
 
 ### Patch Changes

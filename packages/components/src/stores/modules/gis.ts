@@ -17,6 +17,7 @@ export const useGisStore = defineStore({
     isEdit: false, // 地图编辑
     isShowEditLabel: false, // 编辑标签弹框
     realtimeDataList: [], // 实时数据配置list
+    realtimeDataCountList: [], // 实时数据count统计(不放在realtimeDataList中是因为他其实是常量好多地方依赖，变更它的话会导致其他依赖触发渲染)
     keywordConfig: {}, // 关键词配置
     simulateAlarmTimer: null, // 报警要素样式切换定时器
     mapCase: {}, // 地图实例
@@ -68,6 +69,18 @@ export const useGisStore = defineStore({
     },
     setRealtimeDataList(realtimeDataList: any[]) {
       this.realtimeDataList = realtimeDataList;
+    },
+
+    // 实时数据统计数组
+    setRealtimeDataCountList(realtimeDataCountList: any = []) {
+      this.realtimeDataCountList = realtimeDataCountList;
+    },
+    // 根据实时数据code更新对应的实时数据数量
+    updateRealtimeDataCountList(code: string, count: number) {
+      let objectToUpdate = this.realtimeDataCountList.find((obj: { [key: string]: any }) => obj?.code == code);
+      if (objectToUpdate) {
+        objectToUpdate.count = count;
+      }
     },
 
     // 设置导航树数据及关联关系为空
