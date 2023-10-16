@@ -2,6 +2,7 @@
 <template>
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
+    <div class="mousePositionContainer" ref="mousePositionContainer" title="鼠标位置"></div>
     <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
       <div v-for="(item, index) in realtimeDataCountList" :key="index">
@@ -74,11 +75,12 @@ import {
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
-import { FullScreen, ScaleLine, defaults } from "ol/control";
+import { FullScreen, ScaleLine, defaults, MousePosition } from "ol/control";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { XYZ, Vector as VectorSource, Cluster } from "ol/source";
 import type { FeatureLike } from "ol/Feature";
 import { fromLonLat } from "ol/proj";
+import { createStringXY } from "ol/coordinate";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
@@ -133,6 +135,7 @@ const emits = defineEmits([
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
 const currentLevel = ref(); // 当前视图层级
+const mousePositionContainer = ref(); // 鼠标移动显示坐标的容器
 
 // 实时数据统计(目标总数)
 let realtimeDataCountList = computed(() => {
@@ -437,6 +440,14 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     if (defaultOptions?.scaleLine) {
       controlsList.push(scaleLine);
     }
+
+    // 鼠标经过显示位置控件（默认都有该功能）
+    const mousePosition = new MousePosition({
+      target: mousePositionContainer?.value,
+      projection: "EPSG:4326", // 经纬度坐标
+      coordinateFormat: createStringXY(6) // 坐标格式化
+    });
+    controlsList.push(mousePosition);
 
     // 电子底图图层
     const normalMap = new TileLayer({
@@ -1108,6 +1119,7 @@ watch(
 </style>
 
 <style lang="scss">
+// 鼠标经过Overlay 展示内容盒子样式
 .popup {
   min-width: 200px;
   overflow: hidden;
@@ -1229,6 +1241,22 @@ watch(
     .control-scaleLine span {
       white-space: nowrap;
     }
+  }
+
+  /* 鼠标移动展示经纬度样式 */
+  .mousePositionContainer {
+    position: absolute;
+    right: 175px;
+    bottom: 6px;
+    z-index: 10000;
+    min-width: 180px;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #333333;
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    transform: scale(0.8);
   }
 
   /* 当前等级 */
