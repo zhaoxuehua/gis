@@ -9,6 +9,7 @@
     <div class="content-box">
       <el-tabs v-model="state.activeIndex">
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
+        <el-tab-pane name="5" label="设置中心点"></el-tab-pane>
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
         <el-tab-pane name="3" label="实时标签样式"></el-tab-pane>
         <el-tab-pane name="4" label="获取水深"></el-tab-pane>
@@ -26,6 +27,21 @@
           <el-button type="primary" @click="onMeasuring" v-else>测量</el-button>
         </div>
       </div>
+
+      <!-- 设置中心点 -->
+      <div class="measuring-tools" v-if="state.activeIndex == '5'">
+        <div>
+          <label> 经度 </label>
+          <el-input type="number" v-model="state.centerData.lon" class="set-center-input" />
+          <label style="padding-left: 20px"> 纬度 </label>
+          <el-input type="number" v-model="state.centerData.lat" class="set-center-input" />
+          <div class="position-btn">
+            <el-button type="primary" @click="getCurrentMapPositionCenter">获取中心点</el-button>
+            <el-button type="primary" @click="toSetMapCenter">设置中心点</el-button>
+          </div>
+        </div>
+      </div>
+
       <!-- 坐标定位 -->
       <div class="measuring-tools" v-show="state.activeIndex == '2'">
         <div class="coordinate-position-box">
@@ -144,6 +160,7 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, reactive, ref, watch } from "vue";
+import { ElMessage } from "element-plus";
 import { Feature } from "ol";
 import { fromLonLat } from "ol/proj";
 import { Draw } from "ol/interaction";
@@ -160,8 +177,8 @@ import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
 import DepthWaterBox from "./depthWaterBox.vue";
 
-// 辅助函数，设置地图中心点
-import { setToMapCenter } from "../hooks/setToMapCenter";
+// 辅助函数，回到地图中心点 获取地图中心点
+import { setToMapCenter, getMapPositionCenter } from "../hooks/setToMapCenter";
 
 // store
 import { useToolboxStore } from "../../stores/modules/toolBox";
@@ -169,9 +186,10 @@ import { useToolboxStore } from "../../stores/modules/toolBox";
 // api
 import { getLayerList } from "../../api/device";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
+const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; isShow?: boolean }>(), {
   map: () => null,
-  index: () => 0
+  index: () => 0,
+  isShow: () => false
 });
 const emits = defineEmits(["onClose"]);
 // 关闭地图类型
@@ -188,6 +206,12 @@ const state = reactive({
     { value: "area", label: "面积" }
   ],
 
+  // 设置中心点经纬度
+  centerData: {
+    lon: "",
+    lat: ""
+  },
+
   // 坐标定位
   activeTabs: "first",
   lonDegree: "", // 经度-度
@@ -203,29 +227,6 @@ const state = reactive({
   shipShowHideByTrackOption: [] as any,
   trackSpeed: ""
 });
-
-// 轨迹隐藏图层
-getLayerList({ pageNumber: 1, pageSize: 100 }).then(res => {
-  if (res.data && res.data.items) {
-    state.shipShowHideByTrackOption = res.data.items;
-  }
-});
-
-// 轨迹回放动画
-const trackSpeedOption = ref([
-  {
-    name: "快",
-    value: "0.1"
-  },
-  {
-    name: "慢",
-    value: "1"
-  },
-  {
-    name: "无",
-    value: ""
-  }
-]);
 
 /*******************************************测距********************************************/
 //测量
@@ -342,6 +343,48 @@ const measureRemoveInteraction = () => {
 };
 /*******************************************测距结束********************************************/
 
+/*******************************************设置中心点********************************************/
+// 获取当前地图位置处的中心点
+const getCurrentMapPositionCenter = () => {
+  let corObj = getMapPositionCenter(props.map);
+  if (corObj) {
+    // 更新中中心点的显示
+    state.centerData.lon = corObj?.centerX;
+    state.centerData.lat = corObj?.centerY;
+  }
+};
+
+// 给应用场景设置中心点(修改初始化时存储的中心点经纬度及调用接口：修改配置的经纬度)
+const toSetMapCenter = () => {
+  // 经纬度必须有值
+  if (state.centerData.lon && state.centerData.lat) {
+    // 接口成功后的操作
+    let defaultOptions = props.map?.defaultOptions;
+    if (defaultOptions?.center?.lon && defaultOptions?.center?.lat) {
+      defaultOptions.center.lon = state.centerData.lon;
+      defaultOptions.center.lat = state.centerData.lat;
+    }
+  } else {
+    ElMessage.warning("请设置经纬度值");
+  }
+};
+
+// 首次打开工具箱赋初始值经纬度
+watch(
+  () => props.isShow,
+  isShowVal => {
+    if (isShowVal) {
+      getCurrentMapPositionCenter();
+    }
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+);
+
+/*******************************************设置中心点结束********************************************/
+
 /*******************************************坐标定位********************************************/
 // 切换定位tab时清空度分秒绑定值
 const handleTabClick = () => {
@@ -421,8 +464,29 @@ const toMapCenter = () => {
   });
 };
 
-onMounted(() => {});
+/*******************************************实时标签样式******************************************/
+// 轨迹隐藏图层
+getLayerList({ pageNumber: 1, pageSize: 100 }).then(res => {
+  if (res.data && res.data.items) {
+    state.shipShowHideByTrackOption = res.data.items;
+  }
+});
 
+// 轨迹回放动画
+const trackSpeedOption = ref([
+  {
+    name: "快",
+    value: "0.1"
+  },
+  {
+    name: "慢",
+    value: "1"
+  },
+  {
+    name: "无",
+    value: ""
+  }
+]);
 // 实时标签样式:存入浏览器
 const toolboxStore = useToolboxStore();
 watch([() => state.shipHeadLine, () => state.shipShowHideByTrack, () => state.trackSpeed], function (n) {
@@ -438,6 +502,9 @@ if (shipTagsData) {
   state.shipShowHideByTrack = shipShowHideByTrack;
   state.trackSpeed = trackSpeed;
 }
+/*******************************************实时标签样式结束******************************************/
+
+onMounted(() => {});
 </script>
 
 <style lang="scss" scoped>
@@ -492,7 +559,7 @@ if (shipTagsData) {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 10px;
+    margin-top: 20px;
   }
   .short_l {
     width: 80px;
@@ -504,6 +571,10 @@ if (shipTagsData) {
   }
   .short_3 {
     width: 280px;
+  }
+  .set-center-input {
+    width: 140px;
+    margin-left: 10px;
   }
   .tip-unit {
     display: inline-block;

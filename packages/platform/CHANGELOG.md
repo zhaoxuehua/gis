@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.77
+
+### Patch Changes
+
+- 增加统计目标总数及更改实时数据存储问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.75
+
 ## 1.0.76
 
 ### Patch Changes
