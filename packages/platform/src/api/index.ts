@@ -38,7 +38,7 @@ class RequestHttp {
         // config.noLoading || showFullScreenLoading();
         if (config.headers && typeof config.headers.set === "function") {
           config.headers.set("agioe_sso_sessionid", userStore.token);
-          // config.headers.set("agioe_sso_sessionid", "422_d1f87d4f1b4e42ea9728383de65831fc");
+          // config.headers.set("agioe_sso_sessionid", "422_96961cc36f3342399eff46bb28c3b6ec");
         }
         return config;
       },
@@ -76,8 +76,12 @@ class RequestHttp {
         }
         // 全局错误信息拦截（防止下载文件的时候返回数据流，没有 code 直接报错）
         if (data.code && data.code !== ResultEnum.SUCCESS) {
-          ElMessage.error(data.msg);
-          return Promise.reject(data);
+          if (data.code == 602) {
+            return ElMessage.warning(data.msg);
+          } else {
+            ElMessage.error(data.msg);
+            return Promise.reject(data);
+          }
         }
         // 成功请求（在页面上除非特殊情况，否则不用处理失败逻辑）
         return data;
