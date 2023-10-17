@@ -78,7 +78,8 @@ class RequestHttp {
         // 全局错误信息拦截（防止下载文件的时候返回数据流，没有 code 直接报错）
         if (data.code && data.code !== ResultEnum.SUCCESS) {
           if (data.code == 602) {
-            return ElMessage.warning(data.msg);
+            ElMessage.warning(data.msg);
+            return Promise.reject(data);
           } else {
             ElMessage.error(data.msg);
             return Promise.reject(data);
