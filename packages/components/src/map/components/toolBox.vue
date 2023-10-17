@@ -9,7 +9,7 @@
     <div class="content-box">
       <el-tabs v-model="state.activeIndex">
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
-        <el-tab-pane name="5" label="设置中心点"></el-tab-pane>
+        <!-- <el-tab-pane name="5" label="设置中心点"></el-tab-pane> -->
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
         <el-tab-pane name="3" label="实时标签样式"></el-tab-pane>
         <el-tab-pane name="4" label="获取水深"></el-tab-pane>
