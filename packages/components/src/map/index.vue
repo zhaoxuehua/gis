@@ -2,8 +2,8 @@
 <template>
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
-    <div class="mousePositionContainer" ref="mousePositionContainer" title="鼠标位置"></div>
-    <div class="mapLevel" title="当前层级">当前层级：{{ currentLevel }}</div>
+    <div class="mousePositionContainer" ref="mousePositionContainer" title="鼠标位置" v-if="exportMap"></div>
+    <div class="mapLevel" title="当前层级" v-if="exportMap">当前层级：{{ currentLevel }}</div>
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
       <div v-for="(item, index) in realtimeDataCountList" :key="index">
         <div class="target-all-count" :style="{ right: targetAllCountRight(index) }" :title="`${item.name}目标总数`">
@@ -444,6 +444,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     // 鼠标经过显示位置控件（默认都有该功能）
     const mousePosition = new MousePosition({
       target: mousePositionContainer?.value,
+      className: "mousePositionContainer",
       projection: "EPSG:4326", // 经纬度坐标
       coordinateFormat: createStringXY(6) // 坐标格式化
     });
@@ -1247,15 +1248,14 @@ watch(
   .mousePositionContainer {
     position: absolute;
     right: 175px;
-    bottom: 6px;
+    bottom: 8px;
     z-index: 10000;
-    min-width: 180px;
-    padding: 5px 10px;
+    width: 180px;
+    padding: 5px 10px 4px;
     font-size: 14px;
     color: #333333;
     cursor: pointer;
     background-color: #ffffff;
-    border: 1px solid #cccccc;
     transform: scale(0.8);
   }
 
