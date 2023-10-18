@@ -1248,14 +1248,18 @@ watch(
   .mousePositionContainer {
     position: absolute;
     right: 175px;
-    bottom: 8px;
+    bottom: 6px;
     z-index: 10000;
     width: 180px;
-    padding: 5px 10px 4px;
     font-size: 14px;
+    line-height: 30px;
     color: #333333;
-    cursor: pointer;
+    text-align: center;
+
+    // cursor: pointer;
     background-color: #ffffff;
+
+    // border: 1px solid #cccccc;
     transform: scale(0.8);
   }
 

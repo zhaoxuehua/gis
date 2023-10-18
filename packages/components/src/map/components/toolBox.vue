@@ -324,7 +324,7 @@ const measureAddInteraction = (value: string) => {
     unByKey(listener);
   });
 };
-// 点击清楚按钮
+// 点击清除按钮
 const onClearMeasuring = () => {
   measureRemoveInteraction();
   isMeasure.value = !isMeasure.value;
