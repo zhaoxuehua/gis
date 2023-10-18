@@ -444,6 +444,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     // 鼠标经过显示位置控件（默认都有该功能）
     const mousePosition = new MousePosition({
       target: mousePositionContainer?.value,
+      // placeholder: "无位置", // 鼠标不在地图上显示的内容
       className: "mousePositionContainer",
       projection: "EPSG:4326", // 经纬度坐标
       coordinateFormat: createStringXY(6) // 坐标格式化
