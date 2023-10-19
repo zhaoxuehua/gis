@@ -20,7 +20,7 @@
       <div class="measuring-tools" v-show="state.activeIndex == '1'">
         <div class="measuring-title">测量模式</div>
         <div>
-          <el-select v-model="state.measuringValue" placeholder="请选择..." clearable>
+          <el-select v-model="state.measuringValue" placeholder="请选择..." @change="measuringValueChange">
             <el-option v-for="item in state.measuringOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
           <el-button type="primary" @click="onClearMeasuring" v-if="isMeasure">清除</el-button>
@@ -234,6 +234,12 @@ let isMeasure = ref(false);
 const measureVectorLayer = ref(); // 测量图层
 const measureSource = ref(); // 测量图层数据源
 const measureOverlays = ref<Array<any>>([]); // 测量距离显示覆盖物数组
+
+// 测量值切换
+const measuringValueChange = () => {
+  isMeasure.value = false;
+  measureRemoveInteraction();
+};
 // 点击测量按钮
 const onMeasuring = () => {
   isMeasure.value = !isMeasure.value;
