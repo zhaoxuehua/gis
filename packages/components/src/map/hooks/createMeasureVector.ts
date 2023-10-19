@@ -40,20 +40,20 @@ export function formatArea(polygon: Polygon, unit: string) {
   return output;
 }
 
-// 样式函数 1、要素  2、是否展示段测量  3、绘制类型（"Polygon" "LineString"）
+// 样式函数 1、要素 2、单位  3、是否展示段测量  4、绘制类型（"Polygon" "LineString"）
 function measureStyleFunction(feature: any, unit: string, segments: any, drawType?: any) {
   const styles = [];
   const geometry = feature.getGeometry();
-  const type = geometry.getType();
+  const type = geometry?.getType();
   let point, label, line;
   if (!drawType || drawType === type || type === "Point") {
     styles.push(styleGraph);
     if (type === "Polygon") {
-      point = geometry.getInteriorPoint();
+      point = geometry?.getInteriorPoint();
       label = formatArea(geometry, unit);
-      line = new LineString(geometry.getCoordinates()[0]);
+      line = new LineString(geometry?.getCoordinates()[0]);
     } else if (type === "LineString") {
-      point = new Point(geometry.getLastCoordinate());
+      point = new Point(geometry?.getLastCoordinate());
       label = formatLength(geometry, unit);
       line = geometry;
     }
@@ -83,11 +83,12 @@ function measureStyleFunction(feature: any, unit: string, segments: any, drawTyp
   return styles;
 }
 
-// 参数 1、map  2、测量类型值  3、测距单位 4、是否展示段测量值 5、是否清除上次的测量  6、是否绘制一次就清除交互器 7、是否有关闭按钮 8、关闭按钮的回调（关闭后需切换测量选项）
+// 参数 1、map  2、测量类型值  3、测距单位 4、是否展示段测量值 5、是否清除上次的测量(可左击继续绘制)  6、是否绘制一次就清除交互器（只能绘一次）
+//      7、是否有关闭按钮 8、关闭按钮的回调（关闭后需切换测量按钮文字及布尔值）
 // 注意绘制一次isOnceMeasured时再使用hasCloseBtnOverlay及回调，因为关闭按钮只添加一次
 export function measureAddDrawInteraction(
   map: VisualMap,
-  measureType: any,
+  measureType: string,
   unit: string,
   isShowSegments?: boolean,
   isClearPreviousMeasure?: boolean,
@@ -96,14 +97,15 @@ export function measureAddDrawInteraction(
   closeBtnOverlayCallback?: Function
 ) {
   if (!map) return;
-  // 移除逻辑
-  clearMeasureDrawInteraction(map);
+  clearMeasureDrawInteraction(map); // 移除逻辑
 
+  // 修改测量要素交互器
   const measureVectorSource = new VectorSource();
   let measureModifyInteraction: any = new Modify({ source: measureVectorSource, style: modifyStyle }); // 可以修改绘制的线段或面积
-  map.addInteraction(measureModifyInteraction);
+  map?.addInteraction(measureModifyInteraction);
   map?.set("measureModifyInteraction", measureModifyInteraction);
 
+  // 测量图层及数据源
   const measureDistanceVectorLayer = new VectorLayer({
     source: measureVectorSource,
     style: function (feature) {
@@ -114,6 +116,7 @@ export function measureAddDrawInteraction(
   map?.set("measureDistanceVectorLayer", measureDistanceVectorLayer);
   map?.set("measureDistanceVectorSource", measureVectorSource);
 
+  // 测量交互器
   const drawType = measureType == "area" ? "Polygon" : "LineString";
   let measureDrawInteraction = new Draw({
     source: measureVectorSource,
@@ -125,13 +128,14 @@ export function measureAddDrawInteraction(
   map.addInteraction(measureDrawInteraction);
   map?.set("measureDrawInteraction", measureDrawInteraction);
 
-  let closeBtnOverlay = map?.get("closeBtnOverlay"); // 框选附加信息关闭按钮
+  // 框选附加信息关闭按钮
+  let closeBtnOverlay = map?.get("closeBtnOverlay");
 
   measureDrawInteraction.on("drawstart", function () {
     if (isClearPreviousMeasure) {
       measureVectorSource?.clear();
     }
-    measureModifyInteraction.setActive(false); // 绘制时不可修改测量要素
+    measureModifyInteraction?.setActive(false); // 绘制时不可修改测量要素
 
     // 清空附加的关闭按钮
     if (map?.get("closeBtnOverlay")) {
@@ -153,7 +157,6 @@ export function measureAddDrawInteraction(
       });
       map?.addOverlay(closeBtnOverlay);
       map?.set("closeBtnOverlay", closeBtnOverlay);
-
       // 关闭
       overDiv.onclick = function () {
         clearMeasureDrawInteraction(map);
@@ -168,14 +171,14 @@ export function measureAddDrawInteraction(
     if (isOnceMeasured) {
       setTimeout(() => {
         measureDrawInteraction.setActive(false); //isOnceMeasured是true时只能测量一次不能左击后继续测量
-        isOnceMeasured && map?.removeInteraction(map?.get("measureDrawInteraction")); // 为了释放左击时可弹框
+        map?.removeInteraction(map?.get("measureDrawInteraction")); // 为了释放左击时可弹框
         map?.set("measureDrawInteraction", null);
       }, 0);
     }
 
     // 测量关闭按钮逻辑
     if (hasCloseBtnOverlay) {
-      let cor = event.feature.getGeometry().getCoordinates();
+      let cor = event.feature?.getGeometry()?.getCoordinates();
       let closeBtnOverlay = map?.get("closeBtnOverlay");
       drawType == "Polygon" && closeBtnOverlay?.setPosition(cor[0][0]);
       drawType == "LineString" && closeBtnOverlay?.setPosition(cor[0]);
@@ -189,7 +192,7 @@ export function clearMeasureDrawInteraction(map: VisualMap) {
     map?.removeInteraction(map?.get("measureDrawInteraction"));
     map?.set("measureDrawInteraction", null);
   }
-  // 禁用测量修改交互器(清除缓存)
+  // 移除测量修改交互器(清除缓存)
   if (map?.get("measureModifyInteraction")) {
     map?.get("measureModifyInteraction")?.setActive(false);
     map?.removeInteraction(map?.get("measureModifyInteraction"));

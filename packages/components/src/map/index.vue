@@ -757,9 +757,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.on("pointermove", function (event: any) {
       const pixel = map.getEventPixel(event.originalEvent); // 坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
-      const pos = event.coordinate;
+      map.getTargetElement().style.cursor = hit ? "pointer" : "";
       if (hit) {
-        map.getTargetElement().style.cursor = hit ? "pointer" : "";
+        const pos = event.coordinate;
         map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
           let targetFeature = null;
           if (Array.isArray(feature.get("features"))) {
