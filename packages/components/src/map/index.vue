@@ -444,6 +444,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     // 鼠标经过显示位置控件（默认都有该功能）
     const mousePosition = new MousePosition({
       target: mousePositionContainer?.value,
+      // placeholder: "无位置", // 鼠标不在地图上显示的内容
       className: "mousePositionContainer",
       projection: "EPSG:4326", // 经纬度坐标
       coordinateFormat: createStringXY(6) // 坐标格式化
@@ -1248,14 +1249,18 @@ watch(
   .mousePositionContainer {
     position: absolute;
     right: 175px;
-    bottom: 8px;
+    bottom: 6px;
     z-index: 10000;
     width: 180px;
-    padding: 5px 10px 4px;
     font-size: 14px;
+    line-height: 30px;
     color: #333333;
-    cursor: pointer;
+    text-align: center;
+
+    // cursor: pointer;
     background-color: #ffffff;
+
+    // border: 1px solid #cccccc;
     transform: scale(0.8);
   }
 

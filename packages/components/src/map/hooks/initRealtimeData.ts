@@ -152,16 +152,17 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         gisStore?.updateRealtimeDataCountList(equipTypeCode, shipFeatureArr?.length || 0); // 更新存储实时数据的数量count
 
         map.set("trackInfoMap", Object.values(realDataInfoCash)?.flat()); // 基础引擎定位、搜索、弹框等处使用
-        if (realDataTimerObj[equipTypeCode]) {
-          clearTimeout(realDataTimerObj[equipTypeCode]);
-          realDataTimerObj[equipTypeCode] = null;
-        }
-        realDataTimerObj[equipTypeCode] = setTimeout(function () {
-          getShipListDataFn();
-        }, 1000 * 10);
       } else {
         ElMessage.error("获取数据报错");
       }
+      // 不管成功还是失败10秒后重新请求接口
+      if (realDataTimerObj[equipTypeCode]) {
+        clearTimeout(realDataTimerObj[equipTypeCode]);
+        realDataTimerObj[equipTypeCode] = null;
+      }
+      realDataTimerObj[equipTypeCode] = setTimeout(function () {
+        getShipListDataFn();
+      }, 1000 * 10);
     }
     getShipListDataFn(); // 初始化时获取一次数据
   });
