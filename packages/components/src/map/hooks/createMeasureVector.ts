@@ -128,7 +128,7 @@ export function measureAddDrawInteraction(
   map.addInteraction(measureDrawInteraction);
   map?.set("measureDrawInteraction", measureDrawInteraction);
 
-  // 框选附加信息关闭按钮
+  // 测量附加信息关闭按钮
   let closeBtnOverlay = map?.get("closeBtnOverlay");
 
   measureDrawInteraction.on("drawstart", function () {

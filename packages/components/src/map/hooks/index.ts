@@ -514,10 +514,10 @@ export function clearSelectedFeature(map: VisualMap) {
 // 实现框选
 export function selectionAddDrawInteraction(
   map: VisualMap,
-  value: any,
-  callback: Function,
+  value: any, // 框选模式值
+  callback: Function, // 框选完成后的回调
   isTrue: boolean, // 是否只能框选一次不能连续框
-  closeBtnOverlayCallback?: Function
+  closeBtnOverlayCallback?: Function // 关闭框选按钮的回调
 ) {
   if (!map) return;
   clearSelectionDrawInteraction(map);
