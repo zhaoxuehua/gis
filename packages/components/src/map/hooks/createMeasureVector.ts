@@ -43,7 +43,7 @@ export function formatArea(polygon: Polygon, unit: string) {
 // 样式函数 1、要素 2、单位  3、是否展示段测量  4、绘制类型（"Polygon" "LineString"）
 function measureStyleFunction(feature: any, unit: string, segments: any, drawType?: any) {
   const styles = [];
-  const geometry = feature.getGeometry();
+  const geometry = feature?.getGeometry();
   const type = geometry?.getType();
   let point, label, line;
   if (!drawType || drawType === type || type === "Point") {
@@ -61,23 +61,23 @@ function measureStyleFunction(feature: any, unit: string, segments: any, drawTyp
   // 测量：段样式（line为线或面图形）
   if (segments && line) {
     let count = 0;
-    line.forEachSegment(function (a: any, b: any) {
+    line?.forEachSegment(function (a: any, b: any) {
       const segment = new LineString([a, b]);
       const label = formatLength(segment, "metric");
       if (segmentStyles.length - 1 < count) {
-        segmentStyles.push(segmentStyle.clone());
+        segmentStyles.push(segmentStyle?.clone());
       }
-      const segmentPoint = new Point(segment.getCoordinateAt(0.5));
-      segmentStyles[count].setGeometry(segmentPoint);
-      segmentStyles[count].getText().setText(label);
+      const segmentPoint = new Point(segment?.getCoordinateAt(0.5));
+      segmentStyles[count]?.setGeometry(segmentPoint);
+      segmentStyles[count]?.getText()?.setText(label);
       styles.push(segmentStyles[count]);
       count++;
     });
   }
-  // 测量：具体展示样式（位置是线的末尾  面是中心点 ）
+  // 测量：测量label样式（位置是线的末尾  面是中心点 ）
   if (label) {
-    labelStyle.setGeometry(point);
-    labelStyle.getText().setText(label);
+    labelStyle?.setGeometry(point);
+    labelStyle?.getText()?.setText(label);
     styles.push(labelStyle);
   }
   return styles;
@@ -166,11 +166,11 @@ export function measureAddDrawInteraction(
     }
   });
   measureDrawInteraction.on("drawend", function (event: any) {
-    measureModifyInteraction.setActive(true);
+    measureModifyInteraction?.setActive(true);
     // 是否只能绘制一次
     if (isOnceMeasured) {
       setTimeout(() => {
-        measureDrawInteraction.setActive(false); //isOnceMeasured是true时只能测量一次不能左击后继续测量
+        measureDrawInteraction?.setActive(false); //isOnceMeasured是true时只能测量一次不能左击后继续测量
         map?.removeInteraction(map?.get("measureDrawInteraction")); // 为了释放左击时可弹框
         map?.set("measureDrawInteraction", null);
       }, 0);
