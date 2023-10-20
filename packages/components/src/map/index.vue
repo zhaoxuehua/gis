@@ -867,6 +867,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
         if (typeStats == "alarmPoint") {
+          // 告警标签获取到的featureCode是设备code需要自己找对应的标签code
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
           labelTypeCode = featureLabelType;
