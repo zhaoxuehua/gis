@@ -2,7 +2,7 @@
 <template>
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
-    <div class="mousePositionContainer" ref="mousePositionContainer" title="鼠标位置" v-if="exportMap"></div>
+    <div ref="mousePositionContainer" title="鼠标位置" v-if="exportMap"></div>
     <div class="mapLevel" title="当前层级" v-if="exportMap">当前层级：{{ currentLevel }}</div>
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
       <div v-for="(item, index) in realtimeDataCountList" :key="index">
@@ -757,9 +757,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.on("pointermove", function (event: any) {
       const pixel = map.getEventPixel(event.originalEvent); // 坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
-      const pos = event.coordinate;
+      map.getTargetElement().style.cursor = hit ? "pointer" : "";
       if (hit) {
-        map.getTargetElement().style.cursor = hit ? "pointer" : "";
+        const pos = event.coordinate;
         map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
           let targetFeature = null;
           if (Array.isArray(feature.get("features"))) {
@@ -867,6 +867,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
         if (typeStats == "alarmPoint") {
+          // 告警标签获取到的featureCode是设备code需要自己找对应的标签code
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
           labelTypeCode = featureLabelType;
@@ -1252,15 +1253,12 @@ watch(
     bottom: 6px;
     z-index: 10000;
     width: 180px;
+    padding: 5px 10px;
     font-size: 14px;
-    line-height: 30px;
     color: #333333;
-    text-align: center;
-
-    // cursor: pointer;
+    cursor: pointer;
     background-color: #ffffff;
-
-    // border: 1px solid #cccccc;
+    border: 1px solid #cccccc;
     transform: scale(0.8);
   }
 

@@ -79,7 +79,7 @@
               <div style="display: flex; align-items: center">
                 <span>数据来源</span>
                 <div style="display: flex; align-items: center">
-                  <el-tooltip effect="dark" content="实时请求的的数据还是基础引擎绘制的数据" placement="top">
+                  <el-tooltip effect="dark" content="实时请求的数据还是基础引擎绘制的数据" placement="top">
                     <Icon src="WarningFilled" :size="16" color="#e6a23c"></Icon>
                   </el-tooltip>
                 </div>

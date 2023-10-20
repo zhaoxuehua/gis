@@ -478,7 +478,27 @@ export function alarmLayerStyle(feature: any) {
   }
 }
 
-// 测量绘制图层的样式及绘制时图标样式
+// 框选绘制图层的样式及绘制时图标样式;
+export const selectBoxStyle = new Style({
+  fill: new Fill({
+    color: "rgba(255, 255, 255, 0.5)"
+  }),
+  stroke: new Stroke({
+    color: "#ff3333",
+    width: 2
+  }),
+  image: new Circle({
+    radius: 7,
+    stroke: new Stroke({
+      color: "#ff3333"
+    }),
+    fill: new Fill({
+      color: "rgba(255, 255, 255, 0.2)"
+    })
+  })
+});
+
+// 原测量：测量绘制图层的样式及绘制时图标样式
 export function measureStyle() {
   let style = new Style({
     fill: new Fill({
@@ -502,21 +522,100 @@ export function measureStyle() {
   return style;
 }
 
-export const selectBoxStyle = new Style({
+// 测距：圆圈及线条的样式
+export const styleGraph = new Style({
   fill: new Fill({
-    color: "rgba(255, 255, 255, 0.5)"
+    color: "rgba(255, 255, 255, 0.2)"
   }),
   stroke: new Stroke({
     color: "#ff3333",
-    width: 2
+    lineDash: [10, 10],
+    width: 3
   }),
   image: new Circle({
-    radius: 7,
+    radius: 5,
     stroke: new Stroke({
       color: "#ff3333"
     }),
     fill: new Fill({
       color: "rgba(255, 255, 255, 0.2)"
     })
+  })
+});
+
+// 测量：标签 完整测量的长度、面积展示的样式
+export const labelStyle = new Style({
+  text: new Text({
+    font: "normal 14px 微软雅黑",
+    fill: new Fill({
+      color: "rgba(255, 255, 255, 1)"
+    }),
+    backgroundFill: new Fill({
+      color: "#ff3333"
+    }),
+    padding: [3, 3, 3, 3],
+    textBaseline: "bottom",
+    offsetY: -15
+  }),
+  image: new RegularShape({
+    radius: 5,
+    points: 3,
+    angle: Math.PI,
+    displacement: [0, 10],
+    fill: new Fill({
+      color: "#ff3333"
+    })
+  })
+});
+
+// 测量：每段的样式
+export const segmentStyle = new Style({
+  text: new Text({
+    font: "normal 11px 微软雅黑",
+    fill: new Fill({
+      color: "rgba(255, 255, 255, 1)"
+    }),
+    backgroundFill: new Fill({
+      color: "rgba(0, 0, 0, 0.8)"
+    }),
+    padding: [3, 3, 3, 3],
+    textBaseline: "bottom",
+    offsetY: -12
+  }),
+  // 三角箭头
+  image: new RegularShape({
+    radius: 6,
+    points: 3,
+    angle: Math.PI,
+    displacement: [0, 8],
+    fill: new Fill({
+      color: "rgba(0, 0, 0, 0.8)"
+    })
+  })
+});
+
+// 测量：拖拽修改提示样式
+export const modifyStyle = new Style({
+  image: new CircleStyle({
+    radius: 5,
+    stroke: new Stroke({
+      color: "rgba(0, 0, 0, 0.7)"
+    }),
+    fill: new Fill({
+      color: "rgba(0, 0, 0, 0.4)"
+    })
+  }),
+  text: new Text({
+    text: "Drag to modify",
+    font: "normal 12px 微软雅黑",
+    fill: new Fill({
+      color: "rgba(255, 255, 255, 1)"
+    }),
+    backgroundFill: new Fill({
+      color: "rgba(0, 0, 0, 0.7)"
+    }),
+    padding: [2, 2, 2, 2],
+    textAlign: "left",
+    offsetX: 15
   })
 });
