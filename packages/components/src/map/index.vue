@@ -2,7 +2,7 @@
 <template>
   <div class="component-box">
     <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
-    <div class="mousePositionContainer" ref="mousePositionContainer" title="鼠标位置" v-if="exportMap"></div>
+    <div ref="mousePositionContainer" title="鼠标位置" v-if="exportMap"></div>
     <div class="mapLevel" title="当前层级" v-if="exportMap">当前层级：{{ currentLevel }}</div>
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
       <div v-for="(item, index) in realtimeDataCountList" :key="index">
@@ -1252,15 +1252,12 @@ watch(
     bottom: 6px;
     z-index: 10000;
     width: 180px;
+    padding: 5px 10px;
     font-size: 14px;
-    line-height: 30px;
     color: #333333;
-    text-align: center;
-
-    // cursor: pointer;
+    cursor: pointer;
     background-color: #ffffff;
-
-    // border: 1px solid #cccccc;
+    border: 1px solid #cccccc;
     transform: scale(0.8);
   }
 
