@@ -68,7 +68,6 @@
         v-bind="pagination"
         v-model:current-page="pagination.currentPage"
         v-model:page-size="pagination.currentPageSize"
-        small
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       ></el-pagination>
@@ -104,20 +103,17 @@ const props = withDefaults(defineProps<Props>(), {
   isSearch: true, //是否有搜索项
   type: "default", // 表格类型 是否是卡片包裹  card default
   title: "",
-  rowKey: "id",
-  layout: "total, sizes, prev, pager, next, jumper"
+  rowKey: "id"
 });
 const emit = defineEmits<Emits>();
 
 const defaultPagination = {
   total: 0,
   page: 1,
-  limit: 20,
   pageSizes: [10, 20, 30, 50, 100],
-  layout: "total, sizes, prev, pager, next, jumper",
+  layout: "total, sizes, prev, pager, next",
   background: true,
   autoScroll: true,
-  hidden: false,
   style: "",
   pageSize: 10
 };
