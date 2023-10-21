@@ -366,7 +366,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
   // 获取地图配置（初始化地图参数详情）
   const res: { [key: string]: any } = await getMapParamsDetail(mapId, isId);
   if (res.code === 200 && res.data) {
-    const originalData = JSON.parse(JSON.stringify({ ...res.data, leftClickDialogPosition: "current" }));
+    const originalData = JSON.parse(JSON.stringify(res.data));
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
     if (props?.config?.bigScreenControls) {
       let newControls = [];
