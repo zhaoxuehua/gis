@@ -165,6 +165,7 @@ import { clearSelectionDrawInteraction } from "../hooks/clearSelectionDrawIntera
 import { toLonLatFN } from "../hooks/toLonLat"; // 坐标转换
 import { labelOnSelect } from "../hooks/index"; // 定位
 import { getTrackDataByIdFn } from "../hooks/getTrackDataById"; // 获取单个轨迹数据
+import { disabledDateFun } from "../hooks/validateFun";
 
 // 解构props(withDefaults设置props默认值)
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; isShow?: boolean }>(), {
@@ -221,15 +222,6 @@ let rulesForm: any = {
   selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
   selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }],
   objectTypeId: [{ required: true, message: "查询对象不能为空", trigger: ["blur", "change"] }]
-};
-
-// 时间限制
-const disabledDateFun = (time: Date) => {
-  if (time.getTime() < new Date().getTime()) {
-    return time.getTime() > new Date().getTime() || time.getTime() < new Date().getTime() - 1000 * 3600 * 24 * 14; //时间范围必须是时间戳
-  } else {
-    return new Date().getTime(); //时间范围必须是时间戳
-  }
 };
 
 let selectModeList: Ref<selectModeListType[]> = ref([
