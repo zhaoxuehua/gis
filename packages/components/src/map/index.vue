@@ -857,7 +857,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       map.closePopup(); // 关闭点击弹框
       emits("onCloseRightMenu"); // 关闭右键菜单
       editLabelRef.value?.onClose(); // 关闭编辑标签弹框
-      clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)
+      // clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)closePopup中已调用
       // 框选或测量、绘制模式下不触发左键
       if (map?.get("boxSelectionDrawInteraction") || map?.get("measureDrawInteraction") || map?.get("drawFeature")) {
         return;
