@@ -77,6 +77,16 @@
             ></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="左键弹窗位置" prop="leftClickDialogPosition">
+          <el-select v-model="form.leftClickDialogPosition" clearable placeholder="请选择..." filterable>
+            <el-option
+              v-for="(item, index) in leftClickDialogPositionList.data"
+              :key="index"
+              :label="item.name"
+              :value="item.code"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="导航树" prop="customTreeType">
           <el-select v-model="form.customTreeType" clearable placeholder="请选择..." filterable>
             <el-option v-for="(item, index) in navTreeList.data" :key="index" :label="item.name" :value="item.code"></el-option>
@@ -176,6 +186,7 @@ interface MapParamsForm {
   externalCustomTree?: any;
   keywordConfig?: any;
   isEdit: boolean;
+  leftClickDialogPosition: string;
 }
 const emit = defineEmits(["successAdd"]);
 const layerLevelVerification = (rule: any, value: any, callback: Function) => {
@@ -283,7 +294,8 @@ const defaultParam = {
   customTreeCode: "", // 设备树编码
   externalCustomTree: {}, // 自定义树配置
   keywordConfig: {}, // 关键词配置
-  isEdit: false // 是否可编辑
+  isEdit: false, // 是否可编辑
+  leftClickDialogPosition: "current" // 左键弹窗位置 当前
 };
 
 let form = ref<MapParamsForm>(defaultParam);
@@ -423,6 +435,25 @@ const navTreeList = ref<{
     {
       code: "ExternalCustomTree",
       name: "自定义"
+    }
+  ]
+});
+
+// 左键弹窗位置配置列表
+const leftClickDialogPositionList = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "current",
+      name: "当前位置"
+    },
+    {
+      code: "right-bottom",
+      name: "右下角"
     }
   ]
 });
