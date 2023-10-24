@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.78
+
+### Patch Changes
+
+- 增加鼠标移动显示坐标及增加状态码 602 的特殊处理及实时数据修改为请求失败还继续更新
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.76
+
 ## 1.0.77
 
 ### Patch Changes

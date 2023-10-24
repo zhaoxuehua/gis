@@ -1,7 +1,7 @@
 <template>
   <div class="standard-page">
     <div class="one-search">
-      <el-form :model="query.params">
+      <el-form :model="query.params" @submit.prevent="query.onQuery">
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item label="图层名称：">

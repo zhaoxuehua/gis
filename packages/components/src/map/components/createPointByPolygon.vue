@@ -71,7 +71,6 @@
             :page-sizes="[10, 20, 30, 50, 100]"
             layout="total, prev, pager, next, sizes"
             :total="table.total"
-            :small="true"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
           />
@@ -464,7 +463,7 @@ const selectable = (row: any) => {
     }
   }
   .layer-config-table {
-    height: calc(100% - 50px);
+    height: calc(100% - 52px);
     overflow-y: auto !important;
   }
 }

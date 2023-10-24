@@ -514,10 +514,10 @@ export function clearSelectedFeature(map: VisualMap) {
 // 实现框选
 export function selectionAddDrawInteraction(
   map: VisualMap,
-  value: any,
-  callback: Function,
+  value: any, // 框选模式值
+  callback: Function, // 框选完成后的回调
   isTrue: boolean, // 是否只能框选一次不能连续框
-  closeBtnOverlayCallback?: Function
+  closeBtnOverlayCallback?: Function // 关闭框选按钮的回调
 ) {
   if (!map) return;
   clearSelectionDrawInteraction(map);
@@ -709,16 +709,10 @@ export function getFeatureCodeByEquipCode(equipCode: string, map: VisualMap) {
   let featureInfo: { [key: string]: any } = {};
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let gisStore = useGisStore();
-  const relationMap = gisStore?.relationMap;
-  for (let key in relationMap) {
-    // 标签设备关联关系
-    if (equipCode == relationMap[key].code) {
-      // key是标签的code(报警弹出对应设备的信息)
-      featureInfo.featureLabelCode = key;
-      let labelInfo = labelInfoMap[key];
-      featureInfo.featureLabelType = labelInfo?.labelType?.code;
-      break;
-    }
+  let featureCode = gisStore?.relationMapKeyIsEquipCode?.[equipCode];
+  if (featureCode) {
+    featureInfo.featureLabelCode = featureCode;
+    featureInfo.featureLabelType = labelInfoMap?.[featureCode]?.labelType?.code;
   }
   return featureInfo;
 }

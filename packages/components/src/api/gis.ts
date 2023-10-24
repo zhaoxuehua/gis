@@ -1,8 +1,13 @@
 import request from "@/api";
 
 // 导航树(场景编码)
-export function getGisCustomTree(params: string | number, idId: boolean) {
-  return request.get(`/api/gis-service/equip/getGisEquipCategoryAndEquipTypeCustomTree?${idId ? "appId" : "appCode"}=${params}`);
+export function getGisCustomTree(params: string | number, isId: boolean) {
+  return request.get(`/api/gis-service/equip/getGisEquipCategoryAndEquipTypeCustomTree?${isId ? "appId" : "appCode"}=${params}`);
+}
+
+// 设置中心点
+export function setMapCenter(params: object) {
+  return request.put(`/api/gis-service/equip/mapParams/config/changeCenter`, params);
 }
 
 // 根据设备id查找已绘制的标签信息
