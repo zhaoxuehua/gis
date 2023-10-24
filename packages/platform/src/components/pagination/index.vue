@@ -9,7 +9,6 @@
       :style="style"
       :total="total"
       v-bind="$attrs"
-      :small="true"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     />
