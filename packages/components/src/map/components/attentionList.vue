@@ -25,11 +25,9 @@
           </el-form>
         </div>
         <div class="right-operate">
-          <el-form-item>
-            <el-button type="primary" @click="addAttention">添加</el-button>
-            <el-button type="primary" @click="getTableData">搜索</el-button>
-            <el-button type="primary" :disabled="!ids.length" @click="deleteAttention()">批量取消关注</el-button>
-          </el-form-item>
+          <el-button type="primary" @click="addAttention">添加</el-button>
+          <el-button type="primary" @click="getTableData">搜索</el-button>
+          <el-button type="primary" :disabled="!ids.length" @click="deleteAttention()">批量取消关注</el-button>
         </div>
       </div>
 
