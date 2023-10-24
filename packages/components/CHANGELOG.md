@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.79
+
+### Patch Changes
+
+- 解决版本不同警告问题
+
 ## 1.0.78
 
 ### Patch Changes
