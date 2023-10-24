@@ -7,21 +7,26 @@
         <Icon src="Close" :size="14" @click="onClosePopup" class="icon"></Icon>
       </div>
       <div class="map-popup-body">
+        <!-- 不是关联设备 -->
         <div class="content" v-if="!state.isRelationBody">
           <span>名称：{{ props?.data?.featureName || "" }}</span>
           <span>编码：{{ props?.data?.featureCode || "" }}</span>
         </div>
+        <!-- 是关联设备没有配置左键弹窗属性 -->
         <div class="content has-config-attr-content" v-if="state.isRelationBody && !state.hasConfigAttr">
           <span v-if="!equipInfo.isRealTimeData">监测状态：{{ state.statusName }}</span>
           <span>编码：{{ state.equipCode || "" }}</span>
         </div>
+        <!-- 是关联设备配置了左键弹窗属性 -->
         <div v-if="state.isRelationBody && state.hasConfigAttr" class="relation-content">
+          <!-- 静态属性 -->
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
-              <span class="value">{{ item.value }}{{ item.unitName }}</span>
+              <span class="value">{{ item.value }}{{ item?.unitName || "" }}</span>
             </li>
           </ul>
+          <!-- 监测属性：非线性数据 -->
           <div class="monitor-sequence-data" v-if="attrData.monitorSequenceData.length">
             <ul class="list">
               <li class="list-item">
@@ -36,6 +41,7 @@
               </li>
             </ul>
           </div>
+          <!-- 监测属性：线性数据 -->
           <div v-if="attrData.monitorLineAttr.length">
             <lineChart
               class="monitor-curve-data"
@@ -44,11 +50,13 @@
               ref="lineChartRef"
             ></lineChart>
           </div>
+          <!-- 监测属性：结构体 -->
           <jsonBody
             class="monitor-jsonbody-data"
             :jsonbodyData="attrData.monitorJSONbodyData"
             :jsonbodyMap="attrData.monitorJSONbodyMap"
           ></jsonBody>
+          <!-- 链接配置 -->
           <div class="link-config" v-if="linkData.length">
             <el-button v-for="btn in attrData.linkData" :key="btn.name" type="primary" @click="onAction(btn.buttonType)">{{
               btn.name
