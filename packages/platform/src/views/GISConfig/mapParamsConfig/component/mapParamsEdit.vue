@@ -251,6 +251,7 @@ const state = reactive({
     displayLabelInfoIds: [{ required: true, message: "请选择显示标签类型", trigger: ["blur", "change"] }],
     displayLayerIds: [{ required: true, message: "请选择显示图层", trigger: ["blur", "change"] }],
     scaleLineUnit: [{ required: true, message: "请选择距离单位", trigger: ["blur", "change"] }],
+    leftClickDialogPosition: [{ required: true, message: "请选择左键弹窗位置", trigger: ["blur", "change"] }],
     customTreeType: [{ required: true, message: "请选择导航树", trigger: ["blur", "change"] }],
     customTreeCode: [{ required: true, message: "请选择设备树", trigger: ["blur", "change"] }],
     normalUrl: [

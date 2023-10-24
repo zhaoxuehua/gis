@@ -40,7 +40,7 @@
       <Popup
         :map="exportMap"
         :data="popupData"
-        @on-close="onScadaClose"
+        @on-close="onPopupClose"
         :ref="leftClickDialogPosition === 'current' ? 'popupRef' : ''"
         @scada="handlePopLink"
         @view="handlePopLink"
@@ -949,7 +949,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
   }
 };
 
-const onScadaClose = () => {
+const onPopupClose = () => {
   exportMap.value?.closePopup();
 };
 
