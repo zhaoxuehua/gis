@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.77
+
+### Patch Changes
+
+- 增加设置中心点、获取中心点、鼠标移动、按 UI 样式修改
+
 ## 1.0.76
 
 ### Patch Changes

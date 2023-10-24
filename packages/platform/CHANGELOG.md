@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.79
+
+### Patch Changes
+
+- 增加设置中心点、获取中心点、鼠标移动、按 UI 样式修改
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.77
+
 ## 1.0.78
 
 ### Patch Changes
