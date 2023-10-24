@@ -19,7 +19,7 @@
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
-              <span class="value">{{ item.value }}</span>
+              <span class="value">{{ item.value }}{{ item.unitName }}</span>
             </li>
           </ul>
           <div class="monitor-sequence-data" v-if="attrData.monitorSequenceData.length">
