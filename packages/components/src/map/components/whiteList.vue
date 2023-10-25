@@ -277,12 +277,4 @@ onMounted(() => {
     }
   }
 }
-
-// ::v-deep(.el-pagination .btn-next .el-icon),
-// ::v-deep(.el-pagination .btn-prev .el-icon) {
-//   display: block;
-//   width: auto;
-//   font-size: 12px;
-//   font-weight: 700;
-// }
 </style>
