@@ -5,27 +5,32 @@
       <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="content-box">
-      <el-form :model="form" inline>
-        <el-form-item label="查询对象" required>
-          <el-select v-model="form.objectTypeCode" placeholder="请选择..." @change="getTableData" class="attention-input">
-            <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.code" />
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="keywordConfig?.code || '标识'">
-          <el-input
-            v-model="form.objectCode"
-            placeholder="请输入..."
-            clearable
-            @input="getTableData"
-            class="attention-input"
-          ></el-input>
-        </el-form-item>
-        <el-form-item>
+      <div class="operate-area">
+        <div>
+          <el-form :model="form" inline>
+            <el-form-item label="查询对象" required>
+              <el-select v-model="form.objectTypeCode" placeholder="请选择..." @change="getTableData" class="attention-input">
+                <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.code" />
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="keywordConfig?.code || '标识'">
+              <el-input
+                v-model="form.objectCode"
+                placeholder="请输入..."
+                clearable
+                @input="getTableData"
+                class="attention-input"
+              ></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="right-operate">
           <el-button type="primary" @click="addAttention">添加</el-button>
           <el-button type="primary" @click="getTableData">搜索</el-button>
           <el-button type="primary" :disabled="!ids.length" @click="deleteAttention()">批量取消关注</el-button>
-        </el-form-item>
-      </el-form>
+        </div>
+      </div>
+
       <Table
         :columns="columns"
         :data="tableData"
@@ -259,6 +264,17 @@ onMounted(() => {
     padding: 20px;
     .attention-input {
       width: 150px;
+    }
+    .operate-area {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      .right-operate {
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+        justify-content: flex-end;
+      }
     }
   }
   .attention-table {

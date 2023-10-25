@@ -75,7 +75,6 @@
             :page-sizes="[10, 20, 30, 50, 100]"
             layout="total, prev, pager, next, sizes"
             :total="table.total"
-            :small="true"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
           />
@@ -261,20 +260,11 @@ onMounted(() => {
       display: flex;
       flex: 1;
       flex-direction: row;
-
-      // align-items: center;
       justify-content: flex-end;
-
-      // span {
-      //   padding-right: 20px;
-      //   color: #606266;
-      // }
     }
   }
   .list-area {
     width: 100%;
-
-    // margin-top: 20px;
     .header-table {
       background-color: #f7f7fa;
     }
@@ -286,12 +276,5 @@ onMounted(() => {
       }
     }
   }
-}
-::v-deep(.el-pagination .btn-next .el-icon),
-::v-deep(.el-pagination .btn-prev .el-icon) {
-  display: block;
-  width: auto;
-  font-size: 12px;
-  font-weight: 700;
 }
 </style>

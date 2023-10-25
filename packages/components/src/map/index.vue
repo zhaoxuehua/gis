@@ -34,19 +34,22 @@
       @on-click-box-selection="onClickBoxSelection"
     >
     </RightActionBox>
-    <!-- 地图点击弹框 -->
-    <Popup
-      :map="exportMap"
-      :data="popupData"
-      @on-close="onScadaClose"
-      ref="popupRef"
-      @scada="handlePopLink"
-      @view="handlePopLink"
-    >
-      <template #customContent v-if="customContent">
-        <component :is="customContent"></component>
-      </template>
-    </Popup>
+
+    <!-- 地图点击弹框  leftClickDialogPosition ：当前位置 current ，右下角  right-bottom -->
+    <div :class="[leftClickDialogPosition === 'current' ? '' : 'right-bottom-popup']">
+      <Popup
+        :map="exportMap"
+        :data="popupData"
+        @on-close="onPopupClose"
+        :ref="leftClickDialogPosition === 'current' ? 'popupRef' : ''"
+        @scada="handlePopLink"
+        @view="handlePopLink"
+      >
+        <template #customContent v-if="customContent">
+          <component :is="customContent"></component>
+        </template>
+      </Popup>
+    </div>
 
     <!-- 轨迹回放列表(轨迹列表只能展示5条)-->
     <Track-back-list></Track-back-list>
@@ -136,6 +139,7 @@ const exportMap = ref<VisualMap>();
 const mapRef = ref();
 const currentLevel = ref(); // 当前视图层级
 const mousePositionContainer = ref(); // 鼠标移动显示坐标的容器
+const leftClickDialogPosition = ref("current"); // 左键弹窗位置
 
 // 实时数据统计(目标总数)
 let realtimeDataCountList = computed(() => {
@@ -421,6 +425,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend // 图例[]
     };
+    leftClickDialogPosition.value = originalData?.leftClickDialogPosition || "current";
     gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}]
     gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
     gisStore?.setRealtimeDataCountList(cloneDeep(originalData?.realtimeDataList || [])); // 实时请求统计
@@ -812,14 +817,16 @@ const initMap = async (mapId: string | number, isId: boolean) => {
 
     /***********************地图点击弹框及（搜索、标签树、导航树点击对应弹框）*****************************/
     // 地图点击弹框
-    // 弹窗图层
+    // 弹窗图层  当前点击位置
     const overlay = new Overlay({
       element: popupRef.value?.getDOMElement(), // 弹框组件
       autoPan: true
     });
     map.addOverlay(overlay);
     map.closePopup = () => {
-      overlay && overlay.setPosition(undefined);
+      if (leftClickDialogPosition.value === "current") {
+        overlay && overlay.setPosition(undefined);
+      }
       popupData.featureCode = "";
       popupData.featureName = "";
       popupData.relationMap = null;
@@ -839,7 +846,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       popupData.featureCode = featureCode;
       popupData.featureName = featureName;
       popupData.relationMap = gisStore?.relationMap[featureCode] || currentTrack;
-      overlay.setPosition(center);
+      if (leftClickDialogPosition.value === "current") {
+        overlay.setPosition(center);
+      }
     };
 
     /***********************地图鼠标点击事件***************************************************************/
@@ -848,7 +857,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       map.closePopup(); // 关闭点击弹框
       emits("onCloseRightMenu"); // 关闭右键菜单
       editLabelRef.value?.onClose(); // 关闭编辑标签弹框
-      clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)
+      // clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)closePopup中已调用
       // 框选或测量、绘制模式下不触发左键
       if (map?.get("boxSelectionDrawInteraction") || map?.get("measureDrawInteraction") || map?.get("drawFeature")) {
         return;
@@ -940,7 +949,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
   }
 };
 
-const onScadaClose = () => {
+const onPopupClose = () => {
   exportMap.value?.closePopup();
 };
 
@@ -1294,6 +1303,22 @@ watch(
     border: 1px solid #333333;
     border-radius: 50%;
     transform: scale(0.8);
+  }
+
+  // 左键弹窗位置 右下角
+  .right-bottom-popup {
+    position: absolute;
+    right: 520px;
+    bottom: 40px;
+    .map-popup {
+      &::before,
+      &::after {
+        display: none;
+      }
+      .popup-custom-box {
+        max-height: 500px;
+      }
+    }
   }
 }
 </style>

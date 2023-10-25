@@ -9,7 +9,7 @@
     <div class="content-box">
       <el-tabs v-model="state.activeIndex">
         <el-tab-pane name="1" label="测量工具"> </el-tab-pane>
-        <!-- <el-tab-pane name="5" label="设置中心点"></el-tab-pane> -->
+        <el-tab-pane name="5" label="设置中心点"></el-tab-pane>
         <el-tab-pane name="2" label="坐标定位"></el-tab-pane>
         <el-tab-pane name="3" label="实时标签样式"></el-tab-pane>
         <el-tab-pane name="4" label="获取水深"></el-tab-pane>
@@ -182,9 +182,11 @@ import { setToMapCenter, getMapPositionCenter } from "../hooks/setToMapCenter";
 
 // store
 import { useToolboxStore } from "../../stores/modules/toolBox";
+import { useGisStore } from "../../stores/modules/gis";
 
 // api
 import { getLayerList } from "../../api/device";
+import { setMapCenter } from "../../api/gis";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; isShow?: boolean }>(), {
   map: () => null,
@@ -196,7 +198,7 @@ const emits = defineEmits(["onClose"]);
 const onClose = () => {
   emits("onClose", props.index);
 };
-
+const gisStore = useGisStore();
 const state = reactive({
   activeIndex: "1",
   measuringValue: "length", //当前选择的测量单位
@@ -361,15 +363,21 @@ const getCurrentMapPositionCenter = () => {
 };
 
 // 给应用场景设置中心点(修改初始化时存储的中心点经纬度及调用接口：修改配置的经纬度)
-const toSetMapCenter = () => {
-  // 经纬度必须有值
+const toSetMapCenter = async () => {
   if (state.centerData.lon && state.centerData.lat) {
-    // 接口成功后的操作
-    let defaultOptions = props.map?.defaultOptions;
-    if (defaultOptions?.center?.lon && defaultOptions?.center?.lat) {
-      defaultOptions.center.lon = state.centerData.lon;
-      defaultOptions.center.lat = state.centerData.lat;
-    }
+    await setMapCenter({
+      [`${gisStore?.mapIdentificationConfig?.isId ? "id" : "appCode"}`]: gisStore?.mapIdentificationConfig?.mapParams,
+      defaultCenterPointLongitude: Number(state.centerData.lon),
+      defaultCenterPointLatitude: Number(state.centerData.lat)
+    }).then(() => {
+      // 接口成功后的操作(不用刷新页面也是新设置的中心点)
+      let defaultOptions = props.map?.defaultOptions;
+      if (defaultOptions?.center?.lon && defaultOptions?.center?.lat) {
+        defaultOptions.center.lon = state.centerData.lon;
+        defaultOptions.center.lat = state.centerData.lat;
+      }
+      ElMessage.success("设置成功");
+    });
   } else {
     ElMessage.warning("请设置经纬度值");
   }
@@ -388,7 +396,6 @@ watch(
     deep: true
   }
 );
-
 /*******************************************设置中心点结束********************************************/
 
 /*******************************************坐标定位********************************************/

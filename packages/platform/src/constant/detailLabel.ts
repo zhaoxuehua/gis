@@ -135,6 +135,11 @@ export const GIS_MAPPARAMS_DETAIL = [
     slot: true
   },
   {
+    label: "左键弹窗位置",
+    name: "leftClickDialogPosition",
+    slot: true
+  },
+  {
     label: "导航树",
     name: "customTreeType",
     slot: true

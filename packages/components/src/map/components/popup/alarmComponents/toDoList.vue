@@ -85,7 +85,6 @@
           :page-sizes="[10, 20, 30, 50, 100]"
           layout="total, prev, pager, next, sizes"
           :total="table.total"
-          :small="true"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />

@@ -159,6 +159,7 @@ defineExpose({
 .white-list-box {
   .el-form,
   .el-form .el-select {
+    width: 230px;
     :deep(.el-input) {
       width: 230px;
     }

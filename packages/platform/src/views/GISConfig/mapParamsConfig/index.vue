@@ -1,7 +1,7 @@
 <template>
   <div class="standard-page">
     <div class="one-search">
-      <el-form :model="query.params">
+      <el-form :model="query.params" @submit.prevent="query.onQuery">
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item label="场景名称：">
@@ -125,6 +125,9 @@
       <template #scaleLineUnit="scope">
         {{ scope.row.scaleLineUnit == "metric" ? "米（千米）" : "海里" }}
       </template>
+      <template #leftClickDialogPosition="scope">
+        {{ dialogPositionMap[scope.row.leftClickDialogPosition || "current"] }}
+      </template>
       <template #customTreeType="scope">
         {{ scope.row.customTreeType == "EquipCustomTree" ? "设备树" : "自定义" }}
       </template>
@@ -171,6 +174,8 @@ const defaultParams = {
   pageNumber: 1,
   pageSize: 10
 };
+
+const dialogPositionMap: any = { current: "当前位置", "right-bottom": "右下角" };
 
 const query = ref({
   params: { ...defaultParams },
