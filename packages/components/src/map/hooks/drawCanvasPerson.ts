@@ -1,6 +1,6 @@
 type createdCanvasShipType = (color: string[]) => HTMLCanvasElement | undefined;
 
-const drawCanvasPerson: createdCanvasShipType = function ([headColor, bodyColor]) {
+const drawCanvasPerson: createdCanvasShipType = function ([headColor, bodyColor] = ["#ffff00", "#ffff00"]) {
   // 人
   const width = 30;
   const height = 50;
