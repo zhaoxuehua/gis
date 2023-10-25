@@ -139,7 +139,7 @@ const exportMap = ref<VisualMap>();
 const mapRef = ref();
 const currentLevel = ref(); // 当前视图层级
 const mousePositionContainer = ref(); // 鼠标移动显示坐标的容器
-const leftClickDialogPosition = ref(); // 左键弹窗位置
+const leftClickDialogPosition = ref("current"); // 左键弹窗位置
 
 // 实时数据统计(目标总数)
 let realtimeDataCountList = computed(() => {
@@ -425,7 +425,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       controlIds: originalData.displayControlIds, // 控件 string
       displayLegend: originalData.displayLegend // 图例[]
     };
-    leftClickDialogPosition.value = originalData.leftClickDialogPosition || "cuurent";
+    leftClickDialogPosition.value = originalData?.leftClickDialogPosition || "current";
     gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}]
     gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
     gisStore?.setRealtimeDataCountList(cloneDeep(originalData?.realtimeDataList || [])); // 实时请求统计
