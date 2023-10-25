@@ -60,7 +60,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       if (Array.isArray(feature.get("features"))) {
         targetFeature = feature.get("features")?.[0];
       }
-      let extendsData = targetFeature.get("extendsData");
+      let extendsData = targetFeature?.get("extendsData") || {};
       let selected = targetFeature.get("selected");
       const { angle } = extendsData; // 要素扩展字段
       let { shipKey, canvasImg, height } = createLayerStyle(styleObject, extendsData);
@@ -169,16 +169,16 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 }
 
 // 图层样式（根据不同的内置样式对象返回不同的值）
-export function createLayerStyle(styleObject: string, extendsData: any) {
+export function createLayerStyle(styleObject: string, extendsData: any = {}) {
   const { color, showHeadline } = extendsData; // 要素扩展字段
   let shipKey;
   let canvasImg: any;
   let height = 44;
   if (styleObject == "aisBoat") {
-    shipKey = showHeadline + color.join();
+    shipKey = showHeadline + color?.join();
     canvasImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
   } else if (styleObject == "person") {
-    shipKey = color.join();
+    shipKey = color?.join();
     canvasImg = drawCanvasPerson(color) as HTMLCanvasElement;
   }
   return { shipKey, canvasImg, height };

@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.82
+
+### Patch Changes
+
+- 修复左键定位问题及增加默认值
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.80
+
 ## 1.0.81
 
 ### Patch Changes
