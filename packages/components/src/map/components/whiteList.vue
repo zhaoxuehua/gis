@@ -81,7 +81,7 @@
         </div>
       </div>
     </div>
-    <WhiteListEdit ref="whiteListEditRef" @success-add="querySearch" class="white-list-box"></WhiteListEdit>
+    <WhiteListEdit ref="whiteListEditRef" @success-add="querySearch"></WhiteListEdit>
   </div>
 </template>
 <script lang="ts" setup>

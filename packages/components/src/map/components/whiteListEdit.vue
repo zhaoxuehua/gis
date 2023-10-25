@@ -7,6 +7,7 @@
     append-to-body
     @close="onClose"
     :destroy-on-close="true"
+    class="white-list-box"
   >
     <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
       <el-form-item label="查询对象" prop="objectTypeCode">
