@@ -41,7 +41,7 @@
         :map="exportMap"
         :data="popupData"
         @on-close="onPopupClose"
-        :ref="leftClickDialogPosition === 'current' ? setPopupRef : ''"
+        :ref="setPopupRef"
         @scada="handlePopLink"
         @view="handlePopLink"
       >
@@ -339,10 +339,12 @@ const isEditChangeHidden = () => {
 };
 
 // 地图点击弹框
-const popupRef = ref<InstanceType<typeof Popup>>();
+const popupRef: any = ref<InstanceType<typeof Popup>>();
 const setPopupRef = (el: any) => {
-  if (el) {
+  if (leftClickDialogPosition.value === "current") {
     popupRef.value = el;
+  } else {
+    popupRef.value = null;
   }
 };
 let popupData: { [key: string]: any } = reactive({
