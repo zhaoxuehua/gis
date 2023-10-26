@@ -90,8 +90,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         const { data } = res;
         realDataInfoCash[equipTypeCode] = []; // 清除该类型标签的存储数据重新存储（塞入基础引擎搜索定位等使用）
         // 经度lon 纬度lat 时间monitorTime 船4关注colorIndex  速度sog 都在监测属性中
-        // 名称name 在监测属性同级  编码code（取key值）
-        // 联系人person新加在静态属性中
+        // 名称name 联系人person 在监测属性同级  编码code（取key值）
         Object.entries(data).forEach(([key, item]) => {
           const aisLocation = (item as any)?.[dataContent]; // 监测属性
           const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）eg、AISDATA-alarm
