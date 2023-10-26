@@ -101,8 +101,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
     } = nextData;
 
     const dotted = +new Date(nextDataTime) - +new Date(currDataTime) >= strategyTime; // 是否大于策略时间
-    const currDataLonLat = olProj.fromLonLat([Number(currDataLon), Number(currDataLat)]);
-    const nextDataLonLat = olProj.fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
+    const currDataLonLat = olProj?.fromLonLat([Number(currDataLon), Number(currDataLat)]);
+    const nextDataLonLat = olProj?.fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
     const extendsData = {
       labelInfo: currData.labelInfo,
       detailInfo: currDataDetailInfo,
@@ -160,7 +160,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
     name: shipName,
     posInfo: { lon: shipLon, lat: shipLat }
   } = shipData;
-  const shipLonLat = olProj.fromLonLat([Number(shipLon), Number(shipLat)]);
+  const shipLonLat = olProj?.fromLonLat([Number(shipLon), Number(shipLat)]);
   const shipFeature = new Feature({
     name: shipName,
     geometry: new Point(shipLonLat),
@@ -176,12 +176,12 @@ const createdTrackData = async function (param: trackLayerParamType) {
   const zoom = Math.floor((layerMinLevel + 1 + layerMaxLevel) / 2);
   const center = backCenterByFeatures(trackLineLabelFeatureArr);
   setToMapCenter({
-    lon: center[0],
-    lat: center[1],
+    lon: center?.[0],
+    lat: center?.[1],
     zoom: zoom,
     duration: 50,
     callBack: function () {
-      if (mapTackListMap[id]) {
+      if (mapTackListMap?.[id]) {
         // 已存在,移除layer,在重新创建
         setNumArr.forEach(setId => {
           clearTimeout(setId);
@@ -217,8 +217,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
       distance: trackAggDistance,
       vector: new VectorSource(),
       styleFunction: function (feature: FeatureLike) {
-        const type = feature.get("type");
-        let { color, dotted, lineWidth = 2 } = feature.get("extendsData");
+        const type = feature?.get("type");
+        let { color, dotted, lineWidth = 2 } = feature?.get("extendsData");
         const styles: Style[] = [];
 
         // 设置线
@@ -237,12 +237,12 @@ const createdTrackData = async function (param: trackLayerParamType) {
         // 设置箭头
         if (type === "trackLine") {
           let width = 20;
-          const zoom = mapCase.getView().getZoom();
-          const maxZoom = mapCase.getView().getMaxZoom();
+          const zoom = mapCase?.getView()?.getZoom();
+          const maxZoom = mapCase?.getView()?.getMaxZoom();
           const disZoom = maxZoom - zoom;
           width = disZoom < 2 ? (zoom / maxZoom) * width : 0;
-          const geometry = feature.getGeometry();
-          (geometry as any).forEachSegment(function (start: number[], end: number[]) {
+          const geometry = feature?.getGeometry();
+          (geometry as any)?.forEachSegment(function (start: number[], end: number[]) {
             const dx = end[0] - start[0];
             const dy = end[1] - start[1];
             const rotation = Math.atan2(dy, dx);
@@ -265,14 +265,14 @@ const createdTrackData = async function (param: trackLayerParamType) {
 
         // 设置船只
         if (type == "trackShip") {
-          const angle = feature.get("extendsData").posInfo.cog;
-          const shipName = feature.get("name");
+          const angle = feature?.get("extendsData").posInfo.cog;
+          const shipName = feature?.get("name");
           const canvasShip = createdCanvasShip(false, [color, color]) as any;
           const shipSty = new Style({
             image: new Icon({
               img: canvasShip,
               imgSize: [canvasShip.width, canvasShip.height],
-              rotation: (angle * Math.PI) / 180,
+              rotation: angle ? (angle * Math.PI) / 180 : undefined,
               height: 40,
               offset: [0, 20]
             }),
@@ -309,8 +309,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
       distance: trackAggDistance,
       vector: new VectorSource(),
       styleFunction: function (feature: FeatureLike) {
-        const targetFeature = feature.get("features")[0];
-        const { color } = targetFeature.get("extendsData");
+        const targetFeature = feature?.get("features")[0];
+        const { color } = targetFeature?.get("extendsData");
         return new Style({
           image: new Circle({
             radius: 5,
@@ -328,8 +328,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
       distance: trackAggDistance * 3,
       vector: new VectorSource(),
       styleFunction: function (feature: FeatureLike) {
-        const targetFeature = feature.get("features")[0];
-        const speed = targetFeature.get("speed");
+        const targetFeature = feature?.get("features")[0];
+        const speed = targetFeature?.get("speed");
         const { color, labelInfo, unit } = targetFeature.get("extendsData");
         let chart = "";
         switch (speed) {
@@ -372,7 +372,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
   // 删除layer
   function removerLayer() {
     Object.values(mapTackListMap[id]).forEach(layer => {
-      mapCase.removeLayer(layer);
+      mapCase?.removeLayer(layer);
     });
     delete mapTackListMap[id];
   }
@@ -405,7 +405,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
         style: styleFunction
       };
       let layer = new VectorLayer(LayerOption);
-      mapCase.addLayer(layer);
+      mapCase?.addLayer(layer);
       mapTackListMap[id][code] = layer;
     });
   }
@@ -432,10 +432,10 @@ const createdTrackData = async function (param: trackLayerParamType) {
   function drawAnimation(val: Feature, index: number, type: "trackLine" | "trackLineLabel" | "trackLineCircle") {
     if (!animationTime) {
       // 无动画
-      layerManageData[type].vector.addFeature(val);
+      layerManageData[type].vector?.addFeature(val);
     } else {
       const timerId = setTimeout(() => {
-        layerManageData[type].vector.addFeature(val);
+        layerManageData[type].vector?.addFeature(val);
       }, Number(animationTime) * 1000 * index);
       setNumArr.push(timerId);
     }
@@ -449,13 +449,13 @@ const showHideTrackData: showHideTrackDataType = function (id, isTrue) {
   // mapCase地图实例
   const gisStore = useGisStore();
   const mapCase = gisStore.mapCase;
-  const mapTackListMap = mapCase.get("tackListMap");
+  const mapTackListMap = mapCase?.get("tackListMap");
   if (!mapTackListMap[id]) {
     console.info(id + "映射不存在！");
     return;
   }
   Object.values(mapTackListMap[id]).forEach(layer => {
-    (layer as BaseLayer).setVisible(isTrue);
+    (layer as BaseLayer)?.setVisible(isTrue);
   });
 };
 
@@ -464,12 +464,12 @@ const delTrackData: delTrackDataType = function (id) {
   // mapCase地图实例
   const gisStore = useGisStore();
   const mapCase = gisStore.mapCase;
-  const mapTackListMap = mapCase.get("tackListMap");
+  const mapTackListMap = mapCase?.get("tackListMap");
   if (!mapTackListMap[id]) {
     return;
   }
   Object.values(mapTackListMap[id]).forEach(layer => {
-    mapCase.removeLayer(layer);
+    mapCase?.removeLayer(layer);
   });
   delete mapTackListMap[id];
 };
@@ -479,7 +479,7 @@ const delTrackData: delTrackDataType = function (id) {
   读取localStorage 中需要隐藏的船只
 *****************************************************************************************/
 const showHideLayer = function (flag: boolean) {
-  hideLayer && hideLayer.setVisible(flag);
+  hideLayer && hideLayer?.setVisible(flag);
 };
 
 export { createdTrackData, showHideTrackData, delTrackData, showHideLayer };
