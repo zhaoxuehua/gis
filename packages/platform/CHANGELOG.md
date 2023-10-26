@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.83
+
+### Patch Changes
+
+- 修复轨迹绘制时没有 angle 角度时不绘制尾部箭头的问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.81
+
 ## 1.0.82
 
 ### Patch Changes
