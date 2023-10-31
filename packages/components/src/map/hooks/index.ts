@@ -15,6 +15,7 @@ import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, L
 import { MAP_DATA_TYPE, getGeometryCenter, getCoordinate, getLonLatCoordinate } from "./createGeometry.js";
 import { createStyle, selectBoxStyle } from "./styleFunction.js";
 import { clearSelectionDrawInteraction } from "./clearSelectionDrawInteraction";
+import { judgeIncludePolygon } from "./judgeIncludePolygonFun";
 import { fromLonLat } from "ol/proj";
 import moment from "moment";
 
@@ -592,13 +593,12 @@ export function selectionAddDrawInteraction(
     // 框选关闭按钮逻辑
     let cor = (polygon as any)?.getCoordinates();
     let closeBtnOverlay = map?.get("closeBtnOverlay");
-    value == "Polygon" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][0]);
-    value == "Circle" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][1]);
+    value == "Polygon" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][0]); // 多边形
+    value == "Circle" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][1]); // 矩形
 
     // 框选要素或者区域
-    const extent = polygon?.getExtent();
     const currentZoom = map?.getView()?.getZoom(); // 当前层级
-    let selectionFeatures = [];
+    let selectionFeatures: any = []; // 框选的要素数组
     let layerMap = map?.get("layerMap");
     for (let key in layerMap) {
       let layer: any = layerMap[key]; // 每个图层
@@ -609,27 +609,48 @@ export function selectionAddDrawInteraction(
         const isTagAgg = layer.get("isTagAgg");
         let source: any;
         if (isTagAgg) {
-          const clusterDataSource = layer.getSource();
-          clusterDataSource.forEachFeatureInExtent(extent, function (feature: any) {
-            if (!feature.get("features")) {
+          const clusterDataSource = layer?.getSource();
+          let features = clusterDataSource?.getFeatures();
+          features?.forEach((feature: any) => {
+            if (!feature?.get("features")) {
               // 如果要素不是聚合要素，则为原始要素
-              selectionFeatures.push(feature);
+              let geometry = feature?.getGeometry();
+              let type = feature?.get("type");
+              let isInclude = judgeIncludePolygon(polygon, geometry, type); //  判断是否在多边形区域内的判断方法
+              if (isInclude) {
+                selectionFeatures.push(feature);
+              }
             } else {
-              // 如果要素是聚合要素，则进一步处理每个子要素
-              const clusterFeatures = feature.get("features");
-              selectionFeatures.push(...clusterFeatures);
+              //如果要素是聚合要素，则进一步处理每个子要素
+              let clusterFeatures = feature?.get("features"); // 聚合处的原始要素数组
+              clusterFeatures?.forEach((originFeature: any) => {
+                let geometry = originFeature?.getGeometry();
+                let type = originFeature?.get("type");
+                let isInclude = judgeIncludePolygon(polygon, geometry, type);
+                if (isInclude) {
+                  selectionFeatures.push(originFeature);
+                }
+              });
             }
           });
         } else {
-          source = layer.getSource();
+          source = layer?.getSource();
           if (source instanceof VectorSource) {
-            const features = layer.getSource().getFeaturesInExtent(extent);
-            selectionFeatures.push(...features);
+            // 判断是否在多边形区域内的判断方法
+            let features = layer?.getSource()?.getFeatures(); // 获取图层数据源上的所有要素数组
+            features?.forEach((feature: any) => {
+              let geometry = feature?.getGeometry(); // 获取要素的几何对象
+              let type = feature?.get("type"); // 获取之前存的点线面类型字段值
+              let isInclude = judgeIncludePolygon(polygon, geometry, type);
+              if (isInclude) {
+                selectionFeatures.push(feature);
+              }
+            });
           }
         }
       }
     }
-    // 调用方法将要素抛出去应用实现逻辑
+    // 调用方法将要素抛出去应用实现逻辑 isTrue是true只能框一次，回调函数参数是框选的坐标点数组
     !isTrue && callback(selectionFeatures);
     isTrue && callback((polygon as any).getCoordinates());
     isTrue && boxSelectionDrawInteraction.setActive(false); // isTrue是true时只能框选一次不能左击后继续框选

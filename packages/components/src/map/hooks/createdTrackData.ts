@@ -340,7 +340,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
             chart = "▼";
             break;
         }
-        let text = labelInfo.time + "  " + labelInfo?.speed ?? "";
+        let text = labelInfo.time + "  ";
+        text += labelInfo?.speed ?? "";
         text += unit ?? "";
         text += chart;
         let txtSty = new Style({
