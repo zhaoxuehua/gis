@@ -1,5 +1,17 @@
 # @adm-gis-ui/agmap
 
+## 1.0.81
+
+### Patch Changes
+
+- 修复轨迹绘制时没有 angle 角度时不绘制尾部箭头的问题
+
+## 1.0.80
+
+### Patch Changes
+
+- 修复左键定位问题及增加默认值
+
 ## 1.0.79
 
 ### Patch Changes

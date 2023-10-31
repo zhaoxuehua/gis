@@ -60,7 +60,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       if (Array.isArray(feature.get("features"))) {
         targetFeature = feature.get("features")?.[0];
       }
-      let extendsData = targetFeature.get("extendsData");
+      let extendsData = targetFeature?.get("extendsData") || {};
       let selected = targetFeature.get("selected");
       const { angle } = extendsData; // 要素扩展字段
       let { shipKey, canvasImg, height } = createLayerStyle(styleObject, extendsData);
@@ -90,8 +90,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         const { data } = res;
         realDataInfoCash[equipTypeCode] = []; // 清除该类型标签的存储数据重新存储（塞入基础引擎搜索定位等使用）
         // 经度lon 纬度lat 时间monitorTime 船4关注colorIndex  速度sog 都在监测属性中
-        // 名称name 在监测属性同级  编码code（取key值）
-        // 联系人person新加在静态属性中
+        // 名称name 联系人person 在监测属性同级  编码code（取key值）
         Object.entries(data).forEach(([key, item]) => {
           const aisLocation = (item as any)?.[dataContent]; // 监测属性
           const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）eg、AISDATA-alarm
@@ -169,16 +168,16 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 }
 
 // 图层样式（根据不同的内置样式对象返回不同的值）
-export function createLayerStyle(styleObject: string, extendsData: any) {
+export function createLayerStyle(styleObject: string, extendsData: any = {}) {
   const { color, showHeadline } = extendsData; // 要素扩展字段
   let shipKey;
   let canvasImg: any;
   let height = 44;
   if (styleObject == "aisBoat") {
-    shipKey = showHeadline + color.join();
+    shipKey = showHeadline + color?.join();
     canvasImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
   } else if (styleObject == "person") {
-    shipKey = color.join();
+    shipKey = color?.join();
     canvasImg = drawCanvasPerson(color) as HTMLCanvasElement;
   }
   return { shipKey, canvasImg, height };
