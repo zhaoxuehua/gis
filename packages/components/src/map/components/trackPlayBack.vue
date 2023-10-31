@@ -404,7 +404,7 @@ const trackPlayBack = (row: { [key: string]: any }) => {
   getTrackDataByIdFn({
     code: row.code,
     name: row.name,
-    objectTypeCode: row?.visitObjectTypeCode, // 实时数据对象类型
+    objectTypeCode: row?.visitObjectTypeCode || row?.equipTypeCode, // 实时数据对象类型
     beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
     endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss")
   });
