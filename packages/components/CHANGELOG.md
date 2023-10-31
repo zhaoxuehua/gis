@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.82
+
+### Patch Changes
+
+- 修复框选不精确问题及修复人员定位问题
+
 ## 1.0.81
 
 ### Patch Changes
