@@ -61,7 +61,9 @@ const boxSelectRadioChange = (val: any) => {
 };
 const handleSelectionFeatures = (selectionFeatures: any[]) => {
   const searchCode = map.value?.defaultOptions?.displaySearch.map((item: any) => item.code);
+  console.log(selectionFeatures, "selectionFeatures1111111");
   selectionFeatures = selectionFeatures?.filter(item => searchCode?.includes(item?.get("labelTypeCode")));
+  console.log(selectionFeatures, "selectionFeatures222222");
   emits("onBoxSelection", selectionFeatures);
 };
 // 框选关闭Overlay的回调

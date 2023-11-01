@@ -597,7 +597,7 @@ export function selectionAddDrawInteraction(
     value == "Circle" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][1]); // 矩形
 
     // 框选要素或者区域
-    const currentZoom = map?.getView()?.getZoom(); // 当前层级
+    const currentZoom = map?.getView()?.getZoom(); // 当前视图层级
     let selectionFeatures: any = []; // 框选的要素数组
     let layerMap = map?.get("layerMap");
     for (let key in layerMap) {
@@ -636,7 +636,7 @@ export function selectionAddDrawInteraction(
         } else {
           source = layer?.getSource();
           if (source instanceof VectorSource) {
-            // 判断是否在多边形区域内的判断方法
+            // 判断是否在框选区域内的判断方法
             let features = layer?.getSource()?.getFeatures(); // 获取图层数据源上的所有要素数组
             features?.forEach((feature: any) => {
               let geometry = feature?.getGeometry(); // 获取要素的几何对象
