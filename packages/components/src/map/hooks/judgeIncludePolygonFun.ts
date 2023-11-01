@@ -1,11 +1,14 @@
 import {
   lineString as turfLineString,
   polygon as turfPolygon,
+  // circle as turfCircle,
   booleanCrosses,
   booleanOverlap,
   booleanPointInPolygon,
   booleanContains
 } from "@turf/turf";
+
+// import { getLonLatCoordinate } from "./createGeometry";
 
 // polygon框选绘制的几何图形（矩形或多边形）geometry地图上的要素几何 type 要素类型
 export function judgeIncludePolygon(polygon: any, geometry: any, type: string) {
@@ -29,10 +32,26 @@ export function judgeIncludePolygon(polygon: any, geometry: any, type: string) {
       booleanContains(polygon1Geo, polygon2Geo) ||
       booleanContains(polygon2Geo, polygon1Geo);
   } else if (type == "4") {
-    // 圆 判断圆与矩形或多边形是否有重叠(范围不精确)
+    //圆 判断圆与矩形或多边形是否有重叠(范围不精确)
     if (polygon?.intersectsExtent(geometry?.getExtent())) {
       isInclude = true;
     }
+    // 利用turf也不准确
+    // const circleCenter = geometry?.getCenter();
+    // const circleRadius = geometry?.getRadius();
+    // // 3857=>4326 再生成turf几何
+    // let turfCircleGeo = turfCircle(getLonLatCoordinate(circleCenter), circleRadius / 1000);
+    // let turfPolygonGeo = turfPolygon(getLonLatCoordinate(polygon?.getCoordinates()));
+    // isInclude =
+    //   booleanOverlap(turfCircleGeo, turfPolygonGeo) ||
+    //   booleanContains(turfPolygonGeo, turfCircleGeo) ||
+    //   booleanContains(turfCircleGeo, turfPolygonGeo);
+    // console.log(
+    //   booleanOverlap(turfCircleGeo, turfPolygonGeo),
+    //   booleanContains(turfPolygonGeo, turfCircleGeo),
+    //   booleanContains(turfCircleGeo, turfPolygonGeo)
+    // );
   }
+
   return isInclude;
 }

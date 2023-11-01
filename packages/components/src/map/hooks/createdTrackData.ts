@@ -108,7 +108,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
       detailInfo: currDataDetailInfo,
       titleInfo: currData.titleInfo,
       lineWidth: labelTypeInfoCash.data.lineWidth,
-      unit: labelTypeInfoCash.data.speedUnit || "km/h",
+      unit: labelTypeInfoCash.data.speedUnit || "",
       color,
       dotted // true:虚线  false:实线
     };
