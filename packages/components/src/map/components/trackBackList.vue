@@ -38,14 +38,14 @@
                     @click="viewHide(scope.row)"
                     title="隐藏"
                   ></Icon>
-                  <Icon
-                    src="Hide"
-                    :size="14"
-                    :style="{ color: scope.row.color }"
+                  <!-- 为了兼容监控低版本element plust将 Hide Icon替换 -->
+                  <i
                     v-else
                     @click="viewHide(scope.row)"
+                    class="iconfont icon-yincang1 gis-iconfont-hide"
+                    :style="{ color: scope.row.color, fontSize: '14px' }"
                     title="查看"
-                  ></Icon>
+                  ></i>
                   <Icon
                     src="Location"
                     :size="14"
@@ -252,6 +252,16 @@ watch(
       color: var(--el-color-primary);
       i {
         cursor: pointer;
+      }
+      .gis-iconfont-hide {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1em;
+        height: 1em;
+        line-height: 1em;
+        fill: currentColor;
       }
     }
   }

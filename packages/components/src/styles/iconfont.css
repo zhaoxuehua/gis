@@ -2,9 +2,9 @@
   font-family: iconfont;
 
   /* Project id 937720 */
-  src: url('./fonts/iconfont.woff2?t=1692602393940') format('woff2'),
-    url('./fonts/iconfont.woff?t=1692602393940') format('woff'),
-    url('./fonts/iconfont.ttf?t=1692602393940') format('truetype');
+  src: url('./fonts/iconfont.woff2?t=1698912255533') format('woff2'),
+    url('./fonts/iconfont.woff?t=1698912255533') format('woff'),
+    url('./fonts/iconfont.ttf?t=1698912255533') format('truetype');
 }
 .iconfont {
   font-family: iconfont !important;
@@ -13,20 +13,20 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.icon-yincang1::before {
+  content: "\e6d1";
+}
+.icon-chakan::before {
+  content: "\e75f";
+}
 .icon-cloud-upload::before {
   content: "\e7d9";
 }
 .icon-cloud-download::before {
   content: "\e7da";
 }
-.icon-retweet::before {
-  content: "\e8ef";
-}
 .icon-list-ol-solid::before {
   content: "\e6f4";
-}
-.icon-list-ol::before {
-  content: "\eccd";
 }
 .icon-retweet1::before {
   content: "\e8b7";
