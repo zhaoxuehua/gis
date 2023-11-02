@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { cloneDeep } from "lodash";
 import { ElMessage } from "element-plus";
 import piniaPersistConfig from "@/config/piniaPersist";
-import { getGisCustomTree } from "../../api/gis";
+import { getGisCustomTree, getCollectRelation } from "../../api/gis";
 import type { VisualMap } from "../../map/type";
 
 export const useGisStore = defineStore({
@@ -32,9 +32,6 @@ export const useGisStore = defineStore({
             const { treeNodeVOList } = res.data;
             const navigationTree = cloneDeep(formatTree(treeNodeVOList));
             this.navigationTree = navigationTree;
-            const relationMap = collectRelation(treeNodeVOList);
-            this.relationMap = relationMap?.mapKeyIsFeatureCode || {};
-            this.relationMapKeyIsEquipCode = relationMap?.mapKeyIsEquipCode || {};
           } else {
             ElMessage.error("接口异常");
           }
@@ -44,6 +41,33 @@ export const useGisStore = defineStore({
         }
       );
     },
+
+    // 获取设备与标签的关联关系
+    fetchCollectRelation() {
+      getCollectRelation(this.mapIdentificationConfig?.mapParams, this.mapIdentificationConfig?.isId).then(
+        (res: any) => {
+          if (res.code === 200 && res?.data) {
+            let mapKeyIsFeatureCode: any = {};
+            let mapKeyIsEquipCode: any = {};
+            res.data?.forEach((item: { [key: string]: any }) => {
+              mapKeyIsFeatureCode[item?.associationInfo?.associationObjectCode] = {
+                ...item
+              };
+              mapKeyIsEquipCode[item?.code] = item?.associationInfo?.associationObjectCode;
+            });
+            this.relationMap = mapKeyIsFeatureCode || {};
+            this.relationMapKeyIsEquipCode = mapKeyIsEquipCode || {};
+            console.log(this.relationMap, this.relationMapKeyIsEquipCode, "关联关系");
+          } else {
+            ElMessage.error("接口异常");
+          }
+        },
+        (err: any) => {
+          console.warn(err);
+        }
+      );
+    },
+
     // 存储应用场景的编码或id
     setMapIdentification({ mapParams, isId }: { mapParams: string | number; isId: boolean }) {
       this.mapIdentificationConfig = { mapParams: mapParams, isId: isId };
@@ -87,6 +111,7 @@ export const useGisStore = defineStore({
     setNavTreeAndRelation() {
       this.navigationTree = [];
       this.relationMap = {};
+      this.relationMapKeyIsEquipCode = {};
     },
     // 设置地图实例
     setMapCase(data: VisualMap) {
@@ -112,54 +137,4 @@ const formatTree = (tree: any[]) => {
     }
   });
   return tree;
-};
-
-// 提取绑定关系
-const collectRelation = (nodes: any[]) => {
-  // 递归
-  const collectBindRelation = (function () {
-    const result: { mapKeyIsFeatureCode: { [key: string]: any }; mapKeyIsEquipCode: { [key: string]: any } } = {
-      mapKeyIsFeatureCode: {},
-      mapKeyIsEquipCode: {}
-    };
-    return function collect(tree: any[], equipType: { equipType: number; equipTypeName: string } | null) {
-      if (Array.isArray(tree) && tree.length > 0) {
-        tree.forEach(function (element) {
-          let deviceType = null;
-          const { children, nodeRelatedModel, id, name, code, associationInfo, nodeType, equipNodeFlag } = element;
-
-          // 由于接口为返回的设备节点没有设备类型信息，需要从父节点获取
-          // 如果是设备类型节点，将设备类型id、name传给子节点(如果不是设备树不塞)
-          if (nodeRelatedModel?.toLocaleLowerCase() === "eam_eqp_equip_type") {
-            deviceType = {
-              equipType: id,
-              equipTypeName: name
-            };
-          }
-
-          // 如果是设备并且已绘制标签
-          if (equipNodeFlag && associationInfo) {
-            // 标签code映射设备信息对象
-            result["mapKeyIsFeatureCode"][associationInfo.associationObjectCode] = {
-              id,
-              name,
-              code,
-              associationInfo,
-              nodeType,
-              model: nodeRelatedModel,
-              ...equipType
-            };
-            // 设备code映射标签code
-            result["mapKeyIsEquipCode"][code] = associationInfo.associationObjectCode;
-          }
-
-          if (Array.isArray(children) && children.length > 0) {
-            collect(children, deviceType);
-          }
-        });
-      }
-      return result;
-    };
-  })();
-  return collectBindRelation(nodes, null);
 };

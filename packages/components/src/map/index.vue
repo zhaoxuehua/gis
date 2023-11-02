@@ -1010,6 +1010,7 @@ onMounted(() => {
   // 设置并请求导航树、关联关系
   gisStore.setNavTreeAndRelation(); // 清空导航树数据
   gisStore.fetchNavigationTree(); // 获取导航树数据
+  gisStore.fetchCollectRelation(); // 获取设备与标签的关联关系
   clearAllTimers();
   initMap(mapParams, !!props?.config?.id);
 });
