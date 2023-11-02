@@ -5,6 +5,7 @@ import piniaPersistConfig from "@/config/piniaPersist";
 import { getGisCustomTree, getCollectRelation } from "../../api/gis";
 import type { VisualMap } from "../../map/type";
 
+const trackColor = ["#c70a0a", "#1d9000", "#00289c", "#aa0a72", "#007eb3", "#5310d6", "#cb5e01", "#d10087", "#8e7604", "#971ae8"];
 export const useGisStore = defineStore({
   id: "gis",
   state: (): any => ({
@@ -21,7 +22,7 @@ export const useGisStore = defineStore({
     keywordConfig: {}, // 关键词配置
     simulateAlarmTimer: null, // 报警要素样式切换定时器
     mapCase: {}, // 地图实例
-    trackColor: ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"] // 轨迹回放的颜色
+    trackColor: trackColor // 轨迹回放的颜色
   }),
   actions: {
     // 导航树及关联关系
@@ -57,7 +58,6 @@ export const useGisStore = defineStore({
             });
             this.relationMap = mapKeyIsFeatureCode || {};
             this.relationMapKeyIsEquipCode = mapKeyIsEquipCode || {};
-            console.log(this.relationMap, this.relationMapKeyIsEquipCode, "关联关系");
           } else {
             ElMessage.error("接口异常");
           }
@@ -117,6 +117,19 @@ export const useGisStore = defineStore({
     setMapCase(data: VisualMap) {
       this.mapCase = data;
       this.mapCase.set("tackListMap", {});
+    },
+
+    // 设置(当关闭轨迹列表、轨迹列表数据为空、刷新时)
+    setTrackColor() {
+      this.trackColor = trackColor;
+    },
+    updateTrackColor(color: string, type: string) {
+      if (type == "delete") {
+        this.trackColor = this.trackColor?.filter((item: string) => item != color);
+      }
+      if (type == "add") {
+        this.trackColor.push(color);
+      }
     }
   },
   persist: piniaPersistConfig("gis")

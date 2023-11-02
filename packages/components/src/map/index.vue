@@ -1011,6 +1011,7 @@ onMounted(() => {
   gisStore.setNavTreeAndRelation(); // 清空导航树数据
   gisStore.fetchNavigationTree(); // 获取导航树数据
   gisStore.fetchCollectRelation(); // 获取设备与标签的关联关系
+  gisStore?.setTrackColor(); // 初始化轨迹颜色（为了让每次刷新后颜色顺序保持一致）
   clearAllTimers();
   initMap(mapParams, !!props?.config?.id);
 });

@@ -198,12 +198,14 @@ const close = () => {
     delTrackData(v.code);
   });
   tableData.value.splice(0, tableData.value.length);
+  gisStore?.setTrackColor();
 };
 
 // 删除
 const deleteRow = (row: { [key: string]: any }, index: number) => {
   delTrackData(row.code);
   tableData.value.splice(index, 1);
+  gisStore?.updateTrackColor(row.color, "add");
 };
 
 // 监测数据个数据（控制列表的显示隐藏及隐藏实时数据图层）
@@ -212,6 +214,7 @@ watch(
   n => {
     isShowHide.value = n !== 0;
     n == 0 && showHideLayer(true);
+    n == 0 && gisStore?.setTrackColor();
   }
 );
 </script>

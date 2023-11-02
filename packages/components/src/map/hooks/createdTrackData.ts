@@ -14,7 +14,6 @@ import type { trackLayerParamType, cashFeatureStyleType, showHideTrackDataType, 
 
 // ⤵ store
 import { useGisStore } from "../../stores/modules/gis";
-import { useTrackListStore } from "../../stores/modules/trackList";
 
 // ⤵ 辅助函数
 import { createdCanvasShip } from "./createdCanvasShip"; // 绘制船只
@@ -37,9 +36,6 @@ let labelTypeInfoCash: any = {};
 // 轨迹动画时长
 let setNumArr: any[] = []; // 定时器指针(清除动画)
 
-// 轨迹回放的颜色
-const trackColor = ["#c70a0a", "#007eb3", "#971ae8", "#cb5e01", "#00289c", "#d10087", "#5310d6", "#1d9000", "#8e7604", "#aa0a72"];
-
 // 隐藏的图层
 let hideLayer: any;
 
@@ -55,6 +51,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
   // mapCase地图实例 => 获取指定做轨迹回放的标签类型
   const gisStore = useGisStore();
   const mapCase = gisStore.mapCase;
+  let trackColor = gisStore.trackColor;
 
   // 轨迹的标签类型
   if (!labelTypeInfoCash?.success) {
@@ -66,11 +63,11 @@ const createdTrackData = async function (param: trackLayerParamType) {
   }
 
   /*****************************************************
-   设置颜色(根据trackList个数取索引)
+   设置颜色
   ****************************************************/
-  const trackListStore = useTrackListStore();
-  const trackListLength = trackListStore.data.length;
-  const color = trackColor[trackListLength];
+  const color = trackColor?.[0] || "#c70a0a";
+  // 移除使用的颜色
+  gisStore?.updateTrackColor(color, "delete");
 
   /*****************************************************
    创建要素
