@@ -63,18 +63,8 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  onMounted,
-  onBeforeUnmount,
-  ref,
-  defineAsyncComponent,
-  reactive,
-  computed,
-  shallowRef,
-  useSlots,
-  watch,
-  unref
-} from "vue";
+import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch, unref } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
@@ -1016,7 +1006,7 @@ onMounted(() => {
   initMap(mapParams, !!props?.config?.id);
 });
 
-onBeforeUnmount(() => {
+onBeforeRouteLeave(() => {
   clearAllTimers();
 });
 

@@ -34,7 +34,6 @@ import { useGisStore } from "../../stores/modules/gis";
 
 const gisStore = useGisStore();
 
-const emits = defineEmits(["onEquipDetail", "change"]);
 const props = withDefaults(defineProps<{ map: any }>(), {
   map: () => ({})
 });
@@ -48,7 +47,7 @@ const keywordConfig = computed(() => {
 
 const inputParam = ref("");
 const placeholderText = computed(() => (props.map?.defaultOptions?.displaySearch?.map((item: any) => item.name) || []).join(","));
-const searchData: any = ref([]);
+const searchData: any = ref([]); // 搜索数据源
 
 const search = () => {
   if (!inputParam.value) return (table.value.data = []);
@@ -69,7 +68,7 @@ const table: any = ref({
     }
     getFilterALLData();
     if (inputParam.value) {
-      // 根据标签name及code过滤数据  还有关联设备的code和name
+      // 根据标签name及code过滤数据  还有关联设备的code和name（标签name及关联关系的name一致）
       searchData.value = searchData.value.filter((item: { [key: string]: any }) => {
         return item?.filterName?.includes(inputParam.value) || String(item?.filterCode).includes(inputParam.value);
       });
@@ -82,24 +81,22 @@ const table: any = ref({
     open.value = false;
     // 定位到标签位置
     labelOnSelect(mapInstance, code, false, isRealTimeData);
-  },
-  showDetails: (row: any) => {
-    emits("onEquipDetail", row);
   }
 });
 
 const getFilterALLData = () => {
   let mapInstance = props.map;
-  const labelInfoMap = mapInstance?.get("labelInfoMap") || {};
-  const trackInfoMap = mapInstance?.get("trackInfoMap") || [];
-  const displaySearchIds = mapInstance?.defaultOptions?.displaySearchIds?.split(",")?.map((item: string) => Number(item));
-  let labelInfoArr: any = Object.values(labelInfoMap) || [];
+  const labelInfoMap = mapInstance?.get("labelInfoMap") || {}; // 绘制的标签信息{labelCode1：{}，labelCode2：{}}
+  const trackInfoMap = mapInstance?.get("trackInfoMap") || []; // 实时数据信息[{}]
+  const displaySearchIds = mapInstance?.defaultOptions?.displaySearchIds?.split(",")?.map((item: string) => Number(item)); // 配置的搜索标签类型id [id1,id2]
+  let labelInfoArr: any = Object.values(labelInfoMap) || []; // [{}] 标签详细信息
   const relationMap = gisStore?.relationMap;
-  const labelAllData = [...labelInfoArr, ...trackInfoMap];
+  const labelAllData = [...labelInfoArr, ...trackInfoMap]; // 绘制标签+实时标签
   if (!labelAllData || labelAllData.length === 0) {
     table.value.data = [];
     return;
   }
+  // 所有标签中过滤出可搜索的标签类型的标签
   let filteredData = labelAllData.filter((item: any) => {
     if (displaySearchIds.includes(item.labelTypeId)) {
       return true;
@@ -107,10 +104,12 @@ const getFilterALLData = () => {
     return false;
   });
   filteredData = filteredData.map(item => {
+    // 绘制的标签有关联关系（展示设备的code name）
     if (relationMap[item.code]) {
       item.filterCode = relationMap[item.code].code;
       item.filterName = relationMap[item.code].name;
     } else {
+      // 纯标签或实时数据标签
       item.filterCode = item.code;
       item.filterName = item.name;
     }

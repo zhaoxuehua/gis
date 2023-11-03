@@ -1,11 +1,13 @@
 import {
   lineString as turfLineString,
   polygon as turfPolygon,
+  // point as turfPoint,
   // circle as turfCircle,
   booleanCrosses,
   booleanOverlap,
   booleanPointInPolygon,
   booleanContains
+  // pointToLineDistance
 } from "@turf/turf";
 
 // import { getLonLatCoordinate } from "./createGeometry";
@@ -36,6 +38,7 @@ export function judgeIncludePolygon(polygon: any, geometry: any, type: string) {
     if (polygon?.intersectsExtent(geometry?.getExtent())) {
       isInclude = true;
     }
+
     // 利用turf也不准确
     // const circleCenter = geometry?.getCenter();
     // const circleRadius = geometry?.getRadius();
@@ -51,6 +54,18 @@ export function judgeIncludePolygon(polygon: any, geometry: any, type: string) {
     //   booleanContains(turfPolygonGeo, turfCircleGeo),
     //   booleanContains(turfCircleGeo, turfPolygonGeo)
     // );
+
+    // 利用点到多线段的最短距离与圆半径的比较实现
+    // const circleCenter = geometry?.getCenter();
+    // const circleRadius = geometry?.getRadius();
+    // let coordinates = polygon.getCoordinates()?.[0]; // [[lon,lat]]
+    // const circleCenterTurf = turfPoint(getLonLatCoordinate(circleCenter));
+    // let line = turfLineString(getLonLatCoordinate(coordinates));
+    // let distance = pointToLineDistance(circleCenterTurf, line, { units: "miles" });
+    // console.log(distance, circleRadius, 9999999);
+    // if (distance <= circleRadius / 1000) {
+    //   isInclude = true;
+    // }
   }
 
   return isInclude;
