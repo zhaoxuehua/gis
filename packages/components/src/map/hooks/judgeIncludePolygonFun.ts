@@ -1,13 +1,10 @@
 import {
   lineString as turfLineString,
   polygon as turfPolygon,
-  // point as turfPoint,
-  // circle as turfCircle,
   booleanCrosses,
   booleanOverlap,
   booleanPointInPolygon,
   booleanContains
-  // pointToLineDistance
 } from "@turf/turf";
 
 import * as olCoordinate from "ol/coordinate";
@@ -17,20 +14,19 @@ import { Point } from "ol/geom";
 
 // 点 vs 线 => 最短距离和半径大小( true:叠加  false:无焦点)
 function distanceVsRadius(lineFeature: any, pointGeometry: any, radius: number) {
-  const lineGeometry = lineFeature.getGeometry();
-  const pointCoords = pointGeometry.getCoordinates();
-  const lineCoords = lineGeometry.getCoordinates();
-  const closestPoint = olCoordinate.closestOnSegment(pointCoords, lineCoords);
-  const distance = olCoordinate.distance(closestPoint, pointCoords);
+  const lineGeometry = lineFeature?.getGeometry(); // 线几何
+  const lineCoords = lineGeometry?.getCoordinates(); // 线坐标
+  const pointCoords = pointGeometry?.getCoordinates(); // 点坐标
+  const closestPoint = olCoordinate?.closestOnSegment(pointCoords, lineCoords); // 点到线段最近的点
+  const distance = olCoordinate?.distance(closestPoint, pointCoords); // 两点间距离
   return radius > distance;
 }
 
-// 面 => 一组线
+// 面 => 一组线要素数组
 function polyToLines(polygonGeometry: any) {
-  // const polygonGeometry = polygonFeature.getGeometry();
-  const coordinates = polygonGeometry.getCoordinates()[0];
+  const coordinates = polygonGeometry?.getCoordinates()?.[0];
   const groupsLine = [];
-  for (let i = 0; i < coordinates.length - 1; i++) {
+  for (let i = 0; i < coordinates?.length - 1; i++) {
     const group = [coordinates[i], coordinates[i + 1]];
     const lineObj = new Feature({
       geometry: new LineString(group),
@@ -43,8 +39,8 @@ function polyToLines(polygonGeometry: any) {
 
 // 点 => 是否在面内
 function pointInPoly(pointGeometry: any, polygonGeometry: any) {
-  const pointCoords = pointGeometry.getCoordinates();
-  return polygonGeometry.intersectsCoordinate(pointCoords);
+  const pointCoords = pointGeometry?.getCoordinates();
+  return polygonGeometry?.intersectsCoordinate(pointCoords);
 }
 
 // 判断
@@ -54,9 +50,10 @@ function isTrue(pointGeometry: any, polygonGeometry: any, radius: number): Boole
     // 中心点在面内
     return isInside;
   } else {
-    const lineArr = polyToLines(polygonGeometry);
-    const flags = lineArr.map(lineFeature => distanceVsRadius(lineFeature, pointGeometry, radius));
-    return flags.filter(Boolean).length > 0;
+    // 点到线段的最短距离与半径比
+    const lineArr = polyToLines(polygonGeometry); // 线要素arr
+    const flags = lineArr?.map(lineFeature => distanceVsRadius(lineFeature, pointGeometry, radius)); // 判断与多边形的各个线段是否有交叉[false,true]等值
+    return flags.filter(Boolean)?.length > 0; // 判断数组 flags 中是否存在至少一个 true 值
   }
 }
 
@@ -82,11 +79,10 @@ export function judgeIncludePolygon(polygon: any, geometry: any, type: string) {
       booleanContains(polygon1Geo, polygon2Geo) ||
       booleanContains(polygon2Geo, polygon1Geo);
   } else if (type == "4") {
-    // 获取半径
-    const radius = geometry.getRadius();
-    const radiusCenter = geometry.getCenter();
-    console.log(isTrue(new Point(radiusCenter), polygon, radius), "有交叉");
+    // 思路：// 圆心在面内及点到线距离与半斤大小比
+    const circleRadius = geometry?.getRadius();
+    const circleCenter = geometry?.getCenter();
+    isInclude = !!isTrue(new Point(circleCenter), polygon, circleRadius);
   }
-
   return isInclude;
 }
