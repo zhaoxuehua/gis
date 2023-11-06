@@ -163,15 +163,9 @@ import { onMounted, reactive, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { Feature } from "ol";
 import { fromLonLat } from "ol/proj";
-import { Draw } from "ol/interaction";
-import { Vector as VectorLayer } from "ol/layer";
-import { Vector as VectorSource } from "ol/source";
-import { LineString, Polygon, Point } from "ol/geom";
-import Overlay from "ol/Overlay";
-import { unByKey } from "ol/Observable";
+import { Point } from "ol/geom";
 import { Style, Icon as IconStyle } from "ol/style";
-import { measureStyle } from "../hooks/styleFunction";
-import { formatLength, formatArea } from "../hooks/createMeasure";
+import { measureAddDrawInteraction, clearMeasureDrawInteraction } from "../hooks/createMeasureVector";
 import type { VisualMap } from "../type";
 import pointImg from "../img/piont.png";
 import Icon from "./Icon.vue";
@@ -231,123 +225,38 @@ const state = reactive({
 });
 
 /*******************************************测距********************************************/
-//测量
-let isMeasure = ref(false);
-const measureVectorLayer = ref(); // 测量图层
-const measureSource = ref(); // 测量图层数据源
-const measureOverlays = ref<Array<any>>([]); // 测量距离显示覆盖物数组
+let isMeasure = ref(false); // 测量（清除）按钮
 
-// 测量值切换
+// 测量值切换(清除原来的测量)
 const measuringValueChange = () => {
   isMeasure.value = false;
-  measureRemoveInteraction();
+  clearMeasureDrawInteraction(props?.map);
 };
 // 点击测量按钮
 const onMeasuring = () => {
   isMeasure.value = !isMeasure.value;
   if (state.measuringValue) {
-    onMeasuringFun(state.measuringValue);
+    measureAddDrawInteraction(
+      props?.map,
+      state.measuringValue,
+      props.map?.defaultOptions?.scaleLineUnit,
+      true, // 是否展示分段测量值
+      false, // 是否清除上次的测量(可左击继续绘制)=>针对可连续绘制（下一个值是false时管用）
+      true, // 是否只能绘制一次
+      true, //是否有关闭按钮（只能绘制一次时才能设置true）
+      closeBtnOverlay // 关闭回调
+    );
   }
 };
-// 进入测量模式
-const onMeasuringFun = (value: string) => {
-  if (props.map?.get("measureDrawInteraction")) {
-    // 测量交互器
-    measureRemoveInteraction();
-    return;
-  }
-  measureSource.value = new VectorSource();
-  measureVectorLayer.value = new VectorLayer({
-    source: measureSource.value,
-    // 图层样式
-    style: measureStyle
-  });
-  props.map && props.map.addLayer(measureVectorLayer.value);
-  measureAddInteraction(value);
+// 测量关闭Overlay的回调
+const closeBtnOverlay = () => {
+  isMeasure.value = false;
 };
-// 测量交互，计算线的长度，面的面积
-const measureAddInteraction = (value: string) => {
-  if (!props.map) return;
-  let measureTooltipElement: any;
-  let measureTooltip: any;
-  let measureDrawInteraction = new Draw({
-    source: measureSource.value, // 绘制图层的数据源
-    type: value == "area" ? "Polygon" : "LineString", // 绘制类型
-    style: measureStyle
-  });
-  props.map.addInteraction(measureDrawInteraction);
-  // 存储测量交互器
-  props.map?.set("measureDrawInteraction", measureDrawInteraction);
-  createMeasureTooltip();
 
-  // 计算单位
-  let defaultOptions = props.map?.defaultOptions;
-  let unit = defaultOptions?.scaleLineUnit; // "metric"米千米或者海里
-
-  // 创建展示面积或者长度的弹框
-  function createMeasureTooltip() {
-    if (measureTooltipElement) {
-      measureTooltipElement.parentNode.removeChild(measureTooltipElement);
-    }
-    measureTooltipElement = document.createElement("div");
-    measureTooltipElement.className = "ol-tooltip ol-tooltip-measure";
-    measureTooltip = new Overlay({
-      element: measureTooltipElement,
-      offset: [0, -15],
-      positioning: "bottom-center"
-    });
-
-    if (props.map) {
-      props.map.addOverlay(measureTooltip);
-    }
-    measureOverlays.value.push(measureTooltip);
-  }
-
-  let sketch;
-  let listener: any;
-  measureDrawInteraction.on("drawstart", (evt: any) => {
-    sketch = evt.feature;
-    let tooltipCoord = evt.coordinate;
-
-    listener = sketch.getGeometry().on("change", function (evt: any) {
-      let geom = evt.target;
-      let output;
-      if (geom instanceof Polygon) {
-        output = formatArea(geom, unit);
-        tooltipCoord = geom.getInteriorPoint().getCoordinates();
-      } else if (geom instanceof LineString) {
-        output = formatLength(geom, unit);
-        tooltipCoord = geom.getLastCoordinate();
-      }
-      measureTooltipElement.innerHTML = output;
-      measureTooltip.setPosition(tooltipCoord); // 测量距离文字所在位置
-    });
-  });
-
-  measureDrawInteraction.on("drawend", function () {
-    measureTooltip.setOffset([0, -7]);
-    sketch = null;
-    measureTooltipElement = null;
-    createMeasureTooltip();
-    unByKey(listener);
-  });
-};
 // 点击清除按钮
 const onClearMeasuring = () => {
-  measureRemoveInteraction();
   isMeasure.value = !isMeasure.value;
-};
-// 清除已绘制的图形
-const measureRemoveInteraction = () => {
-  if (props.map && props.map?.get("measureDrawInteraction")) {
-    props.map.removeInteraction(props.map?.get("measureDrawInteraction"));
-    props.map?.set("measureDrawInteraction", null);
-    props.map?.removeLayer(measureVectorLayer.value);
-    measureOverlays.value.forEach(item => {
-      props.map && props.map?.removeOverlay(item);
-    });
-    measureOverlays.value = [];
-  }
+  clearMeasureDrawInteraction(props?.map);
 };
 /*******************************************测距结束********************************************/
 
