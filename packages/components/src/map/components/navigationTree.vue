@@ -192,6 +192,7 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
         if (!res) return;
         // 更新导航树及关联关系
         gisStore.fetchNavigationTree();
+        gisStore.fetchCollectRelation();
         ElMessage.success("新增标签成功");
       },
       (err: any) => {

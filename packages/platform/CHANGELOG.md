@@ -1,5 +1,21 @@
 # adm-gis-platform
 
+## 1.0.85
+
+### Patch Changes
+
+- 导航树关联关系解耦、框选筛选要素准确度问题修复、人员定位 bug 修复
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.83
+
+## 1.0.84
+
+### Patch Changes
+
+- 修复框选不精确问题及修复人员定位问题
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.82
+
 ## 1.0.83
 
 ### Patch Changes

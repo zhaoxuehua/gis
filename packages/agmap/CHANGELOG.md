@@ -1,5 +1,17 @@
 # @adm-gis-ui/agmap
 
+## 1.0.83
+
+### Patch Changes
+
+- 导航树关联关系解耦、框选筛选要素准确度问题修复、人员定位 bug 修复
+
+## 1.0.82
+
+### Patch Changes
+
+- 修复框选不精确问题及修复人员定位问题
+
 ## 1.0.81
 
 ### Patch Changes

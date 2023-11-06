@@ -5,6 +5,11 @@ export function getGisCustomTree(params: string | number, isId: boolean) {
   return request.get(`/api/gis-service/equip/getGisEquipCategoryAndEquipTypeCustomTree?${isId ? "appId" : "appCode"}=${params}`);
 }
 
+// 设备与标签的关联关系
+export function getCollectRelation(params: string | number, isId: boolean) {
+  return request.get(`/api/gis-service/equip/getEquipAndLabel?${isId ? "appId" : "appCode"}=${params}`);
+}
+
 // 设置中心点
 export function setMapCenter(params: object) {
   return request.put(`/api/gis-service/equip/mapParams/config/changeCenter`, params);
@@ -14,11 +19,6 @@ export function setMapCenter(params: object) {
 // ids：数组
 export function getLabelInfoByEquipId(ids: Array<string | number>) {
   return request.get(`/api/gis-service/equip/2DGis/equipBinding/${ids.join(",")}`);
-}
-
-// 删除关联关系
-export function deleteAssociation(params: any) {
-  return request.delete(`/api/gis-service/equip/equipAssociationMiddleInfo/${params.join(",")}`);
 }
 
 // 新增关联关系

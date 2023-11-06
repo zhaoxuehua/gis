@@ -63,18 +63,8 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  onMounted,
-  onBeforeUnmount,
-  ref,
-  defineAsyncComponent,
-  reactive,
-  computed,
-  shallowRef,
-  useSlots,
-  watch,
-  unref
-} from "vue";
+import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch, unref } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
@@ -1010,11 +1000,13 @@ onMounted(() => {
   // 设置并请求导航树、关联关系
   gisStore.setNavTreeAndRelation(); // 清空导航树数据
   gisStore.fetchNavigationTree(); // 获取导航树数据
+  gisStore.fetchCollectRelation(); // 获取设备与标签的关联关系
+  gisStore?.setTrackColor(); // 初始化轨迹颜色（为了让每次刷新后颜色顺序保持一致）
   clearAllTimers();
   initMap(mapParams, !!props?.config?.id);
 });
 
-onBeforeUnmount(() => {
+onBeforeRouteLeave(() => {
   clearAllTimers();
 });
 

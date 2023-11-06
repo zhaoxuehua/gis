@@ -532,9 +532,12 @@ const onConfirm = () => {
           lineWidth: param?.lineWidth
         };
       } else {
-        // 清除轨迹模式及轨迹线样式
+        // 清除轨迹模式及轨迹线样式、速度单位
         if (param.trackLineStyle) {
           delete param.trackLineStyle;
+        }
+        if (param.speedUnit) {
+          param.speedUnit = "";
         }
       }
       // 点数据时标签类型图片
