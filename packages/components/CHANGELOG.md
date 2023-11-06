@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.84
+
+### Patch Changes
+
+- 框选问题+封装测量
+
 ## 1.0.83
 
 ### Patch Changes
