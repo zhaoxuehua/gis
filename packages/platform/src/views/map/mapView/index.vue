@@ -5,7 +5,7 @@
 </template>
 <script lang="ts" setup name="mapView">
 import { onMounted, reactive, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, onBeforeRouteLeave } from "vue-router";
 import { AgMap } from "@adm-gis-ui/components";
 import { useUserStore } from "@/stores/modules/user";
 const route = useRoute();
@@ -24,14 +24,13 @@ const onOpenRightMenu = async (option: { [key: string]: any }) => {
     console.log(equipId, `右键选中的设备id${equipId}`);
   }
 };
-// mock事件表格数据
-// const outsideTableRowData: any = ref(null);
-// setTimeout(() => {
-//   outsideTableRowData.value = { equip: "413843476" };
-// }, 7000);
 
 onMounted(() => {
   config.id = route.query?.id as string | number | null;
+});
+
+onBeforeRouteLeave(() => {
+  mapRef.value?.clearAllTimers();
 });
 </script>
 <style lang="scss" scoped>
