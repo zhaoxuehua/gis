@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.85
+
+### Patch Changes
+
+- 抛出清理 map 组件定时器的党阀
+
 ## 1.0.84
 
 ### Patch Changes

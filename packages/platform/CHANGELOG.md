@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.87
+
+### Patch Changes
+
+- 抛出清理 map 组件定时器的党阀
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.85
+
 ## 1.0.86
 
 ### Patch Changes
