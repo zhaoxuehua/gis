@@ -5,7 +5,7 @@
 </template>
 <script lang="ts" setup name="mapView">
 import { onMounted, reactive, ref } from "vue";
-import { useRoute, onBeforeRouteLeave } from "vue-router";
+import { useRoute } from "vue-router";
 import { AgMap } from "@adm-gis-ui/components";
 import { useUserStore } from "@/stores/modules/user";
 const route = useRoute();
@@ -27,10 +27,6 @@ const onOpenRightMenu = async (option: { [key: string]: any }) => {
 
 onMounted(() => {
   config.id = route.query?.id as string | number | null;
-});
-
-onBeforeRouteLeave(() => {
-  mapRef.value?.clearAllTimers();
 });
 </script>
 <style lang="scss" scoped>
