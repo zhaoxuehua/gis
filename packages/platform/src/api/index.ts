@@ -38,7 +38,7 @@ class RequestHttp {
         // config.noLoading || showFullScreenLoading();
         if (config.headers && typeof config.headers.set === "function") {
           config.headers.set("agioe_sso_sessionid", userStore.token);
-          // config.headers.set("agioe_sso_sessionid", "534_2ee2d5e6b7c64381a478da59e357adaf");
+          // config.headers.set("agioe_sso_sessionid", "534_1fc4aa949b6c40ec94cd957d2f230bca");
         }
         return config;
       },
@@ -76,7 +76,7 @@ class RequestHttp {
         }
         // 全局错误信息拦截（防止下载文件的时候返回数据流，没有 code 直接报错）
         if (data.code && data.code !== ResultEnum.SUCCESS) {
-          if (data.code > 600) {
+          if (data.code >= 600) {
             ElMessage.warning(data?.msg || data?.message);
             return Promise.reject(data);
           } else {
