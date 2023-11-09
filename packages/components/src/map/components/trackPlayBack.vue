@@ -292,8 +292,6 @@ async function getAlarmListOptions(id: number) {
           });
         }
       });
-    } else {
-      ElMessage.error("接口异常");
     }
   } catch (error) {
     console.log(error);

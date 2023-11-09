@@ -44,8 +44,10 @@
 
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="onCancel" v-if="state?.row?.awarenessState == 1">取消标记</el-button>
-          <el-button type="primary" @click="onConfirm" v-if="state?.row?.awarenessState == 0">标记 </el-button>
+          <el-button @click="onCancel" v-if="state?.row?.awarenessState == 1" :loading="cancelBtnLoading">取消标记</el-button>
+          <el-button type="primary" @click="onConfirm" v-if="state?.row?.awarenessState == 0" :loading="btnLoading"
+            >标记
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -72,6 +74,8 @@ const state: { open: boolean; rulesForm: any; row: any; detailRow: any } = react
 const refForm = ref();
 
 let form: any = ref({});
+const cancelBtnLoading = ref(false);
+const btnLoading = ref(false);
 
 const openDialog = async (row: any) => {
   if (row) {
@@ -103,13 +107,17 @@ const onCancel = async () => {
   param.eventCode = state.row.event;
   param.state = 0;
   param.validTimeLength = 0;
-  const res: any = await eventAwareness(param);
-  if (res.code == 200) {
-    ElMessage.success("取消标记成功");
-    emits("successOpt");
-    state.open = false;
-  } else {
-    ElMessage.error(res.msg);
+  cancelBtnLoading.value = true;
+  try {
+    const res: any = await eventAwareness(param);
+    if (res.code == 200) {
+      ElMessage.success("取消标记成功");
+      emits("successOpt");
+      state.open = false;
+      cancelBtnLoading.value = false;
+    }
+  } catch (error) {
+    cancelBtnLoading.value = false;
   }
 };
 
@@ -121,15 +129,17 @@ const onConfirm = () => {
       param.equipCode = state.row.equip;
       param.eventCode = state.row.event;
       param.state = 1;
-
-      const res: any = await eventAwareness(param);
-
-      if (res.code == 200) {
-        ElMessage.success("标记成功");
-        emits("successOpt");
-        state.open = false;
-      } else {
-        ElMessage.error(res.msg);
+      btnLoading.value = true;
+      try {
+        const res: any = await eventAwareness(param);
+        if (res.code == 200) {
+          ElMessage.success("标记成功");
+          emits("successOpt");
+          state.open = false;
+          btnLoading.value = false;
+        }
+      } catch (error) {
+        btnLoading.value = false;
       }
     }
   });

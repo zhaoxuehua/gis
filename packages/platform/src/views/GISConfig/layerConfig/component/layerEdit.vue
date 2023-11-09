@@ -65,7 +65,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">确认</el-button>
+          <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -135,6 +135,7 @@ const state = reactive({
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
+const btnLoading = ref(false);
 
 const defaultParam = {
   code: "",
@@ -188,33 +189,19 @@ const onConfirm = () => {
       if (!param?.isTrackDraw && param?.trackAggDistance) {
         delete param.trackAggDistance;
       }
-
-      if (state.dialogType == 0) {
-        // 添加
-        const res: { [key: string]: any } = await addLayer(param);
+      btnLoading.value = true;
+      // 添加或编辑
+      try {
+        const res: { [key: string]: any } = state.dialogType == 0 ? await addLayer(param) : await editLayer(param);
         if (res.code == 200) {
-          ElMessage.success("创建成功");
+          ElMessage.success(`${state.dialogType == 0 ? "创建成功" : "编辑成功"}`);
           emit("successAdd");
           state.open = false;
-        } else {
-          ElMessage({
-            type: "error",
-            message: res.msg
-          });
+          btnLoading.value = false;
         }
-      } else if (state.dialogType == 1) {
-        // 编辑
-        const res: { [key: string]: any } = await editLayer(param);
-        if (res.code == 200) {
-          ElMessage.success("编辑成功");
-          emit("successAdd");
-          state.open = false;
-        } else {
-          ElMessage({
-            type: "error",
-            message: res.msg
-          });
-        }
+      } catch (error) {
+        // code不为200都reject了
+        btnLoading.value = false;
       }
     }
   });

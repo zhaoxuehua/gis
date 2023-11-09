@@ -38,7 +38,7 @@
 
       <span class="dialog-footer single-deal-footer" v-if="props.type == 1">
         <el-button @click="onClose">取消</el-button>
-        <el-button type="primary" @click="onConfirm">处理</el-button>
+        <el-button type="primary" @click="onConfirm" :loading="btnLoading">处理</el-button>
       </span>
 
       <div class="dialog-title">处理记录</div>
@@ -104,6 +104,7 @@ const state: {
 const refForm = ref();
 
 let form: any = ref({});
+const btnLoading = ref(false);
 
 const defaultParams = JSON.stringify({
   pageNumber: 1,
@@ -176,13 +177,17 @@ const onConfirm = () => {
     if (valid) {
       let param = { ...form.value };
       param.eventMids = [state.row.mid];
-      const res: any = await eventProcessBatch(param);
-      if (res.code == 200) {
-        ElMessage.success("处理成功");
-        table.value.getTableData();
-        emits("successHandle");
-      } else {
-        ElMessage.error(res.msg);
+      btnLoading.value = true;
+      try {
+        const res: any = await eventProcessBatch(param);
+        if (res.code == 200) {
+          ElMessage.success("处理成功");
+          table.value.getTableData();
+          emits("successHandle");
+          btnLoading.value = false;
+        }
+      } catch (error) {
+        btnLoading.value = false;
       }
     }
   });

@@ -178,8 +178,6 @@ const table = ref<TableList>({
         table.value.data = res?.data?.items || [];
         table.value.total = res?.data?.totalNum;
       }
-    } else {
-      ElMessage.error("接口异常");
     }
 
     table.value.loading = false;
@@ -203,8 +201,6 @@ const onEditListRow = (row: { [key: string]: any }, type: string) => {
         if (res.code == 200) {
           ElMessage.success("删除成功");
           table.value.getTableData(); // 刷新列表
-        } else {
-          ElMessage.error(res.msg);
         }
       })
       .catch(() => {});

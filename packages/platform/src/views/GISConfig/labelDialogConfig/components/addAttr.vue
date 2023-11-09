@@ -24,7 +24,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" :disabled="!state.ids.length" @click="onConfirm">确认</el-button>
+          <el-button type="primary" :disabled="!state.ids.length" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -33,8 +33,7 @@
 <script setup lang="ts" name="addAttr">
 import { reactive, ref } from "vue";
 import Table from "../../../../../../components/src/map/components/Table/index.vue";
-// import Table from "@/components/Table/index.vue";
-import { getUnBindStaticAttrApi, getUnBindMonitorAttrApi, bindAttrApi } from "../../../../api/modules/labelDialogConfig";
+import { getUnBindStaticAttrApi, getUnBindMonitorAttrApi, bindAttrApi } from "@/api/modules/labelDialogConfig";
 import { ElMessage } from "element-plus";
 
 const emit = defineEmits(["change"]);
@@ -68,6 +67,7 @@ const searchForm = reactive({
 });
 
 const tableData = ref([]);
+const btnLoading = ref(false);
 const columns = ref([
   {
     type: "selection"
@@ -167,16 +167,22 @@ const onClose = () => {
   state.dislogVisible = false;
 };
 const onConfirm = async () => {
-  const res: any = await bindAttrApi({
-    equipTypeId: props.equipTypeId, // 设备类型Id
-    visitObjectTypeId: props.visitObjectTypeId, // 外部对象类型Id
-    attributeIds: state.ids, // 属性id列表
-    isStatic: props.type === "static" ? true : false // 是否是静态属性
-  });
-  if (res.code === 200) {
-    ElMessage.success("绑定成功");
-    emit("change", state.selectedList);
-    state.dislogVisible = false;
+  btnLoading.value = true;
+  try {
+    const res: any = await bindAttrApi({
+      equipTypeId: props.equipTypeId, // 设备类型Id
+      visitObjectTypeId: props.visitObjectTypeId, // 外部对象类型Id
+      attributeIds: state.ids, // 属性id列表
+      isStatic: props.type === "static" ? true : false // 是否是静态属性
+    });
+    if (res.code === 200) {
+      ElMessage.success("绑定成功");
+      emit("change", state.selectedList);
+      state.dislogVisible = false;
+      btnLoading.value = false;
+    }
+  } catch (error) {
+    btnLoading.value = false;
   }
 };
 defineExpose({

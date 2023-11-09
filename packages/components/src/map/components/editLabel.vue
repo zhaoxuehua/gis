@@ -574,9 +574,6 @@ const onConfirm = () => {
             originEditLabel.value = null;
             ElMessage.success("保存成功");
             onClose();
-          } else {
-            console.warn(res.msg);
-            ElMessage.error("接口异常");
           }
         },
         (err: any) => {

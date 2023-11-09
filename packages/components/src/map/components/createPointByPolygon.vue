@@ -144,7 +144,7 @@ const handleNodeClick = (data: any) => {
       (err: any) => {
         currentTarget.value = {};
         console.error(err);
-        ElMessage.error("接口异常");
+        // ElMessage.error("接口异常");
       }
     );
   } else {
@@ -175,7 +175,6 @@ onMounted(() => {
       if (res.code === 200 && res.data) {
         treeData.value = res.data;
       } else {
-        console.error(res.msg);
         ElMessage.error("接口异常");
       }
     },

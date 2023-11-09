@@ -257,7 +257,7 @@
       <template #footer v-if="state.dialogType != 2">
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">确认</el-button>
+          <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -368,6 +368,7 @@ const state = reactive({
 const referenceMainRef = ref<InstanceType<typeof ReferenceMain>>();
 const referenceObjectRef = ref<InstanceType<typeof ReferenceObject>>();
 const refForm = ref<InstanceType<typeof ElForm>>();
+const btnLoading = ref(false);
 
 // 创建时form表单字段及默认值
 const defaultParam = {
@@ -556,32 +557,29 @@ const onConfirm = () => {
         ElMessage.warning("聚合图层只能选择点类型数据");
         return;
       }
-      if (state.dialogType == 0) {
-        // 添加
-        const res: { [key: string]: any } = await addLabelType(param);
-        if (res.code == 200) {
-          ElMessage.success("创建成功");
-          emit("successAdd");
-          state.open = false;
-        } else {
-          ElMessage({
-            type: "error",
-            message: res.msg
-          });
+      btnLoading.value = true;
+      try {
+        if (state.dialogType == 0) {
+          // 添加
+          const res: { [key: string]: any } = await addLabelType(param);
+          if (res.code == 200) {
+            ElMessage.success("创建成功");
+            emit("successAdd");
+            state.open = false;
+            btnLoading.value = false;
+          }
+        } else if (state.dialogType == 1) {
+          // 编辑
+          const res: { [key: string]: any } = await editLabelType(param);
+          if (res.code == 200) {
+            ElMessage.success("编辑成功");
+            emit("successAdd");
+            state.open = false;
+            btnLoading.value = false;
+          }
         }
-      } else if (state.dialogType == 1) {
-        // 编辑
-        const res: { [key: string]: any } = await editLabelType(param);
-        if (res.code == 200) {
-          ElMessage.success("编辑成功");
-          emit("successAdd");
-          state.open = false;
-        } else {
-          ElMessage({
-            type: "error",
-            message: res.msg
-          });
-        }
+      } catch (error) {
+        btnLoading.value = false;
       }
     }
   });

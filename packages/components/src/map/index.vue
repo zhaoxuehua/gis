@@ -750,8 +750,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         const alarmRes: any = await getEquipAlarmList(mapId, isId);
         if (alarmRes?.code === 200) {
           initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data || []);
-        } else {
-          ElMessage.error("接口异常");
         }
       } catch (error) {}
     };

@@ -149,10 +149,6 @@ const table = ref<TableList & { onEdit: Function }>({
       table.value.data = res.data?.items;
       table.value.total = res.data?.totalNum;
       extendInfo.value = res.data?.extendInfo || [];
-    } else {
-      table.value.data = [];
-      table.value.total = 0;
-      ElMessage.error("接口异常");
     }
     table.value.loading = false;
   },
