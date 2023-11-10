@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog
-      :title="['创建标签类型', '编辑标签类型', '标签类型详情'][state.dialogType]"
+      :title="['创建标签类型', '编辑标签类型'][state.dialogType]"
       v-model="state.open"
       width="850px"
       :close-on-click-modal="false"
@@ -11,47 +11,32 @@
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="标签类型编码" prop="code">
-          <el-input
-            placeholder="请输入..."
-            v-model="form.code"
-            :disabled="state.dialogType == 1 || state.dialogType == 2"
-            clearable
-          />
+          <el-input placeholder="请输入..." v-model="form.code" :disabled="state.dialogType == 1" clearable />
         </el-form-item>
         <el-form-item label="标签类型名称" prop="name">
-          <el-input placeholder="请输入..." v-model="form.name" :disabled="state.dialogType == 2" clearable />
+          <el-input placeholder="请输入..." v-model="form.name" clearable />
         </el-form-item>
         <el-form-item label="所属图层" prop="layerConfigId">
-          <el-select v-model="form.layerConfigId" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+          <el-select v-model="form.layerConfigId" clearable placeholder="请选择...">
             <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
 
         <!-- 对象关联配置 -->
         <el-form-item label="对象关联配置">
-          <el-input readonly v-model="reference" :disabled="state.dialogType == 2" />
-          <el-button class="reference-button" circle @click="onRefrenceClick" v-if="state.dialogType != 2">
+          <el-input readonly v-model="reference" />
+          <el-button class="reference-button" circle @click="onRefrenceClick">
             <Icon src="EditPen"></Icon>
           </el-button>
         </el-form-item>
         <el-form-item label="默认显示标签名称" prop="isDefaultDisplayLabelName">
-          <el-checkbox
-            v-model="form.isDefaultDisplayLabelName"
-            :disabled="state.dialogType == 2"
-            style="width: 200px"
-          ></el-checkbox>
+          <el-checkbox v-model="form.isDefaultDisplayLabelName" style="width: 200px"></el-checkbox>
         </el-form-item>
         <el-form-item label="默认挂载标签树" prop="isHang">
-          <el-checkbox v-model="form.isHang" :disabled="state.dialogType == 2" style="width: 200px"></el-checkbox>
+          <el-checkbox v-model="form.isHang" style="width: 200px"></el-checkbox>
         </el-form-item>
         <el-form-item label="标签图例" prop="labelLegendImagePath">
-          <el-select
-            v-model="form.labelLegendImagePath"
-            clearable
-            placeholder="请选择..."
-            :disabled="state.dialogType == 2"
-            filterable
-          >
+          <el-select v-model="form.labelLegendImagePath" clearable placeholder="请选择..." filterable>
             <el-option
               v-for="(item, index) in labelLegendImageList.data"
               :key="index"
@@ -62,7 +47,7 @@
         </el-form-item>
 
         <el-form-item label="数据类型" prop="dataType">
-          <el-select v-model="form.dataType" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+          <el-select v-model="form.dataType" clearable placeholder="请选择...">
             <el-option
               v-for="(item, index) in dataTypeList.data"
               :key="index"
@@ -85,7 +70,7 @@
                 </div>
               </div>
             </template>
-            <el-select v-model="form.dataSource" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+            <el-select v-model="form.dataSource" clearable placeholder="请选择...">
               <el-option
                 v-for="(item, index) in dataSourceList.data"
                 :key="index"
@@ -105,7 +90,7 @@
                 </div>
               </div>
             </template>
-            <el-select v-model="form.dataContent" clearable placeholder="请选择..." :disabled="state.dialogType == 2">
+            <el-select v-model="form.dataContent" clearable placeholder="请选择...">
               <el-option
                 v-for="(item, index) in dataContentList.data"
                 :key="index"
@@ -115,7 +100,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="样式" prop="selectStyle">
-            <el-select v-model="form.selectStyle" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+            <el-select v-model="form.selectStyle" clearable placeholder="请选择..." filterable>
               <el-option
                 v-for="(item, index) in selectStyleList.data"
                 :key="index"
@@ -125,7 +110,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="内置样式对象" prop="styleObject" v-if="form.selectStyle == 'builtInStyle'">
-            <el-select v-model="form.styleObject" clearable placeholder="请选择..." :disabled="state.dialogType == 2" filterable>
+            <el-select v-model="form.styleObject" clearable placeholder="请选择..." filterable>
               <el-option
                 v-for="(item, index) in styleObjectList.data"
                 :key="index"
@@ -136,17 +121,10 @@
           </el-form-item>
 
           <el-form-item label="显示比例" prop="displayScale" v-if="form.selectStyle == 'customStyle'">
-            <el-input type="number" v-model="form.displayScale" :disabled="state.dialogType == 2" />
+            <el-input type="number" v-model="form.displayScale" />
           </el-form-item>
           <el-form-item label="标签类型图片" prop="labelTypeImagePath" v-if="form.selectStyle == 'customStyle'">
-            <el-select
-              v-model="form.labelTypeImagePath"
-              :multiple="true"
-              clearable
-              placeholder="请选择..."
-              :disabled="state.dialogType == 2"
-              filterable
-            >
+            <el-select v-model="form.labelTypeImagePath" :multiple="true" clearable placeholder="请选择..." filterable>
               <el-option
                 v-for="(item, index) in labelLegendImageList.data"
                 :key="index"
@@ -157,18 +135,18 @@
           </el-form-item>
           <!-- 点类型下轨迹的设置（绘制轨迹时可以找到所属类型拿轨迹设置及图层信息） -->
           <el-form-item label="轨迹设置" prop="isTrackSetting">
-            <el-checkbox v-model="form.isTrackSetting" :disabled="state.dialogType == 2" style="width: 200px" />
+            <el-checkbox v-model="form.isTrackSetting" style="width: 200px" />
           </el-form-item>
           <div></div>
         </template>
         <!-- 线 面 圆 矩形 轨迹配置时   要不要icon -->
         <template v-if="['2', '3', '4', '5', '7'].includes(form.dataType) || form.isTrackSetting">
           <el-form-item label="线宽" prop="lineWidth">
-            <el-input type="number" v-model="form.lineWidth" :disabled="state.dialogType == 2" />
+            <el-input type="number" v-model="form.lineWidth" />
           </el-form-item>
 
           <el-form-item label="速度单位" prop="speedUnit" v-if="form.isTrackSetting && form.dataType == '1'">
-            <el-input v-model="form.speedUnit" :disabled="state.dialogType == 2" />
+            <el-input v-model="form.speedUnit" />
           </el-form-item>
 
           <el-form-item
@@ -177,10 +155,10 @@
             style="width: 350px"
             v-if="['2', '3', '4', '5', '7'].includes(form.dataType)"
           >
-            <el-color-picker v-model="form.lineColor" show-alpha :disabled="state.dialogType == 2" />
+            <el-color-picker v-model="form.lineColor" show-alpha />
           </el-form-item>
           <el-form-item label="线型" prop="lineType" v-if="['2', '3', '4', '5', '7'].includes(form.dataType)">
-            <el-select v-model="form.lineType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
+            <el-select v-model="form.lineType" placeholder="请选择..." clearable>
               <el-option label="实线" value="solid"></el-option>
               <el-option label="虚线" value="dash"></el-option>
             </el-select>
@@ -192,7 +170,7 @@
             v-if="form.lineType == 'dash' && (form.dataType == '2' || form.dataType == '7')"
             style="width: 350px"
           >
-            <el-select v-model="form.animationSetting" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
+            <el-select v-model="form.animationSetting" placeholder="请选择..." clearable>
               <el-option
                 v-for="(item, index) in animationList.data"
                 :key="index"
@@ -205,56 +183,56 @@
         <!-- 面 圆 矩形 -->
         <template v-if="['3', '4', '5'].includes(form.dataType)">
           <el-form-item label="面填充色" prop="polygonColor" style="width: 350px">
-            <el-color-picker v-model="form.polygonColor" show-alpha :disabled="state.dialogType == 2" />
+            <el-color-picker v-model="form.polygonColor" show-alpha />
           </el-form-item>
         </template>
         <!-- 线 -->
         <template v-if="form.dataType === '2'">
           <el-form-item label="矢量路径" prop="lineVectorPath">
-            <el-input placeholder="请输入..." v-model="form.lineVectorPath" clearable :disabled="state.dialogType == 2" />
+            <el-input placeholder="请输入..." v-model="form.lineVectorPath" clearable />
           </el-form-item>
           <el-form-item label="矢量宽度" prop="lineVectorWidth">
-            <el-input type="number" v-model="form.lineVectorWidth" :disabled="state.dialogType == 2" />
+            <el-input type="number" v-model="form.lineVectorWidth" />
           </el-form-item>
           <el-form-item label="矢量高度" prop="lineVectorHeight">
-            <el-input type="number" v-model="form.lineVectorHeight" :disabled="state.dialogType == 2" />
+            <el-input type="number" v-model="form.lineVectorHeight" />
           </el-form-item>
           <el-form-item label="矢量显示比例" prop="lineVectorProportion">
-            <el-input type="number" v-model="form.lineVectorProportion" :disabled="state.dialogType == 2" />
+            <el-input type="number" v-model="form.lineVectorProportion" />
           </el-form-item>
         </template>
         <!-- 文本 -->
         <template v-if="form.dataType === '6'">
           <el-form-item label="文本内容" prop="content">
-            <el-input placeholder="请输入..." v-model="form.content" clearable :disabled="state.dialogType == 2" />
+            <el-input placeholder="请输入..." v-model="form.content" clearable />
           </el-form-item>
           <el-form-item label="是否加粗" prop="isBold">
-            <el-checkbox v-model="form.isBold" :disabled="state.dialogType == 2" style="width: 200px"></el-checkbox>
+            <el-checkbox v-model="form.isBold" style="width: 200px"></el-checkbox>
           </el-form-item>
           <el-form-item label="字体" prop="fontType">
-            <el-select v-model="form.fontType" placeholder="请选择..." clearable :disabled="state.dialogType == 2">
+            <el-select v-model="form.fontType" placeholder="请选择..." clearable>
               <el-option label="微软雅黑" value="MicrosoftYaHei"></el-option>
               <el-option label="宋体" value="SimSun"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="字体大小" prop="fontSize">
-            <el-input type="number" v-model="form.fontSize" :disabled="state.dialogType == 2" />
+            <el-input type="number" v-model="form.fontSize" />
           </el-form-item>
           <el-form-item label="字体颜色" prop="fontColor" style="width: 350px">
-            <el-color-picker v-model="form.fontColor" show-alpha :disabled="state.dialogType == 2" />
+            <el-color-picker v-model="form.fontColor" show-alpha />
           </el-form-item>
           <el-form-item label="边框线宽" prop="borderWidth">
-            <el-input type="number" v-model="form.borderWidth" :disabled="state.dialogType == 2" />
+            <el-input type="number" v-model="form.borderWidth" />
           </el-form-item>
           <el-form-item label="边框颜色" prop="borderColor" style="width: 350px">
-            <el-color-picker v-model="form.borderColor" show-alpha :disabled="state.dialogType == 2" />
+            <el-color-picker v-model="form.borderColor" show-alpha />
           </el-form-item>
           <el-form-item label="背景颜色" prop="backGroundColor" style="width: 350px">
-            <el-color-picker v-model="form.backGroundColor" show-alpha :disabled="state.dialogType == 2" />
+            <el-color-picker v-model="form.backGroundColor" show-alpha />
           </el-form-item>
         </template>
       </el-form>
-      <template #footer v-if="state.dialogType != 2">
+      <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
           <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
@@ -480,13 +458,10 @@ const reference = computed(() => {
   }
 });
 
-const openDialog = async (row?: { [key: string]: any }, type?: string) => {
+const openDialog = async (row?: { [key: string]: any }) => {
   if (row) {
-    if (type === "edit") {
-      state.dialogType = 1;
-    } else {
-      state.dialogType = 2;
-    }
+    // 编辑
+    state.dialogType = 1;
     const res: { [key: string]: any } = await getLabelTypeDetail(row.id);
     if (res.code === 200 && res.data) {
       form.value = JSON.parse(JSON.stringify(res.data));
@@ -500,6 +475,7 @@ const openDialog = async (row?: { [key: string]: any }, type?: string) => {
       timer.value = null;
     });
   } else {
+    // 新建
     state.dialogType = 0;
     form.value = { ...defaultParam };
   }
@@ -666,10 +642,8 @@ const labelLegendImageList = ref<{
   data: [],
   fetchData: async () => {
     const res: { [key: string]: any } = await getLegendConfigList("?pageSize=10000&pageNumber=1", {});
-    if (res?.data?.items) {
-      labelLegendImageList.value.data = res.data.items;
-    } else {
-      ElMessage.error("接口异常");
+    if (res?.code == 200) {
+      labelLegendImageList.value.data = res?.data?.items || [];
     }
   }
 });

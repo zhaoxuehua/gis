@@ -174,7 +174,7 @@ export const GIS_MAPPARAMS_DETAIL = [
   }
 ];
 
-// GIS标签类型配置
+// GIS标签类型配置详情  带有optional属性的，有值的时候才会显示
 export const GIS_LABEL_TYPE_DETAIL = [
   {
     label: "标签类型编码",
@@ -190,18 +190,19 @@ export const GIS_LABEL_TYPE_DETAIL = [
     slot: true
   },
   {
-    label: "关联设备信息",
+    label: "对象关联配置",
     name: "reference",
     slot: true
   },
   {
-    label: "是否默认显示标签名称",
+    label: "默认显示标签名称",
     name: "isDefaultDisplayLabelName",
     slot: true
   },
   {
-    label: "对应要素",
-    name: "factor"
+    label: "默认挂载标签树",
+    name: "isHang",
+    slot: true
   },
   {
     label: "标签图例",
@@ -214,77 +215,157 @@ export const GIS_LABEL_TYPE_DETAIL = [
     slot: true
   },
   {
+    label: "数据来源",
+    name: "dataSource",
+    slot: true,
+    optional: true
+  },
+  {
+    label: "数据内容",
+    name: "dataContent",
+    slot: true,
+    optional: true
+  },
+  {
+    label: "样式",
+    name: "selectStyle",
+    slot: true,
+    optional: true
+  },
+  {
+    label: "内置样式对象",
+    name: "styleObject",
+    slot: true,
+    optional: true
+  },
+  {
     label: "显示比例",
-    name: "displayScale"
+    name: "displayScale",
+    slot: true,
+    optional: true
   },
   {
     label: "标签类型图片",
     name: "labelTypeImagePath",
-    slot: true
+    slot: true,
+    optional: true
+  },
+  {
+    label: "轨迹设置",
+    name: "isTrackSetting",
+    slot: true,
+    optional: true
   },
   {
     label: "线宽",
-    name: "lineWidth"
+    name: "lineWidth",
+    slot: true,
+    optional: true
+  },
+  {
+    label: "速度单位",
+    name: "speedUnit",
+    slot: true,
+    optional: true
+  },
+  {
+    label: "线色",
+    name: "lineColor",
+    slot: true,
+    optional: true
   },
   {
     label: "线型",
     name: "lineType",
-    slot: true
+    slot: true,
+    optional: true
   },
+  // 线环数据类型下（线型是虚线特有）
   {
-    label: "线色",
-    name: "lineColor"
+    label: "动画设置",
+    name: "animationSetting",
+    slot: true,
+    optional: true
   },
-  {
-    label: "面填充色",
-    name: "polygonColor"
-  },
+  //线单独有的（矢量路径、矢量宽度、矢量高度、矢量显示比例）
   {
     label: "矢量路径",
-    name: "lineVectorPath"
+    name: "lineVectorPath",
+    slot: true,
+    optional: true
   },
   {
     label: "矢量宽度",
-    name: "lineVectorWidth"
+    name: "lineVectorWidth",
+    slot: true,
+    optional: true
   },
   {
     label: "矢量高度",
-    name: "lineVectorHeight"
+    name: "lineVectorHeight",
+    slot: true,
+    optional: true
   },
   {
     label: "矢量显示比例",
-    name: "lineVectorProportion"
+    name: "lineVectorProportion",
+    slot: true,
+    optional: true
   },
+  // 面圆矩形（有面填充色）
+  {
+    label: "面填充色",
+    name: "polygonColor",
+    slot: true,
+    optional: true
+  },
+  // 文本特有
   {
     label: "文本内容",
-    name: "content"
+    name: "content",
+    slot: true,
+    optional: true
   },
   {
     label: "字体",
-    name: "fontType"
+    name: "fontType",
+    slot: true,
+    optional: true
   },
   {
     label: "是否加粗",
-    name: "isBold"
+    name: "isBold",
+    slot: true,
+    optional: true
   },
   {
     label: "字体颜色",
-    name: "fontColor"
+    name: "fontColor",
+    slot: true,
+    optional: true
   },
   {
     label: "字体大小",
-    name: "fontSize"
+    name: "fontSize",
+    slot: true,
+    optional: true
   },
   {
     label: "边框线宽",
-    name: "borderWidth"
+    name: "borderWidth",
+    slot: true,
+    optional: true
   },
   {
     label: "边框颜色",
-    name: "borderColor"
+    name: "borderColor",
+    slot: true,
+    optional: true
   },
   {
     label: "背景颜色",
-    name: "backGroundColor"
+    name: "backGroundColor",
+    slot: true,
+    optional: true
   }
 ];
