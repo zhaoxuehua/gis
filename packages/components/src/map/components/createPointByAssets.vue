@@ -1,4 +1,4 @@
-<!-- 根据提前录入的坐标信息gisCoord 可以为点类型的设备批量绘制 -->
+<!-- 根据提前录入的坐标信息gisCoordinates 可以为点类型的设备批量绘制 -->
 <!-- 获取设备列表=>获取设备对应的标签配置及绘制信息塞入表格数据 -->
 <!-- 可选逻辑：配置过标签类型&&是点&&有录入坐标 -->
 <!-- 删除：过滤gisLabelInfo -->
@@ -60,7 +60,7 @@
               {{ JSON.stringify(scope.row.gisLabelInfo) }}
             </template>
           </el-table-column>
-          <el-table-column label="GIS坐标" prop="gisCoord" show-overflow-tooltip></el-table-column>
+          <el-table-column label="GIS坐标" prop="gisCoordinates" show-overflow-tooltip></el-table-column>
         </el-table>
         <div v-if="table.data?.length">
           <el-pagination
@@ -205,7 +205,7 @@ const drawHandler = () => {
     })
     .map((item, index) => {
       const { id, name, gisLabelConfig } = item;
-      const lonLat = item.gisCoord.split(",");
+      const lonLat = item?.gisCoordinates.split(",");
       if (name) {
         gisLabelConfig.name = name;
       }
@@ -308,7 +308,9 @@ const createLabelData = (featureType: any, featureCoordinates: any) => {
 };
 
 const selectable = (row: any) => {
-  return row.gisLabelConfig && (row.gisLabelConfig.dataType === "Point" || row.gisLabelConfig.dataType == "1") && row.gisCoord;
+  return (
+    row.gisLabelConfig && (row.gisLabelConfig.dataType === "Point" || row.gisLabelConfig.dataType == "1") && row.gisCoordinates
+  );
 };
 
 onMounted(() => {

@@ -82,7 +82,7 @@ import { FullScreen, ScaleLine, defaults, MousePosition } from "ol/control";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { XYZ, Vector as VectorSource, Cluster } from "ol/source";
 import type { FeatureLike } from "ol/Feature";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
 import { createStringXY } from "ol/coordinate";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
@@ -919,6 +919,12 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
       let pixel = map?.getEventPixel(evt);
+      // 获取鼠标位置的经纬度在工具箱展示
+      let coordinate = toLonLat(map?.getCoordinateFromPixel(pixel));
+      let coordinateStr = coordinate.map((item: any) => item?.toFixed(6))?.join(",");
+      gisStore?.setMouseRightClickCoordinate(coordinateStr);
+
+      // 右键业务功能（定制化实现）
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
         let featureCode = currentSelectFeature?.get("code");

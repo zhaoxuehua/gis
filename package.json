@@ -80,6 +80,7 @@
     ]
   },
   "dependencies": {
-    "moment": "^2.29.4"
+    "moment": "^2.29.4",
+    "vue-clipboard3": "^2.0.0"
   }
 }
