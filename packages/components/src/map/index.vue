@@ -63,8 +63,18 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, defineAsyncComponent, reactive, computed, shallowRef, useSlots, watch, unref } from "vue";
-import { onBeforeRouteLeave } from "vue-router";
+import {
+  onMounted,
+  ref,
+  defineAsyncComponent,
+  reactive,
+  computed,
+  shallowRef,
+  useSlots,
+  watch,
+  unref,
+  onBeforeUnmount
+} from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
 import MapBrowserEvent from "ol/MapBrowserEvent";
@@ -740,8 +750,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         const alarmRes: any = await getEquipAlarmList(mapId, isId);
         if (alarmRes?.code === 200) {
           initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data || []);
-        } else {
-          ElMessage.error("接口异常");
         }
       } catch (error) {}
     };
@@ -1006,7 +1014,7 @@ onMounted(() => {
   initMap(mapParams, !!props?.config?.id);
 });
 
-onBeforeRouteLeave(() => {
+onBeforeUnmount(() => {
   clearAllTimers();
 });
 
@@ -1063,7 +1071,8 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter
+  getGeometryCenter,
+  clearAllTimers
 });
 
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/

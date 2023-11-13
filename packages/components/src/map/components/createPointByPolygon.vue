@@ -175,7 +175,6 @@ onMounted(() => {
       if (res.code === 200 && res.data) {
         treeData.value = res.data;
       } else {
-        console.error(res.msg);
         ElMessage.error("接口异常");
       }
     },

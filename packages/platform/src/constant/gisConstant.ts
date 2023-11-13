@@ -66,3 +66,43 @@ export const GIS_CONTROLS = [
     name: "显示白名单控件"
   }
 ];
+
+// 数据类型
+export const LABEL_TYPE_DATA_TYPE = {
+  "1": "点",
+  "2": "线",
+  "3": "面",
+  "4": "圆",
+  "5": "矩形",
+  "6": "文本",
+  "7": "环"
+};
+
+export const DATA_SOURCE = {
+  draw: "绘制",
+  dynamicQuery: "实时查询"
+};
+
+export const SELECT_STYLE = {
+  customStyle: "自定义样式",
+  builtInStyle: "内置样式"
+};
+
+export const STYLE_OBJECT = {
+  person: "人",
+  aisBoat: "船"
+};
+
+export const LINE_TYPE = {
+  solid: "实线",
+  dash: "虚线"
+};
+
+export const FONT_TYPE = {
+  MicrosoftYaHei: "微软雅黑",
+  SimSun: "宋体"
+};
+export const ANIMATION_SET = {
+  animations: "有",
+  no: "无"
+};

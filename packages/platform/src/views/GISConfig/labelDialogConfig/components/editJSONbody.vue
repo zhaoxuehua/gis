@@ -14,9 +14,6 @@
       :columns="jsonBodyColumns"
       default-expand-all
     >
-      <!-- <template #selection-header>
-        <el-checkbox @change="val => handleCheck(val, state.JsonBodyData[0])"></el-checkbox>
-      </template> -->
       <template #selection="scope">
         <el-checkbox
           v-model="scope.row.checked"
@@ -28,7 +25,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="onClose">取消</el-button>
-        <el-button type="primary" @click="onConfirm">确认</el-button>
+        <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
       </span>
     </template>
   </el-dialog>
@@ -37,11 +34,12 @@
 import { ElMessage } from "element-plus";
 import { reactive, ref } from "vue";
 import Table from "../../../../../../components/src/map/components/Table/index.vue";
-import { updateJSONBody, getAllJSONbodyApi } from "../../../../api/modules/labelDialogConfig";
+import { updateJSONBody, getAllJSONbodyApi } from "@/api/modules/labelDialogConfig";
 
 const emit = defineEmits(["success"]);
 
 const jsonTableRef = ref();
+const btnLoading = ref(false);
 const state = reactive({
   dialogVisible: false,
   selectJSONBody: [],
@@ -184,12 +182,19 @@ const filterTree = (tree: any[]) => {
 
 const onConfirm = async () => {
   if (state.tile === null) return ElMessage.error("请选择展示方式");
+
   const tree = filterTree(state.JsonBodyData);
-  const res: any = await updateJSONBody(tree);
-  if (res.code === 200) {
-    state.dialogVisible = false;
-    ElMessage.success("结构体配置成功");
-    emit("success", tree, state.editJSONbodyIndex);
+  btnLoading.value = true;
+  try {
+    const res: any = await updateJSONBody(tree);
+    if (res.code === 200) {
+      state.dialogVisible = false;
+      btnLoading.value = false;
+      ElMessage.success("结构体配置成功");
+      emit("success", tree, state.editJSONbodyIndex);
+    }
+  } catch (error) {
+    btnLoading.value = false;
   }
 };
 

@@ -83,7 +83,6 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { ElMessage } from "element-plus";
 import { cloneDeep } from "lodash";
 import { handleParam } from "@/utils/common.js";
 import { gisDeviceEquipList, getLabelInfoByEquipId } from "../../api/gis.js";
@@ -159,10 +158,6 @@ const table = ref<TableList & { chooseList: any[] }>({
         table.value.data = equipList;
         table.value.total = res.data?.totalNum;
       }
-    } else {
-      table.value.data = [];
-      table.value.total = 0;
-      ElMessage.error("接口异常");
     }
     table.value.loading = false;
   },

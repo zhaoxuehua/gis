@@ -70,8 +70,6 @@ const deleteLegend = () => {
         ElMessage.success("删除成功");
         // 重新请求列表
         emit("successAdd");
-      } else {
-        ElMessage.error("删除失败");
       }
     })
     .catch(() => {

@@ -124,11 +124,6 @@ const onConfirm = () => {
       const res: { [key: string]: any } = await getDepthWater(param);
       if (res.code == 200) {
         ElMessage.success("操作成功");
-      } else {
-        ElMessage({
-          type: "error",
-          message: res.msg
-        });
       }
     }
   });
@@ -176,8 +171,6 @@ const equipList = ref<{
       } else {
         equipList.value.data = res?.data || [];
       }
-    } else {
-      ElMessage.error("接口异常");
     }
   }
 });

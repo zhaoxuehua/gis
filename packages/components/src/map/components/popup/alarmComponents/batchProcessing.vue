@@ -38,7 +38,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">处理</el-button>
+          <el-button type="primary" @click="onConfirm" :loading="btnLoading">处理</el-button>
         </span>
       </template>
     </el-dialog>
@@ -84,6 +84,7 @@ const state: {
 });
 const refForm = ref();
 let form: any = ref({});
+const btnLoading = ref(false);
 
 const openDialog = (type: any, ids: any, extendInfo: any, fromInfo: any, toDoListRow: any) => {
   state.extendInfo = extendInfo;
@@ -111,38 +112,41 @@ const onConfirm = () => {
   refForm.value.validate(async (valid: any) => {
     if (valid) {
       let param = { ...form.value };
-      if (state.type == "part") {
-        // 批量处理
-        param.eventMids = state.ids;
-        if (state.fromInfo == "table") {
-          // 来自table的全部处理
-          param.unfoldProcess = true;
+      btnLoading.value = true;
+      try {
+        if (state.type == "part") {
+          // 批量处理
+          param.eventMids = state.ids;
+          if (state.fromInfo == "table") {
+            // 来自table的全部处理
+            param.unfoldProcess = true;
+          }
+          const res: any = await eventProcessBatch(param);
+          if (res.code == 200) {
+            ElMessage.success("处理成功");
+            emits("successBatch");
+            state.open = false;
+            btnLoading.value = false;
+          }
+        } else if (state.type == "all") {
+          if (state.fromInfo == "table") {
+            // 来自table的全部处理
+            param.equipTypeCodes = state.extendInfo;
+          } else if (state.fromInfo == "dialog") {
+            // 来自dialog的全部处理
+            param.collectKey = state.toDoListRow.collectKey;
+            param.eventCode = state.toDoListRow.event;
+          }
+          const res: any = await handleAll(param);
+          if (res.code == 200) {
+            ElMessage.success("处理成功");
+            emits("successBatch");
+            state.open = false;
+            btnLoading.value = false;
+          }
         }
-        const res: any = await eventProcessBatch(param);
-        if (res.code == 200) {
-          ElMessage.success("处理成功");
-          emits("successBatch");
-          state.open = false;
-        } else {
-          ElMessage.error(res.msg);
-        }
-      } else if (state.type == "all") {
-        if (state.fromInfo == "table") {
-          // 来自table的全部处理
-          param.equipTypeCodes = state.extendInfo;
-        } else if (state.fromInfo == "dialog") {
-          // 来自dialog的全部处理
-          param.collectKey = state.toDoListRow.collectKey;
-          param.eventCode = state.toDoListRow.event;
-        }
-        const res: any = await handleAll(param);
-        if (res.code == 200) {
-          ElMessage.success("处理成功");
-          emits("successBatch");
-          state.open = false;
-        } else {
-          ElMessage.error(res.msg);
-        }
+      } catch (error) {
+        btnLoading.value = false;
       }
     }
   });
