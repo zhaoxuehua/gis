@@ -291,25 +291,25 @@ export const GIS_LABEL_TYPE_DETAIL = [
   {
     label: "矢量路径",
     name: "lineVectorPath",
-    slot: true,
+    // slot: true,
     optional: true
   },
   {
     label: "矢量宽度",
     name: "lineVectorWidth",
-    slot: true,
+    // slot: true,
     optional: true
   },
   {
     label: "矢量高度",
     name: "lineVectorHeight",
-    slot: true,
+    // slot: true,
     optional: true
   },
   {
     label: "矢量显示比例",
     name: "lineVectorProportion",
-    slot: true,
+    // slot: true,
     optional: true
   },
   // 面圆矩形（有面填充色）
