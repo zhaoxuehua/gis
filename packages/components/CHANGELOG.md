@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.86
+
+### Patch Changes
+
+- 增加鼠标位置复制功能
+
 ## 1.0.85
 
 ### Patch Changes
