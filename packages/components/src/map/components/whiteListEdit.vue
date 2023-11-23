@@ -140,7 +140,6 @@ const onConfirm = () => {
           }
         }
       } finally {
-        console.log(66666);
         btnLoading.value = false;
       }
     }
