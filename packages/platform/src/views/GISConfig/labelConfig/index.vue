@@ -190,8 +190,6 @@ const onDelete = async () => {
           if (res.code == 200) {
             ElMessage.success("删除成功");
             table.value.getTableData();
-          } else {
-            ElMessage.error(res.msg);
           }
         })
         .catch(() => {});
@@ -202,8 +200,6 @@ const onDelete = async () => {
         type: "error"
       });
     }
-  } else {
-    ElMessage.error(res.msg);
   }
   table.value.loading = false;
 };

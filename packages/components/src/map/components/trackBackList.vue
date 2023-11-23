@@ -38,14 +38,14 @@
                     @click="viewHide(scope.row)"
                     title="隐藏"
                   ></Icon>
-                  <Icon
-                    src="Hide"
-                    :size="14"
-                    :style="{ color: scope.row.color }"
+                  <!-- 为了兼容监控低版本element plust将 Hide Icon替换 -->
+                  <i
                     v-else
                     @click="viewHide(scope.row)"
+                    class="iconfont icon-yincang1 gis-iconfont-hide"
+                    :style="{ color: scope.row.color, fontSize: '14px' }"
                     title="查看"
-                  ></Icon>
+                  ></i>
                   <Icon
                     src="Location"
                     :size="14"
@@ -198,12 +198,14 @@ const close = () => {
     delTrackData(v.code);
   });
   tableData.value.splice(0, tableData.value.length);
+  gisStore?.setTrackColor();
 };
 
 // 删除
 const deleteRow = (row: { [key: string]: any }, index: number) => {
   delTrackData(row.code);
   tableData.value.splice(index, 1);
+  gisStore?.updateTrackColor(row.color, "add");
 };
 
 // 监测数据个数据（控制列表的显示隐藏及隐藏实时数据图层）
@@ -212,6 +214,7 @@ watch(
   n => {
     isShowHide.value = n !== 0;
     n == 0 && showHideLayer(true);
+    n == 0 && gisStore?.setTrackColor();
   }
 );
 </script>
@@ -249,6 +252,16 @@ watch(
       color: var(--el-color-primary);
       i {
         cursor: pointer;
+      }
+      .gis-iconfont-hide {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1em;
+        height: 1em;
+        line-height: 1em;
+        fill: currentColor;
       }
     }
   }

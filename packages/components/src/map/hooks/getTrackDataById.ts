@@ -33,14 +33,14 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
   if (Number(trackResult.code) !== 200) {
     return ElMessage.error("获取数据报错");
   }
-  if (!trackResult.data?.items?.length) {
+  if (!trackResult?.data?.items?.length) {
     return ElMessage.warning("暂无轨迹数据");
   }
 
   // 获取(动态字段，用于获取映射数字据， 其中"equipName", "equipCode", "position",是写死的，剩余的为动态的字段)
   const staticArr = ["equipName", "equipCode", "position"];
   // 过滤出监测属性名AISDATA（用于查询枚举[{}]）
-  const attributeCode = Object.keys(trackResult.data.items[0]).filter(v => !staticArr.includes(v))[0] || "";
+  const attributeCode = Object.keys(trackResult?.data?.items?.[0]).filter(v => !staticArr?.includes(v))?.[0] || "";
   const fieldMapResult = await getTrackDataFieldMap({ attributeCode });
   if (Number(fieldMapResult.code) !== 200) {
     return ElMessage.error("获取数据报错");
@@ -52,7 +52,7 @@ const getTrackDataByIdFn = async (row: getTrackDataByIdFnParamType) => {
     fieldMap[key] = val[key];
   });
   const trackDetailListData: any[] = []; // 轨迹列表的详情时用
-  const transData = trackResult.data.items.map((val: any) => {
+  const transData = trackResult?.data?.items?.map((val: any) => {
     const aisLocation = val?.[attributeCode]; // 监测属性 eg AISDATA
     const aisInfo = JSON.parse(aisLocation);
     trackDetailListData.push({

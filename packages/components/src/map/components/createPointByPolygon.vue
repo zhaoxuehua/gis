@@ -144,7 +144,7 @@ const handleNodeClick = (data: any) => {
       (err: any) => {
         currentTarget.value = {};
         console.error(err);
-        ElMessage.error("接口异常");
+        // ElMessage.error("接口异常");
       }
     );
   } else {
@@ -175,13 +175,12 @@ onMounted(() => {
       if (res.code === 200 && res.data) {
         treeData.value = res.data;
       } else {
-        console.error(res.msg);
         ElMessage.error("接口异常");
       }
     },
     (err: any) => {
       console.error(err);
-      ElMessage.error("接口异常");
+      // ElMessage.error("接口异常");
     }
   );
 });
@@ -337,7 +336,7 @@ const drawHandler = () => {
       },
       error => {
         console.warn(error);
-        ElMessage.error("绘制失败");
+        // ElMessage.error("绘制失败");
       }
     );
   }
@@ -364,7 +363,7 @@ const deleteHandler = () => {
     },
     error => {
       console.warn(error);
-      ElMessage.error("删除失败");
+      // ElMessage.error("删除失败");
     }
   );
 };

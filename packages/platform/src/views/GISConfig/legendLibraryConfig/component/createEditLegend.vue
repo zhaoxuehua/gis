@@ -31,7 +31,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">确认</el-button>
+          <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -57,6 +57,7 @@ const state = reactive({
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
+const btnLoading = ref(false);
 
 const defaultParam = {
   legendName: "",
@@ -91,32 +92,27 @@ const onConfirm = () => {
   refForm.value?.validate(async valid => {
     if (valid) {
       let param = { ...form.value };
-      if (state.dialogType == 0) {
-        // 添加
-        const res: { [key: string]: any } = await addLegend(param);
-        if (res.code == 200) {
-          ElMessage.success("创建成功");
-          emit("successAdd");
-          state.open = false;
-        } else {
-          ElMessage({
-            type: "error",
-            message: res?.msg
-          });
+      btnLoading.value = true;
+      try {
+        if (state.dialogType == 0) {
+          // 添加
+          const res: { [key: string]: any } = await addLegend(param);
+          if (res.code == 200) {
+            ElMessage.success("创建成功");
+            emit("successAdd");
+            state.open = false;
+          }
+        } else if (state.dialogType == 1) {
+          // 编辑
+          const res: { [key: string]: any } = await editLegend(param);
+          if (res.code == 200) {
+            ElMessage.success("编辑成功");
+            emit("successAdd");
+            state.open = false;
+          }
         }
-      } else if (state.dialogType == 1) {
-        // 编辑
-        const res: { [key: string]: any } = await editLegend(param);
-        if (res.code == 200) {
-          ElMessage.success("编辑成功");
-          emit("successAdd");
-          state.open = false;
-        } else {
-          ElMessage({
-            type: "error",
-            message: res.msg
-          });
-        }
+      } finally {
+        btnLoading.value = false;
       }
     }
   });
@@ -148,8 +144,6 @@ const uploadLabelTypeImage = async (content: any) => {
     form.value.legendPath = fileName;
     form.value.labelTypeImageAllPath = fileUrl;
     refForm.value?.validateField("legendPath");
-  } else {
-    ElMessage.error(res.msg);
   }
 };
 

@@ -40,7 +40,7 @@
 import { reactive, ref, nextTick } from "vue";
 import Table from "../../../../../../components/src/map/components/Table/index.vue";
 import addAttr from "./addAttr.vue";
-import { deleteBindAttrApi } from "../../../../api/modules/labelDialogConfig";
+import { deleteBindAttrApi } from "@/api/modules/labelDialogConfig";
 import { ElMessage, ElMessageBox } from "element-plus";
 import EditJSONbody from "./editJSONbody.vue";
 

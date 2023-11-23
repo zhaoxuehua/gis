@@ -158,11 +158,6 @@ const getFormData = async () => {
         }
       }
     });
-  } else {
-    ElMessage({
-      type: "error",
-      message: res.msg
-    });
   }
 };
 

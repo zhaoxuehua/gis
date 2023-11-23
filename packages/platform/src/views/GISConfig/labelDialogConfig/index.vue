@@ -48,7 +48,7 @@ import { ref, onMounted } from "vue";
 import TreeFilter from "@/components/TreeFilter/index.vue";
 import AttrConfig from "./components/attrConfig.vue";
 import linkConfig from "./components/linkConfig.vue";
-import { equipTypeTreeApi, labelDetailAttr, updateLabel } from "../../../api/modules/labelDialogConfig";
+import { equipTypeTreeApi, labelDetailAttr, updateLabel } from "@/api/modules/labelDialogConfig";
 import { ElMessage } from "element-plus";
 
 const treeFilterData = ref();

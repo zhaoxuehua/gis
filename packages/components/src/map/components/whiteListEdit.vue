@@ -31,7 +31,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="onClose">取消</el-button>
-        <el-button type="primary" @click="onConfirm">保存</el-button>
+        <el-button type="primary" @click="onConfirm" :loading="btnLoading">保存</el-button>
       </span>
     </template>
   </el-dialog>
@@ -69,6 +69,7 @@ const state = reactive({
   }
 });
 const refForm: any = ref();
+const btnLoading = ref(false);
 
 const defaultParam = {
   objectTypeCode: realtimeDataList.value?.length ? realtimeDataList.value[0]?.code : "", // 查询对象（实时数据list）
@@ -121,30 +122,25 @@ const onConfirm = () => {
         ElMessage.warning("结束时间需大于开始时间！");
         return;
       }
-      if (state.dialogType == 0) {
-        const res: { [key: string]: any } = await whiteListAdd(param);
-        if (res.code == 200) {
-          ElMessage.success("创建成功");
-          emit("successAdd");
-          state.open = false;
+      btnLoading.value = true;
+      try {
+        if (state.dialogType == 0) {
+          const res: { [key: string]: any } = await whiteListAdd(param);
+          if (res.code == 200) {
+            ElMessage.success("创建成功");
+            emit("successAdd");
+            state.open = false;
+          }
         } else {
-          ElMessage({
-            type: "error",
-            message: res.msg
-          });
+          const res: { [key: string]: any } = await whiteListEdit(param);
+          if (res.code == 200) {
+            ElMessage.success("编辑成功");
+            emit("successAdd");
+            state.open = false;
+          }
         }
-      } else {
-        const res: { [key: string]: any } = await whiteListEdit(param);
-        if (res.code == 200) {
-          ElMessage.success("编辑成功");
-          emit("successAdd");
-          state.open = false;
-        } else {
-          ElMessage({
-            type: "error",
-            message: res.msg
-          });
-        }
+      } finally {
+        btnLoading.value = false;
       }
     }
   });

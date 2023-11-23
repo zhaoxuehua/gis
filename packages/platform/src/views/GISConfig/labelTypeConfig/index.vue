@@ -89,19 +89,159 @@
     </div>
 
     <LabelTypeEdit ref="labelTypeEditRef" @success-add="query.onQuery"></LabelTypeEdit>
+    <DetailDialog ref="detailDialogRef" :constant="'GIS_LABEL_TYPE_DETAIL'" :title="'标签类型详情'" :width="900">
+      <template #layerConfigId="scope">
+        {{ scope.row.layerConfigVO?.name ? scope.row.layerConfigVO?.name : "" }}
+      </template>
+      <template #reference="scope">
+        {{ displayReferenceInfo(scope.row) }}
+      </template>
+      <template #isDefaultDisplayLabelName="scope">
+        {{ scope.row.isDefaultDisplayLabelName ? "是" : "否" }}
+      </template>
+      <template #isHang="scope">
+        {{ scope.row.isHang ? "是" : "否" }}
+      </template>
+      <template #labelLegendImagePath="scope">
+        {{ scope.row.labelLegendImagePath ? displayLabelLegendImage(scope.row) : "" }}
+      </template>
+      <template #dataType="scope">
+        {{ LABEL_TYPE_DATA_TYPE[scope.row?.dataType as keyof typeof LABEL_TYPE_DATA_TYPE] }}
+      </template>
+
+      <!-- 点特有 -->
+      <!-- 数据来源  点且有配置对象关联 -->
+      <template #dataSource="scope">
+        {{
+          scope?.row?.dataType == "1" && scope?.row?.equipTypeId
+            ? DATA_SOURCE[scope.row?.dataSource as keyof typeof DATA_SOURCE]
+            : ""
+        }}
+      </template>
+
+      <!-- 数据内容  点且数据来源是实时查询 -->
+      <template #dataContent="scope">
+        {{
+          scope?.row?.dataType == "1" && scope?.row?.equipTypeId && scope.row?.dataSource == "dynamicQuery"
+            ? (dataContentList?.find((item: any) => item?.attributeCode == scope.row?.dataContent) as any)?.attributeName
+            : ""
+        }}
+      </template>
+      <!-- 样式 -->
+      <template #selectStyle="scope">
+        {{ scope?.row?.dataType == "1" ? SELECT_STYLE[scope.row?.selectStyle as keyof typeof SELECT_STYLE] : "" }}
+      </template>
+      <!-- 样式对象 -->
+      <template #styleObject="scope">
+        {{
+          scope?.row?.dataType == "1" && scope?.row?.selectStyle == "builtInStyle"
+            ? STYLE_OBJECT[scope.row?.styleObject as keyof typeof STYLE_OBJECT]
+            : ""
+        }}
+      </template>
+      <!-- 显示比例 -->
+      <template #displayScale="scope">
+        {{ scope?.row?.dataType == "1" && scope?.row?.selectStyle == "customStyle" ? scope.row?.displayScale : "" }}
+      </template>
+      <!-- 标签类型图片 -->
+      <template #labelTypeImagePath="scope">
+        {{
+          scope?.row?.dataType == "1" && scope?.row?.selectStyle == "customStyle"
+            ? scope.row?.labelTypeImagePath
+                .split(",")
+                .map((item: any) => {
+                  return (legendConfigList?.find((obj: any) => obj?.legendPath == item) as any)?.legendName;
+                })
+                ?.join("、")
+            : ""
+        }}
+      </template>
+      <!-- 轨迹设置 -->
+      <template #isTrackSetting="scope">
+        {{ scope?.row?.dataType == "1" ? (scope?.row?.isTrackSetting ? "是" : "否") : "" }}
+      </template>
+      <!-- 线宽(点（无轨迹设置时）及文本无) -->
+      <template #lineWidth="scope">
+        {{ scope?.row?.lineWidth ? scope?.row?.lineWidth : "" }}
+      </template>
+      <!-- 轨迹设置中的速度单位 -->
+      <template #speedUnit="scope">
+        {{ scope?.row?.dataType == "1" && scope?.row?.isTrackSetting ? scope?.row?.speedUnit : "" }}
+      </template>
+      <!-- 线型、线色（文本、点无） -->
+      <template #lineColor="scope">
+        <el-tag :color="scope.row.lineColor"></el-tag>
+      </template>
+      <template #lineType="scope">
+        {{ scope?.row?.lineType ? LINE_TYPE[scope?.row?.lineType as keyof typeof LINE_TYPE] : "" }}
+      </template>
+      <!-- 动画设置（线环特有且为虚线时） -->
+      <template #animationSetting="scope">
+        {{ scope?.row?.animationSetting ? ANIMATION_SET[scope?.row?.animationSetting as keyof typeof ANIMATION_SET] : "无" }}
+      </template>
+      <!-- 面 圆 矩形特有 -->
+      <template #polygonColor="scope">
+        <el-tag :color="scope.row.polygonColor"></el-tag>
+      </template>
+      <!-- 文本特有 -->
+      <template #content="scope">
+        {{ scope?.row?.content ? scope?.row?.content : "" }}
+      </template>
+      <template #fontType="scope">
+        {{ scope?.row?.fontType ? FONT_TYPE[scope?.row?.fontType as keyof typeof FONT_TYPE] : "" }}
+      </template>
+      <template #isBold="scope">
+        {{ scope?.row?.isBold }}
+      </template>
+      <template #fontColor="scope">
+        <el-tag :color="scope.row.fontColor"></el-tag>
+      </template>
+      <template #fontSize="scope">
+        {{ scope?.row?.fontSize ? scope?.row?.fontSize : "" }}
+      </template>
+      <template #borderWidth="scope">
+        {{ scope?.row?.borderWidth ? scope?.row?.borderWidth : "" }}
+      </template>
+      <template #borderColor="scope">
+        <el-tag :color="scope.row.borderColor"></el-tag>
+      </template>
+      <template #backGroundColor="scope">
+        <el-tag :color="scope.row.backGroundColor"></el-tag>
+      </template>
+    </DetailDialog>
   </div>
 </template>
 
 <script lang="ts" setup name="LabelTypeConfig">
 import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
-import { getLabelTypeList, deleteLabelTypeCheck, deleteLabelType } from "@/api/visconfig.js";
+import DetailDialog from "@/components/detailDialog/index.vue";
+import {
+  getLabelTypeList,
+  deleteLabelTypeCheck,
+  deleteLabelType,
+  getLabelTypeDetail,
+  getLegendConfigList
+} from "@/api/visconfig.js";
+import { getBindAttributeMonitor } from "@/api/device.js";
 import { handleParam } from "@/utils/common.js";
+import {
+  LABEL_TYPE_DATA_TYPE,
+  DATA_SOURCE,
+  SELECT_STYLE,
+  STYLE_OBJECT,
+  LINE_TYPE,
+  FONT_TYPE,
+  ANIMATION_SET
+} from "@/constant/gisConstant";
 import { ElMessage, ElMessageBox } from "element-plus";
 import LabelTypeEdit from "./component/labelTypeEdit.vue";
 import { TableList, SortChangeEvent } from "../type";
 
 const labelTypeEditRef = ref<InstanceType<typeof LabelTypeEdit>>();
+const detailDialogRef = ref<InstanceType<typeof DetailDialog>>();
+const legendConfigList = ref([]); // 图例列表
+const dataContentList = ref([]); // 数据内容列表
 
 // 查询条件
 const defaultParams = {
@@ -143,8 +283,104 @@ const table = ref<TableList>({
   onSelectionChange: (selection: any[]) => {
     table.value.ids = selection.map(item => item.id);
   },
-  onEdit: (row: { [key: string]: any }, type: string) => {
-    labelTypeEditRef.value?.openDialog(row, type);
+  onEdit: async (row: { [key: string]: any }, type: string) => {
+    if (type == "edit") {
+      labelTypeEditRef.value?.openDialog(row);
+    }
+    if (type == "detail") {
+      const res: { [key: string]: any } = await getLabelTypeDetail(row.id);
+      if (res.code === 200 && res.data) {
+        // 因为不是点时不显示样式（此时该字段有值，为了在详情弹框中无此项清空该值）
+        if (res.data?.dataType != "1" && res.data?.selectStyle) {
+          res.data.selectStyle = "";
+        }
+        if (res.data?.dataType != "1" || !res.data?.equipTypeId) {
+          res.data.dataSource = "";
+        }
+        if (res.data?.dataType != "1" || res.data?.selectStyle != "customStyle") {
+          // 只有点且样式是自定义才显示比例及标签类型图片
+          res.data.displayScale = "";
+          res.data.labelTypeImagePath = "";
+        }
+        if (res.data?.dataType != "1" || res.data?.dataSource != "dynamicQuery") {
+          // 点且实时查询时才显示 数据内容
+          res.data.dataContent = "";
+        }
+        if ((res.data?.dataType == "1" && !res.data?.isTrackSetting) || res.data?.dataType == "6") {
+          // 点且没有轨迹设置、文本时清除显示线宽
+          res.data.lineWidth = "";
+          res.data.speedUnit = "";
+        }
+        if (res.data?.dataType != "1") {
+          res.data.speedUnit = "";
+        }
+        if (["1", "6"]?.includes(res.data?.dataType)) {
+          // 点、文本无线型、线色
+          res.data.lineType = "";
+          res.data.lineColor = "";
+        }
+        if (!["2"]?.includes(res.data?.dataType)) {
+          // 线特有的
+          res.data.lineVectorPath = "";
+          res.data.lineVectorWidth = "";
+          res.data.lineVectorHeight = "";
+          res.data.lineVectorProportion = "";
+        } else {
+          // 线不管配没配矢量相关的都展示这些字段
+          if (!res.data.lineVectorPath) {
+            res.data.lineVectorPath = " ";
+          }
+          if (!res.data.lineVectorWidth) {
+            res.data.lineVectorWidth = " ";
+          }
+          if (!res.data.lineVectorHeight) {
+            res.data.lineVectorHeight = " ";
+          }
+          if (!res.data.lineVectorProportion) {
+            res.data.lineVectorProportion = " ";
+          }
+        }
+        if (!["2", "7"].includes(res.data?.dataType) || res.data?.lineType != "dash") {
+          // 动画设置（线、环且线型是虚线）特有
+          res.data.animationSetting = "";
+        }
+        if (!["3", "4", "5"].includes(res.data?.dataType)) {
+          // 面 圆 矩形特有
+          res.data.polygonColor = "";
+        }
+        if (!["6"].includes(res.data?.dataType)) {
+          // 文本特有
+          res.data.content = "";
+          res.data.fontType = "";
+          res.data.isBold = "";
+          res.data.fontColor = "";
+          res.data.fontSize = "";
+          res.data.borderWidth = "";
+          res.data.borderColor = "";
+          res.data.backGroundColor = "";
+        } else {
+          if (res.data.isBold) {
+            res.data.isBold = "是";
+          } else {
+            res.data.isBold = "否";
+          }
+        }
+        res.data.layerConfigVO = row?.layerConfigVO;
+        detailDialogRef.value?.openDialog({ ...res.data } || {});
+      }
+      // 图例列表
+      const resLegend: { [key: string]: any } = await getLegendConfigList("?pageSize=10000&pageNumber=1", {});
+      legendConfigList.value = resLegend?.data?.items || [];
+
+      // 数据内容(是点 有绑定关联关系 是动态查询才去请求)
+      if (res.data?.dataType == "1" && res.data?.equipTypeId && res.data?.dataSource == "dynamicQuery") {
+        const dataContentRes: { [key: string]: any } = await getBindAttributeMonitor(
+          res.data?.equipType?.id,
+          !!res.data?.reference.includes("VisitObject")
+        ); // 传设备类型id
+        dataContentList.value = dataContentRes?.data || [];
+      }
+    }
   }
 });
 
@@ -177,8 +413,6 @@ const onDelete = async () => {
           if (res.code == 200) {
             ElMessage.success("删除成功");
             table.value.getTableData();
-          } else {
-            ElMessage.error(res.msg);
           }
         })
         .catch(() => {});
@@ -189,8 +423,6 @@ const onDelete = async () => {
         type: "error"
       });
     }
-  } else {
-    ElMessage.error(res.msg);
   }
   table.value.loading = false;
 };
@@ -220,6 +452,33 @@ const handleSelect = async () => {
 onMounted(() => {
   table.value.getTableData();
 });
+
+// 标签类型详情模块
+//  对象关联配置
+const displayReferenceInfo = (form: { [key: string]: any }) => {
+  if (form?.equipType && form?.equipTypeId) {
+    if (form?.attribute && form?.attributeId) {
+      const referenceValue = JSON.parse(form?.referenceValue); // 有属性值时才有该字段JSON格式
+      const { type, selectedValue } = referenceValue;
+      let attributeValue = selectedValue;
+      if (type === "select") {
+        attributeValue = selectedValue.label;
+      }
+      return `${form?.equipType?.name} - ${form?.attribute?.label || form?.attribute?.name} - ${attributeValue}`;
+    } else {
+      return `${form?.equipType?.name}`;
+    }
+  } else {
+    return "";
+  }
+};
+// 图例
+const displayLabelLegendImage = (row: { [key: string]: any }) => {
+  let legendObj: any = legendConfigList.value?.find((item: any) => {
+    return `${item?.legendPath}` == `${row?.labelLegendImagePath}`;
+  });
+  return legendObj?.legendName;
+};
 </script>
 
 <style lang="scss" scoped></style>

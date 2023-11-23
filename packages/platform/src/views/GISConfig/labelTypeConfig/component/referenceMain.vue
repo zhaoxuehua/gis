@@ -110,8 +110,6 @@ const equipTypeList = ref({
     );
     if (res.code == 200) {
       equipTypeList.value.data = res?.data || [];
-    } else {
-      ElMessage.error("接口异常");
     }
     equipTypeList.value.loading = false;
   },

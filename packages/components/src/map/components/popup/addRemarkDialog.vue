@@ -23,7 +23,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">保存</el-button>
+          <el-button type="primary" @click="onConfirm" :loading="btnLoading">保存</el-button>
         </span>
       </template>
     </el-dialog>
@@ -64,6 +64,8 @@ let form = ref<{
   [key: string]: any;
 }>(defaultParam);
 
+const btnLoading = ref(false);
+
 const openDialog = async (row?: { [key: string]: any }) => {
   // 根据code查详情
   let code = row?.code;
@@ -98,15 +100,15 @@ const onConfirm = () => {
       const param = {
         ...form.value
       };
-      const res: { [key: string]: any } = await editVisitObject(param);
-      if (res.code == 200) {
-        ElMessage.success("保存成功");
-        state.open = false;
-      } else {
-        ElMessage({
-          type: "error",
-          message: res?.msg
-        });
+      btnLoading.value = true;
+      try {
+        const res: { [key: string]: any } = await editVisitObject(param);
+        if (res.code == 200) {
+          ElMessage.success("保存成功");
+          state.open = false;
+        }
+      } finally {
+        btnLoading.value = false;
       }
     }
   });

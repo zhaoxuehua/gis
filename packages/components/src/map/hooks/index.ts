@@ -10,7 +10,6 @@ import Overlay from "ol/Overlay";
 import type { FeatureLike } from "ol/Feature";
 import { isObject, find } from "lodash";
 import { useGisStore } from "../../stores/modules/gis";
-import { deleteAssociation } from "../../api/gis";
 import type { LabelInfoData, VisualMap, LabelType, VisualDraw, VisualGeometry, LabelData } from "../type";
 import { MAP_DATA_TYPE, getGeometryCenter, getCoordinate, getLonLatCoordinate } from "./createGeometry.js";
 import { createStyle, selectBoxStyle } from "./styleFunction.js";
@@ -209,16 +208,13 @@ export function removeLabel(label: LabelInfoData, map: any) {
         let labelInfoMap = map?.get("labelInfoMap") || {};
         delete labelInfoMap[label.code];
         map.set("labelInfoMap", labelInfoMap);
-        // ElMessage.success("删除标签成功");
         // 同时删除关联关系(标签树中的删除可能有关联关系删除可能没，导航树中的删除一定有关联关系删除)
         removeRelation(label);
-      } else {
-        ElMessage.error("删除标签失败");
       }
     },
     (err: any) => {
       console.warn(err);
-      ElMessage.error("删除标签失败");
+      // ElMessage.error("删除标签失败");
     }
   );
 }
@@ -232,22 +228,11 @@ export function removeRelation(label: LabelInfoData) {
     return item.associationInfo && item.associationInfo.associationObjectCode === label.code;
   });
   if (!node || !node.associationInfo) return ElMessage.success("删除标签成功"); // 纯标签的删除提示
-  deleteAssociation([node.associationInfo.id]).then(
-    (res: any) => {
-      if (res.code === 200) {
-        gisStore?.fetchNavigationTree(); // 更新导航树及关联关系
-        ElMessage.success("删除标签成功");
-        // ElMessage.success("删除关联关系成功");
-      } else {
-        console.warn(res);
-        ElMessage.error("删除标签失败");
-      }
-    },
-    (err: any) => {
-      console.warn(err);
-      ElMessage.error("删除标签失败");
-    }
-  );
+  // 有关联关系的标签删除需要更新导航树及关联关系
+  // 更新导航树及关联关系
+  gisStore?.fetchNavigationTree();
+  gisStore?.fetchCollectRelation();
+  ElMessage.success("删除标签成功");
 }
 
 export function transformLabelType(originalData: LabelType) {
@@ -597,7 +582,7 @@ export function selectionAddDrawInteraction(
     value == "Circle" && closeBtnOverlay && closeBtnOverlay?.setPosition(cor[0][1]); // 矩形
 
     // 框选要素或者区域
-    const currentZoom = map?.getView()?.getZoom(); // 当前层级
+    const currentZoom = map?.getView()?.getZoom(); // 当前视图层级
     let selectionFeatures: any = []; // 框选的要素数组
     let layerMap = map?.get("layerMap");
     for (let key in layerMap) {
@@ -636,7 +621,7 @@ export function selectionAddDrawInteraction(
         } else {
           source = layer?.getSource();
           if (source instanceof VectorSource) {
-            // 判断是否在多边形区域内的判断方法
+            // 判断是否在框选区域内的判断方法
             let features = layer?.getSource()?.getFeatures(); // 获取图层数据源上的所有要素数组
             features?.forEach((feature: any) => {
               let geometry = feature?.getGeometry(); // 获取要素的几何对象

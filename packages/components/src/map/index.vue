@@ -65,7 +65,6 @@
 <script lang="ts" setup>
 import {
   onMounted,
-  onBeforeUnmount,
   ref,
   defineAsyncComponent,
   reactive,
@@ -73,7 +72,8 @@ import {
   shallowRef,
   useSlots,
   watch,
-  unref
+  unref,
+  onBeforeUnmount
 } from "vue";
 import { ElMessage } from "element-plus";
 import { Map, View, Feature, Overlay } from "ol";
@@ -82,7 +82,7 @@ import { FullScreen, ScaleLine, defaults, MousePosition } from "ol/control";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { XYZ, Vector as VectorSource, Cluster } from "ol/source";
 import type { FeatureLike } from "ol/Feature";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
 import { createStringXY } from "ol/coordinate";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
@@ -750,8 +750,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         const alarmRes: any = await getEquipAlarmList(mapId, isId);
         if (alarmRes?.code === 200) {
           initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data || []);
-        } else {
-          ElMessage.error("接口异常");
         }
       } catch (error) {}
     };
@@ -921,6 +919,12 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
       let pixel = map?.getEventPixel(evt);
+      // 获取鼠标位置的经纬度在工具箱展示
+      let coordinate = toLonLat(map?.getCoordinateFromPixel(pixel));
+      let coordinateStr = coordinate.map((item: any) => item?.toFixed(6))?.join(",");
+      gisStore?.setMouseRightClickCoordinate(coordinateStr);
+
+      // 右键业务功能（定制化实现）
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
         let featureCode = currentSelectFeature?.get("code");
@@ -1010,6 +1014,8 @@ onMounted(() => {
   // 设置并请求导航树、关联关系
   gisStore.setNavTreeAndRelation(); // 清空导航树数据
   gisStore.fetchNavigationTree(); // 获取导航树数据
+  gisStore.fetchCollectRelation(); // 获取设备与标签的关联关系
+  gisStore?.setTrackColor(); // 初始化轨迹颜色（为了让每次刷新后颜色顺序保持一致）
   clearAllTimers();
   initMap(mapParams, !!props?.config?.id);
 });
@@ -1071,7 +1077,8 @@ defineExpose({
   getFeature,
   clearSelectedFeature,
   createStyle,
-  getGeometryCenter
+  getGeometryCenter,
+  clearAllTimers
 });
 
 /***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/

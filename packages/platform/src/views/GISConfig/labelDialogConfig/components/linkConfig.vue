@@ -18,7 +18,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onConfirm">确认</el-button>
+          <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -27,7 +27,7 @@
 <script setup lang="ts" name="labelDialog">
 import { ref, reactive, watch } from "vue";
 import Table from "../../../../../../components/src/map/components/Table/index.vue";
-import { getUnBindLinkApi, deleteLinkApi, bindLinkApi } from "../../../../api/modules/labelDialogConfig";
+import { getUnBindLinkApi, deleteLinkApi, bindLinkApi } from "@/api/modules/labelDialogConfig";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const emit = defineEmits(["update:link"]);
@@ -46,6 +46,7 @@ const state = reactive({
 
 const unBindLinkData = ref([]);
 const bindLinkData: any = ref([]);
+const btnLoading = ref(false);
 const tableColumns = [
   {
     prop: "name",
@@ -94,14 +95,19 @@ const onClose = () => {
   state.dialogVisible = false;
 };
 const onConfirm = async () => {
-  const res: any = await bindLinkApi({
-    equipTypeId: props.equipTypeId || props.visitObjectTypeId,
-    currentType: props.currentType,
-    buttons: state.ids.join(",")
-  });
-  if (res.code === 200) {
-    state.dialogVisible = false;
-    emit("update:link", [...bindLinkData.value!, ...state.selectedList]);
+  btnLoading.value = true;
+  try {
+    const res: any = await bindLinkApi({
+      equipTypeId: props.equipTypeId || props.visitObjectTypeId,
+      currentType: props.currentType,
+      buttons: state.ids.join(",")
+    });
+    if (res.code === 200) {
+      state.dialogVisible = false;
+      emit("update:link", [...bindLinkData.value!, ...state.selectedList]);
+    }
+  } finally {
+    btnLoading.value = false;
   }
 };
 const onDelete = async (id: number, index: number) => {

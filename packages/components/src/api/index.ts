@@ -77,11 +77,11 @@ class RequestHttp {
         }
         // 全局错误信息拦截（防止下载文件的时候返回数据流，没有 code 直接报错）
         if (data.code && data.code !== ResultEnum.SUCCESS) {
-          if (data.code == 602) {
-            ElMessage.warning(data?.msg || data?.message);
+          if (data.code >= 600) {
+            ElMessage.warning(data?.msg || data?.message || "接口异常");
             return Promise.reject(data);
           } else {
-            ElMessage.error(data.msg || data?.message);
+            ElMessage.error(data.msg || data?.message || "接口异常");
             return Promise.reject(data);
           }
         }
