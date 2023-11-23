@@ -210,13 +210,11 @@ export function removeLabel(label: LabelInfoData, map: any) {
         map.set("labelInfoMap", labelInfoMap);
         // 同时删除关联关系(标签树中的删除可能有关联关系删除可能没，导航树中的删除一定有关联关系删除)
         removeRelation(label);
-      } else {
-        ElMessage.error("删除标签失败");
       }
     },
     (err: any) => {
       console.warn(err);
-      ElMessage.error("删除标签失败");
+      // ElMessage.error("删除标签失败");
     }
   );
 }

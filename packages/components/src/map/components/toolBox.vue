@@ -40,6 +40,12 @@
             <el-button type="primary" @click="toSetMapCenter">设置中心点</el-button>
           </div>
         </div>
+        <!-- 鼠标右击处的位置 -->
+        <div style="margin-top: 20px">
+          <label> 鼠标右击处经纬度 </label>
+          <el-input v-model="mouseRightClickCoordinate" class="set-mouse-position-input" readonly />
+          <el-button type="primary" @click="copyToClipboard">复制</el-button>
+        </div>
       </div>
 
       <!-- 坐标定位 -->
@@ -159,7 +165,8 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch, computed } from "vue";
+import useClipboard from "vue-clipboard3";
 import { ElMessage } from "element-plus";
 import { Feature } from "ol";
 import { fromLonLat } from "ol/proj";
@@ -182,6 +189,7 @@ import { useGisStore } from "../../stores/modules/gis";
 import { getLayerList } from "../../api/device";
 import { setMapCenter } from "../../api/gis";
 
+const { toClipboard } = useClipboard();
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; isShow?: boolean }>(), {
   map: () => null,
   index: () => 0,
@@ -305,6 +313,19 @@ watch(
     deep: true
   }
 );
+const mouseRightClickCoordinate = computed(() => {
+  return gisStore?.mouseRightClickCoordinate || "";
+});
+const copyToClipboard = () => {
+  toClipboard(mouseRightClickCoordinate?.value)
+    .then(() => {
+      ElMessage.success("复制成功");
+    })
+    .catch(() => {
+      ElMessage.error("复制失败");
+    });
+};
+
 /*******************************************设置中心点结束********************************************/
 
 /*******************************************坐标定位********************************************/
@@ -496,6 +517,10 @@ onMounted(() => {});
   }
   .set-center-input {
     width: 140px;
+    margin-left: 10px;
+  }
+  .set-mouse-position-input {
+    width: 193px;
     margin-left: 10px;
   }
   .tip-unit {

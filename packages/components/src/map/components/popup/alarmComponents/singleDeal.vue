@@ -148,8 +148,7 @@ const table = ref({
         table.value.data = res.data.items;
         table.value.total = res.data.totalNum;
       }
-      table.value.loading = false;
-    } catch (error) {
+    } finally {
       table.value.loading = false;
     }
   }
@@ -184,9 +183,8 @@ const onConfirm = () => {
           ElMessage.success("处理成功");
           table.value.getTableData();
           emits("successHandle");
-          btnLoading.value = false;
         }
-      } catch (error) {
+      } finally {
         btnLoading.value = false;
       }
     }

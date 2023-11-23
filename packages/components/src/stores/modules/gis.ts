@@ -22,7 +22,8 @@ export const useGisStore = defineStore({
     keywordConfig: {}, // 关键词配置
     simulateAlarmTimer: null, // 报警要素样式切换定时器
     mapCase: {}, // 地图实例
-    trackColor: trackColor // 轨迹回放的颜色
+    trackColor: trackColor, // 轨迹回放的颜色
+    mouseRightClickCoordinate: "" // 鼠标右击时坐标信息  经度,纬度
   }),
   actions: {
     // 导航树及关联关系
@@ -130,6 +131,9 @@ export const useGisStore = defineStore({
       if (type == "add") {
         this.trackColor.push(color);
       }
+    },
+    setMouseRightClickCoordinate(coordinateStr: string) {
+      this.mouseRightClickCoordinate = coordinateStr;
     }
   },
   persist: piniaPersistConfig("gis")

@@ -126,7 +126,6 @@ const onConfirm = () => {
             ElMessage.success("处理成功");
             emits("successBatch");
             state.open = false;
-            btnLoading.value = false;
           }
         } else if (state.type == "all") {
           if (state.fromInfo == "table") {
@@ -142,10 +141,9 @@ const onConfirm = () => {
             ElMessage.success("处理成功");
             emits("successBatch");
             state.open = false;
-            btnLoading.value = false;
           }
         }
-      } catch (error) {
+      } finally {
         btnLoading.value = false;
       }
     }

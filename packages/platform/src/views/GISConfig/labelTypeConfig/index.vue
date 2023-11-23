@@ -179,20 +179,6 @@
       <template #animationSetting="scope">
         {{ scope?.row?.animationSetting ? ANIMATION_SET[scope?.row?.animationSetting as keyof typeof ANIMATION_SET] : "无" }}
       </template>
-
-      <!-- 线特有的（矢量相关） -->
-      <template #lineVectorPath="scope">
-        {{ scope?.row?.lineVectorPath ? scope?.row?.lineVectorPath : "" }}
-      </template>
-      <template #lineVectorWidth="scope">
-        {{ scope?.row?.lineVectorWidth ? scope?.row?.lineVectorWidth : "" }}
-      </template>
-      <template #lineVectorHeight="scope">
-        {{ scope?.row?.lineVectorHeight ? scope?.row?.lineVectorHeight : "" }}
-      </template>
-      <template #lineVectorProportion="scope">
-        {{ scope?.row?.lineVectorProportion ? scope?.row?.lineVectorProportion : "" }}
-      </template>
       <!-- 面 圆 矩形特有 -->
       <template #polygonColor="scope">
         <el-tag :color="scope.row.polygonColor"></el-tag>
@@ -339,6 +325,20 @@ const table = ref<TableList>({
           res.data.lineVectorWidth = "";
           res.data.lineVectorHeight = "";
           res.data.lineVectorProportion = "";
+        } else {
+          // 线不管配没配矢量相关的都展示这些字段
+          if (!res.data.lineVectorPath) {
+            res.data.lineVectorPath = " ";
+          }
+          if (!res.data.lineVectorWidth) {
+            res.data.lineVectorWidth = " ";
+          }
+          if (!res.data.lineVectorHeight) {
+            res.data.lineVectorHeight = " ";
+          }
+          if (!res.data.lineVectorProportion) {
+            res.data.lineVectorProportion = " ";
+          }
         }
         if (!["2", "7"].includes(res.data?.dataType) || res.data?.lineType != "dash") {
           // 动画设置（线、环且线型是虚线）特有

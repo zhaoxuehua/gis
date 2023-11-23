@@ -179,9 +179,8 @@ const onConfirm = async () => {
       ElMessage.success("绑定成功");
       emit("change", state.selectedList);
       state.dislogVisible = false;
-      btnLoading.value = false;
     }
-  } catch (error) {
+  } finally {
     btnLoading.value = false;
   }
 };

@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.88
+
+### Patch Changes
+
+- 增加鼠标位置复制功能
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.86
+
 ## 1.0.87
 
 ### Patch Changes
