@@ -197,10 +197,8 @@ const onConfirm = () => {
           ElMessage.success(`${state.dialogType == 0 ? "创建成功" : "编辑成功"}`);
           emit("successAdd");
           state.open = false;
-          btnLoading.value = false;
         }
-      } catch (error) {
-        // code不为200都reject了
+      } finally {
         btnLoading.value = false;
       }
     }

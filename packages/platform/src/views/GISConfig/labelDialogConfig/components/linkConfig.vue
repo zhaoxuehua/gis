@@ -104,10 +104,9 @@ const onConfirm = async () => {
     });
     if (res.code === 200) {
       state.dialogVisible = false;
-      btnLoading.value = false;
       emit("update:link", [...bindLinkData.value!, ...state.selectedList]);
     }
-  } catch (error) {
+  } finally {
     btnLoading.value = false;
   }
 };

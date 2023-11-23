@@ -542,7 +542,6 @@ const onConfirm = () => {
             ElMessage.success("创建成功");
             emit("successAdd");
             state.open = false;
-            btnLoading.value = false;
           }
         } else if (state.dialogType == 1) {
           // 编辑
@@ -551,10 +550,9 @@ const onConfirm = () => {
             ElMessage.success("编辑成功");
             emit("successAdd");
             state.open = false;
-            btnLoading.value = false;
           }
         }
-      } catch (error) {
+      } finally {
         btnLoading.value = false;
       }
     }

@@ -106,9 +106,8 @@ const onConfirm = () => {
         if (res.code == 200) {
           ElMessage.success("保存成功");
           state.open = false;
-          btnLoading.value = false;
         }
-      } catch (error) {
+      } finally {
         btnLoading.value = false;
       }
     }

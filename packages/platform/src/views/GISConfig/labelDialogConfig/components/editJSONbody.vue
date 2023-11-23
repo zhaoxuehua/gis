@@ -189,11 +189,10 @@ const onConfirm = async () => {
     const res: any = await updateJSONBody(tree);
     if (res.code === 200) {
       state.dialogVisible = false;
-      btnLoading.value = false;
       ElMessage.success("结构体配置成功");
       emit("success", tree, state.editJSONbodyIndex);
     }
-  } catch (error) {
+  } finally {
     btnLoading.value = false;
   }
 };

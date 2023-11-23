@@ -38,7 +38,7 @@ class RequestHttp {
         // config.noLoading || showFullScreenLoading();
         if (config.headers && typeof config.headers.set === "function") {
           config.headers.set("agioe_sso_sessionid", userStore.token);
-          // config.headers.set("agioe_sso_sessionid", "569_c14426d40d5c44319bb4ea32e55e1689");
+          // config.headers.set("agioe_sso_sessionid", "569_2254c059d585487085308c6b02aa4a84");
         }
         return config;
       },
@@ -77,10 +77,10 @@ class RequestHttp {
         // 全局错误信息拦截（防止下载文件的时候返回数据流，没有 code 直接报错）
         if (data.code && data.code !== ResultEnum.SUCCESS) {
           if (data.code >= 600) {
-            ElMessage.warning(data?.msg || data?.message);
+            ElMessage.warning(data?.msg || data?.message || "接口异常");
             return Promise.reject(data);
           } else {
-            ElMessage.error(data.msg || data?.message);
+            ElMessage.error(data.msg || data?.message || "接口异常");
             return Promise.reject(data);
           }
         }

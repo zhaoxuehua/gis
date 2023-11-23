@@ -114,9 +114,8 @@ const onCancel = async () => {
       ElMessage.success("取消标记成功");
       emits("successOpt");
       state.open = false;
-      cancelBtnLoading.value = false;
     }
-  } catch (error) {
+  } finally {
     cancelBtnLoading.value = false;
   }
 };
@@ -136,9 +135,8 @@ const onConfirm = () => {
           ElMessage.success("标记成功");
           emits("successOpt");
           state.open = false;
-          btnLoading.value = false;
         }
-      } catch (error) {
+      } finally {
         btnLoading.value = false;
       }
     }
