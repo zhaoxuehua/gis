@@ -1,6 +1,6 @@
 {
   "name": "@adm-gis-ui/agmap",
-  "version": "1.0.86",
+  "version": "1.0.87",
   "main": "lib/index.js",
   "module": "es/index.mjs",
   "files": [
