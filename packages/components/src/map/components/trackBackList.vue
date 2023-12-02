@@ -105,7 +105,7 @@
           v-model:current-page="state.pageNumber"
           v-model:page-size="state.pageSize"
           :page-sizes="[10, 20, 30, 50, 100]"
-          layout="total, prev, pager, next, sizes"
+          :layout="paginationLayout"
           :total="state.total"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -119,6 +119,7 @@
 import { ref, watch, computed, reactive } from "vue";
 import moment from "moment";
 import Icon from "./Icon.vue";
+import { paginationLayout } from "../constant";
 
 // ⤵ store
 import { useTrackListStore } from "../../stores/modules/trackList";

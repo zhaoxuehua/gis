@@ -69,7 +69,7 @@
             v-model:current-page="query.pageNo"
             v-model:page-size="query.pageSize"
             :page-sizes="[10, 20, 30, 50, 100]"
-            layout="total, prev, pager, next, sizes"
+            :layout="paginationLayout"
             :total="table.total"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
@@ -90,6 +90,7 @@ import { point as turfPoint, polygon as turfPolygon, randomPosition, booleanPoin
 import type { TableList } from "../type";
 import { transformLabelType } from "../hooks/index";
 import { MAP_DATA_TYPE } from "../hooks/createGeometry";
+import { paginationLayout } from "../constant";
 
 const state = reactive({
   defaultProps: {
