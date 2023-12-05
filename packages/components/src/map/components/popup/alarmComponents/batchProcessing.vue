@@ -116,7 +116,7 @@ const onConfirm = () => {
       try {
         if (state.type == "part") {
           // 批量处理
-          param.eventMids = state.ids;
+          param.eventMids = state.ids.map((item: any) => Number(item));
           if (state.fromInfo == "table") {
             // 来自table的全部处理
             param.unfoldProcess = true;
