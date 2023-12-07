@@ -111,7 +111,7 @@ const defaultPagination = {
   total: 0,
   page: 1,
   pageSizes: [10, 20, 30, 50, 100],
-  layout: "total, prev, pager, next, sizes",
+  layout: "total, prev, pager, next, sizes, jumper",
   background: true,
   autoScroll: true,
   style: "",
