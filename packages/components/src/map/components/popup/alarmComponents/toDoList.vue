@@ -83,7 +83,7 @@
           v-model:current-page="query.params.pageNumber"
           v-model:page-size="query.params.pageSize"
           :page-sizes="[10, 20, 30, 50, 100]"
-          layout="total, prev, pager, next, sizes"
+          :layout="paginationLayout"
           :total="table.total"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -106,6 +106,7 @@ import { SHOUT_CUTS } from "./componentConstant";
 import { eventList } from "../../../../api/device";
 import VideoDialog from "./videoDialog.vue";
 import Icon from "../../Icon.vue";
+import { paginationLayout } from "../../../constant";
 
 const emits = defineEmits(["successHandle", "successBatch"]);
 const state = reactive({

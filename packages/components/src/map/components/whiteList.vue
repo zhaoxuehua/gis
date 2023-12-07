@@ -73,7 +73,7 @@
             v-model:current-page="query.params.pageNumber"
             v-model:page-size="query.params.pageSize"
             :page-sizes="[10, 20, 30, 50, 100]"
-            layout="total, prev, pager, next, sizes"
+            :layout="paginationLayout"
             :total="table.total"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
@@ -94,6 +94,7 @@ import moment from "moment";
 import { useGisStore } from "../../stores/modules/gis";
 import { getWhiteList, whiteListDelete } from "../../api/device";
 import Icon from "./Icon.vue";
+import { paginationLayout } from "../constant";
 
 const gisStore = useGisStore();
 

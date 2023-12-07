@@ -19,6 +19,20 @@
           <el-button class="confirm-button" type="primary" @click="onConfirm">确定关联</el-button>
           <el-tabs v-model="currentTab" @tab-click="onTabClick">
             <el-tab-pane :label="isLogical == 1 || isLogical == 2 ? '设备类型' : '对象类型'" name="equipType">
+              <div class="query-areas">
+                <el-form inline>
+                  <el-form-item label="设备类型名称" required>
+                    <el-input
+                      v-model="filterText"
+                      clearable
+                      placeholder="请输入"
+                      @clear="onQuery"
+                      @input="onQuery"
+                      style="width: 250px"
+                    />
+                  </el-form-item>
+                </el-form>
+              </div>
               <!-- 物理设备类型、逻辑设备类型列表、外部对象对象类型列表 -->
               <el-table
                 :data="equipTypeList.data"
@@ -77,6 +91,12 @@ const logicalChange = (value: number) => {
 
 // 弹窗
 const open = ref<boolean>(false);
+// input
+const filterText = ref("");
+
+const onQuery = () => {
+  equipTypeList.value.fetchData();
+};
 
 const openDialog = () => {
   open.value = true;
@@ -106,7 +126,8 @@ const equipTypeList = ref({
     equipTypeList.value.loading = true;
     // 物理设备类型、逻辑设备类型、外部设备类型
     const res: { [key: string]: any } = await getAllLabelTypeList(
-      isLogical.value == 1 || isLogical.value == 2 ? isLogical.value : ""
+      isLogical.value == 1 || isLogical.value == 2 ? isLogical.value : "",
+      filterText.value
     );
     if (res.code == 200) {
       equipTypeList.value.data = res?.data || [];
@@ -165,6 +186,7 @@ onMounted(() => {
 });
 
 watch(isLogical, () => {
+  filterText.value = "";
   equipTypeList.value.fetchData();
 });
 defineExpose({
@@ -188,6 +210,10 @@ defineExpose({
     position: absolute;
     right: 0;
     z-index: 1;
+  }
+  .query-areas {
+    margin-top: 20px;
+    margin-left: 10px;
   }
 }
 .reference-side-tab {

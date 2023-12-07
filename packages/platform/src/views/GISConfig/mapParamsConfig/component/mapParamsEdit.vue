@@ -38,33 +38,76 @@
           <el-input type="number" v-model.number="form.defaultCenterPointLongitude" />
         </el-form-item>
         <el-form-item label="显示标签类型" prop="displayLabelInfoIds">
-          <el-select filterable v-model="form.displayLabelInfoIds" multiple collapse-tags clearable placeholder="请选择...">
-            <el-option v-for="(item, index) in labelTypeList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+          <el-select
+            filterable
+            v-model="form.displayLabelInfoIds"
+            multiple
+            collapse-tags
+            clearable
+            placeholder="请选择..."
+            @change="displayLabelTypeChange"
+          >
+            <div class="select_up">
+              <el-button link type="primary" @click="attributeAllSelect('displayLabelType')"> 全选</el-button>
+              <el-button link type="primary" @click="attributeDelete('displayLabelType')"> 清空</el-button>
+              <el-button link type="primary" @click="attributeSelectReverse('displayLabelType')"> 反选</el-button>
+            </div>
+            <div>
+              <el-option v-for="(item, index) in labelTypeList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+            </div>
           </el-select>
         </el-form-item>
         <el-form-item label="搜索标签类型" prop="displaySearchIds">
           <el-select v-model="form.displaySearchIds" multiple collapse-tags clearable placeholder="请选择..." filterable>
-            <el-option v-for="(item, index) in searchTypeList" :key="index" :label="item.name" :value="item.id"></el-option>
+            <div class="select_up">
+              <el-button link type="primary" @click="attributeAllSelect('searchLabelType')"> 全选</el-button>
+              <el-button link type="primary" @click="attributeDelete('searchLabelType')"> 清空</el-button>
+              <el-button link type="primary" @click="attributeSelectReverse('searchLabelType')"> 反选</el-button>
+            </div>
+            <div>
+              <el-option v-for="(item, index) in searchTypeList" :key="index" :label="item.name" :value="item.id"></el-option>
+            </div>
           </el-select>
         </el-form-item>
         <el-form-item label="显示图层" prop="displayLayerIds">
           <el-select v-model="form.displayLayerIds" multiple collapse-tags clearable placeholder="请选择..." filterable>
-            <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+            <div class="select_up">
+              <el-button link type="primary" @click="attributeAllSelect('displayLayer')"> 全选</el-button>
+              <el-button link type="primary" @click="attributeDelete('displayLayer')"> 清空</el-button>
+              <el-button link type="primary" @click="attributeSelectReverse('displayLayer')"> 反选</el-button>
+            </div>
+            <div>
+              <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+            </div>
           </el-select>
         </el-form-item>
         <el-form-item label="显示控件" prop="displayControlIds">
           <el-select filterable v-model="form.displayControlIds" multiple collapse-tags clearable placeholder="请选择...">
-            <el-option v-for="(item, index) in controlList.data" :key="index" :label="item.name" :value="item.code"></el-option>
+            <div class="select_up">
+              <el-button link type="primary" @click="attributeAllSelect('displayControl')"> 全选</el-button>
+              <el-button link type="primary" @click="attributeDelete('displayControl')"> 清空</el-button>
+              <el-button link type="primary" @click="attributeSelectReverse('displayControl')"> 反选</el-button>
+            </div>
+            <div>
+              <el-option v-for="(item, index) in controlList.data" :key="index" :label="item.name" :value="item.code"></el-option>
+            </div>
           </el-select>
         </el-form-item>
         <el-form-item label="显示图例" prop="displayLegendIds">
           <el-select v-model="form.displayLegendIds" multiple collapse-tags clearable placeholder="请选择..." filterable>
-            <el-option
-              v-for="(item, index) in legendIdsList.data"
-              :key="index"
-              :label="item.legendName"
-              :value="item.id"
-            ></el-option>
+            <div class="select_up">
+              <el-button link type="primary" @click="attributeAllSelect('displayLegend')"> 全选</el-button>
+              <el-button link type="primary" @click="attributeDelete('displayLegend')"> 清空</el-button>
+              <el-button link type="primary" @click="attributeSelectReverse('displayLegend')"> 反选</el-button>
+            </div>
+            <div>
+              <el-option
+                v-for="(item, index) in legendIdsList.data"
+                :key="index"
+                :label="item.legendName"
+                :value="item.id"
+              ></el-option>
+            </div>
           </el-select>
         </el-form-item>
         <el-form-item label="距离单位" prop="scaleLineUnit">
@@ -156,7 +199,14 @@ import { reactive, onMounted, ref, unref, computed } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
-import { addMapParams, editMapParams, getLayerList, getLabelTypeList, getLegendConfigList } from "@/api/visconfig.js";
+import {
+  addMapParams,
+  editMapParams,
+  getLayerList,
+  getLabelTypeList,
+  getLegendConfigList,
+  getLegendListByLabelType
+} from "@/api/visconfig.js";
 import { customTreeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
 import KeywordConfigDialog from "./keywordConfigDialog.vue";
@@ -328,6 +378,74 @@ const openDialog = (row?: { [key: string]: any }) => {
 
 const onClose = () => {
   state.open = false;
+};
+
+// 显示标签类型change及显示标签类型的全选、反选、清空调用
+const displayLabelTypeChange = () => {
+  // 清除当前搜索类型选中项在列表中不存在的值
+  let currentAllData: any[] = (searchTypeList.value as any[])?.map((item: any) => item?.id);
+  form.value.displaySearchIds =
+    (form.value.displaySearchIds as any[]).filter((item: any) => currentAllData?.includes(item)) || [];
+  // 根据标签类型id查图例列表
+  legendListByLabelType.value?.fetchData();
+};
+
+// 全选
+const attributeAllSelect = (type: string) => {
+  if (type == "displayLabelType") {
+    form.value.displayLabelInfoIds = labelTypeList.value.data?.map((item: any) => item?.id);
+    displayLabelTypeChange();
+  } else if (type == "searchLabelType") {
+    form.value.displaySearchIds = (searchTypeList.value || [])?.map((item: any) => item?.id);
+  } else if (type == "displayLayer") {
+    form.value.displayLayerIds = layerList.value.data?.map((item: any) => item?.id);
+  } else if (type == "displayControl") {
+    form.value.displayControlIds = controlList.value.data?.map((item: any) => item?.code);
+  } else if (type == "displayLegend") {
+    form.value.displayLegendIds = legendIdsList.value.data?.map((item: any) => item?.id);
+  }
+};
+
+// 清空
+const attributeDelete = (type: string) => {
+  if (type == "displayLabelType") {
+    form.value.displayLabelInfoIds = [];
+    displayLabelTypeChange();
+  } else if (type == "searchLabelType") {
+    form.value.displaySearchIds = [];
+  } else if (type == "displayLayer") {
+    form.value.displayLayerIds = [];
+  } else if (type == "displayControl") {
+    form.value.displayControlIds = [];
+  } else if (type == "displayLegend") {
+    form.value.displayLegendIds = [];
+  }
+};
+
+// 反选
+const attributeSelectReverse = (type: string) => {
+  if (type == "displayLabelType") {
+    form.value.displayLabelInfoIds = (labelTypeList.value.data || [])
+      .filter((item: any) => !(form.value.displayLabelInfoIds as any[])?.includes(item?.id))
+      .map((filteredItem: any) => filteredItem?.id);
+    displayLabelTypeChange();
+  } else if (type == "searchLabelType") {
+    form.value.displaySearchIds = (searchTypeList.value || [])
+      .filter((item: any) => !(form.value.displaySearchIds as any[])?.includes(item?.id))
+      .map((filteredItem: any) => filteredItem?.id);
+  } else if (type == "displayLayer") {
+    form.value.displayLayerIds = (layerList.value.data || [])
+      .filter((item: any) => !(form.value.displayLayerIds as any[])?.includes(item?.id))
+      .map((filteredItem: any) => filteredItem?.id);
+  } else if (type == "displayControl") {
+    form.value.displayControlIds = (controlList.value.data || [])
+      .filter((item: any) => !(form.value.displayControlIds as any[])?.includes(item?.code))
+      .map((filteredItem: any) => filteredItem?.code);
+  } else if (type == "displayLegend") {
+    form.value.displayLegendIds = (legendIdsList.value.data || [])
+      .filter((item: any) => !(form.value.displayLegendIds as any[])?.includes(item?.id))
+      .map((filteredItem: any) => filteredItem?.id);
+  }
 };
 
 const onConfirm = () => {
@@ -544,6 +662,27 @@ const searchTypeList = computed(() => {
   });
 });
 
+// 根据标签类型获取已配置图例列表
+const legendListByLabelType = ref<{
+  data: Array<{
+    id: number | string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getLegendListByLabelType(form.value.displayLabelInfoIds);
+    if (res?.code == 200) {
+      // 将此列表存在的值默认在图例配置中选中(去重)
+      res?.data?.forEach((item: any) => {
+        if (!(form.value.displayLegendIds as any[])?.includes(item.id)) {
+          (form.value.displayLegendIds as any[])?.push(item.id);
+        }
+      });
+    }
+  }
+});
+
 // 关键词显示配置
 const keywordConfigClick = () => {
   keywordConfigRef.value.openDialog(form.value.keywordConfig);
@@ -582,5 +721,12 @@ defineExpose({
   i {
     margin-right: 0;
   }
+}
+.select_up {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 </style>

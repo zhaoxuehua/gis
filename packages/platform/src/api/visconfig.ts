@@ -22,30 +22,34 @@ export function deleteLayer(params: any) {
   return request.delete(`/api/gis-service/equip/layerConfig/${params.join(",")}`);
 }
 
-// 地图参数
-// 获取地图参数列表
+// 应用场景
+// 获取应用场景列表
 export function getMapParamsList(queryString: string, params: object) {
   return request.post(`/api/gis-service/equip/mapParams/config/list${queryString}`, params);
 }
-// 获取地图参数详情
+// 获取应用场景详情
 export function getMapParamsDetail(params: string | number) {
   return request.get(`/api/gis-service/equip/mapParams/config/getById/${params}`);
 }
-// 删除地图参数前检查是否引用
+// 删除应用场景前检查是否引用
 export function deleteMapParamsCheck(params: any) {
   return request.get(`/api/gis-service/equip/mapParams/config/check/${params.join(",")}`);
 }
-// 删除地图参数
+// 删除应用场景
 export function deleteMapParams(params: any) {
   return request.delete(`/api/gis-service/equip/mapParams/config/${params.join(",")}`);
 }
-// 新增地图参数
+// 新增应用场景
 export function addMapParams(params: object) {
   return request.post(`/api/gis-service/equip/mapParams/config`, params);
 }
-// 修改地图参数
+// 修改应用场景
 export function editMapParams(params: object) {
   return request.put(`/api/gis-service/equip/mapParams/config`, params);
+}
+// 根据标签类型或者已配置的图例列表
+export function getLegendListByLabelType(params: any) {
+  return request.get(`/api/gis-service/equip/mapParams/config/legend4SelectedLabelType/${params.join(",")}`);
 }
 
 // 标签类型
@@ -80,8 +84,8 @@ export function getLabelTypeDetail(params: string | number) {
 }
 
 // 获取关联关系设备类型接口（物理设备类型、逻辑设备类型、外部对象类型）
-export function getAllLabelTypeList(params: any) {
-  return request.get(`/api/gis-service/equip/gisLabel/type/equipAndVisitType/list?isLogical=${params}`);
+export function getAllLabelTypeList(isLogical: any, labelTypeName: any) {
+  return request.get(`/api/gis-service/equip/gisLabel/type/equipAndVisitType/list?isLogical=${isLogical}&name=${labelTypeName}`);
 }
 
 // 获取属性接口（物理设备类型、逻辑设备类型、外部对象类型类型下的属性）

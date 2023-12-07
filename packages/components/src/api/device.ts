@@ -130,7 +130,7 @@ export function handleAll(params: any) {
   return request.post(`/api/adm-service/view/event/process/all`, params);
 }
 // 处理记录list
-export function eventProcesses(id: string, queryString: string) {
+export function eventProcesses(id: string | number, queryString: string) {
   return request.get(`/api/adm-service/view/event/processes/${id}${queryString}`);
 }
 // 实时事件-视频-左边列表
