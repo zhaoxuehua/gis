@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.90
+
+### Patch Changes
+
+- 翻页增加 jumper
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.88
+
 ## 1.0.89
 
 ### Patch Changes

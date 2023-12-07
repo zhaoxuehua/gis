@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.88
+
+### Patch Changes
+
+- 翻页增加 jumper
+
 ## 1.0.87
 
 ### Patch Changes
