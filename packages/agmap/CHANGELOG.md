@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.89
+
+### Patch Changes
+
+- 去除 mid 转为 Number
+
 ## 1.0.88
 
 ### Patch Changes
