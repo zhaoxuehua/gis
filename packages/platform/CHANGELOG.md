@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 1.0.91
+
+### Patch Changes
+
+- 去除 mid 转为 Number
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.89
+
 ## 1.0.90
 
 ### Patch Changes

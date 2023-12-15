@@ -144,7 +144,7 @@ const table = ref({
     table.value.loading = true;
     const queryString = `?pageNumber=${query.value.params.pageNumber}&pageSize=${query.value.params.pageSize}`;
     try {
-      const res: any = await eventProcesses(Number(query.value.params.mid), queryString);
+      const res: any = await eventProcesses(query.value.params.mid, queryString);
       if (res?.code == 200) {
         table.value.data = res.data.items;
         table.value.total = res.data.totalNum;
@@ -159,7 +159,7 @@ const openDialog = (row: any) => {
   initOption();
   if (row) {
     state.row = row;
-    query.value.params.mid = Number(row.mid);
+    query.value.params.mid = row.mid;
     table.value.getTableData();
     form.value.eventHandleType = "";
     form.value.eventNature = "";
@@ -176,7 +176,7 @@ const onConfirm = () => {
   refForm.value.validate(async (valid: any) => {
     if (valid) {
       let param = { ...form.value };
-      param.eventMids = [Number(state.row.mid)];
+      param.eventMids = [state.row.mid];
       btnLoading.value = true;
       try {
         const res: any = await eventProcessBatch(param);
