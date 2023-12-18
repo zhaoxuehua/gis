@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.90
+
+### Patch Changes
+
+- map 组件内翻页封装
+
 ## 1.0.89
 
 ### Patch Changes
