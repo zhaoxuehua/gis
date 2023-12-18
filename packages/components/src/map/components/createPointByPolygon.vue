@@ -64,16 +64,13 @@
           </el-table-column>
         </el-table>
         <div v-if="table.data?.length">
-          <el-pagination
-            :background="true"
-            v-model:current-page="query.pageNo"
-            v-model:page-size="query.pageSize"
-            :page-sizes="[10, 20, 30, 50, 100]"
-            :layout="paginationLayout"
+          <paginationCom
             :total="table.total"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
+            v-model:page="query.pageNo"
+            v-model:limit="query.pageSize"
+            @pagination="query.getPagination"
+          >
+          </paginationCom>
         </div>
       </div>
     </div>
@@ -90,7 +87,7 @@ import { point as turfPoint, polygon as turfPolygon, randomPosition, booleanPoin
 import type { TableList } from "../type";
 import { transformLabelType } from "../hooks/index";
 import { MAP_DATA_TYPE } from "../hooks/createGeometry";
-import { paginationLayout } from "../constant";
+import paginationCom from "./paginationCom.vue";
 
 const state = reactive({
   defaultProps: {
@@ -171,19 +168,13 @@ watch(
 );
 
 onMounted(() => {
-  getTreeData(state.treeCode).then(
-    (res: { [key: string]: any }) => {
-      if (res.code === 200 && res.data) {
-        treeData.value = res.data;
-      } else {
-        ElMessage.error("接口异常");
-      }
-    },
-    (err: any) => {
-      console.error(err);
-      // ElMessage.error("接口异常");
+  getTreeData(state.treeCode).then((res: { [key: string]: any }) => {
+    if (res.code === 200 && res.data) {
+      treeData.value = res.data;
+    } else {
+      ElMessage.error("接口异常");
     }
-  );
+  });
 });
 
 // 查询条件
@@ -201,14 +192,6 @@ const query = ref<{ [key: string]: any }>({
     table.value.getTableData();
   }
 });
-
-const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  query.value.getPagination({ page: val, limit: query.value.pageSize });
-};
 
 const currentTarget = ref<{ [key: string]: any }>({}); // 当前选中左侧树是设备节点且是面的信息（选中对象及坐标）
 

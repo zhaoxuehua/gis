@@ -100,16 +100,13 @@
       </el-table>
 
       <div v-if="state?.data?.length">
-        <el-pagination
-          :background="true"
-          v-model:current-page="state.pageNumber"
-          v-model:page-size="state.pageSize"
-          :page-sizes="[10, 20, 30, 50, 100]"
-          :layout="paginationLayout"
+        <paginationCom
           :total="state.total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+          v-model:page="state.pageNumber"
+          v-model:limit="state.pageSize"
+          @pagination="getPagination"
+        >
+        </paginationCom>
       </div>
     </el-dialog>
   </div>
@@ -119,7 +116,7 @@
 import { ref, watch, computed, reactive } from "vue";
 import moment from "moment";
 import Icon from "./Icon.vue";
-import { paginationLayout } from "../constant";
+import paginationCom from "./paginationCom.vue";
 
 // ⤵ store
 import { useTrackListStore } from "../../stores/modules/trackList";
@@ -157,15 +154,7 @@ const getPagination = (obj: any) => {
   state.pageSize = obj.limit;
   const startIndex = (state.pageNumber - 1) * state.pageSize;
   const endIndex = startIndex + state.pageSize;
-  state.data = state.allData.slice(startIndex, endIndex);
-};
-
-const handleSizeChange = (val: any) => {
-  getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  getPagination({ page: val, limit: state.pageSize });
+  state.data = state.allData?.slice(startIndex, endIndex);
 };
 
 // 详情
@@ -269,13 +258,6 @@ watch(
   .track-scrollable-table .el-table__header-wrapper {
     overflow-x: auto;
     white-space: nowrap;
-  }
-}
-:deep(.el-pagination) {
-  padding: 0;
-  .el-pagination__sizes {
-    margin-right: 0 !important;
-    margin-left: 16px !important;
   }
 }
 </style>

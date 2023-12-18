@@ -23,11 +23,11 @@
                   end-placeholder="结束日期"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   :shortcuts="state?.shortcuts"
-                  @change="query.onQuery"
+                  @change="querySearch"
                   style="width: 400px !important; margin-right: 20px"
                 >
                 </el-date-picker>
-                <el-button type="primary" @click="query.onQuery"> 搜索 </el-button>
+                <el-button type="primary" @click="querySearch"> 搜索 </el-button>
               </el-form-item>
             </el-col>
           </el-row>
@@ -78,16 +78,13 @@
         </el-table-column>
       </el-table>
       <div v-if="table.data?.length">
-        <el-pagination
-          :background="true"
-          v-model:current-page="query.params.pageNumber"
-          v-model:page-size="query.params.pageSize"
-          :page-sizes="[10, 20, 30, 50, 100]"
-          :layout="paginationLayout"
+        <paginationCom
           :total="table.total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+          v-model:page="query.params.pageNumber"
+          v-model:limit="query.params.pageSize"
+          @pagination="query.getPagination"
+        >
+        </paginationCom>
       </div>
 
       <SingleDeal ref="singleDealRef" @success-handle="successHandle"></SingleDeal>
@@ -106,7 +103,7 @@ import { SHOUT_CUTS } from "./componentConstant";
 import { eventList } from "../../../../api/device";
 import VideoDialog from "./videoDialog.vue";
 import Icon from "../../Icon.vue";
-import { paginationLayout } from "../../../constant";
+import paginationCom from "../../paginationCom.vue";
 
 const emits = defineEmits(["successHandle", "successBatch"]);
 const state = reactive({
@@ -140,12 +137,9 @@ const query = ref({
   }
 });
 
-const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
+const querySearch = () => {
+  query.value.params.pageNumber = 1;
+  query.value.onQuery();
 };
 
 const table = ref({
@@ -227,12 +221,5 @@ defineExpose({
 }
 .monitor-todo-list-table .deal-icon {
   margin-right: 20px;
-}
-:deep(.el-pagination) {
-  padding: 0;
-  .el-pagination__sizes {
-    margin-right: 0 !important;
-    margin-left: 16px !important;
-  }
 }
 </style>
