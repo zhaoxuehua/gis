@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 1.0.91
+
+### Patch Changes
+
+- 翻页封装+增加监听逻辑实时更新 dom
+
 ## 1.0.90
 
 ### Patch Changes
