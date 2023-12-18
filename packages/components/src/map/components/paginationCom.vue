@@ -72,12 +72,10 @@ const handleCurrentChange = (val: any) => {
     scrollTo(0, 800);
   }
 };
-watch(
-  () => props.page,
-  () => {
-    currentPage.value = props.page;
-  }
-);
+watch([() => props.page, () => props.limit], ([newPage, newLimit]) => {
+  currentPage.value = newPage;
+  pageSize.value = newLimit;
+});
 </script>
 
 <style scoped lang="scss">
