@@ -57,16 +57,13 @@
         </el-table-column>
       </el-table>
       <div v-if="table.data?.length">
-        <el-pagination
-          :background="true"
-          v-model:current-page="query.params.pageNumber"
-          v-model:page-size="query.params.pageSize"
-          :page-sizes="[10, 20, 30, 50, 100]"
-          :layout="paginationLayout"
+        <paginationCom
           :total="table.total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+          v-model:page="query.params.pageNumber"
+          v-model:limit="query.params.pageSize"
+          @pagination="query.getPagination"
+        >
+        </paginationCom>
       </div>
     </el-dialog>
     <!-- 批量处理 -->
@@ -86,7 +83,7 @@ import BatchProcessing from "./alarmComponents/batchProcessing.vue";
 import AwarenessMark from "./alarmComponents/awarenessMark.vue";
 import ToDoList from "./alarmComponents/toDoList.vue";
 import Icon from "../Icon.vue";
-import { paginationLayout } from "../../constant";
+import paginationCom from "../paginationCom.vue";
 
 const batchProcessingRef = ref();
 const awarenessMarkRef = ref();
@@ -119,20 +116,11 @@ const query = ref({
   }
 });
 
-const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
-};
-
 const openDialog = (row?: { [key: string]: any }) => {
   query.value.params.equipCode = row?.equipCode;
   table.value.getTableData();
   state.open = true;
 };
-
 const onClose = () => {
   state.open = false;
 };
@@ -212,12 +200,5 @@ defineExpose({
 .footer-item-icon-operate:hover {
   cursor: pointer;
   transition: 0s;
-}
-:deep(.el-pagination) {
-  padding: 0;
-  .el-pagination__sizes {
-    margin-right: 0 !important;
-    margin-left: 16px !important;
-  }
 }
 </style>

@@ -67,16 +67,13 @@
       </el-table-column>
     </el-table>
     <div v-if="table.data?.length">
-      <el-pagination
-        :background="true"
-        v-model:current-page="query.params.pageNumber"
-        v-model:page-size="query.params.pageSize"
-        :page-sizes="[10, 20, 30, 50, 100]"
-        :layout="paginationLayout"
+      <paginationCom
         :total="table.total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+        v-model:page="query.params.pageNumber"
+        v-model:limit="query.params.pageSize"
+        @pagination="query.getPagination"
+      >
+      </paginationCom>
     </div>
   </div>
 </template>
@@ -88,7 +85,7 @@ import { handleParam } from "@/utils/common.js";
 import { gisDeviceEquipList, getLabelInfoByEquipId } from "../../api/gis.js";
 import type { TableList } from "../type";
 import Icon from "./Icon.vue";
-import { paginationLayout } from "../constant";
+import paginationCom from "./paginationCom.vue";
 
 const props = withDefaults(defineProps<{ type: string }>(), {
   type: ""
@@ -114,14 +111,6 @@ const query = ref({
     table.value.getTableData();
   }
 });
-
-const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
-};
 
 const table = ref<TableList & { chooseList: any[] }>({
   loading: false,
@@ -191,13 +180,6 @@ onMounted(() => {
   .right-align {
     display: flex;
     justify-content: flex-end;
-  }
-}
-:deep(.el-pagination) {
-  padding: 0;
-  .el-pagination__sizes {
-    margin-right: 0 !important;
-    margin-left: 16px !important;
   }
 }
 </style>

@@ -1,5 +1,21 @@
 # adm-gis-platform
 
+## 1.0.93
+
+### Patch Changes
+
+- 翻页封装+增加监听逻辑实时更新 dom
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.91
+
+## 1.0.92
+
+### Patch Changes
+
+- map 组件内翻页封装
+- Updated dependencies
+  - @adm-gis-ui/components@1.0.90
+
 ## 1.0.91
 
 ### Patch Changes

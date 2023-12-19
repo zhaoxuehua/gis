@@ -31,7 +31,7 @@ export const useGisStore = defineStore({
       getGisCustomTree(this.mapIdentificationConfig?.mapParams, this.mapIdentificationConfig?.isId).then(
         (res: any) => {
           if (res.code === 200 && res.data) {
-            const { treeNodeVOList } = res.data;
+            const { treeNodeVOList = [] } = res.data;
             const navigationTree = cloneDeep(formatTree(treeNodeVOList));
             this.navigationTree = navigationTree;
           } else {
@@ -141,12 +141,12 @@ export const useGisStore = defineStore({
 
 // 格式化树数据，按order进行排序
 const formatTree = (tree: any[]) => {
-  tree.sort(function (a: any, b: any) {
+  tree?.sort(function (a: any, b: any) {
     const param1 = a.order;
     const param2 = b.order;
     return param1 - param2;
   });
-  tree.forEach(function (item: any) {
+  tree?.forEach(function (item: any) {
     if (item.children && item.children.length > 0) {
       formatTree(item.children);
     } else {

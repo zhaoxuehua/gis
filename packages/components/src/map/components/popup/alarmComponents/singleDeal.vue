@@ -53,16 +53,13 @@
       </el-table>
 
       <div v-if="table.data?.length">
-        <el-pagination
-          :background="true"
-          v-model:current-page="query.params.pageNumber"
-          v-model:page-size="query.params.pageSize"
-          :page-sizes="[10, 20, 30, 50, 100]"
-          :layout="paginationLayout"
+        <paginationCom
           :total="table.total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+          v-model:page="query.params.pageNumber"
+          v-model:limit="query.params.pageSize"
+          @pagination="query.getPagination"
+        >
+        </paginationCom>
       </div>
     </el-dialog>
   </div>
@@ -72,7 +69,7 @@
 import { reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { eventProcesses, eventProcessBatch, getHandleTypeOption, getNatureOption } from "../../../../api/device";
-import { paginationLayout } from "../../../constant";
+import paginationCom from "../../paginationCom.vue";
 
 const emits = defineEmits(["successHandle"]);
 const props = withDefaults(defineProps<{ type: number }>(), {
@@ -126,14 +123,6 @@ const query = ref({
     table.value.getTableData();
   }
 });
-
-const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
-};
 
 const table = ref({
   loading: false,
@@ -212,12 +201,5 @@ defineExpose({
 <style lang="scss" scoped>
 .single-deal-footer {
   margin: 2px 0 20px;
-}
-:deep(.el-pagination) {
-  padding: 0;
-  .el-pagination__sizes {
-    margin-right: 0 !important;
-    margin-left: 16px !important;
-  }
 }
 </style>
