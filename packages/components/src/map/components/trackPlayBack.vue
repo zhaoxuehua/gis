@@ -129,17 +129,15 @@
         </el-table>
 
         <div v-if="table.data?.length">
-          <el-pagination
-            background
+          <paginationCom
             small
-            v-model:current-page="formData.pageNumber"
-            v-model:page-size="formData.pageSize"
-            layout="prev, pager, next"
-            :total="table.total"
             :pager-count="5"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
+            :total="table.total"
+            layout="prev, pager, next"
+            v-model:page="formData.pageNumber"
+            v-model:limit="formData.pageSize"
+            @pagination="getPagination"
+          ></paginationCom>
         </div>
       </div>
     </div>
@@ -151,6 +149,7 @@ import type { Ref } from "vue";
 import { ElMessage } from "element-plus";
 import Icon from "./Icon.vue";
 import moment from "moment";
+import paginationCom from "./paginationCom.vue";
 
 // ⤵ 接口
 import { eventListByObjType, getTrackListData } from "../../api/device";
@@ -406,15 +405,6 @@ const trackPlayBack = (row: { [key: string]: any }) => {
     beginTime: moment(formData.beginTime).format("YYYY-MM-DD HH:mm:ss"),
     endTime: moment(formData.endTime).format("YYYY-MM-DD HH:mm:ss")
   });
-};
-
-// 分页
-const handleSizeChange = (val: any) => {
-  getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  getPagination({ page: val, limit: formData.pageSize });
 };
 
 const getPagination = (obj: { page: number; limit: number }) => {

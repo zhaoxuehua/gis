@@ -17,7 +17,7 @@
 
 <script lang="ts" setup name="Pagination">
 import { scrollTo } from "@/utils/scroll-to";
-import { toRefs, reactive } from "vue";
+import { toRefs, reactive, watch } from "vue";
 
 const props = defineProps({
   total: {
@@ -76,6 +76,11 @@ const handleCurrentChange = (val: any) => {
     scrollTo(0, 800);
   }
 };
+
+watch([() => props.page, () => props.limit], ([newPage, newLimit]) => {
+  state.currentPage = newPage;
+  state.pageSize = newLimit;
+});
 </script>
 
 <style scoped lang="scss">

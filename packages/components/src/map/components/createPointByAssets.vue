@@ -63,16 +63,13 @@
           <el-table-column label="GIS坐标" prop="gisCoordinates" show-overflow-tooltip></el-table-column>
         </el-table>
         <div v-if="table.data?.length">
-          <el-pagination
-            :background="true"
-            v-model:current-page="query.params.pageNumber"
-            v-model:page-size="query.params.pageSize"
-            :page-sizes="[10, 20, 30, 50, 100]"
-            :layout="paginationLayout"
+          <paginationCom
             :total="table.total"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
+            v-model:page="query.params.pageNumber"
+            v-model:limit="query.params.pageSize"
+            @pagination="query.getPagination"
+          >
+          </paginationCom>
         </div>
       </div>
     </div>
@@ -90,7 +87,7 @@ import Icon from "./Icon.vue";
 import type { TableList } from "../type";
 import { MAP_DATA_TYPE } from "../hooks/createGeometry";
 import { transformLabelType } from "../hooks/index";
-import { paginationLayout } from "../constant";
+import paginationCom from "./paginationCom.vue";
 
 const query = ref({
   params: {
@@ -109,13 +106,6 @@ const query = ref({
     table.value.getTableData();
   }
 });
-const handleSizeChange = (val: any) => {
-  query.value.getPagination({ page: 1, limit: val });
-};
-
-const handleCurrentChange = (val: any) => {
-  query.value.getPagination({ page: val, limit: query.value.params.pageSize });
-};
 
 const table = ref<TableList & { chooseList: any[] }>({
   loading: false,
