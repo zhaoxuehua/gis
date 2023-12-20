@@ -250,7 +250,8 @@ export function transformLabelType(originalData: LabelType) {
     icon: {
       src: originalData?.labelTypeImagePath,
       scale: originalData?.displayScale,
-      opacity: originalData?.pellucidity
+      opacity: originalData?.pellucidity,
+      rotation: originalData?.displayRotate || 0
     },
     text: {
       text: originalData?.dataType == "6" ? originalData?.content : originalData?.name, // 文本内容（文本时取值配的值，其他默认显示标签名称时取值标签类型的name）
