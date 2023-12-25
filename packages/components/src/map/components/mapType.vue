@@ -40,7 +40,7 @@ const radio = ref<string>();
 const radioChange = (value: any) => {
   radio.value = value;
   if (!map.value) return;
-  const { showOverlay } = map.value?.defaultOptions || {};
+  const { showOverlay, mapLoadMode } = map.value?.defaultOptions || {};
   const { normalMap, sateMap, overlayMap } = map.value?.get("layerMap");
 
   if (map.value && map.value?.defaultOptions) {
@@ -51,9 +51,10 @@ const radioChange = (value: any) => {
     sateMap?.setVisible(false);
     overlayMap?.setVisible(false);
   } else {
+    let isDisplayOverlayMap = showOverlay && mapLoadMode == "outline";
     normalMap?.setVisible(false);
     sateMap?.setVisible(true);
-    overlayMap?.setVisible(showOverlay);
+    overlayMap?.setVisible(isDisplayOverlayMap);
   }
 };
 

@@ -58,6 +58,12 @@
         <el-table-column label="序号" type="index" min-width="60"></el-table-column>
         <el-table-column label="场景编码" prop="appCode" min-width="120" sortable="custom"></el-table-column>
         <el-table-column label="场景名称" prop="appName" min-width="120" sortable="custom"></el-table-column>
+        <el-table-column label="地图加载方式" prop="mapLoadMode" min-width="120" sortable="custom">
+          <template #default="scope">
+            {{ scope.row.mapLoadMode == "online" ? "在线地图" : "离线地图" }}
+          </template>
+        </el-table-column>
+
         <el-table-column label="显示模式" prop="displayMode" min-width="120" sortable="custom">
           <template #default="scope">
             {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
@@ -104,6 +110,9 @@
     <MapParamsEdit ref="mapParamsEditRef" @success-add="query.onQuery"></MapParamsEdit>
 
     <DetailDialog ref="detailDialogRef" :constant="'GIS_MAPPARAMS_DETAIL'" :title="'应用场景详情'" :width="900">
+      <template #mapLoadMode="scope">
+        {{ scope.row.mapLoadMode == "online" ? "在线地图" : "离线地图" }}
+      </template>
       <template #displayMode="scope">
         {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
       </template>

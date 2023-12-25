@@ -16,6 +16,22 @@
         <el-form-item label="场景名称" prop="appName">
           <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
+        <el-form-item label="地图加载方式" prop="mapLoadMode" style="width: 350px">
+          <el-radio-group v-model="form.mapLoadMode">
+            <el-radio label="online" size="large">在线地图</el-radio>
+            <el-radio label="outline" size="large">离线地图</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="离线电子地图" prop="normalUrl">
+          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
+        </el-form-item>
+        <el-form-item label="离线卫星地图" prop="sateUrl">
+          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
+        </el-form-item>
+        <el-form-item label="离线路网叠加层" prop="overlayUrl">
+          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
+        </el-form-item>
+
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 350px">
           <el-radio-group v-model="form.displayMode">
             <el-radio :label="1" size="large">电子地图</el-radio>
@@ -164,23 +180,6 @@
         <el-form-item label="是否可编辑" prop="isEdit">
           <el-checkbox v-model="form.isEdit" style="width: 200px"></el-checkbox>
         </el-form-item>
-        <el-form-item
-          label="电子地图URL"
-          prop="normalUrl"
-          v-if="form.displayMode == 1 || form.displayControlIds.includes('mapTypeSwitch')"
-        >
-          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
-        </el-form-item>
-        <el-form-item
-          label="卫星影像URL"
-          prop="sateUrl"
-          v-if="form.displayMode == 2 || form.displayControlIds.includes('mapTypeSwitch')"
-        >
-          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
-        </el-form-item>
-        <el-form-item label="路网叠加层URL" prop="overlayUrl" v-if="form.displayControlIds.includes('showOverlay')">
-          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
-        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -216,6 +215,7 @@ interface MapParamsForm {
   id?: number;
   appCode: string;
   appName: string;
+  mapLoadMode: string;
   displayMode: number;
   defaultDisplayLevel: number | null;
   minLevel: number | null;
@@ -277,6 +277,7 @@ const state = reactive({
       { validator: codeVerification, trigger: ["blur", "change"] },
       { max: 50, message: "场景编码长度不能大于50", trigger: ["blur", "change"] }
     ],
+    mapLoadMode: [{ required: true, message: "请选择地图加载方式", trigger: ["blur", "change"] }],
     displayMode: [{ required: true, message: "请选择默认显示模式", trigger: ["blur", "change"] }],
     defaultDisplayLevel: [
       { required: true, message: "默认展示层级不能为空", trigger: ["blur", "change"] },
@@ -304,18 +305,9 @@ const state = reactive({
     leftClickDialogPosition: [{ required: true, message: "请选择左键弹窗位置", trigger: ["blur", "change"] }],
     customTreeType: [{ required: true, message: "请选择导航树", trigger: ["blur", "change"] }],
     customTreeCode: [{ required: true, message: "请选择设备树", trigger: ["blur", "change"] }],
-    normalUrl: [
-      { required: true, message: "电子地图URL不能为空", trigger: ["blur", "change"] },
-      { max: 500, message: "电子地图URL长度不能大于500", trigger: ["blur", "change"] }
-    ],
-    sateUrl: [
-      { required: true, message: "卫星影像URL不能为空", trigger: ["blur", "change"] },
-      { max: 500, message: "卫星影像URL长度不能大于500", trigger: ["blur", "change"] }
-    ],
-    overlayUrl: [
-      { required: true, message: "路网叠加层URL不能为空", trigger: ["blur", "change"] },
-      { max: 500, message: "路网叠加层URL长度不能大于500", trigger: ["blur", "change"] }
-    ]
+    normalUrl: [{ max: 500, message: "离线电子地图长度不能大于500", trigger: ["blur", "change"] }],
+    sateUrl: [{ max: 500, message: "离线卫星地图长度不能大于500", trigger: ["blur", "change"] }],
+    overlayUrl: [{ max: 500, message: "离线路网叠加层长度不能大于500", trigger: ["blur", "change"] }]
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
@@ -326,6 +318,7 @@ const btnLoading = ref(false);
 const defaultParam = {
   appName: "",
   appCode: "",
+  mapLoadMode: "outline",
   displayMode: 1,
   defaultDisplayLevel: null,
   minLevel: null,
