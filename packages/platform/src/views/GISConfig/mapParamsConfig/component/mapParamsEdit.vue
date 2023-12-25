@@ -3,11 +3,12 @@
     <el-dialog
       :title="['创建应用场景', '编辑应用场景'][state.dialogType]"
       v-model="state.open"
-      width="900px"
+      width="1020px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
       :destroy-on-close="true"
+      class="map-params-edit"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="场景编码" prop="appCode">
@@ -16,23 +17,31 @@
         <el-form-item label="场景名称" prop="appName">
           <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
-        <el-form-item label="地图加载方式" prop="mapLoadMode" style="width: 350px">
+        <el-form-item label="地图加载方式" prop="mapLoadMode" style="width: 450px">
           <el-radio-group v-model="form.mapLoadMode">
             <el-radio label="online" size="large">在线地图</el-radio>
             <el-radio label="outline" size="large">离线地图</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="离线电子地图" prop="normalUrl">
-          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
+          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable>
+            <template #append> <Icon src="Upload" :size="14" class="icon"></Icon>上传 </template>
+          </el-input>
+          <el-tooltip effect="dark" content="若地图过大，建议直接拷贝至服务器对应目录下" placement="top">
+            <Icon src="WarningFilled" :size="20" color="#e6a23c"></Icon>
+          </el-tooltip>
         </el-form-item>
         <el-form-item label="离线卫星地图" prop="sateUrl">
-          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
+          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable>
+            <template #append> <Icon src="Upload" :size="14" class="icon"></Icon>上传 </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="离线路网叠加层" prop="overlayUrl">
-          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
+          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable>
+            <template #append> <Icon src="Upload" :size="14" class="icon"></Icon>上传 </template>
+          </el-input>
         </el-form-item>
-
-        <el-form-item label="默认显示模式" prop="displayMode" style="width: 350px">
+        <el-form-item label="默认显示模式" prop="displayMode" style="width: 450px">
           <el-radio-group v-model="form.displayMode">
             <el-radio :label="1" size="large">电子地图</el-radio>
             <el-radio :label="2" size="large">卫星影像</el-radio>
@@ -169,16 +178,13 @@
             ></el-option>
           </el-select>
         </el-form-item>
-
-        <el-form-item label="关键词显示配置" prop="keywordConfig">
-          <div style="width: 200px">
-            <el-button class="reference-button" circle @click="keywordConfigClick">
-              <Icon src="EditPen"></Icon>
-            </el-button>
-          </div>
+        <el-form-item label="关键词显示配置" prop="keywordConfig" style="width: 450px">
+          <el-button class="reference-button" circle @click="keywordConfigClick">
+            <Icon src="EditPen"></Icon>
+          </el-button>
         </el-form-item>
-        <el-form-item label="是否可编辑" prop="isEdit">
-          <el-checkbox v-model="form.isEdit" style="width: 200px"></el-checkbox>
+        <el-form-item label="是否可编辑" prop="isEdit" style="width: 450px">
+          <el-checkbox v-model="form.isEdit"></el-checkbox>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -664,14 +670,16 @@ const legendListByLabelType = ref<{
 }>({
   data: [],
   fetchData: async () => {
-    const res: { [key: string]: any } = await getLegendListByLabelType(form.value.displayLabelInfoIds);
-    if (res?.code == 200) {
-      // 将此列表存在的值默认在图例配置中选中(去重)
-      res?.data?.forEach((item: any) => {
-        if (!(form.value.displayLegendIds as any[])?.includes(item.id)) {
-          (form.value.displayLegendIds as any[])?.push(item.id);
-        }
-      });
+    if (form.value?.displayLabelInfoIds && form.value.displayLabelInfoIds?.length) {
+      const res: { [key: string]: any } = await getLegendListByLabelType(form.value.displayLabelInfoIds);
+      if (res?.code == 200) {
+        // 将此列表存在的值默认在图例配置中选中(去重)
+        res?.data?.forEach((item: any) => {
+          if (!(form.value.displayLegendIds as any[])?.includes(item.id)) {
+            (form.value.displayLegendIds as any[])?.push(item.id);
+          }
+        });
+      }
     }
   }
 });
@@ -709,10 +717,21 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.reference-button {
-  margin-left: 5px;
-  i {
-    margin-right: 0;
+.map-params-edit {
+  .reference-button {
+    margin-left: 5px;
+    i {
+      margin-right: 0;
+    }
+  }
+  .el-form .el-input,
+  .el-form .el-select {
+    width: 300px;
+  }
+  .el-form .el-select {
+    :deep(.el-input) {
+      width: 300px;
+    }
   }
 }
 .select_up {
@@ -721,5 +740,11 @@ defineExpose({
   justify-content: center;
   margin-top: 10px;
   margin-bottom: 10px;
+}
+:deep(.el-input-group__append) {
+  padding: 0 5px !important;
+  color: #ffffff;
+  cursor: pointer;
+  background-color: var(--el-color-primary);
 }
 </style>
