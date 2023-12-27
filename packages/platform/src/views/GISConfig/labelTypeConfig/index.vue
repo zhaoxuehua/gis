@@ -20,7 +20,7 @@
             </el-form-item>
           </el-col>
           <el-col style="flex: 1; text-align: end">
-            <el-button class="btn-search" @click="query.onClear"> <Icon src="Refresh"></Icon> 重置 </el-button>
+            <el-button class="btn-search" @click="query.onClear"> <Icon src="RefreshLeft"></Icon> 重置 </el-button>
             <el-button class="btn-search" type="primary" @click="query.querySearch">
               <Icon src="Search"></Icon>
               搜索
