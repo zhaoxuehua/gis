@@ -24,22 +24,25 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="离线电子地图" prop="normalUrl">
-          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable>
-            <template #append> <Icon src="Upload" :size="14" class="icon"></Icon>上传 </template>
-          </el-input>
+          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable style="width: 240px" />
+          <el-upload :before-upload="beforeUpload" :http-request="uploadMapImage" :show-file-list="false">
+            <el-button type="primary">上传</el-button>
+          </el-upload>
           <el-tooltip effect="dark" content="若地图过大，建议直接拷贝至服务器对应目录下" placement="top">
             <Icon src="WarningFilled" :size="20" color="#e6a23c"></Icon>
           </el-tooltip>
         </el-form-item>
         <el-form-item label="离线卫星地图" prop="sateUrl">
-          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable>
-            <template #append> <Icon src="Upload" :size="14" class="icon"></Icon>上传 </template>
-          </el-input>
+          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable style="width: 240px" />
+          <el-upload :before-upload="beforeUpload" :http-request="uploadMapImage" :show-file-list="false">
+            <el-button type="primary">上传</el-button>
+          </el-upload>
         </el-form-item>
         <el-form-item label="离线路网叠加层" prop="overlayUrl">
-          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable>
-            <template #append> <Icon src="Upload" :size="14" class="icon"></Icon>上传 </template>
-          </el-input>
+          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable style="width: 240px" />
+          <el-upload :before-upload="beforeUpload" :http-request="uploadMapImage" :show-file-list="false">
+            <el-button type="primary">上传</el-button>
+          </el-upload>
         </el-form-item>
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 450px">
           <el-radio-group v-model="form.displayMode">
@@ -375,6 +378,24 @@ const openDialog = (row?: { [key: string]: any }) => {
   state.open = true;
 };
 
+const beforeUpload = (file: any) => {
+  // 上传前文件校验
+  let typeOk = false;
+  let arr = file?.name?.split(".");
+  if (arr[arr?.length - 1] == "zip") {
+    typeOk = true;
+  }
+  if (!typeOk) {
+    ElMessage.warning("导入文件必须是zip格式!");
+    return false;
+  }
+
+  return true;
+};
+
+const uploadMapImage = async (content: any) => {
+  console.log(content);
+};
 const onClose = () => {
   state.open = false;
 };
@@ -740,11 +761,5 @@ defineExpose({
   justify-content: center;
   margin-top: 10px;
   margin-bottom: 10px;
-}
-:deep(.el-input-group__append) {
-  padding: 0 5px !important;
-  color: #ffffff;
-  cursor: pointer;
-  background-color: var(--el-color-primary);
 }
 </style>
