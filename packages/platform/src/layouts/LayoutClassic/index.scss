@@ -7,9 +7,8 @@
     align-items: center;
     justify-content: space-between;
     height: 76px;
-    padding: 0 10px 0 0;
-    background-color: #191a20;
-    border-bottom: 1px solid var(--el-border-color-light);
+    padding: 0 15px;
+    background-color: var(--el-color-primary);
     .header-lf {
       display: flex;
       align-items: center;
@@ -17,33 +16,20 @@
       white-space: nowrap;
       .logo {
         flex-shrink: 0;
-        width: 210px;
-        margin-right: 16px;
-        .logo-img {
-          width: 28px;
+        img {
+          width: 100%;
+          height: 100%;
+          margin-right: 16px;
           object-fit: contain;
-          margin-right: 6px;
         }
         .logo-text {
-          font-size: 21.5px;
+          padding-left: 10px;
+          font-size: 30px;
           font-weight: bold;
-          color: #dadada;
+          line-height: 26px;
+          color: #ffffff;
           white-space: nowrap;
-        }
-      }
-      .tool-bar-lf {
-        .collapse-icon {
-          color: #e5eaf3;
-        }
-        .el-breadcrumb__inner.is-link {
-          color: #e5eaf3;
-          &:hover {
-            color: var(--el-color-primary);
-          }
-        }
-        .el-breadcrumb__item:last-child .el-breadcrumb__inner,
-        .el-breadcrumb__item:last-child .el-breadcrumb__inner:hover {
-          color: #cfd3dc;
+          border-left: 2px solid #ffffff;
         }
       }
     }
@@ -58,11 +44,13 @@
   }
   .classic-content {
     display: flex;
-    height: calc(100% - 55px);
+    height: calc(100% - 76px);
     :deep(.el-aside) {
-      width: 240px;
+      position: relative;
+      width: auto;
+      overflow: inherit;
       background-color: var(--el-menu-bg-color);
-      border-right: 1px solid var(--el-border-color-light);
+      border-top: 1px solid var(--el-color-primary-dark-1);
       .aside-box {
         display: flex;
         flex-direction: column;
@@ -78,6 +66,14 @@
     .classic-main {
       display: flex;
       flex-direction: column;
+    }
+  }
+
+  // 子应用时使用主框架的padding
+  .sub-app-classic-content {
+    height: 100%;
+    :deep(.el-main) {
+      padding: 0;
     }
   }
 }

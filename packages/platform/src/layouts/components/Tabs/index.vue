@@ -1,13 +1,17 @@
 <template>
   <div class="tabs-box">
     <div class="tabs-menu">
-      <el-tabs v-model="tabsMenuValue" type="card" @tab-click="tabClick" @tab-remove="tabRemove">
-        <el-tab-pane v-for="item in tabsMenuList" :key="item.path" :label="item.title" :name="item.path" :closable="item.close">
+      <el-tabs v-model="tabsMenuValue" type="card" @tab-click="tabClick">
+        <el-tab-pane v-for="item in tabsMenuList" :key="item.path" :label="item.title" :name="item.path">
           <template #label>
-            <el-icon class="tabs-icon" v-show="item.icon && tabsIcon">
-              <component :is="item.icon"></component>
-            </el-icon>
-            {{ item.title }}
+            <el-tag
+              :class="['tag', { 'tag-active': item.path === tabsMenuValue }]"
+              effect="plain"
+              :closable="item.close"
+              @close="tabRemove(item.path)"
+            >
+              {{ item.title }}
+            </el-tag>
           </template>
         </el-tab-pane>
       </el-tabs>
@@ -20,7 +24,6 @@
 import Sortable from "sortablejs";
 import { ref, computed, watch, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useGlobalStore } from "@/stores/modules/global";
 import { useTabsStore } from "@/stores/modules/tabs";
 import { useAuthStore } from "@/stores/modules/auth";
 import { useKeepAliveStore } from "@/stores/modules/keepAlive";
@@ -31,12 +34,10 @@ const route = useRoute();
 const router = useRouter();
 const tabStore = useTabsStore();
 const authStore = useAuthStore();
-const globalStore = useGlobalStore();
 const keepAliveStore = useKeepAliveStore();
 
 const tabsMenuValue = ref(route.fullPath);
 const tabsMenuList = computed(() => tabStore.tabsMenuList);
-const tabsIcon = computed(() => globalStore.tabsIcon);
 
 onMounted(() => {
   tabsDrop();

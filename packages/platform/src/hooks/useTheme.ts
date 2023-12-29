@@ -11,7 +11,7 @@ import { asideTheme, AsideThemeType } from "@/styles/theme/aside";
  * */
 export const useTheme = () => {
   const globalStore = useGlobalStore();
-  const { primary, isDark, isGrey, isWeak, asideInverted, layout } = storeToRefs(globalStore);
+  const { primary, isDark, isGrey, isWeak } = storeToRefs(globalStore);
 
   // 切换暗黑模式 ==> 并带修改主题颜色、侧边栏颜色
   const switchDark = () => {
@@ -54,16 +54,10 @@ export const useTheme = () => {
     globalStore.setGlobalState(propName, false);
   };
 
-  // 设置侧边栏样式 ==> light、inverted、dark
+  // 设置侧边栏样式
   const setAsideTheme = () => {
-    // 默认所有侧边栏为 light 模式
-    let type: AsideThemeType = "light";
-    // transverse 布局下菜单栏为 inverted 模式
-    if (layout.value == "transverse") type = "inverted";
-    // 侧边栏反转色目前只支持在 vertical 布局模式下生效
-    if (layout.value == "vertical" && asideInverted.value) type = "inverted";
-    // 侧边栏 dark 模式
-    if (isDark.value) type = "dark";
+    // 默认所有侧边栏为 dark 模式
+    let type: AsideThemeType = "dark";
     const theme = asideTheme[type!];
     for (const [key, value] of Object.entries(theme)) {
       document.documentElement.style.setProperty(key, value);

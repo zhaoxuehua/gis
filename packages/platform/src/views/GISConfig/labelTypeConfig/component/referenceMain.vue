@@ -231,11 +231,11 @@ defineExpose({
     &:hover {
       font-weight: bold;
       color: var(--el-menu-hover-color) !important;
+      background-color: var(--el-color-primary-light-9) !important;
     }
 
     /* 鼠标激活时的样式 */
     &.active {
-      font-weight: bold;
       color: var(--el-menu-active-color) !important;
       background-color: var(--el-menu-active-bg-color) !important;
     }

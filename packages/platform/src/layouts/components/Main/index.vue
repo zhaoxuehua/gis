@@ -10,9 +10,6 @@
       </transition>
     </router-view>
   </el-main>
-  <el-footer v-if="!isSubApp">
-    <Footer />
-  </el-footer>
 </template>
 
 <script setup lang="ts">
@@ -23,16 +20,13 @@ import { useGlobalStore } from "@/stores/modules/global";
 import { useKeepAliveStore } from "@/stores/modules/keepAlive";
 import Maximize from "./components/Maximize.vue";
 import Tabs from "@/layouts/components/Tabs/index.vue";
-import Footer from "@/layouts/components/Footer/index.vue";
-
-const isSubApp = inject("isSubApp");
 
 const globalStore = useGlobalStore();
 const { maximize, isCollapse, layout } = storeToRefs(globalStore);
 
 const keepAliveStore = useKeepAliveStore();
 const { keepAliveName } = storeToRefs(keepAliveStore);
-
+const isSubApp = inject("isSubApp");
 // 注入刷新页面方法
 const isRouterShow = ref(true);
 const refreshCurrentPage = (val: boolean) => (isRouterShow.value = val);
