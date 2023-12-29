@@ -1,26 +1,20 @@
 <!-- 经典布局 -->
 <template>
   <el-container class="layout">
-    <el-header>
+    <el-header v-if="!isSubApp">
       <div class="header-lf">
         <div class="logo flx-center">
-          <img
-            class="logo-img layout-logo-medium-img"
-            src="@/assets/img/logo-square.png"
-            alt="logo"
-            style="width: 20px; height: 20px"
-          />
+          <img src="@/assets/images/logo.png" alt="logo" />
           <span class="logo-text">GIS基础引擎</span>
         </div>
-        <ToolBarLeft />
       </div>
       <div class="header-ri">
         <ToolBarRight />
       </div>
     </el-header>
-    <el-container class="classic-content">
-      <el-aside>
-        <div class="aside-box" :style="{ width: isCollapse ? '65px' : '210px' }">
+    <el-container :class="['classic-content', isSubApp ? 'sub-app-classic-content' : '']">
+      <el-aside v-if="!isSubApp">
+        <div class="aside-box" :style="{ width: isCollapse ? '65px' : '240px' }">
           <el-scrollbar>
             <el-menu
               :default-active="activeMenu"
@@ -33,6 +27,7 @@
             </el-menu>
           </el-scrollbar>
         </div>
+        <CollapseIcon />
       </el-aside>
       <el-container class="classic-main">
         <Main />
@@ -42,13 +37,13 @@
 </template>
 
 <script setup lang="ts" name="layoutClassic">
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/modules/auth";
 import { useGlobalStore } from "@/stores/modules/global";
 import Main from "@/layouts/components/Main/index.vue";
 import SubMenu from "@/layouts/components/Menu/SubMenu.vue";
-import ToolBarLeft from "@/layouts/components/Header/ToolBarLeft.vue";
+import CollapseIcon from "@/layouts/components/Header/components/CollapseIcon.vue";
 import ToolBarRight from "@/layouts/components/Header/ToolBarRight.vue";
 
 const route = useRoute();
@@ -57,12 +52,9 @@ const globalStore = useGlobalStore();
 const isCollapse = computed(() => globalStore.isCollapse);
 const menuList = computed(() => authStore.showMenuListGet);
 const activeMenu = computed(() => (route.meta.activeMenu ? route.meta.activeMenu : route.path) as string);
+const isSubApp = inject("isSubApp");
 </script>
 
 <style scoped lang="scss">
 @import "./index.scss";
-.layout-logo-medium-img {
-  width: 90px;
-  height: 18px;
-}
 </style>
