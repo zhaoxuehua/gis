@@ -39,7 +39,9 @@
         </div>
       </div>
       <div class="legend-library-table">
-        <Card v-for="(item, index) in table.data" :key="index" :info="item" @success-add="query.onQuery"></Card>
+        <div class="legend-library-card-box">
+          <Card v-for="(item, index) in table.data" :key="index" :info="item" @success-add="query.onQuery"></Card>
+        </div>
       </div>
       <div class="pagination-container">
         <Pagination
@@ -135,12 +137,12 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .legend-library-table {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  width: 100%;
   height: calc(100% - 94px);
-  margin-bottom: 0;
-  overflow: auto;
+  overflow-y: auto;
+  .legend-library-card-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
 }
 </style>
