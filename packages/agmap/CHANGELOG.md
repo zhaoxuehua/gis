@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 1.0.92
+
+### Patch Changes
+
+- 增加实时数据目标总数默认值及在线地图+点类型标签支持旋转
+
 ## 1.0.91
 
 ### Patch Changes
