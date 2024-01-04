@@ -13,7 +13,7 @@
               v-model="formData.beginTime"
               type="datetime"
               placeholder="选择开始时间"
-              style="width: 220px"
+              class="w_220"
               :disabledDate="disabledDateFun"
             >
             </el-date-picker>
@@ -23,13 +23,13 @@
               v-model="formData.endTime"
               type="datetime"
               placeholder="选择结束时间"
-              style="width: 220px"
+              class="w_220"
               :disabledDate="disabledDateFun"
             >
             </el-date-picker>
           </el-form-item>
           <el-form-item label="查询对象" required>
-            <el-select v-model="formData.objectTypeId" placeholder="请选择..." style="width: 220px">
+            <el-select v-model="formData.objectTypeId" placeholder="请选择..." class="w_220">
               <el-option v-for="(item, idx) in realtimeDataList" :key="idx" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -41,7 +41,7 @@
               placeholder="请选择..."
               @change="selectModeChange"
               filterable
-              style="width: 220px"
+              class="w_220"
             >
               <el-option
                 v-for="(optionItem, idx) in selectModeList"
@@ -64,9 +64,9 @@
           <el-form-item
             :label="selectLabelTypeName"
             prop="selectLabel"
-            v-if="formData.selectMode && formData.selectMode != 'shape'"
+            v-if="!['shape', 'mmsi'].includes(formData.selectMode) && formData.selectMode"
           >
-            <el-select v-model="formData.selectLabel" clearable placeholder="请选择..." filterable style="width: 220px">
+            <el-select v-model="formData.selectLabel" clearable placeholder="请选择..." filterable class="w_220">
               <el-option
                 v-for="(optionItem, idx) in selectLabelList"
                 :key="idx"
@@ -80,9 +80,9 @@
           <el-form-item
             label="告警"
             prop="alarmLevel"
-            v-if="formData.selectMode && formData.selectMode != 'shape' && formData?.objectTypeId"
+            v-if="!['shape', 'mmsi'].includes(formData.selectMode) && formData.selectMode && formData?.objectTypeId"
           >
-            <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable style="width: 220px">
+            <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable class="w_220">
               <el-option
                 v-for="(optionItem, idx) in alarmList"
                 :key="idx"
@@ -91,13 +91,18 @@
               ></el-option>
             </el-select>
           </el-form-item>
+
+          <!-- mmsi -->
+          <el-form-item :label="keywordConfigCodeName" prop="mmsi" v-if="['mmsi'].includes(formData.selectMode)">
+            <el-input v-model="formData.mmsi" class="w_220"></el-input>
+          </el-form-item>
         </el-form>
       </div>
 
       <!-- table-box -->
       <div class="table-box">
         <div style="padding-left: 80px; margin-bottom: 20px">
-          <el-button type="primary" @click="searchForm()"><Icon src="Search"></Icon>搜索</el-button>
+          <el-button type="primary" @click="searchForm()"> <Icon src="Search"></Icon>搜索 </el-button>
         </div>
 
         <el-table
@@ -137,7 +142,8 @@
             v-model:page="formData.pageNumber"
             v-model:limit="formData.pageSize"
             @pagination="getPagination"
-          ></paginationCom>
+          >
+          </paginationCom>
         </div>
       </div>
     </div>
@@ -182,6 +188,7 @@ const emits = defineEmits(["onEditLabel", "onClose"]);
 const realtimeDataList = computed(() => {
   return gisStore?.realtimeDataList || [];
 });
+
 // 关键词配置
 const keywordConfig = computed(() => {
   return gisStore?.keywordConfig;
@@ -210,6 +217,7 @@ const formData = reactive({
   boxSelectMode: "", // 框选模式（查询模式是框选时）
   selectLabel: "", // 选择的标签
   alarmLevel: "", // 告警等级（只有配置了外部对象及查询模式不是图形时显示）
+  mmsi: "",
   pageNumber: 1,
   pageSize: 6
 });
@@ -220,13 +228,19 @@ let rulesForm: any = {
   endTime: [{ required: true, message: "结束时间不能为空", trigger: ["blur", "change"] }],
   selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
   selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }],
-  objectTypeId: [{ required: true, message: "查询对象不能为空", trigger: ["blur", "change"] }]
+  objectTypeId: [{ required: true, message: "查询对象不能为空", trigger: ["blur", "change"] }],
+  mmsi: [{ required: true, message: "mmsi号不能为空", trigger: ["blur", "change"] }]
 };
 
+let keywordConfigCodeName = keywordConfig.value["code"] || "编码";
 let selectModeList: Ref<selectModeListType[]> = ref([
   {
     name: "框选",
     code: "shape"
+  },
+  {
+    name: keywordConfigCodeName,
+    code: "mmsi"
   }
 ]); //查询模式
 let selectLabelList: Ref<selectModeListType[]> = ref([]); //查询模式
@@ -250,6 +264,7 @@ const selectModeChange = (value: string) => {
   formData.boxSelectMode = "";
   formData.selectLabel = "";
   formData.alarmLevel = "";
+  formData.mmsi = "";
   clearSelectionDrawInteraction(map.value);
 
   // 获取类型name
@@ -326,6 +341,7 @@ watch(
 watch(
   () => formData.objectTypeId,
   n => {
+    formData.mmsi = "";
     if (!n) {
       alarmList.value = [];
     } else {
@@ -383,6 +399,8 @@ const searchForm = function () {
       }
       formData.pageNumber = 1;
       formData.pageSize = 6;
+      console.log(13212);
+
       table.value.getTableData();
     }
   });
@@ -421,7 +439,8 @@ const table = ref<TableList>({
   data: [],
   getTableData: async () => {
     const regions = getCoordinateArrByLabelType();
-    if (!regions.length) {
+
+    if (!regions.length && !formData.mmsi) {
       return ElMessage.warning("请先设置选区,暂无选区数据！");
     }
 
@@ -433,6 +452,11 @@ const table = ref<TableList>({
       pageSize: formData.pageSize,
       pageNumber: formData.pageNumber
     };
+
+    if (formData.selectMode === "mmsi") {
+      (params as any).mmsi = formData.mmsi;
+    }
+
     if (formData.alarmLevel) {
       (params as any).eventType = formData.alarmLevel;
     }
@@ -477,6 +501,10 @@ onMounted(() => {});
 </script>
 
 <style lang="scss" scoped>
+.w_220 {
+  width: 220px;
+}
+
 .track-back {
   display: flex;
   flex-direction: column;
@@ -485,6 +513,7 @@ onMounted(() => {});
   max-height: 750px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+
   .title {
     display: flex;
     align-items: center;
@@ -493,18 +522,22 @@ onMounted(() => {});
     min-height: 60px;
     padding: 0 20px;
     background-color: #f7f7fa;
+
     span {
       font-size: 16px;
     }
+
     .icon {
       cursor: pointer;
     }
   }
+
   .track-back-content {
     height: calc(100% - 60px);
     padding: 20px;
     overflow-y: auto;
   }
+
   .operate-icon {
     color: var(--el-color-primary);
     cursor: pointer;
