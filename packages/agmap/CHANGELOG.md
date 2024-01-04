@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.0
+
+### Major Changes
+
+- 增加了轨迹回放 mmsi(编码)查询
+
 ## 1.0.92
 
 ### Patch Changes
