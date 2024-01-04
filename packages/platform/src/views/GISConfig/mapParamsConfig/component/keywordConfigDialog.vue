@@ -19,6 +19,7 @@
               @blur="validateInput(state.keywordConfigList[index][0])"
               v-model="state.keywordConfigList[index][0]"
               class="input-box"
+              :disabled="item[2]"
             />
             <label class="label-box"> value </label>
             <el-input type="text" v-model="state.keywordConfigList[index][1]" class="input-box" />
@@ -60,6 +61,10 @@ const validateInput = (inputValue: any) => {
 
 const openDialog = (keywordConfig: { [key: string]: any } = {}) => {
   state.keywordConfigList = Object.entries(keywordConfig);
+  state.keywordConfigList = state.keywordConfigList.map((item: any) => {
+    item.push(true);
+    return item;
+  });
   open.value = true;
 };
 

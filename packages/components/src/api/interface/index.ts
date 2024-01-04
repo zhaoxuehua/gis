@@ -14,6 +14,7 @@ export interface trackListDataParamsType {
   pageNumber: number;
   pageSize: number;
   regions: string | any[];
+  mmsi?: string | null;
 }
 
 export interface trackListDataItemType {

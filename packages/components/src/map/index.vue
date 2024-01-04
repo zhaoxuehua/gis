@@ -7,7 +7,7 @@
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
       <div v-for="(item, index) in realtimeDataCountList" :key="index">
         <div class="target-all-count" :style="{ right: targetAllCountRight(index) }" :title="`${item.name}目标总数`">
-          {{ item.count }}
+          {{ item.count || 0 }}
         </div>
       </div>
     </div>
