@@ -64,7 +64,7 @@
           <el-form-item
             :label="selectLabelTypeName"
             prop="selectLabel"
-            v-if="!['shape', 'mmsi'].includes(formData.selectMode) && formData.selectMode"
+            v-if="!['shape', 'equipCodes'].includes(formData.selectMode) && formData.selectMode"
           >
             <el-select v-model="formData.selectLabel" clearable placeholder="请选择..." filterable class="w_220">
               <el-option
@@ -80,7 +80,7 @@
           <el-form-item
             label="告警"
             prop="alarmLevel"
-            v-if="!['shape', 'mmsi'].includes(formData.selectMode) && formData.selectMode && formData?.objectTypeId"
+            v-if="!['shape', 'equipCodes'].includes(formData.selectMode) && formData.selectMode && formData?.objectTypeId"
           >
             <el-select v-model="formData.alarmLevel" clearable placeholder="请选择..." filterable class="w_220">
               <el-option
@@ -92,9 +92,9 @@
             </el-select>
           </el-form-item>
 
-          <!-- mmsi -->
-          <el-form-item :label="keywordConfigCodeName" prop="mmsi" v-if="['mmsi'].includes(formData.selectMode)">
-            <el-input v-model="formData.mmsi" class="w_220"></el-input>
+          <!-- equipCodes -->
+          <el-form-item :label="keywordConfigCodeName" prop="equipCodes" v-if="['equipCodes'].includes(formData.selectMode)">
+            <el-input v-model="formData.equipCodes" class="w_220"></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -217,7 +217,7 @@ const formData = reactive({
   boxSelectMode: "", // 框选模式（查询模式是框选时）
   selectLabel: "", // 选择的标签
   alarmLevel: "", // 告警等级（只有配置了外部对象及查询模式不是图形时显示）
-  mmsi: "",
+  equipCodes: "",
   pageNumber: 1,
   pageSize: 6
 });
@@ -230,7 +230,7 @@ let rulesForm: any = {
   selectMode: [{ required: true, message: "请选择查询模式", trigger: ["blur", "change"] }],
   selectLabel: [{ required: true, message: `请选择此类型标签`, trigger: ["blur", "change"] }],
   objectTypeId: [{ required: true, message: "查询对象不能为空", trigger: ["blur", "change"] }],
-  mmsi: [{ required: true, message: `${keywordConfigCodeName}不能为空`, trigger: ["blur", "change"] }]
+  equipCodes: [{ required: true, message: `${keywordConfigCodeName}不能为空`, trigger: ["blur", "change"] }]
 };
 
 let selectModeList: Ref<selectModeListType[]> = ref([
@@ -240,7 +240,7 @@ let selectModeList: Ref<selectModeListType[]> = ref([
   },
   {
     name: keywordConfigCodeName,
-    code: "mmsi"
+    code: "equipCodes"
   }
 ]); //查询模式
 let selectLabelList: Ref<selectModeListType[]> = ref([]); //查询模式
@@ -264,7 +264,7 @@ const selectModeChange = (value: string) => {
   formData.boxSelectMode = "";
   formData.selectLabel = "";
   formData.alarmLevel = "";
-  formData.mmsi = "";
+  formData.equipCodes = "";
   clearSelectionDrawInteraction(map.value);
 
   // 获取类型name
@@ -341,7 +341,7 @@ watch(
 watch(
   () => formData.objectTypeId,
   n => {
-    formData.mmsi = "";
+    formData.equipCodes = "";
     if (!n) {
       alarmList.value = [];
     } else {
@@ -438,7 +438,7 @@ const table = ref<TableList>({
   getTableData: async () => {
     const regions = getCoordinateArrByLabelType();
 
-    if (!regions.length && !formData.mmsi) {
+    if (!regions.length && !formData.equipCodes) {
       return ElMessage.warning("请先设置选区,暂无选区数据！");
     }
 
@@ -451,8 +451,8 @@ const table = ref<TableList>({
       pageNumber: formData.pageNumber
     };
 
-    if (formData.selectMode === "mmsi") {
-      (params as any).mmsi = formData.mmsi;
+    if (formData.selectMode === "equipCodes") {
+      (params as any).equipCodes = formData.equipCodes;
     }
 
     if (formData.alarmLevel) {

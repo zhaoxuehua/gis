@@ -225,9 +225,12 @@ import {
   getLayerList,
   getLabelTypeList,
   getLegendConfigList,
-  getLegendListByLabelType
+  getLegendListByLabelType,
+  uploadCheckChunkFile,
+  uploadChunkFile,
+  getChunkFileUrl
 } from "@/api/visconfig.js";
-import { customTreeList, uploadCheckChunkFile, uploadChunkFile, getChunkFileUrl } from "@/api/device.js";
+import { customTreeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
 import KeywordConfigDialog from "./keywordConfigDialog.vue";
 import NavTreeConfigDialog from "./navTreeConfigDialog.vue";

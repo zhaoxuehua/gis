@@ -21,14 +21,3 @@ export function queryDynamicForm(params: any) {
 export function dynamicTableList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
 }
-
-// 文件上传秒传判断
-export function uploadCheckChunkFile(fileHash: any, chunks: number) {
-  return request.get(`/api/adm-service/checkFile?fileHash=${fileHash}&chunks=${chunks}`);
-}
-export function uploadChunkFile(params: any, config: object) {
-  return request.post(`/api/adm-service/upload`, params, config);
-}
-export function getChunkFileUrl(fileHash: string) {
-  return request.get(`/api/adm-service/getFileUrl?fileHash=${fileHash}`);
-}
