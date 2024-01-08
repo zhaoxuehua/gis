@@ -90,7 +90,7 @@ export const useGisStore = defineStore({
     },
 
     setKeywordConfig(keywordConfig: { [key: string]: any }) {
-      this.keywordConfig = keywordConfig;
+      this.keywordConfig = keywordConfig || {};
     },
     setRealtimeDataList(realtimeDataList: any[]) {
       this.realtimeDataList = realtimeDataList;
