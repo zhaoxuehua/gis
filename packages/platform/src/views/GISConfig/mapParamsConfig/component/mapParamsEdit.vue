@@ -24,8 +24,8 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="离线电子地图" prop="normalUrl">
-          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable style="width: 240px" />
-          <el-upload
+          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
+          <!-- <el-upload
             :before-upload="file => beforeUpload(file, 'normalUrl')"
             :http-request="uploadMapImage"
             :show-file-list="false"
@@ -34,27 +34,27 @@
           </el-upload>
           <el-tooltip effect="dark" content="若地图过大，建议直接拷贝至服务器对应目录下" placement="top">
             <Icon src="WarningFilled" :size="20" color="#e6a23c"></Icon>
-          </el-tooltip>
+          </el-tooltip> -->
         </el-form-item>
         <el-form-item label="离线卫星地图" prop="sateUrl">
-          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable style="width: 240px" />
-          <el-upload
+          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
+          <!-- <el-upload
             :before-upload="file => beforeUpload(file, 'sateUrl')"
             :http-request="uploadMapImage"
             :show-file-list="false"
           >
             <el-button type="primary">上传</el-button>
-          </el-upload>
+          </el-upload> -->
         </el-form-item>
         <el-form-item label="离线路网叠加层" prop="overlayUrl">
-          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable style="width: 240px" />
-          <el-upload
+          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
+          <!-- <el-upload
             :before-upload="file => beforeUpload(file, 'overlayUrl')"
             :http-request="uploadMapImage"
             :show-file-list="false"
           >
             <el-button type="primary">上传</el-button>
-          </el-upload>
+          </el-upload> -->
         </el-form-item>
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 450px">
           <el-radio-group v-model="form.displayMode">
@@ -225,10 +225,10 @@ import {
   getLayerList,
   getLabelTypeList,
   getLegendConfigList,
-  getLegendListByLabelType,
-  uploadCheckChunkFile,
-  uploadChunkFile,
-  getChunkFileUrl
+  getLegendListByLabelType
+  // uploadCheckChunkFile,
+  // uploadChunkFile,
+  // getChunkFileUrl
 } from "@/api/visconfig.js";
 import { customTreeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
@@ -393,112 +393,112 @@ const openDialog = (row?: { [key: string]: any }) => {
   state.open = true;
 };
 
-type FileUploadType = "normalUrl" | "sateUrl" | "overlayUrl" | null;
-const chunksSize = 1024 * 1024; // 分片大小
-const hasUploadFileIdx: any = ref();
-const allChunksFile: any = ref();
-const fileHash: any = ref("");
-const fileUploadType = ref<FileUploadType>(null);
+// type FileUploadType = "normalUrl" | "sateUrl" | "overlayUrl" | null;
+// const chunksSize = 1024 * 1024; // 分片大小
+// const hasUploadFileIdx: any = ref();
+// const allChunksFile: any = ref();
+// const fileHash: any = ref("");
+// const fileUploadType = ref<FileUploadType>(null);
 
 // 分片函数
-const splitFile = (file: any, chunkSize: any) => {
-  const chunks = [];
-  let startByte = 0;
-  let endByte = chunkSize;
-  while (startByte < file.size) {
-    const chunk = file?.slice(startByte, endByte);
-    const newFile = new File([chunk], file.name);
-    chunks.push(newFile);
-    startByte += chunkSize;
-    endByte += chunkSize;
-  }
-  return chunks;
-};
+// const splitFile = (file: any, chunkSize: any) => {
+//   const chunks = [];
+//   let startByte = 0;
+//   let endByte = chunkSize;
+//   while (startByte < file.size) {
+//     const chunk = file?.slice(startByte, endByte);
+//     const newFile = new File([chunk], file.name);
+//     chunks.push(newFile);
+//     startByte += chunkSize;
+//     endByte += chunkSize;
+//   }
+//   return chunks;
+// };
 
-// 文件hash值
-const getFileUniqueHash = (file: any) => {
-  return new Promise((resolve, reject) => {
-    file
-      ?.arrayBuffer()
-      .then(function (buffer: any) {
-        return crypto.subtle.digest("SHA-256", buffer);
-      })
-      .then(function (hash: any) {
-        const hashArray = Array.from(new Uint8Array(hash));
-        const hashHex = hashArray?.map(byte => byte?.toString(16)?.padStart(2, "0"))?.join("");
-        resolve(hashHex);
-      })
-      .catch(function (error: any) {
-        reject(error);
-      });
-  });
-};
+// // 文件hash值
+// const getFileUniqueHash = (file: any) => {
+//   return new Promise((resolve, reject) => {
+//     file
+//       ?.arrayBuffer()
+//       .then(function (buffer: any) {
+//         return crypto.subtle.digest("SHA-256", buffer);
+//       })
+//       .then(function (hash: any) {
+//         const hashArray = Array.from(new Uint8Array(hash));
+//         const hashHex = hashArray?.map(byte => byte?.toString(16)?.padStart(2, "0"))?.join("");
+//         resolve(hashHex);
+//       })
+//       .catch(function (error: any) {
+//         reject(error);
+//       });
+//   });
+// };
 
-const beforeUpload = async (file: any, type: FileUploadType) => {
-  fileUploadType.value = type;
-  let typeOk = false;
-  let arr = file?.name?.split(".");
-  if (arr[arr?.length - 1] == "zip") {
-    typeOk = true;
-  }
-  if (!typeOk) {
-    ElMessage.warning("导入文件必须是zip格式!");
-    return false;
-  }
-  const hashHex = await getFileUniqueHash(file);
-  allChunksFile.value = splitFile(file, chunksSize);
-  fileHash.value = hashHex;
-  try {
-    const res: any = await uploadCheckChunkFile(hashHex, allChunksFile.value?.length);
-    if (res.code === 200) {
-      hasUploadFileIdx.value = res?.data || [];
-      return true;
-    }
-  } catch (error) {
-    return false;
-  }
-};
+// const beforeUpload = async (file: any, type: FileUploadType) => {
+//   fileUploadType.value = type;
+//   let typeOk = false;
+//   let arr = file?.name?.split(".");
+//   if (arr[arr?.length - 1] == "zip") {
+//     typeOk = true;
+//   }
+//   if (!typeOk) {
+//     ElMessage.warning("导入文件必须是zip格式!");
+//     return false;
+//   }
+//   const hashHex = await getFileUniqueHash(file);
+//   allChunksFile.value = splitFile(file, chunksSize);
+//   fileHash.value = hashHex;
+//   try {
+//     const res: any = await uploadCheckChunkFile(hashHex, allChunksFile.value?.length);
+//     if (res.code === 200) {
+//       hasUploadFileIdx.value = res?.data || [];
+//       return true;
+//     }
+//   } catch (error) {
+//     return false;
+//   }
+// };
 
-const uploadMapImage = async () => {
-  if (hasUploadFileIdx.value?.length) {
-    // 需要上传
-    const requests = allChunksFile.value?.map((file: any, index: number) => {
-      if (hasUploadFileIdx.value?.includes(index)) {
-        let formData = new FormData();
-        formData.append("file", file);
-        const uploadHeaders = {
-          headers: {
-            chunkNum: index,
-            size: chunksSize,
-            chunks: allChunksFile.value?.length,
-            fileHash: fileHash.value
-          }
-        };
-        return uploadChunkFile(formData, uploadHeaders);
-      }
-    });
-    Promise.all(requests)
-      .then(async () => {
-        await getChunkFileUrl(fileHash.value).then((res: any) => {
-          if (res?.code == 200) {
-            fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
-            ElMessage.success("上传成功");
-          }
-        });
-      })
-      .catch(error => {
-        console.error("有一个请求失败：", error);
-      });
-  } else {
-    // 请求上传的url
-    await getChunkFileUrl(fileHash.value).then((res: any) => {
-      if (res?.code == 200) {
-        fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
-        ElMessage.success("上传成功");
-      }
-    });
-  }
-};
+// const uploadMapImage = async () => {
+//   if (hasUploadFileIdx.value?.length) {
+//     // 需要上传
+//     const requests = allChunksFile.value?.map((file: any, index: number) => {
+//       if (hasUploadFileIdx.value?.includes(index)) {
+//         let formData = new FormData();
+//         formData.append("file", file);
+//         const uploadHeaders = {
+//           headers: {
+//             chunkNum: index,
+//             size: chunksSize,
+//             chunks: allChunksFile.value?.length,
+//             fileHash: fileHash.value
+//           }
+//         };
+//         return uploadChunkFile(formData, uploadHeaders);
+//       }
+//     });
+//     Promise.all(requests)
+//       .then(async () => {
+//         await getChunkFileUrl(fileHash.value).then((res: any) => {
+//           if (res?.code == 200) {
+//             fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
+//             ElMessage.success("上传成功");
+//           }
+//         });
+//       })
+//       .catch(error => {
+//         console.error("有一个请求失败：", error);
+//       });
+//   } else {
+//     // 请求上传的url
+//     await getChunkFileUrl(fileHash.value).then((res: any) => {
+//       if (res?.code == 200) {
+//         fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
+//         ElMessage.success("上传成功");
+//       }
+//     });
+//   }
+// };
 
 const onClose = () => {
   state.open = false;
