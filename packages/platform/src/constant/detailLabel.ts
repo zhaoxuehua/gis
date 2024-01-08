@@ -79,6 +79,23 @@ export const GIS_MAPPARAMS_DETAIL = [
     name: "appName"
   },
   {
+    label: "地图加载方式",
+    name: "mapLoadMode",
+    slot: true
+  },
+  {
+    label: "离线电子地图",
+    name: "normalUrl"
+  },
+  {
+    label: "离线卫星地图",
+    name: "sateUrl"
+  },
+  {
+    label: "离线路网叠加层",
+    name: "overlayUrl"
+  },
+  {
     label: "默认显示模式",
     name: "displayMode",
     slot: true
@@ -159,18 +176,6 @@ export const GIS_MAPPARAMS_DETAIL = [
     label: "是否可编辑",
     name: "isEdit",
     slot: true
-  },
-  {
-    label: "电子地图URL",
-    name: "normalUrl"
-  },
-  {
-    label: "卫星影像URL",
-    name: "sateUrl"
-  },
-  {
-    label: "路网叠加层URL",
-    name: "overlayUrl"
   }
 ];
 

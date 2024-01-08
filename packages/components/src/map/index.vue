@@ -7,7 +7,7 @@
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
       <div v-for="(item, index) in realtimeDataCountList" :key="index">
         <div class="target-all-count" :style="{ right: targetAllCountRight(index) }" :title="`${item.name}目标总数`">
-          {{ item.count }}
+          {{ item.count || 0 }}
         </div>
       </div>
     </div>
@@ -411,7 +411,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       minZoom: originalData.minLevel, // 视图最小层级
       maxZoom: originalData.maxLevel, // 视图最大层级
 
-      defaultMapType: originalData.displayMode, // 当前地图类型
+      mapLoadMode: originalData.mapLoadMode, // 地图加载方式（在线、离线）
+      defaultMapType: originalData.displayMode, // 当前地图类型（电子、卫星）
       normalUrl: originalData.normalUrl, // 电子底图url
       sateUrl: originalData.sateUrl, // 卫星底图url
       overlayUrl: originalData.overlayUrl, // 路网叠加层url
@@ -466,20 +467,26 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     const normalMap = new TileLayer({
       visible: defaultOptions?.defaultMapType === 1,
       source: new XYZ({
-        url: defaultOptions?.normalUrl
+        url:
+          defaultOptions?.mapLoadMode == "outline"
+            ? defaultOptions?.normalUrl
+            : "https://gac-geo.googlecnapps.cn/maps/vt?lyrs=m&x={x}&y={y}&z={z}"
       })
     });
     // 卫星影像图层
     const sateMap = new TileLayer({
       visible: defaultOptions?.defaultMapType === 2,
       source: new XYZ({
-        url: defaultOptions?.sateUrl
+        url:
+          defaultOptions?.mapLoadMode == "outline"
+            ? defaultOptions?.sateUrl
+            : "https://gac-geo.googlecnapps.cn/maps/vt?lyrs=s,m&gl=CN&x={x}&y={y}&z={z}"
       })
     });
 
-    // 路网叠加层（是卫星影像且显示路网叠加层）
+    // 路网叠加层（是卫星影像且显示路网叠加层且是离线）
     const overlayMap = new TileLayer({
-      visible: defaultOptions?.defaultMapType === 2 && defaultOptions?.showOverlay,
+      visible: defaultOptions?.defaultMapType === 2 && defaultOptions?.showOverlay && defaultOptions?.mapLoadMode == "outline",
       source: new XYZ({
         url: defaultOptions?.overlayUrl
       })

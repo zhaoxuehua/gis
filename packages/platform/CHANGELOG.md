@@ -1,5 +1,16 @@
 # adm-gis-platform
 
+## 2.0.0
+
+### Major Changes
+
+- 增加了轨迹回放 mmsi(编码)查询
+
+### Patch Changes
+
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.0
+
 ## 1.0.93
 
 ### Patch Changes

@@ -17,8 +17,10 @@
 
 // 页面大盒子
 .standard-page {
-  height: calc(100vh - 138px);
+  // height: calc(100vh - 138px);
+  height: 100%;
   padding: 0;
+  overflow: hidden;
 }
 .standard-page .inline-input {
   width: 100%;

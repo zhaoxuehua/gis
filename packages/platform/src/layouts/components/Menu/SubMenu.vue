@@ -33,9 +33,23 @@ const handleClickMenu = (subItem: Menu.MenuOptions) => {
 </script>
 
 <style lang="scss">
-.el-sub-menu .el-sub-menu__title:hover {
-  color: var(--el-menu-hover-text-color) !important;
-  background-color: transparent !important;
+.el-sub-menu {
+  .el-menu {
+    background-color: var(--el-sub-menu-bg-color);
+  }
+  .el-sub-menu__title:hover {
+    color: var(--el-menu-hover-text-color) !important;
+  }
+}
+.el-menu-item {
+  height: var(--el-menu-item-height) !important;
+  &:hover {
+    color: var(--el-menu-hover-text-color);
+  }
+  &.is-active {
+    color: var(--el-menu-active-color) !important;
+    background-color: var(--el-menu-active-bg-color) !important;
+  }
 }
 .el-menu--collapse {
   .is-active {
@@ -43,49 +57,6 @@ const handleClickMenu = (subItem: Menu.MenuOptions) => {
       color: #ffffff !important;
       background-color: var(--el-color-primary) !important;
     }
-  }
-}
-.el-menu-item {
-  &:hover {
-    color: var(--el-menu-hover-text-color);
-  }
-  &.is-active {
-    color: var(--el-menu-active-color) !important;
-    background-color: var(--el-menu-active-bg-color) !important;
-    &::before {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      content: "";
-      background-color: var(--el-color-primary);
-    }
-  }
-}
-.vertical,
-.classic,
-.transverse {
-  .el-menu-item {
-    &.is-active {
-      &::before {
-        left: 0;
-      }
-    }
-  }
-}
-.columns {
-  .el-menu-item {
-    &.is-active {
-      &::before {
-        right: 0;
-      }
-    }
-  }
-}
-.classic,
-.transverse {
-  #driver-highlighted-element-stage {
-    background-color: #606266 !important;
   }
 }
 </style>

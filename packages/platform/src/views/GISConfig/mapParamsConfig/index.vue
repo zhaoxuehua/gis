@@ -1,26 +1,27 @@
 <template>
   <div class="standard-page">
     <div class="one-search">
-      <el-form :model="query.params" @submit.prevent="query.onQuery">
+      <el-form :model="query.params" @submit.prevent="query.querySearch">
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item label="场景名称：">
               <el-autocomplete
                 class="inline-input"
                 v-model="query.params.appName"
-                :fetch-suggestions="querySearch"
+                :fetch-suggestions="querySearchName"
                 placeholder="请输入..."
                 :trigger-on-focus="false"
                 @select="handleSelect"
                 value-key="appName"
                 clearable
-                @clear="query.onQuery"
+                @clear="query.querySearch"
               >
               </el-autocomplete>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-button class="btn-search" type="primary" @click="query.onQuery">
+          <el-col style="flex: 1; text-align: end">
+            <el-button class="btn-search" @click="query.onClear"> <Icon src="RefreshLeft"></Icon> 重置 </el-button>
+            <el-button class="btn-search" type="primary" @click="query.querySearch">
               <Icon src="Search"></Icon>
               搜索
             </el-button>
@@ -58,6 +59,12 @@
         <el-table-column label="序号" type="index" min-width="60"></el-table-column>
         <el-table-column label="场景编码" prop="appCode" min-width="120" sortable="custom"></el-table-column>
         <el-table-column label="场景名称" prop="appName" min-width="120" sortable="custom"></el-table-column>
+        <el-table-column label="地图加载方式" prop="mapLoadMode" min-width="120" sortable="custom">
+          <template #default="scope">
+            {{ scope.row.mapLoadMode == "online" ? "在线地图" : "离线地图" }}
+          </template>
+        </el-table-column>
+
         <el-table-column label="显示模式" prop="displayMode" min-width="120" sortable="custom">
           <template #default="scope">
             {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
@@ -104,6 +111,9 @@
     <MapParamsEdit ref="mapParamsEditRef" @success-add="query.onQuery"></MapParamsEdit>
 
     <DetailDialog ref="detailDialogRef" :constant="'GIS_MAPPARAMS_DETAIL'" :title="'应用场景详情'" :width="900">
+      <template #mapLoadMode="scope">
+        {{ scope.row.mapLoadMode == "online" ? "在线地图" : "离线地图" }}
+      </template>
       <template #displayMode="scope">
         {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
       </template>
@@ -184,6 +194,15 @@ const query = ref({
     query.value.params.pageSize = obj.limit;
     query.value.onQuery();
   },
+  onClear: () => {
+    query.value.params.appName = "";
+    query.value.params.pageNumber = 1;
+    query.value.onQuery();
+  },
+  querySearch: () => {
+    query.value.params.pageNumber = 1;
+    query.value.onQuery();
+  },
   onQuery: () => {
     table.value.getTableData();
   }
@@ -197,11 +216,9 @@ const table = ref<TableList>({
   getTableData: async () => {
     table.value.loading = true;
     const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
-    if (res.data.items) {
-      table.value.data = res.data.items;
-      table.value.total = res.data.totalNum;
-    } else {
-      ElMessage.error("接口异常");
+    if (res?.code == 200) {
+      table.value.data = res?.data?.items || [];
+      table.value.total = res?.data?.totalNum || 0;
     }
     table.value.loading = false;
   },
@@ -278,26 +295,16 @@ const onDelete = async () => {
   table.value.loading = false;
 };
 
-const querySearch: (queryString: string, cb: (arg: any) => void) => void = async (
+const querySearchName: (queryString: string, cb: (arg: any) => void) => void = async (
   queryString: string,
   cb: (arg: any) => void
 ) => {
-  let oldPageSize = query.value.params.pageSize;
-  query.value.params.appName = queryString;
-  query.value.params.pageSize = 10000;
-  query.value.params.pageNumber = 1;
-  const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
-  // 调用 callback 返回建议列表的数据
+  const res: { [key: string]: any } = await getMapParamsList("?pageSize=10000&pageNumber=1", { appName: queryString });
   cb(res.data.items);
-  query.value.params.pageSize = oldPageSize;
 };
 
 const handleSelect = async () => {
-  table.value.loading = true;
-  const res: { [key: string]: any } = await getMapParamsList(...(handleParam(query.value.params) as [string, object]));
-  table.value.data = res.data.items;
-  table.value.total = res.data.totalNum;
-  table.value.loading = false;
+  query.value.querySearch();
 };
 
 const displayDisplayControlIds = (controlIds: string | null) => {

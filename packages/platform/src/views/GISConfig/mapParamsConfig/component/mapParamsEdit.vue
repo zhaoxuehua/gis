@@ -3,11 +3,12 @@
     <el-dialog
       :title="['创建应用场景', '编辑应用场景'][state.dialogType]"
       v-model="state.open"
-      width="900px"
+      width="1020px"
       :close-on-click-modal="false"
       append-to-body
       @close="onClose"
       :destroy-on-close="true"
+      class="map-params-edit"
     >
       <el-form :inline="true" :model="form" label-width="150px" :rules="state.rulesForm" ref="refForm">
         <el-form-item label="场景编码" prop="appCode">
@@ -16,7 +17,46 @@
         <el-form-item label="场景名称" prop="appName">
           <el-input placeholder="请输入..." v-model="form.appName" clearable />
         </el-form-item>
-        <el-form-item label="默认显示模式" prop="displayMode" style="width: 350px">
+        <el-form-item label="地图加载方式" prop="mapLoadMode" style="width: 450px">
+          <el-radio-group v-model="form.mapLoadMode">
+            <el-radio label="online" size="large">在线地图</el-radio>
+            <el-radio label="outline" size="large">离线地图</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="离线电子地图" prop="normalUrl">
+          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
+          <!-- <el-upload
+            :before-upload="file => beforeUpload(file, 'normalUrl')"
+            :http-request="uploadMapImage"
+            :show-file-list="false"
+          >
+            <el-button type="primary">上传</el-button>
+          </el-upload>
+          <el-tooltip effect="dark" content="若地图过大，建议直接拷贝至服务器对应目录下" placement="top">
+            <Icon src="WarningFilled" :size="20" color="#e6a23c"></Icon>
+          </el-tooltip> -->
+        </el-form-item>
+        <el-form-item label="离线卫星地图" prop="sateUrl">
+          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
+          <!-- <el-upload
+            :before-upload="file => beforeUpload(file, 'sateUrl')"
+            :http-request="uploadMapImage"
+            :show-file-list="false"
+          >
+            <el-button type="primary">上传</el-button>
+          </el-upload> -->
+        </el-form-item>
+        <el-form-item label="离线路网叠加层" prop="overlayUrl">
+          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
+          <!-- <el-upload
+            :before-upload="file => beforeUpload(file, 'overlayUrl')"
+            :http-request="uploadMapImage"
+            :show-file-list="false"
+          >
+            <el-button type="primary">上传</el-button>
+          </el-upload> -->
+        </el-form-item>
+        <el-form-item label="默认显示模式" prop="displayMode" style="width: 450px">
           <el-radio-group v-model="form.displayMode">
             <el-radio :label="1" size="large">电子地图</el-radio>
             <el-radio :label="2" size="large">卫星影像</el-radio>
@@ -153,33 +193,13 @@
             ></el-option>
           </el-select>
         </el-form-item>
-
-        <el-form-item label="关键词显示配置" prop="keywordConfig">
-          <div style="width: 200px">
-            <el-button class="reference-button" circle @click="keywordConfigClick">
-              <Icon src="EditPen"></Icon>
-            </el-button>
-          </div>
+        <el-form-item label="关键词显示配置" prop="keywordConfig" style="width: 450px">
+          <el-button class="reference-button" circle @click="keywordConfigClick">
+            <Icon src="EditPen"></Icon>
+          </el-button>
         </el-form-item>
-        <el-form-item label="是否可编辑" prop="isEdit">
-          <el-checkbox v-model="form.isEdit" style="width: 200px"></el-checkbox>
-        </el-form-item>
-        <el-form-item
-          label="电子地图URL"
-          prop="normalUrl"
-          v-if="form.displayMode == 1 || form.displayControlIds.includes('mapTypeSwitch')"
-        >
-          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
-        </el-form-item>
-        <el-form-item
-          label="卫星影像URL"
-          prop="sateUrl"
-          v-if="form.displayMode == 2 || form.displayControlIds.includes('mapTypeSwitch')"
-        >
-          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
-        </el-form-item>
-        <el-form-item label="路网叠加层URL" prop="overlayUrl" v-if="form.displayControlIds.includes('showOverlay')">
-          <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable />
+        <el-form-item label="是否可编辑" prop="isEdit" style="width: 450px">
+          <el-checkbox v-model="form.isEdit"></el-checkbox>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -206,6 +226,9 @@ import {
   getLabelTypeList,
   getLegendConfigList,
   getLegendListByLabelType
+  // uploadCheckChunkFile,
+  // uploadChunkFile,
+  // getChunkFileUrl
 } from "@/api/visconfig.js";
 import { customTreeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
@@ -216,6 +239,7 @@ interface MapParamsForm {
   id?: number;
   appCode: string;
   appName: string;
+  mapLoadMode: string;
   displayMode: number;
   defaultDisplayLevel: number | null;
   minLevel: number | null;
@@ -277,6 +301,7 @@ const state = reactive({
       { validator: codeVerification, trigger: ["blur", "change"] },
       { max: 50, message: "场景编码长度不能大于50", trigger: ["blur", "change"] }
     ],
+    mapLoadMode: [{ required: true, message: "请选择地图加载方式", trigger: ["blur", "change"] }],
     displayMode: [{ required: true, message: "请选择默认显示模式", trigger: ["blur", "change"] }],
     defaultDisplayLevel: [
       { required: true, message: "默认展示层级不能为空", trigger: ["blur", "change"] },
@@ -304,18 +329,9 @@ const state = reactive({
     leftClickDialogPosition: [{ required: true, message: "请选择左键弹窗位置", trigger: ["blur", "change"] }],
     customTreeType: [{ required: true, message: "请选择导航树", trigger: ["blur", "change"] }],
     customTreeCode: [{ required: true, message: "请选择设备树", trigger: ["blur", "change"] }],
-    normalUrl: [
-      { required: true, message: "电子地图URL不能为空", trigger: ["blur", "change"] },
-      { max: 500, message: "电子地图URL长度不能大于500", trigger: ["blur", "change"] }
-    ],
-    sateUrl: [
-      { required: true, message: "卫星影像URL不能为空", trigger: ["blur", "change"] },
-      { max: 500, message: "卫星影像URL长度不能大于500", trigger: ["blur", "change"] }
-    ],
-    overlayUrl: [
-      { required: true, message: "路网叠加层URL不能为空", trigger: ["blur", "change"] },
-      { max: 500, message: "路网叠加层URL长度不能大于500", trigger: ["blur", "change"] }
-    ]
+    normalUrl: [{ max: 500, message: "离线电子地图长度不能大于500", trigger: ["blur", "change"] }],
+    sateUrl: [{ max: 500, message: "离线卫星地图长度不能大于500", trigger: ["blur", "change"] }],
+    overlayUrl: [{ max: 500, message: "离线路网叠加层长度不能大于500", trigger: ["blur", "change"] }]
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
@@ -326,6 +342,7 @@ const btnLoading = ref(false);
 const defaultParam = {
   appName: "",
   appCode: "",
+  mapLoadMode: "outline",
   displayMode: 1,
   defaultDisplayLevel: null,
   minLevel: null,
@@ -375,6 +392,113 @@ const openDialog = (row?: { [key: string]: any }) => {
   }
   state.open = true;
 };
+
+// type FileUploadType = "normalUrl" | "sateUrl" | "overlayUrl" | null;
+// const chunksSize = 1024 * 1024; // 分片大小
+// const hasUploadFileIdx: any = ref();
+// const allChunksFile: any = ref();
+// const fileHash: any = ref("");
+// const fileUploadType = ref<FileUploadType>(null);
+
+// 分片函数
+// const splitFile = (file: any, chunkSize: any) => {
+//   const chunks = [];
+//   let startByte = 0;
+//   let endByte = chunkSize;
+//   while (startByte < file.size) {
+//     const chunk = file?.slice(startByte, endByte);
+//     const newFile = new File([chunk], file.name);
+//     chunks.push(newFile);
+//     startByte += chunkSize;
+//     endByte += chunkSize;
+//   }
+//   return chunks;
+// };
+
+// // 文件hash值
+// const getFileUniqueHash = (file: any) => {
+//   return new Promise((resolve, reject) => {
+//     file
+//       ?.arrayBuffer()
+//       .then(function (buffer: any) {
+//         return crypto.subtle.digest("SHA-256", buffer);
+//       })
+//       .then(function (hash: any) {
+//         const hashArray = Array.from(new Uint8Array(hash));
+//         const hashHex = hashArray?.map(byte => byte?.toString(16)?.padStart(2, "0"))?.join("");
+//         resolve(hashHex);
+//       })
+//       .catch(function (error: any) {
+//         reject(error);
+//       });
+//   });
+// };
+
+// const beforeUpload = async (file: any, type: FileUploadType) => {
+//   fileUploadType.value = type;
+//   let typeOk = false;
+//   let arr = file?.name?.split(".");
+//   if (arr[arr?.length - 1] == "zip") {
+//     typeOk = true;
+//   }
+//   if (!typeOk) {
+//     ElMessage.warning("导入文件必须是zip格式!");
+//     return false;
+//   }
+//   const hashHex = await getFileUniqueHash(file);
+//   allChunksFile.value = splitFile(file, chunksSize);
+//   fileHash.value = hashHex;
+//   try {
+//     const res: any = await uploadCheckChunkFile(hashHex, allChunksFile.value?.length);
+//     if (res.code === 200) {
+//       hasUploadFileIdx.value = res?.data || [];
+//       return true;
+//     }
+//   } catch (error) {
+//     return false;
+//   }
+// };
+
+// const uploadMapImage = async () => {
+//   if (hasUploadFileIdx.value?.length) {
+//     // 需要上传
+//     const requests = allChunksFile.value?.map((file: any, index: number) => {
+//       if (hasUploadFileIdx.value?.includes(index)) {
+//         let formData = new FormData();
+//         formData.append("file", file);
+//         const uploadHeaders = {
+//           headers: {
+//             chunkNum: index,
+//             size: chunksSize,
+//             chunks: allChunksFile.value?.length,
+//             fileHash: fileHash.value
+//           }
+//         };
+//         return uploadChunkFile(formData, uploadHeaders);
+//       }
+//     });
+//     Promise.all(requests)
+//       .then(async () => {
+//         await getChunkFileUrl(fileHash.value).then((res: any) => {
+//           if (res?.code == 200) {
+//             fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
+//             ElMessage.success("上传成功");
+//           }
+//         });
+//       })
+//       .catch(error => {
+//         console.error("有一个请求失败：", error);
+//       });
+//   } else {
+//     // 请求上传的url
+//     await getChunkFileUrl(fileHash.value).then((res: any) => {
+//       if (res?.code == 200) {
+//         fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
+//         ElMessage.success("上传成功");
+//       }
+//     });
+//   }
+// };
 
 const onClose = () => {
   state.open = false;
@@ -671,14 +795,16 @@ const legendListByLabelType = ref<{
 }>({
   data: [],
   fetchData: async () => {
-    const res: { [key: string]: any } = await getLegendListByLabelType(form.value.displayLabelInfoIds);
-    if (res?.code == 200) {
-      // 将此列表存在的值默认在图例配置中选中(去重)
-      res?.data?.forEach((item: any) => {
-        if (!(form.value.displayLegendIds as any[])?.includes(item.id)) {
-          (form.value.displayLegendIds as any[])?.push(item.id);
-        }
-      });
+    if (form.value?.displayLabelInfoIds && form.value.displayLabelInfoIds?.length) {
+      const res: { [key: string]: any } = await getLegendListByLabelType(form.value.displayLabelInfoIds);
+      if (res?.code == 200) {
+        // 将此列表存在的值默认在图例配置中选中(去重)
+        res?.data?.forEach((item: any) => {
+          if (!(form.value.displayLegendIds as any[])?.includes(item.id)) {
+            (form.value.displayLegendIds as any[])?.push(item.id);
+          }
+        });
+      }
     }
   }
 });
@@ -716,10 +842,21 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.reference-button {
-  margin-left: 5px;
-  i {
-    margin-right: 0;
+.map-params-edit {
+  .reference-button {
+    margin-left: 5px;
+    i {
+      margin-right: 0;
+    }
+  }
+  .el-form .el-input,
+  .el-form .el-select {
+    width: 300px;
+  }
+  .el-form .el-select {
+    :deep(.el-input) {
+      width: 300px;
+    }
   }
 }
 .select_up {

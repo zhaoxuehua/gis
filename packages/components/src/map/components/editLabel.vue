@@ -46,6 +46,12 @@
           <el-form-item label="透明度" prop="labelData.style.icon.opacity">
             <el-input placeholder="请输入..." v-model="form.labelData.style.icon.opacity" clearable />
           </el-form-item>
+          <el-form-item label="旋转角度" prop="labelData.style.icon.rotation">
+            <div class="point-rotation">
+              <el-input placeholder="" v-model.number="form.labelData.style.icon.rotation" style="width: 70px" />
+              <el-slider :min="0" :max="360" v-model="form.labelData.style.icon.rotation" style="margin-left: 10px"> </el-slider>
+            </div>
+          </el-form-item>
         </template>
 
         <!-- 圆 -->
@@ -278,6 +284,18 @@ const state = reactive({
         trigger: ["blur", "change"]
       }
     ],
+    "labelData.style.icon.rotation": [
+      {
+        validator: (rule: any, value: any, callback: Function) => {
+          if (!/^(\d|[1-9]\d+)$/.test(value) || value > 360) {
+            return callback(new Error("只能为0-360的整数"));
+          }
+          callback();
+        },
+        trigger: ["blur", "change"]
+      }
+    ],
+
     "labelData.radius": [
       { required: true, message: "半径不能为空", trigger: ["blur", "change"] },
       {
@@ -454,7 +472,7 @@ const onOpen = (labelCode: string) => {
       fontStrokeWidth: 0,
       offsetX: 0,
       offsetY: editLabel.labelType.dataType === "1" || editLabel.labelType.dataType === "Point" ? 20 : 0,
-      rotation: 0, // 旋转角度默认0
+      rotation: 0, // 文本旋转角度默认0
       backgroundStrokeWidth: 0 // 边框线宽默认0
     };
     editLabel.labelData.style.text = Object.assign({}, defaultTextStyle, editLabel.labelData.style.text || {});
@@ -675,6 +693,11 @@ watch(
     background: var(--el-color-primary);
     border: 1px solid #dddddd;
     border-radius: 50%;
+  }
+  .point-rotation {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
   }
 }
 .footer {

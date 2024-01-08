@@ -1,5 +1,17 @@
 # @adm-gis-ui/components
 
+## 2.0.0
+
+### Major Changes
+
+- 增加了轨迹回放 mmsi(编码)查询
+
+## 1.0.92
+
+### Patch Changes
+
+- 增加实时数据目标总数默认值及在线地图+点类型标签支持旋转
+
 ## 1.0.91
 
 ### Patch Changes
