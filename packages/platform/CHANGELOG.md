@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.1
+
+### Patch Changes
+
+- 增加轨迹回放按 code 查询的通用功能
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
