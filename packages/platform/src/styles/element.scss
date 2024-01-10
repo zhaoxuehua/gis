@@ -199,6 +199,21 @@
     font-size: 15px !important;
   }
 }
+.el-table {
+  .el-table__header-wrapper,
+  .el-table__fixed-header-wrapper {
+    th {
+      height: 40px;
+      font-size: 13px;
+      color: #515a6e;
+      word-break: break-word;
+      background-color: #f7f7fa;
+    }
+  }
+  .el-scrollbar__view {
+    height: 90%;
+  }
+}
 
 /* el-drawer */
 .el-drawer {
@@ -234,6 +249,31 @@
   }
 }
 
+// 树的样式
+.el-tree {
+  height: 100%;
+  overflow: auto;
+  > .el-tree-node {
+    display: inline-block;
+    min-width: 100%;
+  }
+  .el-tree-node__content {
+    height: 32px;
+    line-height: 32px;
+  }
+
+  --el-tree-node-hover-bg-color: var(--el-color-primary-light-9);
+  .el-tree-node:focus > .el-tree-node__content {
+    color: var(--el-color-primary);
+    border: 1px solid var(--el-color-primary-light-8);
+  }
+  &.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
+    color: var(--el-color-primary);
+    background-color: var(--el-color-primary-light-9);
+    border: 1px solid var(--el-color-primary-light-8);
+  }
+}
+
 /* el-dialog */
 .el-dialog {
   --el-dialog-border-radius: var(--el-border-radius-base) !important;
@@ -258,7 +298,25 @@
   }
   .el-dialog__body {
     height: 100%;
+    max-height: calc(90vh - 111px) !important;
+    overflow-x: hidden;
     overflow-y: scroll;
+  }
+  .el-form {
+    .el-input,
+    .el-select,
+    .el-cascader {
+      width: 200px;
+    }
+    .el-input-number {
+      width: 200px;
+    }
+    .el-textarea {
+      height: 50px;
+      .el-textarea__inner {
+        height: 50px !important;
+      }
+    }
   }
 }
 .el-dialog-default {
@@ -275,4 +333,123 @@
 }
 .is-message-box {
   z-index: 3000 !important;
+}
+.el-form {
+  border-radius: 0;
+  .el-form-item {
+    padding-right: 0;
+    .el-form-item__label {
+      padding-right: 10px;
+    }
+  }
+}
+.el-form--inline .el-form-item {
+  margin-right: 10px;
+}
+.status .el-checkbox__inner {
+  border-radius: 0;
+}
+.el-tabs {
+  .el-tabs__header {
+    margin: 0;
+  }
+}
+.el-checkbox__inner {
+  border-radius: 0;
+}
+
+// popover的样式
+.el-popover.el-popper {
+  background-color: var(--el-color-white);
+}
+.editor-content-cfg {
+  .el-tabs {
+    .el-tabs__item {
+      color: var(--el-color-white);
+    }
+  }
+}
+
+// 全局详情标题样式
+.menu-detail-common {
+  margin-bottom: 20px;
+}
+.menu-detail-common .el-descriptions__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-text-color-regular);
+}
+.dialog-title {
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-text-color-regular);
+}
+.footer-item-icon-only {
+  height: 20px;
+}
+.footer-item-icon-only:hover {
+  cursor: pointer;
+  transition: 0s;
+}
+.el-cascader {
+  .el-input__suffix .el-icon::before {
+    content: "";
+  }
+}
+.el-button {
+  i {
+    margin-right: 5px;
+  }
+}
+.el-button.is-text {
+  padding: 0;
+}
+.el-tag.el-tag--info.is-hit {
+  border-color: transparent;
+}
+.el-descriptions {
+  .el-descriptions__body {
+    .el-descriptions__table {
+      tr .el-descriptions__label {
+        font-size: 12px;
+        color: #909399;
+      }
+      tr .el-descriptions__content {
+        font-size: 12px;
+        color: #606266;
+      }
+    }
+  }
+}
+.el-descriptions__body .el-descriptions__table .el-descriptions__cell {
+  line-height: 18px;
+}
+.el-dialog .el-form .el-radio.el-radio--large {
+  height: 32px;
+}
+.el-overlay-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.el-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    position: absolute;
+    margin: 0 auto !important;
+    .el-dialog__body {
+      padding: 20px;
+    }
+  }
+}
+.el-dialog__body {
+  max-height: calc(90vh - 111px) !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.el-input__wrapper {
+  width: 100%;
 }
