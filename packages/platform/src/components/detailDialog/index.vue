@@ -14,7 +14,7 @@
           <!-- 带有optional属性的，有值的时候才会显示 -->
           <el-descriptions-item :label="item.label" v-if="!(item.optional && !item.value)" width="100px">
             <span v-if="!item.slot">
-              <Popover :info="item.value" :len="20" placement="right"></Popover>
+              <Popover :info="item.value" :len="20" :width="224" placement="right"></Popover>
             </span>
             <slot v-else :name="item.name" :row="rowOption"></slot>
           </el-descriptions-item>

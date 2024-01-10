@@ -1,6 +1,6 @@
 <template>
   <div class="span-popover">
-    <el-popover :placement="placement" :width="224" trigger="hover" v-if="info && info?.length > len">
+    <el-popover :placement="placement" :width="width" trigger="hover" v-if="info && info?.length > len">
       <template #reference>
         <span>{{ info?.slice(0, len) + "..." }}</span>
       </template>
@@ -13,9 +13,10 @@
 </template>
 
 <script lang="ts" setup>
-const props = withDefaults(defineProps<{ len: number; placement: any; info: any }>(), {
+const props = withDefaults(defineProps<{ len: number; placement: any; width: number; info: any }>(), {
   len: () => 10,
-  placement: () => "right"
+  placement: () => "right",
+  width: () => 224
 });
 console.log(props);
 </script>
