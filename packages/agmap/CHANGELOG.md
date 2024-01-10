@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.2
+
+### Patch Changes
+
+- 删除无用样式及合并样式文件
+
 ## 2.0.1
 
 ### Patch Changes
