@@ -16,16 +16,16 @@
                 <img :src="`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${info?.legendPath}`" alt="" />
                 <div class="upload-image-btn">
                   <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_EDIT">
-                    <span @click="editLegend">
+                    <span @click="editLegend" title="编辑">
                       <Icon src="EditPen" :size="16"></Icon>
                     </span>
                   </Auth>
                   <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_DELETE">
-                    <span @click="deleteLegend">
+                    <span @click="deleteLegend" title="删除">
                       <Icon src="Delete" :size="16"></Icon>
                     </span>
                   </Auth>
-                  <span @click="downloadLegend(info?.legendPath)">
+                  <span @click="downloadLegend(info?.legendPath)" title="下载">
                     <Icon src="Download" :size="16"></Icon>
                   </span>
                 </div>
