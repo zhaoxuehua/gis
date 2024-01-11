@@ -25,6 +25,9 @@
                       <Icon src="Delete" :size="16"></Icon>
                     </span>
                   </Auth>
+                  <span @click="downloadLegend(info?.legendPath)">
+                    <Icon src="Download" :size="16"></Icon>
+                  </span>
                 </div>
               </div>
             </el-upload>
@@ -42,6 +45,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteLegendConfig } from "@/api/visconfig.js";
 import CreateEditLegend from "./createEditLegend.vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
+import { downloadFun } from "@/hooks/useDownload";
 
 const props = defineProps({
   info: {
@@ -75,6 +79,10 @@ const deleteLegend = () => {
     .catch(() => {
       ElMessage.info("已取消操作");
     });
+};
+
+const downloadLegend = (url: string) => {
+  downloadFun(`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${url}`, url);
 };
 
 const onReSearch = () => {

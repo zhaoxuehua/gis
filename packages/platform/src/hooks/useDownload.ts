@@ -42,3 +42,12 @@ export const useDownload = async (
     console.log(error);
   }
 };
+
+export const downloadFun = (url: string, downloadFileName: string) => {
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = downloadFileName; // 设置下载的文件名
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+};
