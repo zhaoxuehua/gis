@@ -578,10 +578,13 @@ const onConfirm = () => {
       let param = unref(form);
       // 校验自定义树时是否配置自定义内容
       if (param.customTreeType == "ExternalCustomTree") {
+        delete param.customTreeCode;
         if (!param?.externalCustomTree || !param?.externalCustomTree?.code) {
           ElMessage.warning("请设置自定义树配置");
           return;
         }
+      } else {
+        delete param.externalCustomTree;
       }
       // 标签类型参数处理
       if (Array.isArray(param.displayLabelInfoIds)) {

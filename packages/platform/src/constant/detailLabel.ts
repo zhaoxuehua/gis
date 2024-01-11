@@ -164,7 +164,14 @@ export const GIS_MAPPARAMS_DETAIL = [
   {
     label: "设备树",
     name: "customTreeCode",
-    slot: true
+    slot: true,
+    optional: true
+  },
+  {
+    label: "自定义配置",
+    name: "externalCustomTree",
+    slot: true,
+    optional: true
   },
   {
     label: "关键词显示配置",

@@ -144,12 +144,21 @@
       <template #customTreeCode="scope">
         {{ scope.row.customTreeType == "EquipCustomTree" ? scope.row.customTreeCode : "" }}
       </template>
+      <template #externalCustomTree="scope">
+        {{
+          scope.row.externalCustomTree
+            ? Object.entries(scope.row.externalCustomTree)
+                ?.map(([key, value]) => `${CUSTOM_TREE_CONFIG[key]}:${key == "enable" ? (value ? "是" : "否") : value}`)
+                ?.join("; ")
+            : ""
+        }}
+      </template>
       <template #keywordConfig="scope">
         {{
           scope.row.keywordConfig
             ? Object.entries(scope.row.keywordConfig)
-                .map(([key, value]) => `${key}:${value}`)
-                .join("; ")
+                ?.map(([key, value]) => `${key}:${value}`)
+                ?.join("; ")
             : ""
         }}
       </template>
@@ -163,7 +172,7 @@
 <script lang="ts" setup name="LayerConfig">
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { GIS_CONTROLS } from "@/constant/gisConstant";
+import { GIS_CONTROLS, CUSTOM_TREE_CONFIG } from "@/constant/gisConstant";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import { getMapParamsList, deleteMapParamsCheck, deleteMapParams, getMapParamsDetail } from "@/api/visconfig.js";
 import { handleParam } from "@/utils/common.js";
