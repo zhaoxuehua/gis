@@ -63,8 +63,22 @@
           </el-table-column>
           <el-table-column label="操作" width="150">
             <template #default="scope">
-              <el-link class="my-el-link" type="primary" :underline="false" @click="onUp(scope.row)">上移</el-link>
-              <el-link class="my-el-link" type="primary" :underline="false" @click="onDown(scope.row)">下移</el-link>
+              <el-link
+                class="my-el-link"
+                type="primary"
+                :underline="false"
+                :disabled="scope.$index === 0"
+                @click="onUp(scope.$index)"
+                >上移</el-link
+              >
+              <el-link
+                class="my-el-link"
+                type="primary"
+                :underline="false"
+                :disabled="scope.$index === table.data?.length - 1"
+                @click="onDown(scope.$index)"
+                >下移</el-link
+              >
               <el-link class="my-el-link" type="primary" :underline="false" @click="onRemove(scope.row)">删除</el-link>
             </template>
           </el-table-column>
@@ -430,26 +444,16 @@ const calcSequence = function () {
 };
 
 // 上移
-const onUp = (item: any) => {
-  const currentIndex = table.value.data.findIndex(element => element.assetId === item.assetId);
-  if (currentIndex === 0) {
-    ElMessage.warning("不能再往上移了");
-    return;
-  }
-  const currentItem = table.value.data.splice(currentIndex, 1)[0];
-  table.value.data.splice(currentIndex - 1, 0, currentItem);
+const onUp = (index: number) => {
+  const currentItem = table.value.data.splice(index, 1)[0];
+  table.value.data.splice(index - 1, 0, currentItem);
   calcSequence();
 };
 
 // 下移
-const onDown = (item: any) => {
-  const currentIndex = table.value.data.findIndex(element => element.assetId === item.assetId);
-  if (currentIndex === table.value.data.length - 1) {
-    ElMessage.warning("不能再往下移了");
-    return;
-  }
-  const currentItem = table.value.data.splice(currentIndex, 1)[0];
-  table.value.data.splice(currentIndex + 1, 0, currentItem);
+const onDown = (index: number) => {
+  const currentItem = table.value.data.splice(index, 1)[0];
+  table.value.data.splice(index + 1, 0, currentItem);
   calcSequence();
 };
 
