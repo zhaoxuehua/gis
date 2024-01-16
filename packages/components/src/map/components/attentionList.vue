@@ -88,8 +88,9 @@
 <script setup lang="ts" name="attentionList">
 import Table from "./Table/index.vue";
 import { ref, reactive, computed, onMounted } from "vue";
-import { addAttentionApi, getAttentionList, deleteAttentionApi } from "../../api/gis.js";
 import { ElMessage } from "element-plus";
+import moment from "moment";
+import { addAttentionApi, getAttentionList, deleteAttentionApi } from "../../api/gis.js";
 import type { VisualMap } from "../type";
 import { labelOnSelect } from "../hooks/index";
 import { getTrackDataByIdFn } from "../hooks/getTrackDataById"; // 获取单个轨迹数据
@@ -117,7 +118,7 @@ const keywordConfig = computed(() => {
 // 轨迹弹框
 const state = reactive({
   dialogVisible: false,
-  dateTimes: [] as any,
+  dateTimes: [moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"), moment().format("YYYY-MM-DD HH:mm:ss")] as any,
   row: {} as any // 轨迹回放行数据
 });
 

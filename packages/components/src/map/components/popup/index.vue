@@ -98,6 +98,7 @@ import dayjs from "dayjs";
 import lineChart from "../lineChart.vue";
 import jsonBody from "./jsonBody.vue";
 import { ElMessage } from "element-plus";
+import moment from "moment";
 import { addAttentionApi, getAttentionList, deleteDialogAttentionApi } from "../../../api/gis.js";
 import type { VisualMap } from "../../type";
 import { useJSONBody } from "../../hooks/useJSONBody";
@@ -132,19 +133,18 @@ const { configInfo, staticAttr, linkData, monitorSeqAttr, monitorLineAttr, monit
 
 // 左键配置信息
 const attrData: any = reactive({
-  // 静态属性数据
-  staticData: [],
+  staticData: [], // 静态属性数据
   monitorSequenceData: [], // 监测散点数据
   monitorLineAttr: [], //监测线性属性code
   monitorJSONbodyData: [], // 监测结构体数据
+  monitorJSONbodyMap: {},
   linkData: [], // 链接按钮后端数据
-  hasFocusBtn: false, // 关注（取消关注）
-  monitorJSONbodyMap: {}
+  hasFocusBtn: false // 关注（取消关注）
 });
 
-// 左键选择的设备信息
+// 左键选择的设备信息（即relationMap标签关联的信息）
 const equipInfo: any = ref({
-  equipType: 0,
+  equipType: 0, // 设备类型id（实时数据是传过来的，非实时数据接口请求获取该字段）
   code: "",
   isRealTimeData: false,
   associationInfo: {},
@@ -203,8 +203,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   attrData.monitorSequenceData = [];
   attrData.monitorLineAttr = [];
   attrData.monitorJSONbodyData = [];
-  attrData.linkData = [];
   attrData.monitorJSONbodyMap = {};
+  attrData.linkData = [];
 
   if (!Object.keys(relationMap || {}).length) {
     state.isRelationBody = false;
@@ -212,10 +212,9 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   state.isRelationBody = true;
 
-  state.dialogTitle = relationMap?.name || "";
-
+  state.dialogTitle = relationMap?.name || ""; // 设备名
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
-  const { isRealTimeData = false } = relationMap || {};
+  const { isRealTimeData = false } = relationMap || {}; // 是否实时数据
   equipInfo.value = relationMap;
   // 获取设备类型id（非实时数据需要获取设备类型id）
   if (!isRealTimeData && relationMap?.model.toLocaleLowerCase() === "eam_eqp_equip") {
@@ -314,6 +313,7 @@ const onAction = (actionType: number) => {
   };
   if (actionType === 4) {
     // 4  轨迹
+    state.dateTimes = [moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"), moment().format("YYYY-MM-DD HH:mm:ss")];
     state.dialogVisible = true;
   } else if (actionType === 5) {
     // 5 备注
