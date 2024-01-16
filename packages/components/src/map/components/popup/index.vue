@@ -1,6 +1,6 @@
 <template>
   <div class="map-popup" ref="popupRef">
-    <div :class="['popup-box', 'popup-custom-box']" v-if="props?.data?.featureCode">
+    <div :class="['popup-custom-box']" v-if="props?.data?.featureCode">
       <div class="map-popup-header">
         <span v-if="state.isRelationBody">{{ state.dialogTitle || configInfo?.label || "标签信息" }} </span>
         <span v-else>{{ "标签信息" }} </span>
@@ -23,7 +23,15 @@
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
-              <span class="value">{{ item.value }}{{ item?.unitName || "" }}</span>
+              <el-tooltip
+                v-if="`${item.value}${item?.unitName || ''}`"
+                effect="light"
+                :content="`${item.value}${item?.unitName || ''}`"
+                placement="top-start"
+                :offset="6"
+              >
+                <span class="value">{{ item.value }}{{ item?.unitName || "" }}</span>
+              </el-tooltip>
             </li>
           </ul>
           <!-- 监测属性：非线性数据 -->
