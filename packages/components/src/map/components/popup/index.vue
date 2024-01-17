@@ -65,7 +65,7 @@
             :jsonbodyMap="attrData.monitorJSONbodyMap"
           ></jsonBody>
           <!-- 链接配置 -->
-          <div class="link-config" v-if="linkData.length">
+          <div class="link-config" v-if="linkData.length && !equipInfo.isTrackPointClick">
             <el-button v-for="btn in attrData.linkData" :key="btn.name" type="primary" @click="onAction(btn.buttonType)">{{
               btn.name
             }}</el-button>
@@ -152,11 +152,13 @@ const attrData: any = reactive({
 
 // 左键选择的设备信息（即relationMap标签关联的信息）
 const equipInfo: any = ref({
-  equipType: 0, // 设备类型id（实时数据是传过来的，非实时数据接口请求获取该字段）
   code: "",
-  isRealTimeData: false,
+  equipType: 0, // 设备类型id（实时数据是传过来的，非实时数据接口请求获取设备类型id）
+  isRealTimeData: false, // 是实时数据点击还是绘制标签点击
   associationInfo: {},
-  realObjectTypeCode: "" // 实时查询对象code（只有关注使用，关注只针对实时数据对象）
+  realObjectTypeCode: "", // 实时查询对象类型code（只有关注使用，关注只针对实时数据对象）
+  isTrackPointClick: false, // 是否轨迹圆圈的点击（只有轨迹点击有这个值,涉及按钮的隐藏及获取静态监测数据接口请求）
+  trackPointTime: null
 });
 
 const state = reactive({
@@ -173,16 +175,18 @@ const state = reactive({
 
 // 获取设备数据
 const getDataFromAttr = (equipCodes: string, attributes: string) => {
+  let { isTrackPointClick, trackPointTime, realObjectTypeCode } = equipInfo.value;
   let param: any = {
     equipCodes, // 设备编码集合
     attributes,
-    isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
+    isHistory: isTrackPointClick ? true : false, // 是否是历史数据 , 实时数据查询最近一条记录
     isLineData: false, // 是否线性数据--数据类型
-    dataTime: state.currentTime, //数据时间，针对具体时间
+    dataTime: isTrackPointClick ? trackPointTime : state.currentTime, //数据时间，针对具体时间
     tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
   };
-  if (equipInfo.value?.realObjectTypeCode) {
-    param.equipType = equipInfo.value?.realObjectTypeCode;
+  // 实时对象时增加equipType传参，后端用于判断 需不需要判断是外部的还是资产
+  if (realObjectTypeCode) {
+    param.equipType = realObjectTypeCode;
   }
   return new Promise(async (resolve, reject) => {
     const res: any = await getEquipData(param);
@@ -417,12 +421,9 @@ const cancelFocus = async () => {
   }
 };
 
-watch(
-  () => props.data.featureCode,
-  () => {
-    getLabelDialogConfigInfo(props.data.relationMap);
-  }
-);
+watch([() => props.data.featureCode, () => props.data.relationMap], () => {
+  getLabelDialogConfigInfo(props.data.relationMap);
+});
 
 defineExpose({
   getDOMElement

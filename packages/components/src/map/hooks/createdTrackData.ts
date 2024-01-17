@@ -101,7 +101,14 @@ const createdTrackData = async function (param: trackLayerParamType) {
     const currDataLonLat = olProj?.fromLonLat([Number(currDataLon), Number(currDataLat)]);
     if (!data[i + 1]) {
       // 最后一个只绘制 圆+label
-      createCircleLabelFeature(currDataLonLat, extendsData, currData._speed, trackLineCircleFeatureArr, trackLineLabelFeatureArr);
+      createCircleLabelFeature(
+        currDataLonLat,
+        extendsData,
+        currData._speed,
+        trackLineCircleFeatureArr,
+        trackLineLabelFeatureArr,
+        param
+      );
       break;
     }
 
@@ -128,7 +135,14 @@ const createdTrackData = async function (param: trackLayerParamType) {
     // ☆ 虚线第二个点
     dotted && (nextData._speed = "normal");
     // 绘制 圆+Label
-    createCircleLabelFeature(currDataLonLat, extendsData, currData._speed, trackLineCircleFeatureArr, trackLineLabelFeatureArr);
+    createCircleLabelFeature(
+      currDataLonLat,
+      extendsData,
+      currData._speed,
+      trackLineCircleFeatureArr,
+      trackLineLabelFeatureArr,
+      param
+    );
     // 绘制线
     const lineFeature = new Feature({
       geometry: new LineString([currDataLonLat, nextDataLonLat]),
@@ -195,8 +209,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
   const mapTackListMap = mapCase.get("tackListMap");
   const layerManageData = {
     trackLine: {
-      name: name + "_轨迹线",
-      code: code + "TrackLine",
+      name: name + "_轨迹线", // 图层name
+      code: code + "TrackLine", // 图层code
       isCluster: false,
       distance: trackAggDistance,
       vector: new VectorSource(),
@@ -471,13 +485,18 @@ const createCircleLabelFeature = (
   extendsData: any,
   speed: string,
   trackLineCircleFeatureArr: any[],
-  trackLineLabelFeatureArr: any[]
+  trackLineLabelFeatureArr: any[],
+  param?: any
 ) => {
   // 绘制圆圈
   const circleFeature = new Feature({
     geometry: new Point(currDataLonLat),
     extendsData,
-    type: "trackPoint"
+    type: "trackPoint",
+    code: param?.id,
+    name: param?.name,
+    objectTypeCode: param?.objectTypeCode,
+    trackPointTime: extendsData?.labelInfo?.time || ""
   });
   trackLineCircleFeatureArr.push(circleFeature);
   // 绘制Label

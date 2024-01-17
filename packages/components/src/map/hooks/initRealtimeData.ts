@@ -130,7 +130,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
             const shipFeature = createdRealDataFeature(shipInfo, dataType, labelTypeCode);
             shipFeatureArr.push(shipFeature);
 
-            // 基础引擎搜索、左键使用
+            // 基础引擎搜索（定位）、左键使用
             realDataInfoCash?.[equipTypeCode].push({
               lat: valInfo.lat,
               lon: valInfo.lon,
@@ -150,7 +150,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         realDataSource?.addFeatures(shipFeatureArr);
         gisStore?.updateRealtimeDataCountList(equipTypeCode, shipFeatureArr?.length || 0); // 更新存储实时数据的数量count
 
-        map.set("trackInfoMap", Object.values(realDataInfoCash)?.flat()); // 基础引擎定位、搜索、弹框等处使用
+        map.set("trackInfoMap", Object.values(realDataInfoCash)?.flat()); // 基础引擎定位、搜索、左键弹框等处使用
       } else {
         ElMessage.error("获取数据报错");
       }

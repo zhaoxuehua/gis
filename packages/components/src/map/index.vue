@@ -845,7 +845,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       clearSelectedFeature(map);
     };
     // 地图标签元素默认浮窗
-    map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }) => {
+    map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }, trackPointInfo?: any) => {
       const { featureCode, center, featureName } = options;
       // 在编辑状态下不弹框
       if (gisStore?.isEdit) {
@@ -853,10 +853,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       }
       // 获取标签关联的设备信息|| 实时数据（船、人通过isRealTimeData区分）
       const trackInfoMap = map.get("trackInfoMap") || [];
-      const currentTrack = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0]; // code有时字符串有时数字
+      const currentRealData = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0];
       popupData.featureCode = featureCode;
       popupData.featureName = featureName;
-      popupData.relationMap = gisStore?.relationMap[featureCode] || currentTrack;
+      popupData.relationMap = trackPointInfo || gisStore?.relationMap[featureCode] || currentRealData; // 轨迹圆圈数据|绘制标签关联信息|实时数据信息
       if (leftClickDialogPosition.value === "current") {
         overlay.setPosition(center);
       }
@@ -868,7 +868,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       map.closePopup(); // 关闭点击弹框
       emits("onCloseRightMenu"); // 关闭右键菜单
       editLabelRef.value?.onClose(); // 关闭编辑标签弹框
-      // clearSelectedFeature(map); // 清空原来的选中状态(聚合与非聚合)closePopup中已调用
       // 框选或测量、绘制模式下不触发左键
       if (map?.get("boxSelectionDrawInteraction") || map?.get("measureDrawInteraction") || map?.get("drawFeature")) {
         return;
@@ -886,6 +885,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
+        let type = currentSelectFeature?.get("type");
         if (typeStats == "alarmPoint") {
           // 告警标签获取到的featureCode是设备code需要自己找对应的标签code
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
@@ -894,27 +894,42 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
-          // 获取实时数据（判断点击的是实时数据还是绘制数据）
-          const trackInfoMap = map.get("trackInfoMap") || [];
-          const currentTrack = trackInfoMap?.filter((item: any) => item.code === featureCode)?.[0];
-          map.popupInfo({ featureCode, featureName, center });
-          // 以下是选中+编辑要素逻辑
-          // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
-          if (
-            labelTypeCode &&
-            labelTypeMap[labelTypeCode]?.isHang &&
-            gisStore?.isEdit &&
-            map?.get("labelInfoMap")?.[featureCode]
-          ) {
-            // 应用场景下基础引擎绘制标签存在则可编辑
-            editLabelRef.value?.onOpen(featureCode);
-            timer.value = setTimeout(() => {
-              labelOnSelect(exportMap.value, featureCode, true);
-              clearTimeout(timer);
-              timer.value = null;
-            }, 200);
+          // 轨迹
+          if (type == "trackPoint") {
+            let objectTypeCode = currentSelectFeature?.get("objectTypeCode");
+            let trackPointTime = currentSelectFeature?.get("trackPointTime");
+            let trackPointInfo = {
+              code: featureCode,
+              name: featureName,
+              isRealTimeData: true,
+              equipType: gisStore?.realtimeDataList?.filter((item: any) => item.code == objectTypeCode)?.[0]?.id, // 类型id
+              realObjectTypeCode: objectTypeCode, // 类型code
+              isTrackPointClick: true,
+              trackPointTime: trackPointTime
+            };
+            map.popupInfo({ featureCode, featureName, center }, trackPointInfo);
           } else {
-            labelOnSelect(exportMap.value, featureCode, true, currentTrack?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
+            // 绘制标签或实时数据标签
+            const currentRealData = (map.get("trackInfoMap") || [])?.filter((item: any) => item.code === featureCode)?.[0]; // 获取实时数据（判断点击的是实时数据还是绘制数据）
+            map.popupInfo({ featureCode, featureName, center });
+            // 以下是选中+编辑要素逻辑
+            // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
+            if (
+              labelTypeCode &&
+              labelTypeMap[labelTypeCode]?.isHang &&
+              gisStore?.isEdit &&
+              map?.get("labelInfoMap")?.[featureCode]
+            ) {
+              // 应用场景下基础引擎绘制标签存在则可编辑
+              editLabelRef.value?.onOpen(featureCode);
+              timer.value = setTimeout(() => {
+                labelOnSelect(exportMap.value, featureCode, true);
+                clearTimeout(timer);
+                timer.value = null;
+              }, 200);
+            } else {
+              labelOnSelect(exportMap.value, featureCode, true, currentRealData?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
+            }
           }
         }
       }
