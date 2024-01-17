@@ -375,22 +375,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     const originalData = JSON.parse(JSON.stringify(res.data));
     let controls = originalData?.displayControlIds ? originalData?.displayControlIds.split(",") : [];
     if (props?.config?.bigScreenControls) {
-      let newControls = [];
       // 监控二次配置了部分控件
-      // 1、拿出缩放控件、全屏控件、比例尺控件、路网叠加层
-      if (controls.includes("zoom")) {
-        newControls.push("zoom");
-      }
-      if (controls.includes("fullScreen")) {
-        newControls.push("fullScreen");
-      }
-      if (controls.includes("scaleLine")) {
-        newControls.push("scaleLine");
-      }
-      if (controls.includes("showOverlay")) {
-        newControls.push("showOverlay");
-      }
-      controls = newControls.concat(props?.config?.bigScreenControls);
+      // 1、拿出缩放控件、全屏控件、比例尺控件、路网叠加层（此4个根据应用场景配置显示，其他根据可视化配置显示）
+      const basicsControls = ["zoom", "fullScreen", "scaleLine", "showOverlay"];
+      const newControls = controls?.filter((control: string) => basicsControls?.includes(control)) || [];
+      controls = newControls?.concat(props.config.bigScreenControls);
     }
     controlList.value = controls;
 
@@ -540,7 +529,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.defaultOptions = defaultOptions;
     gisStore.setMapCase(map);
 
-    // 根据图层配置信息创建图层
+    /***************************************根据图层配置信息创建图层*****************************************************/
     const layerMap: { [key: string]: any } = {};
     defaultOptions?.layers?.forEach((item: { [key: string]: any }) => {
       let options: { [key: string]: any };
@@ -552,12 +541,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         code: item?.code,
         isTagAgg: item?.isTagAgg,
         isTrackDraw: item?.isTrackDraw,
-        trackAggDistance: item.trackAggDistance || 0 // 聚合图层上轨迹聚合距离
+        trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
+        style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value) // 后期优化将实时数据的图层样式过滤（实时数据的style重新写了）
       };
-
-      item?.code != "seaMap"
-        ? (options.style = (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value))
-        : null;
 
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
       if (item?.isTagAgg) {
@@ -575,19 +561,16 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       layerMap[item.code] = new VectorLayer(options);
       map.addLayer(layerMap[item.code]);
     });
-
-    /**********************************************************************/
-
     map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
 
-    // 创建固定的点图层用于定位时增加定位点到点图层
+    /************************************创建固定的点图层用于定位时增加定位点到点图层**********************************/
     let positionPointLayer = new VectorLayer({
       source: new VectorSource()
     });
     map.addLayer(positionPointLayer);
     map.set("positionPointLayer", positionPointLayer);
 
-    /****************************按标签类型存储******************************************/
+    /******************************************按标签类型存储********************************************************/
 
     // 存储标签类型信息及根据标签类型分组 code => labelType
     const labelTypeMap: { [key: string]: LabelType } = {};
@@ -615,7 +598,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.set("labelTypeMap", labelTypeMap);
     map.set("featureTypeGroup", featureTypeGroup);
 
-    /****************************获取已绘制的标签进行渲染******************************************/
+    /******************************************获取已绘制的标签进行渲染************************************************/
     // 初始化渲染所有已绘制的标签
     let resData: { [key: string]: any } = await getLabelList(
       ...(handleParam({ pageNumber: 1, pageSize: 100000, name: "", orderByColumn: "createdOn", isAsc: "asc" }) as [
@@ -645,16 +628,15 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           item.labelData = labelData; // 标签绘制信息数据
 
           const labelFeature = new Feature({
+            geometry: createGeometry(item.labelData),
             name: item.name, // 标签名字
-            geometry: createGeometry(item.labelData)
+            code: item.code,
+            type: item.labelData?.style?.type, // 标签类型
+            labelData: item?.labelData, // 标签绘制数据
+            layerCode: item?.refLayer?.code, // 所属图层编码
+            labelTypeCode: item?.labelType?.code // 所属标签类型编码
           });
-
           labelFeature.setId(item.code);
-          labelFeature.set("code", item.code);
-          labelFeature.set("type", item.labelData?.style?.type); // 标签类型
-          labelFeature.set("labelData", item?.labelData); // 标签绘制数据
-          labelFeature.set("layerCode", item.refLayer.code); // 所属图层编码
-          labelFeature.set("labelTypeCode", item.labelType.code); // 所属标签类型编码
 
           // 点(根据图片源数量)
           if (item?.labelType?.dataType == "1") {
@@ -762,7 +744,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     updateAlarmData(); // 初始化时获取一次数据
     alarmTimer.value = setInterval(updateAlarmData, 10000); // 每隔10秒更新数据
 
-    /****************************鼠标经过*************************************************************/
+    /**************************************鼠标经过*************************************************************/
     // 鼠标移动事件
     let hoverInfoLayer: Overlay = new Overlay({
       element: popupDOMRef.value,
@@ -826,7 +808,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       }
     });
 
-    /***********************地图点击弹框及（搜索、标签树、导航树点击对应弹框）*****************************/
+    /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）*****************************/
     // 地图点击弹框
     // 弹窗图层  当前点击位置
     const overlay = new Overlay({
@@ -862,7 +844,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       }
     };
 
-    /***********************地图鼠标点击事件***************************************************************/
+    /*************************************地图鼠标点击事件***************************************************************/
     // 鼠标点击事件
     map.on("click", (evt: MapBrowserEvent<any>) => {
       map.closePopup(); // 关闭点击弹框
@@ -935,7 +917,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       }
     });
 
-    /***********************地图右键（目前只有监控可用）*****************************************************/
+    /***************************************************地图右键（目前只有监控可用）*****************************************************/
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
@@ -967,7 +949,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     // 初始化完成
     exportMap.value = map;
     emits("getInitMapExportData", exportMap.value); // 应用获取初始化地图实例
-    // 兼容监控外部树节点点击（首次树节点因地图没有初始化完成所以watch执行时定位不到,首次的数据手动执行）
+    // 兼容监控外部树节点点击（首次配置树节点 =>因地图没有初始化完成所以watch执行时定位不到,首次的数据手动执行）
     if (props?.outsideTreeNode) {
       let outsideTreeTimer: any = null;
       outsideTreeTimer = setTimeout(() => {
@@ -1102,7 +1084,7 @@ defineExpose({
   clearAllTimers
 });
 
-/***********************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
+/*************************************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
 const outsideTreeNodeSelect = (node: any) => {
   const { tuple, model } = node;
   if (model.toLocaleLowerCase() === "eam_eqp_equip") {
@@ -1127,7 +1109,7 @@ watch(
   }
 );
 
-/***********************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***************************************************************/
+/*************************************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***********************************************/
 const outsideTableRowDataSelect = (node: any) => {
   const { equip } = node; // 设备code或实时数据code
   let featureCode: any;

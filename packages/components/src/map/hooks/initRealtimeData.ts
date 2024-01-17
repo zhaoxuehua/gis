@@ -186,7 +186,6 @@ export function createLayerStyle(styleObject: string, extendsData: any = {}) {
 // 创建要素
 export function createdRealDataFeature(params: shipParamsType, dataType: string, labelTypeCode: string) {
   const shipFeature = new Feature({
-    name: params.name, // 鼠标经过及左击使用
     geometry: new Point(olProj.fromLonLat([params.lon, params.lat])),
     // 图层样式根据要素属性渲染 、鼠标经过时使用
     extendsData: {
@@ -198,13 +197,14 @@ export function createdRealDataFeature(params: shipParamsType, dataType: string,
       color: params.color,
       showHeadline: params.showHeadline,
       angle: params.angle
-    }
+    },
+    name: params.name, // 鼠标经过及左击使用
+    code: params.code,
+    type: dataType,
+    labelTypeCode: labelTypeCode
   });
   // 基础引擎，左键点击使用
   shipFeature.setId(params.code);
-  shipFeature.set("code", params.code);
-  shipFeature.set("type", dataType);
-  shipFeature.set("labelTypeCode", labelTypeCode);
   return shipFeature;
 }
 

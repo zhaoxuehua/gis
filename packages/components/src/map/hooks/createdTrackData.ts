@@ -88,7 +88,6 @@ const createdTrackData = async function (param: trackLayerParamType) {
       posInfo: { lon: currDataLon, lat: currDataLat },
       detailInfo: currDataDetailInfo
     } = currData;
-    currData._speed = "normal"; // 默认label无速度箭头
     const extendsData = {
       labelInfo: currData.labelInfo,
       detailInfo: currDataDetailInfo,
@@ -100,7 +99,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
     };
     const currDataLonLat = olProj?.fromLonLat([Number(currDataLon), Number(currDataLat)]);
     if (!data[i + 1]) {
-      // 最后一个只绘制 圆+label
+      // 最后一个只绘制 圆+label且最后一个不显示加速减速
+      currData._speed = "normal"; // 默认label无速度箭头
       createCircleLabelFeature(
         currDataLonLat,
         extendsData,
