@@ -108,7 +108,7 @@ import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import type { TableList } from "../type";
 import SelectDeviceDialog from "./selectDeviceDialog.vue";
 import StyleDialog from "./styleDialog.vue";
-import { MAP_DATA_TYPE } from "../hooks/createGeometry";
+import { MAP_DATA_TYPE, DATA_TYPE_ARR } from "../hooks/createGeometry";
 import { transformLabelType } from "../hooks/index";
 
 const state = reactive({
@@ -347,7 +347,7 @@ const drawHandler = () => {
     result.labelData = JSON.stringify(labelData);
   } else {
     let type = gisLabelConfig.dataType;
-    if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+    if (DATA_TYPE_ARR.includes(type)) {
       type = MAP_DATA_TYPE[type]?.value;
     }
 

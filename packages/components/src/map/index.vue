@@ -770,11 +770,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           popupTitDOMRef.value.style.height = "40px";
           if (type == "trackPoint" || type == "trackShip") {
             const { detailInfo, titleInfo } = unref(extendsData);
-            let infoStr = "";
-            let infoData = detailInfo as [[string, any]];
-            infoData.forEach(val => {
-              infoStr += `<p>${val[0]}: ${val[1]}</p>`;
-            });
+            const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
             popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
             popupContentDOMRef.value.innerHTML = infoStr;
             hoverInfoLayer.setPosition(pos);
@@ -1112,16 +1108,9 @@ watch(
 /*************************************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***********************************************/
 const outsideTableRowDataSelect = (node: any) => {
   const { equip } = node; // 设备code或实时数据code
-  let featureCode: any;
-  // 判断是否实时数据
-  const trackInfoMap = exportMap.value?.get("trackInfoMap") || [];
-  const currentTrack = trackInfoMap?.filter((item: any) => item.code == equip)?.[0];
-  let isRealTimeData = !!currentTrack?.isRealTimeData;
-  if (isRealTimeData) {
-    featureCode = equip; // 实时数据设备code同标签code
-  } else {
-    featureCode = gisStore?.relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code进行定位选中功能
-  }
+  const currentRealData = (exportMap.value?.get("trackInfoMap") || [])?.filter((item: any) => item.code == equip)?.[0];
+  let isRealTimeData = !!currentRealData?.isRealTimeData; // 判断是否实时数据
+  let featureCode = isRealTimeData ? equip : gisStore?.relationMapKeyIsEquipCode?.[equip]; // 实时数据设备code同标签code 或 根据设备code找标签code进行定位选中功能
   if (featureCode) {
     labelOnSelect(exportMap.value, featureCode, false, isRealTimeData);
   }
