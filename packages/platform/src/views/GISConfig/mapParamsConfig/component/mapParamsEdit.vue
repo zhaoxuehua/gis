@@ -211,6 +211,10 @@
     </el-dialog>
     <KeywordConfigDialog ref="keywordConfigRef" @success-add="saveKeywordConfig"></KeywordConfigDialog>
     <NavTreeConfigDialog ref="navTreeConfigRef" @success-add="saveNavTreeConfig"></NavTreeConfigDialog>
+    <ProgressDialog
+      ref="progressDialogRef"
+      :percentage="Math.floor((completedUploadCount / allChunksFile?.length) * 100)"
+    ></ProgressDialog>
   </div>
 </template>
 
@@ -219,6 +223,7 @@ import { reactive, onMounted, ref, unref, computed } from "vue";
 import { ElForm, ElMessage } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
+import { calculateChunkSize, splitFile, getFileUniqueHash } from "@/utils/fileChunk";
 import {
   addMapParams,
   editMapParams,
@@ -234,6 +239,7 @@ import { customTreeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
 import KeywordConfigDialog from "./keywordConfigDialog.vue";
 import NavTreeConfigDialog from "./navTreeConfigDialog.vue";
+import ProgressDialog from "./progressDialog.vue";
 
 interface MapParamsForm {
   id?: number;
@@ -335,8 +341,9 @@ const state = reactive({
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
-const keywordConfigRef = ref();
-const navTreeConfigRef = ref();
+const keywordConfigRef = ref<InstanceType<typeof KeywordConfigDialog>>();
+const navTreeConfigRef = ref<InstanceType<typeof NavTreeConfigDialog>>();
+const progressDialogRef = ref<InstanceType<typeof ProgressDialog>>();
 const btnLoading = ref(false);
 
 const defaultParam = {
@@ -394,64 +401,45 @@ const openDialog = (row?: { [key: string]: any }) => {
 };
 
 type FileUploadType = "normalUrl" | "sateUrl" | "overlayUrl" | null;
-const chunksSize = 1024 * 1024; // 分片大小
-const hasUploadFileIdx: any = ref();
+const fileUploadType = ref<FileUploadType>(null);
+const unUploadFileIdx: any = ref();
 const allChunksFile: any = ref();
 const fileHash: any = ref("");
-const fileUploadType = ref<FileUploadType>(null);
+const completedUploadCount = ref(0);
+const maxChunks = 30;
+const minChunkSize = 100 * 1024 * 1024;
+const chunksSize = ref(); // 分片大小
 
-// 分片函数
-const splitFile = (file: any, chunkSize: any) => {
-  const chunks = [];
-  let startByte = 0;
-  let endByte = chunkSize;
-  while (startByte < file.size) {
-    const chunk = file?.slice(startByte, endByte);
-    const newFile = new File([chunk], file.name);
-    chunks.push(newFile);
-    startByte += chunkSize;
-    endByte += chunkSize;
-  }
-  return chunks;
-};
-
-// // 文件hash值
-const getFileUniqueHash = (file: any) => {
-  return new Promise((resolve, reject) => {
-    file
-      ?.arrayBuffer()
-      .then(function (buffer: any) {
-        return crypto.subtle.digest("SHA-256", buffer);
-      })
-      .then(function (hash: any) {
-        const hashArray = Array.from(new Uint8Array(hash));
-        const hashHex = hashArray?.map(byte => byte?.toString(16)?.padStart(2, "0"))?.join("");
-        resolve(hashHex);
-      })
-      .catch(function (error: any) {
-        reject(error);
-      });
-  });
+const resetUploadParams = () => {
+  completedUploadCount.value = 0;
+  allChunksFile.value = [];
+  unUploadFileIdx.value = [];
+  fileHash.value = "";
 };
 
 const beforeUpload = async (file: any, type: FileUploadType) => {
+  resetUploadParams();
   fileUploadType.value = type;
-  let typeOk = false;
+
   let arr = file?.name?.split(".");
-  if (arr[arr?.length - 1] == "zip") {
-    typeOk = true;
-  }
-  if (!typeOk) {
-    ElMessage.warning("导入文件必须是zip格式!");
+  if (!["zip", "tar", "7z"]?.includes(arr[arr?.length - 1])) {
+    ElMessage.warning("导入文件必须是【.zip、.tar、.7z】格式!");
     return false;
   }
+  if (file?.size / 1024 / 1024 / 1024 > 10) {
+    ElMessage.warning("文件大小不能超过【10GB】!");
+    return false;
+  }
+  chunksSize.value = calculateChunkSize(file?.size, maxChunks, minChunkSize);
   const hashHex = await getFileUniqueHash(file);
-  allChunksFile.value = splitFile(file, chunksSize);
+  allChunksFile.value = splitFile(file, chunksSize.value);
   fileHash.value = hashHex;
+  progressDialogRef.value?.openDialog();
   try {
     const res: any = await uploadCheckChunkFile(hashHex, allChunksFile.value?.length);
     if (res.code === 200) {
-      hasUploadFileIdx.value = res?.data || [];
+      unUploadFileIdx.value = res?.data || [];
+      completedUploadCount.value = allChunksFile.value?.length - unUploadFileIdx.value?.length;
       return true;
     }
   } catch (error) {
@@ -460,44 +448,46 @@ const beforeUpload = async (file: any, type: FileUploadType) => {
 };
 
 const uploadMapImage = async () => {
-  if (hasUploadFileIdx.value?.length) {
+  if (unUploadFileIdx.value?.length) {
     // 需要上传
     const requests = allChunksFile.value?.map((file: any, index: number) => {
-      if (hasUploadFileIdx.value?.includes(index)) {
+      if (unUploadFileIdx.value?.includes(index)) {
         let formData = new FormData();
         formData.append("file", file);
         const uploadHeaders = {
           headers: {
             chunkNum: index,
-            size: chunksSize,
+            size: chunksSize.value,
             chunks: allChunksFile.value?.length,
             fileHash: fileHash.value
           }
         };
-        return uploadChunkFile(formData, uploadHeaders);
+        return uploadChunkFile(formData, uploadHeaders).then(() => {
+          // 每个请求完成时，增加已完成请求数
+          completedUploadCount.value++;
+        });
       }
     });
     Promise.all(requests)
-      .then(async () => {
-        await getChunkFileUrl(fileHash.value).then((res: any) => {
-          if (res?.code == 200) {
-            fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
-            ElMessage.success("上传成功");
-          }
-        });
+      .then(() => {
+        queryChunkFileUrl(fileHash.value);
       })
       .catch(error => {
         console.error("有一个请求失败：", error);
       });
   } else {
-    // 请求上传的url
-    await getChunkFileUrl(fileHash.value).then((res: any) => {
-      if (res?.code == 200) {
-        fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
-        ElMessage.success("上传成功");
-      }
-    });
+    queryChunkFileUrl(fileHash.value);
   }
+};
+
+// 获取上传成功后url
+const queryChunkFileUrl = async (fileHash: string) => {
+  await getChunkFileUrl(fileHash).then((res: any) => {
+    if (res?.code == 200) {
+      fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
+      ElMessage.success("上传成功");
+    }
+  });
 };
 
 const onClose = () => {
@@ -814,7 +804,7 @@ const legendListByLabelType = ref<{
 
 // 关键词显示配置
 const keywordConfigClick = () => {
-  keywordConfigRef.value.openDialog(form.value.keywordConfig);
+  keywordConfigRef.value?.openDialog(form.value.keywordConfig);
 };
 
 // 存储键值对
@@ -824,7 +814,7 @@ const saveKeywordConfig = (keywordConfig: { [key: string]: any }) => {
 
 // 自定义导航树配置弹框
 const customTreeConfigClick = () => {
-  navTreeConfigRef.value.openDialog(form.value.externalCustomTree, state.dialogType);
+  navTreeConfigRef.value?.openDialog(form.value.externalCustomTree, state.dialogType);
 };
 
 // 自定义导航树配置内容存储

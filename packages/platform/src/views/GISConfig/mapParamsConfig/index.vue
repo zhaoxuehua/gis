@@ -148,6 +148,7 @@
         {{
           scope.row.externalCustomTree
             ? Object.entries(scope.row.externalCustomTree)
+                ?.filter(([key]) => CUSTOM_TREE_CONFIG?.hasOwnProperty(key)) // 过滤掉多余属性
                 ?.map(([key, value]) => `${CUSTOM_TREE_CONFIG[key]}:${key == "enable" ? (value ? "是" : "否") : value}`)
                 ?.join("; ")
             : ""
