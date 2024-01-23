@@ -27,7 +27,7 @@
           <el-input placeholder="请输入..." v-model="form.normalUrl" clearable style="width: 240px" />
           <el-upload
             :before-upload="file => beforeUpload(file, 'normalUrl')"
-            :http-request="uploadMapImage"
+            :http-request="() => uploadMapImage('normalUrl')"
             :show-file-list="false"
           >
             <el-button type="primary">上传</el-button>
@@ -40,7 +40,7 @@
           <el-input placeholder="请输入..." v-model="form.sateUrl" clearable style="width: 240px" />
           <el-upload
             :before-upload="file => beforeUpload(file, 'sateUrl')"
-            :http-request="uploadMapImage"
+            :http-request="() => uploadMapImage('sateUrl')"
             :show-file-list="false"
           >
             <el-button type="primary">上传</el-button>
@@ -50,7 +50,7 @@
           <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable style="width: 240px" />
           <el-upload
             :before-upload="file => beforeUpload(file, 'overlayUrl')"
-            :http-request="uploadMapImage"
+            :http-request="() => uploadMapImage('overlayUrl')"
             :show-file-list="false"
           >
             <el-button type="primary">上传</el-button>
@@ -205,18 +205,26 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onCheckClose">取消</el-button>
-          <el-button type="primary" @click="checkProgress" :loading="btnLoading">查看进度</el-button>
+          <el-dropdown v-if="progressList?.length" style="margin: 0 10px">
+            <el-button>
+              <Icon src="More" :size="18"></Icon>
+              {{ "查看进度" }}
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-for="item in progressList" :key="item.id" @click.stop="checkProgress(item.fileUploadType)">
+                  {{ item.label }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
     </el-dialog>
     <KeywordConfigDialog ref="keywordConfigRef" @success-add="saveKeywordConfig"></KeywordConfigDialog>
     <NavTreeConfigDialog ref="navTreeConfigRef" @success-add="saveNavTreeConfig"></NavTreeConfigDialog>
-    <ProgressDialog
-      ref="progressDialogRef"
-      :percentage="allChunksFile?.length ? Math.floor((completedUploadCount / allChunksFile?.length) * 100) : 0"
-      :currentProgressStatus="currentProgressStatus"
-    ></ProgressDialog>
+    <ProgressDialog ref="progressDialogRef" :data="uploadMap" @update-progress-status="updateProgressStatus"></ProgressDialog>
   </div>
 </template>
 
@@ -225,7 +233,7 @@ import { reactive, onMounted, ref, unref, computed } from "vue";
 import { ElForm, ElMessage, ElMessageBox } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
-import { calculateChunkSize, splitFile, getFileUniqueHash, progressStatus } from "@/utils/fileChunk";
+import { calculateChunkSize, splitFile, getFileUniqueHash, progressStatus, progressLabel } from "@/utils/fileChunk";
 import {
   addMapParams,
   editMapParams,
@@ -233,6 +241,7 @@ import {
   getLabelTypeList,
   getLegendConfigList,
   getLegendListByLabelType,
+  getFileMaxChunks,
   uploadCheckChunkFile,
   uploadChunkFile,
   getChunkFileUrl
@@ -402,28 +411,19 @@ const openDialog = (row?: { [key: string]: any }) => {
   state.open = true;
 };
 
-type FileUploadType = "normalUrl" | "sateUrl" | "overlayUrl" | null;
-const fileUploadType = ref<FileUploadType>(null);
-const unUploadFileIdx: any = ref();
-const allChunksFile: any = ref();
-const fileHash: any = ref("");
-const completedUploadCount = ref(0);
-const currentProgressStatus: any = ref(""); // 进度状态
+type FileUploadType = "normalUrl" | "sateUrl" | "overlayUrl";
 const minChunkSize = 50 * 1024 * 1024; // 50MB
-const maxChunks = 30;
-const chunksSize = ref(); // 分片大小
-
-const resetUploadParams = () => {
-  fileUploadType.value = null;
-  unUploadFileIdx.value = [];
-  allChunksFile.value = [];
-  fileHash.value = "";
-  completedUploadCount.value = 0;
-  currentProgressStatus.value = "";
+const maxChunks = ref<number>(30);
+const uploadMap: any = reactive({
+  normalUrl: {},
+  sateUrl: {},
+  overlayUrl: {}
+});
+const resetUploadParams = (type: FileUploadType) => {
+  uploadMap[type] = {};
 };
 
 const beforeUpload = async (file: any, type: FileUploadType) => {
-  resetUploadParams();
   let arr = file?.name?.split(".");
   if (!["zip", "tar", "7z"]?.includes(arr[arr?.length - 1])) {
     ElMessage.warning("导入文件必须是【.zip、.tar、.7z】格式!");
@@ -433,102 +433,119 @@ const beforeUpload = async (file: any, type: FileUploadType) => {
     ElMessage.warning("文件大小不能超过【10GB】!");
     return false;
   }
-  fileUploadType.value = type;
-  currentProgressStatus.value = progressStatus.ready;
-  progressDialogRef.value?.openDialog();
-  chunksSize.value = calculateChunkSize(file?.size, maxChunks, minChunkSize);
+  resetUploadParams(type);
+  const uploadTypeObj = uploadMap[type];
+  uploadTypeObj.currentProgressStatus = progressStatus.ready;
+  uploadTypeObj.fileUploadType = type;
+  progressDialogRef.value?.openDialog(type);
+  uploadTypeObj.chunksSize = calculateChunkSize(file?.size, maxChunks.value, minChunkSize);
   let hashHex: string = "";
   try {
     hashHex = (await getFileUniqueHash(file)) as string;
   } catch (error) {
     console.error("计算哈希值时发生错误:", error);
-    return false; // 不进行接口文件上传
+    return false;
   }
-  allChunksFile.value = splitFile(file, chunksSize.value);
-  fileHash.value = hashHex;
-
+  uploadTypeObj.allChunksFile = splitFile(file, uploadTypeObj.chunksSize);
+  uploadTypeObj.fileHash = hashHex;
   try {
-    const res: any = await uploadCheckChunkFile(hashHex, allChunksFile.value?.length);
+    const res: any = await uploadCheckChunkFile(hashHex, uploadTypeObj.allChunksFile?.length);
     if (res.code === 200) {
-      unUploadFileIdx.value = res?.data || [];
-      completedUploadCount.value = allChunksFile.value?.length - unUploadFileIdx.value?.length;
-      currentProgressStatus.value = progressStatus.uploading;
+      uploadTypeObj.unUploadFileIdx = res?.data || [];
+      uploadTypeObj.completedUploadCount = uploadTypeObj.allChunksFile?.length - uploadTypeObj.unUploadFileIdx?.length;
+      uploadTypeObj.currentProgressStatus = progressStatus.uploading;
       return true;
     }
   } catch (error) {
-    currentProgressStatus.value = progressStatus.uploadFail;
+    uploadTypeObj.currentProgressStatus = progressStatus.uploadFail;
     return false;
   }
 };
 
-const uploadMapImage = async () => {
-  if (unUploadFileIdx.value?.length) {
-    // 需要上传
-    const requests = allChunksFile.value?.map((file: any, index: number) => {
-      if (unUploadFileIdx.value?.includes(index)) {
+const uploadMapImage = async (type: FileUploadType) => {
+  const uploadTypeObj = uploadMap[type];
+  if (uploadTypeObj.unUploadFileIdx?.length) {
+    const requests = uploadTypeObj.allChunksFile?.map((file: any, index: number) => {
+      if (uploadTypeObj.unUploadFileIdx?.includes(index)) {
         let formData = new FormData();
         formData.append("file", file);
         const uploadHeaders = {
           headers: {
             chunkNum: index,
-            size: chunksSize.value,
-            chunks: allChunksFile.value?.length,
-            fileHash: fileHash.value
+            size: uploadTypeObj.chunksSize,
+            chunks: uploadTypeObj.allChunksFile?.length,
+            fileHash: uploadTypeObj.fileHash
           },
-          timeout: 0 // 没有超时限制
+          timeout: 0
         };
         return uploadChunkFile(formData, uploadHeaders).then(() => {
-          // 每个请求完成时，增加已完成请求数
-          completedUploadCount.value++;
+          uploadTypeObj.completedUploadCount++; // 每个请求完成时，增加已完成请求数
         });
       }
     });
     Promise.all(requests)
       .then(() => {
-        queryChunkFileUrl(fileHash.value);
+        queryChunkFileUrl(uploadTypeObj.fileHash, type);
       })
       .catch(error => {
-        currentProgressStatus.value = progressStatus.uploadFail;
+        uploadTypeObj.currentProgressStatus = progressStatus.uploadFail;
         console.error("有一个请求失败：", error);
       });
   } else {
-    queryChunkFileUrl(fileHash.value);
+    queryChunkFileUrl(uploadTypeObj.fileHash, type);
   }
 };
 
 // 获取上传成功后url
-const queryChunkFileUrl = async (fileHash: string) => {
-  currentProgressStatus.value = progressStatus.uploadSuccess;
+const queryChunkFileUrl = async (fileHash: string, type: FileUploadType) => {
+  const uploadTypeObj = uploadMap[type];
+  uploadTypeObj.currentProgressStatus = progressStatus.uploadSuccess;
   await getChunkFileUrl(fileHash).then((res: any) => {
     if (res?.code == 200) {
-      fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
-      ElMessage.success("上传成功");
+      uploadTypeObj.fileUploadType && (form.value[uploadTypeObj.fileUploadType as FileUploadType] = res?.data?.url);
+      uploadTypeObj.isNeedRefresh = true;
     }
   });
 };
 
-// 上传进度
-const checkProgress = () => {};
+const updateProgressStatus = (type: FileUploadType, ProgressStatus: string) => {
+  uploadMap[type].currentProgressStatus = ProgressStatus;
+};
+
+const progressList = computed(() => {
+  return (Object.entries(uploadMap) as any[])
+    .filter(([, obj]) => obj?.fileUploadType)
+    .map(([key, obj]) => ({
+      ...obj,
+      label: progressLabel[key as FileUploadType]
+    }));
+});
+
+// 上传进度查看
+const checkProgress = (type: FileUploadType) => {
+  progressDialogRef.value?.openDialog(type);
+};
 
 const onCheckClose = () => {
-  // 关闭前如果上传了文件且失败了进行提示
-  if (fileUploadType.value && !["解压成功"].includes(currentProgressStatus.value)) {
-    ElMessageBox.confirm("有文件尚未上传成功，确认关闭？", "提示", {
+  // 检查是否有文件尚未上传成功
+  const hasUnsuccessfulUpload = Object.values(uploadMap)?.some((upload: any) => {
+    return upload?.fileUploadType;
+  });
+  if (hasUnsuccessfulUpload) {
+    ElMessageBox.confirm("有文件上传尚未保存，确认关闭？", "提示", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning"
-    })
-      .then(async () => {
-        onClose();
-      })
-      .catch(() => {});
+    }).then(() => {
+      onClose();
+    });
   } else {
     onClose();
   }
 };
 
 const onClose = () => {
-  resetUploadParams();
+  (["normalUrl", "sateUrl", "overlayUrl"] as FileUploadType[])?.forEach((type: FileUploadType) => resetUploadParams(type));
   state.open = false;
 };
 
@@ -840,6 +857,14 @@ const legendListByLabelType = ref<{
   }
 });
 
+// 获取总包数限制
+const maxChunksFetchData = async () => {
+  const res: { [key: string]: any } = await getFileMaxChunks();
+  if (res?.code == 200) {
+    maxChunks.value = res?.data;
+  }
+};
+
 // 关键词显示配置
 const keywordConfigClick = () => {
   keywordConfigRef.value?.openDialog(form.value.keywordConfig);
@@ -865,6 +890,7 @@ onMounted(() => {
   layerList.value.fetchData();
   legendIdsList.value.fetchData();
   customTreeCodeList.value.fetchData();
+  maxChunksFetchData();
 });
 
 defineExpose({

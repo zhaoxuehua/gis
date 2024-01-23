@@ -1,4 +1,4 @@
-import { SHA256 } from "crypto-js";
+import { SHA256, lib, enc } from "crypto-js";
 /*
   动态计算分片大小
   fileSize:文件大小
@@ -45,7 +45,9 @@ export function getFileUniqueHash(file: any) {
     reader.onload = function (event: any) {
       // 文件读取完成后触发
       const buffer = event?.target?.result;
-      const hashHex = SHA256(buffer)?.toString(); // 计算 SHA-256 哈希值
+      // const hashHex = SHA256(buffer)?.toString(); // 计算 SHA-256 哈希值
+      const wordArray = lib.WordArray?.create(buffer);
+      const hashHex = SHA256(wordArray)?.toString(enc.Hex); // 计算 SHA-256 哈希值
       resolve(hashHex);
     };
     reader.onerror = function (error) {
@@ -60,4 +62,10 @@ export const progressStatus = {
   uploading: "上传中",
   uploadFail: "上传失败，请重新上传",
   uploadSuccess: "上传成功，解压中"
+};
+
+export const progressLabel = {
+  normalUrl: "电子地图进度",
+  sateUrl: "卫星地图进度",
+  overlayUrl: "路网叠加层进度"
 };

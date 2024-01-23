@@ -9,11 +9,11 @@
     :destroy-on-close="true"
   >
     <div class="progress-container">
-      <el-progress type="dashboard" :percentage="percentage" :color="colorFun(percentage)" :width="160">
+      <el-progress type="dashboard" :percentage="state.percentage" :color="colorFun(state.percentage)" :width="160">
         <template #default="{ percentage: currentPercentage }">
           <div class="percentage-div">
             <span>{{ currentPercentage }}%</span>
-            <span>{{ currentProgressStatus }}</span>
+            <span class="last-span">{{ state.currentProgressStatus }}</span>
           </div>
         </template>
       </el-progress>
@@ -27,23 +27,37 @@
 </template>
 
 <script lang="ts" setup name="ProgressDialog">
-import { reactive } from "vue";
+import { onBeforeUnmount, reactive, watch, ref } from "vue";
+import { getChunkFileUrl } from "@/api/visconfig.js";
 
 interface ProgressDialogProps {
+  data: any;
+}
+interface stateType {
+  open: boolean;
+  type: string;
   percentage: number;
   currentProgressStatus: string;
 }
-withDefaults(defineProps<ProgressDialogProps>(), {
-  percentage: () => 0,
-  currentProgressStatus: () => ""
+
+const props = withDefaults(defineProps<ProgressDialogProps>(), {
+  data: () => {}
 });
-const state = reactive({
-  open: false
+const emits = defineEmits(["updateProgressStatus"]);
+const state: stateType = reactive({
+  open: false,
+  type: "",
+  percentage: 0,
+  currentProgressStatus: ""
 });
-const openDialog = () => {
+
+let timer = ref<any>(null);
+const openDialog = (type: string) => {
+  state.type = type;
   state.open = true;
 };
 const onClose = () => {
+  clearTimer();
   state.open = false;
 };
 const colorFun = (percentage: number) => {
@@ -64,6 +78,50 @@ const colorFun = (percentage: number) => {
   }
 };
 
+// 清除定时器
+const clearTimer = () => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+};
+
+// 刷新解压状态
+const refreshProgressStatus = () => {
+  clearTimer();
+  timer.value = setInterval(async () => {
+    await getChunkFileUrl(props.data?.[state.type].fileHash).then((res: any) => {
+      if (res?.code == 200) {
+        emits("updateProgressStatus", state.type, res?.data?.status || "");
+      }
+    });
+  }, 2000);
+};
+
+watch(
+  () => [props.data?.[state.type]?.currentProgressStatus, props.data?.[state.type]?.completedUploadCount],
+  ([currentProgressStatus, completedUploadCount]) => {
+    state.currentProgressStatus = currentProgressStatus;
+    state.percentage = props.data?.[state.type]?.allChunksFile?.length
+      ? Math.floor((completedUploadCount / props.data?.[state.type]?.allChunksFile?.length) * 100) || 0
+      : 0;
+  }
+);
+
+watch(
+  () => [props.data?.[state.type]?.isNeedRefresh, state.currentProgressStatus],
+  ([isNeedRefresh, currentProgressStatus]) => {
+    if (isNeedRefresh && currentProgressStatus != "解压完成") {
+      refreshProgressStatus();
+    } else {
+      clearTimer();
+    }
+  }
+);
+onBeforeUnmount(() => {
+  clearTimer();
+});
+
 defineExpose({
   openDialog
 });
@@ -83,6 +141,9 @@ defineExpose({
   span {
     display: inline-block;
     font-size: 15px;
+  }
+  .last-span {
+    margin-top: 10px;
   }
 }
 </style>
