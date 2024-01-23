@@ -1,3 +1,4 @@
+import { SHA256 } from "crypto-js";
 /*
   动态计算分片大小
   fileSize:文件大小
@@ -40,18 +41,23 @@ export function splitFile(file: any, chunkSize: number) {
 */
 export function getFileUniqueHash(file: any) {
   return new Promise((resolve, reject) => {
-    file
-      ?.arrayBuffer()
-      .then(function (buffer: any) {
-        return crypto.subtle.digest("SHA-256", buffer);
-      })
-      .then(function (hash: any) {
-        const hashArray = Array.from(new Uint8Array(hash));
-        const hashHex = hashArray?.map(byte => byte?.toString(16)?.padStart(2, "0"))?.join("");
-        resolve(hashHex);
-      })
-      .catch(function (error: any) {
-        reject(error);
-      });
+    const reader = new FileReader();
+    reader.onload = function (event: any) {
+      // 文件读取完成后触发
+      const buffer = event?.target?.result;
+      const hashHex = SHA256(buffer)?.toString(); // 计算 SHA-256 哈希值
+      resolve(hashHex);
+    };
+    reader.onerror = function (error) {
+      reject(error);
+    };
+    reader.readAsArrayBuffer(file); // 读取文件
   });
 }
+
+export const progressStatus = {
+  ready: "准备中",
+  uploading: "上传中",
+  uploadFail: "上传失败，请重新上传",
+  uploadSuccess: "上传成功，解压中"
+};

@@ -6,7 +6,7 @@
       width="1020px"
       :close-on-click-modal="false"
       append-to-body
-      @close="onClose"
+      @close="onCheckClose"
       :destroy-on-close="true"
       class="map-params-edit"
     >
@@ -204,7 +204,8 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="onClose">取消</el-button>
+          <el-button @click="onCheckClose">取消</el-button>
+          <el-button type="primary" @click="checkProgress" :loading="btnLoading">查看进度</el-button>
           <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
@@ -213,17 +214,18 @@
     <NavTreeConfigDialog ref="navTreeConfigRef" @success-add="saveNavTreeConfig"></NavTreeConfigDialog>
     <ProgressDialog
       ref="progressDialogRef"
-      :percentage="Math.floor((completedUploadCount / allChunksFile?.length) * 100)"
+      :percentage="allChunksFile?.length ? Math.floor((completedUploadCount / allChunksFile?.length) * 100) : 0"
+      :currentProgressStatus="currentProgressStatus"
     ></ProgressDialog>
   </div>
 </template>
 
 <script lang="ts" setup name="MapParamsEdit">
 import { reactive, onMounted, ref, unref, computed } from "vue";
-import { ElForm, ElMessage } from "element-plus";
+import { ElForm, ElMessage, ElMessageBox } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
-import { calculateChunkSize, splitFile, getFileUniqueHash } from "@/utils/fileChunk";
+import { calculateChunkSize, splitFile, getFileUniqueHash, progressStatus } from "@/utils/fileChunk";
 import {
   addMapParams,
   editMapParams,
@@ -406,21 +408,22 @@ const unUploadFileIdx: any = ref();
 const allChunksFile: any = ref();
 const fileHash: any = ref("");
 const completedUploadCount = ref(0);
+const currentProgressStatus: any = ref(""); // 进度状态
+const minChunkSize = 50 * 1024 * 1024; // 50MB
 const maxChunks = 30;
-const minChunkSize = 100 * 1024 * 1024;
 const chunksSize = ref(); // 分片大小
 
 const resetUploadParams = () => {
-  completedUploadCount.value = 0;
-  allChunksFile.value = [];
+  fileUploadType.value = null;
   unUploadFileIdx.value = [];
+  allChunksFile.value = [];
   fileHash.value = "";
+  completedUploadCount.value = 0;
+  currentProgressStatus.value = "";
 };
 
 const beforeUpload = async (file: any, type: FileUploadType) => {
   resetUploadParams();
-  fileUploadType.value = type;
-
   let arr = file?.name?.split(".");
   if (!["zip", "tar", "7z"]?.includes(arr[arr?.length - 1])) {
     ElMessage.warning("导入文件必须是【.zip、.tar、.7z】格式!");
@@ -430,19 +433,30 @@ const beforeUpload = async (file: any, type: FileUploadType) => {
     ElMessage.warning("文件大小不能超过【10GB】!");
     return false;
   }
+  fileUploadType.value = type;
+  currentProgressStatus.value = progressStatus.ready;
+  progressDialogRef.value?.openDialog();
   chunksSize.value = calculateChunkSize(file?.size, maxChunks, minChunkSize);
-  const hashHex = await getFileUniqueHash(file);
+  let hashHex: string = "";
+  try {
+    hashHex = (await getFileUniqueHash(file)) as string;
+  } catch (error) {
+    console.error("计算哈希值时发生错误:", error);
+    return false; // 不进行接口文件上传
+  }
   allChunksFile.value = splitFile(file, chunksSize.value);
   fileHash.value = hashHex;
-  progressDialogRef.value?.openDialog();
+
   try {
     const res: any = await uploadCheckChunkFile(hashHex, allChunksFile.value?.length);
     if (res.code === 200) {
       unUploadFileIdx.value = res?.data || [];
       completedUploadCount.value = allChunksFile.value?.length - unUploadFileIdx.value?.length;
+      currentProgressStatus.value = progressStatus.uploading;
       return true;
     }
   } catch (error) {
+    currentProgressStatus.value = progressStatus.uploadFail;
     return false;
   }
 };
@@ -460,7 +474,8 @@ const uploadMapImage = async () => {
             size: chunksSize.value,
             chunks: allChunksFile.value?.length,
             fileHash: fileHash.value
-          }
+          },
+          timeout: 0 // 没有超时限制
         };
         return uploadChunkFile(formData, uploadHeaders).then(() => {
           // 每个请求完成时，增加已完成请求数
@@ -473,6 +488,7 @@ const uploadMapImage = async () => {
         queryChunkFileUrl(fileHash.value);
       })
       .catch(error => {
+        currentProgressStatus.value = progressStatus.uploadFail;
         console.error("有一个请求失败：", error);
       });
   } else {
@@ -482,6 +498,7 @@ const uploadMapImage = async () => {
 
 // 获取上传成功后url
 const queryChunkFileUrl = async (fileHash: string) => {
+  currentProgressStatus.value = progressStatus.uploadSuccess;
   await getChunkFileUrl(fileHash).then((res: any) => {
     if (res?.code == 200) {
       fileUploadType.value && (form.value[fileUploadType.value] = res?.msg);
@@ -490,7 +507,28 @@ const queryChunkFileUrl = async (fileHash: string) => {
   });
 };
 
+// 上传进度
+const checkProgress = () => {};
+
+const onCheckClose = () => {
+  // 关闭前如果上传了文件且失败了进行提示
+  if (fileUploadType.value && !["解压成功"].includes(currentProgressStatus.value)) {
+    ElMessageBox.confirm("有文件尚未上传成功，确认关闭？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(async () => {
+        onClose();
+      })
+      .catch(() => {});
+  } else {
+    onClose();
+  }
+};
+
 const onClose = () => {
+  resetUploadParams();
   state.open = false;
 };
 

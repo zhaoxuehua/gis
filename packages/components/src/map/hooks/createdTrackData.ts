@@ -1,6 +1,6 @@
 // ⤵ ol库
 import Feature from "ol/Feature";
-import * as olProj from "ol/proj";
+import { fromLonLat } from "ol/proj";
 import { LineString, Point } from "ol/geom";
 import { Vector as VectorLayer } from "ol/layer";
 import BaseLayer from "ol/layer/Base.js";
@@ -97,7 +97,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
       color,
       dotted: true // true:虚线  false:实线(只有绘制线时用)
     };
-    const currDataLonLat = olProj?.fromLonLat([Number(currDataLon), Number(currDataLat)]);
+    const currDataLonLat = fromLonLat([Number(currDataLon), Number(currDataLat)]);
     if (!data[i + 1]) {
       // 最后一个只绘制 圆+label且最后一个不显示加速减速
       currData._speed = "normal"; // 默认label无速度箭头
@@ -119,7 +119,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
     } = nextData;
 
     const dotted = +new Date(nextDataTime) - +new Date(currDataTime) >= strategyTime; // 是否大于策略时间
-    const nextDataLonLat = olProj?.fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
+    const nextDataLonLat = fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
     extendsData.dotted = dotted; // 绘制线段是虚线还是实线
 
     // 加速 || 减速
@@ -158,7 +158,7 @@ const createdTrackData = async function (param: trackLayerParamType) {
     name: shipName,
     posInfo: { lon: shipLon, lat: shipLat }
   } = shipData;
-  const shipLonLat = olProj?.fromLonLat([Number(shipLon), Number(shipLat)]);
+  const shipLonLat = fromLonLat([Number(shipLon), Number(shipLat)]);
   const shipFeature = new Feature({
     name: shipName,
     geometry: new Point(shipLonLat),

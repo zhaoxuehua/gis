@@ -9,7 +9,14 @@
     :destroy-on-close="true"
   >
     <div class="progress-container">
-      <el-progress type="dashboard" :percentage="percentage" :color="colorFun(percentage)" />
+      <el-progress type="dashboard" :percentage="percentage" :color="colorFun(percentage)" :width="160">
+        <template #default="{ percentage: currentPercentage }">
+          <div class="percentage-div">
+            <span>{{ currentPercentage }}%</span>
+            <span>{{ currentProgressStatus }}</span>
+          </div>
+        </template>
+      </el-progress>
     </div>
     <template #footer>
       <span class="dialog-footer">
@@ -24,9 +31,11 @@ import { reactive } from "vue";
 
 interface ProgressDialogProps {
   percentage: number;
+  currentProgressStatus: string;
 }
 withDefaults(defineProps<ProgressDialogProps>(), {
-  percentage: () => 0
+  percentage: () => 0,
+  currentProgressStatus: () => ""
 });
 const state = reactive({
   open: false
@@ -54,6 +63,7 @@ const colorFun = (percentage: number) => {
     return "#67C23A";
   }
 };
+
 defineExpose({
   openDialog
 });
@@ -64,5 +74,15 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.percentage-div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  span {
+    display: inline-block;
+    font-size: 15px;
+  }
 }
 </style>

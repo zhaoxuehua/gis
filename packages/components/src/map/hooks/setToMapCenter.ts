@@ -1,6 +1,5 @@
 // ⤵ ol库
-import * as olProj from "ol/proj";
-import { toLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
 
 // ⤵ Store
 import { useGisStore } from "../../stores/modules/gis";
@@ -25,7 +24,7 @@ const setToMapCenter = function ({ lon, lat, zoom, duration, callBack }: setToMa
     // 不需要转了
     centerCoArr = [lon, lat];
   } else {
-    centerCoArr = olProj.fromLonLat([Number(lon), Number(lat)]);
+    centerCoArr = fromLonLat([Number(lon), Number(lat)]);
   }
 
   if (zoom) {

@@ -2,7 +2,7 @@ import { ElMessage } from "element-plus";
 import { Style, Icon } from "ol/style";
 import Feature from "ol/Feature.js";
 import Point from "ol/geom/Point.js";
-import * as olProj from "ol/proj";
+import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
 import { getRealLabelTypeInfo, getRealDataList } from "../../api/gis";
 import type { VisualMap } from "../type";
@@ -186,7 +186,7 @@ export function createLayerStyle(styleObject: string, extendsData: any = {}) {
 // 创建要素
 export function createdRealDataFeature(params: shipParamsType, dataType: string, labelTypeCode: string) {
   const shipFeature = new Feature({
-    geometry: new Point(olProj.fromLonLat([params.lon, params.lat])),
+    geometry: new Point(fromLonLat([params.lon, params.lat])),
     // 图层样式根据要素属性渲染 、鼠标经过时使用
     extendsData: {
       code: params.code,
