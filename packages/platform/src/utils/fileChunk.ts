@@ -1,4 +1,4 @@
-import { SHA256, lib, enc } from "crypto-js";
+import { lib, enc, algo } from "crypto-js";
 /*
   动态计算分片大小
   fileSize:文件大小
@@ -41,19 +41,36 @@ export function splitFile(file: any, chunkSize: number) {
 */
 export function getFileUniqueHash(file: any) {
   return new Promise((resolve, reject) => {
+    const chunkSize = 50 * 1024 * 1024; // 50MB
+    const chunks = Math.ceil(file.size / chunkSize);
+    let currentChunk = 0;
+    const hash = algo.SHA256.create(); // 初始化 SHA256 对象
     const reader = new FileReader();
+
     reader.onload = function (event: any) {
-      // 文件读取完成后触发
-      const buffer = event?.target?.result;
-      // const hashHex = SHA256(buffer)?.toString(); // 计算 SHA-256 哈希值
-      const wordArray = lib.WordArray?.create(buffer);
-      const hashHex = SHA256(wordArray)?.toString(enc.Hex); // 计算 SHA-256 哈希值
-      resolve(hashHex);
+      hash?.update(lib.WordArray?.create(event?.target?.result));
+      currentChunk++;
+
+      if (currentChunk < chunks) {
+        loadNextChunk();
+      } else {
+        const hashHex = hash?.finalize()?.toString(enc.Hex); // 16进制hash值
+        resolve(hashHex);
+      }
     };
+
     reader.onerror = function (error) {
       reject(error);
     };
-    reader.readAsArrayBuffer(file); // 读取文件
+
+    const loadNextChunk = () => {
+      const start = currentChunk * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
+      const slice = file?.slice(start, end);
+      reader.readAsArrayBuffer(slice);
+    };
+
+    loadNextChunk();
   });
 }
 

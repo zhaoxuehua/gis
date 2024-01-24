@@ -181,9 +181,13 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
     attributes,
     isHistory: isTrackPointClick ? true : false, // 是否是历史数据 , 实时数据查询最近一条记录
     isLineData: false, // 是否线性数据--数据类型
-    dataTime: isTrackPointClick ? trackPointTime : state.currentTime, //数据时间，针对具体时间
     tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
   };
+  if (isTrackPointClick) {
+    param.dataTimeStr = trackPointTime;
+  } else {
+    param.dataTime = state.currentTime;
+  }
   // 实时对象时增加equipType传参，后端用于判断 需不需要判断是外部的还是资产
   if (realObjectTypeCode) {
     param.equipType = realObjectTypeCode;
