@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.3
+
+### Patch Changes
+
+- 轨迹优化
+
 ## 2.0.2
 
 ### Patch Changes
