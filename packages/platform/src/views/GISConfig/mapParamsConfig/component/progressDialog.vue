@@ -90,7 +90,7 @@ const clearTimer = () => {
 const refreshProgressStatus = () => {
   clearTimer();
   timer.value = setInterval(async () => {
-    await getChunkFileUrl(props.data?.[state.type].fileHash).then((res: any) => {
+    await getChunkFileUrl(props.data?.[state.type]?.fileHash).then((res: any) => {
       if (res?.code == 200) {
         emits("updateProgressStatus", state.type, res?.data?.status || "");
       }
@@ -99,18 +99,18 @@ const refreshProgressStatus = () => {
 };
 
 watch(
-  () => [props.data?.[state.type]?.currentProgressStatus, props.data?.[state.type]?.completedUploadCount],
-  ([currentProgressStatus, completedUploadCount]) => {
+  () => {
+    const uploadTypeObj = props.data?.[state.type];
+    return [
+      uploadTypeObj?.currentProgressStatus,
+      uploadTypeObj?.completedUploadCount,
+      uploadTypeObj?.allChunksFile?.length,
+      uploadTypeObj?.isNeedRefresh
+    ];
+  },
+  ([currentProgressStatus, completedUploadCount, allChunksFileLength, isNeedRefresh]) => {
     state.currentProgressStatus = currentProgressStatus;
-    state.percentage = props.data?.[state.type]?.allChunksFile?.length
-      ? Math.floor((completedUploadCount / props.data?.[state.type]?.allChunksFile?.length) * 100) || 0
-      : 0;
-  }
-);
-
-watch(
-  () => [props.data?.[state.type]?.isNeedRefresh, state.currentProgressStatus],
-  ([isNeedRefresh, currentProgressStatus]) => {
+    state.percentage = allChunksFileLength ? Math.floor((completedUploadCount / allChunksFileLength) * 100) || 0 : 0;
     if (isNeedRefresh && currentProgressStatus != "解压完成") {
       refreshProgressStatus();
     } else {
@@ -118,6 +118,7 @@ watch(
     }
   }
 );
+
 onBeforeUnmount(() => {
   clearTimer();
 });

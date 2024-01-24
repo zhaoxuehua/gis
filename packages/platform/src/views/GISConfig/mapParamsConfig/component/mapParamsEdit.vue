@@ -212,7 +212,11 @@
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="item in progressList" :key="item.id" @click.stop="checkProgress(item.fileUploadType)">
+                <el-dropdown-item
+                  v-for="(item, index) in progressList"
+                  :key="index"
+                  @click.stop="checkProgress(item.fileUploadType)"
+                >
                   {{ item.label }}
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -438,7 +442,7 @@ const beforeUpload = async (file: any, type: FileUploadType) => {
   uploadTypeObj.currentProgressStatus = progressStatus.ready;
   uploadTypeObj.fileUploadType = type;
   progressDialogRef.value?.openDialog(type);
-  uploadTypeObj.chunksSize = calculateChunkSize(file?.size, maxChunks.value, minChunkSize);
+  uploadTypeObj.chunksSize = calculateChunkSize(file?.size, maxChunks.value, minChunkSize); // 计算分片大小
   let hashHex: string = "";
   try {
     hashHex = (await getFileUniqueHash(file)) as string;
@@ -446,7 +450,7 @@ const beforeUpload = async (file: any, type: FileUploadType) => {
     console.error("计算哈希值时发生错误:", error);
     return false;
   }
-  uploadTypeObj.allChunksFile = splitFile(file, uploadTypeObj.chunksSize);
+  uploadTypeObj.allChunksFile = splitFile(file, uploadTypeObj.chunksSize); // 文件分片后的[]
   uploadTypeObj.fileHash = hashHex;
   try {
     const res: any = await uploadCheckChunkFile(hashHex, uploadTypeObj.allChunksFile?.length);
@@ -502,7 +506,7 @@ const queryChunkFileUrl = async (fileHash: string, type: FileUploadType) => {
   uploadTypeObj.currentProgressStatus = progressStatus.uploadSuccess;
   await getChunkFileUrl(fileHash).then((res: any) => {
     if (res?.code == 200) {
-      uploadTypeObj.fileUploadType && (form.value[uploadTypeObj.fileUploadType as FileUploadType] = res?.data?.url);
+      uploadTypeObj.fileUploadType && (form.value[uploadTypeObj.fileUploadType as FileUploadType] = res?.data?.url || "");
       uploadTypeObj.isNeedRefresh = true;
     }
   });
