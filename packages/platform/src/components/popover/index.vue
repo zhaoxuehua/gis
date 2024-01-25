@@ -13,12 +13,11 @@
 </template>
 
 <script lang="ts" setup>
-const props = withDefaults(defineProps<{ len: number; placement: any; width: number; info: any }>(), {
+withDefaults(defineProps<{ len: number; placement: any; width: number; info: any }>(), {
   len: () => 10,
   placement: () => "right",
   width: () => 224
 });
-console.log(props);
 </script>
 <style lang="scss">
 .span-popover-content {

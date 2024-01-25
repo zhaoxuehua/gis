@@ -6,7 +6,7 @@
       width="1020px"
       :close-on-click-modal="false"
       append-to-body
-      @close="onCheckClose"
+      @close="onClose"
       :destroy-on-close="true"
       class="map-params-edit"
     >
@@ -204,7 +204,7 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="onCheckClose">取消</el-button>
+          <el-button @click="onClose">取消</el-button>
           <el-dropdown v-if="progressList?.length" style="margin: 0 10px">
             <el-button>
               <Icon src="More" :size="18"></Icon>
@@ -452,12 +452,12 @@ const beforeUpload = async (file: any, type: FileUploadType) => {
   }
   uploadTypeObj.allChunksFile = splitFile(file, uploadTypeObj.chunksSize); // 文件分片后的[]
   uploadTypeObj.fileHash = hashHex;
+  uploadTypeObj.currentProgressStatus = progressStatus.uploading;
   try {
     const res: any = await uploadCheckChunkFile(hashHex, uploadTypeObj.allChunksFile?.length);
     if (res.code === 200) {
       uploadTypeObj.unUploadFileIdx = res?.data || [];
       uploadTypeObj.completedUploadCount = uploadTypeObj.allChunksFile?.length - uploadTypeObj.unUploadFileIdx?.length;
-      uploadTypeObj.currentProgressStatus = progressStatus.uploading;
       return true;
     }
   } catch (error) {
@@ -504,12 +504,16 @@ const uploadMapImage = async (type: FileUploadType) => {
 const queryChunkFileUrl = async (fileHash: string, type: FileUploadType) => {
   const uploadTypeObj = uploadMap[type];
   uploadTypeObj.currentProgressStatus = progressStatus.uploadSuccess;
-  await getChunkFileUrl(fileHash).then((res: any) => {
-    if (res?.code == 200) {
-      uploadTypeObj.fileUploadType && (form.value[uploadTypeObj.fileUploadType as FileUploadType] = res?.data?.url || "");
-      uploadTypeObj.isNeedRefresh = true;
-    }
-  });
+  try {
+    await getChunkFileUrl(fileHash).then((res: any) => {
+      if (res?.code == 200) {
+        uploadTypeObj.fileUploadType && (form.value[uploadTypeObj.fileUploadType as FileUploadType] = res?.data?.url || "");
+        uploadTypeObj.isNeedRefresh = true;
+      }
+    });
+  } catch {
+    uploadTypeObj.currentProgressStatus = progressStatus.decompressionFail;
+  }
 };
 
 const updateProgressStatus = (type: FileUploadType, ProgressStatus: string) => {
@@ -530,27 +534,87 @@ const checkProgress = (type: FileUploadType) => {
   progressDialogRef.value?.openDialog(type);
 };
 
-const onCheckClose = () => {
-  // 检查是否有文件尚未上传成功
-  const hasUnsuccessfulUpload = Object.values(uploadMap)?.some((upload: any) => {
-    return upload?.fileUploadType;
-  });
-  if (hasUnsuccessfulUpload) {
-    ElMessageBox.confirm("有文件上传尚未保存，确认关闭？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning"
-    }).then(() => {
-      onClose();
-    });
-  } else {
-    onClose();
-  }
-};
-
 const onClose = () => {
   (["normalUrl", "sateUrl", "overlayUrl"] as FileUploadType[])?.forEach((type: FileUploadType) => resetUploadParams(type));
   state.open = false;
+};
+
+const confirmFun = async () => {
+  let param = unref(form);
+  // 校验自定义树时是否配置自定义内容
+  if (param.customTreeType == "ExternalCustomTree") {
+    delete param.customTreeCode;
+    if (!param?.externalCustomTree || !param?.externalCustomTree?.code) {
+      ElMessage.warning("请设置自定义树配置");
+      return;
+    }
+  } else {
+    delete param.externalCustomTree;
+  }
+  // 标签类型参数处理
+  if (Array.isArray(param.displayLabelInfoIds)) {
+    param.displayLabelInfoIds = param.displayLabelInfoIds.join(",");
+  }
+  // 图层参数处理
+  if (Array.isArray(param.displayLayerIds)) {
+    param.displayLayerIds = param.displayLayerIds.join(",");
+  }
+  // 图层参数处理
+  if (Array.isArray(param.displaySearchIds)) {
+    param.displaySearchIds = param.displaySearchIds.join(",");
+  }
+  // 控件参数处理
+  if (Array.isArray(param.displayControlIds)) {
+    param.displayControlIds = param.displayControlIds.join(",");
+  }
+  // 图例参数处理
+  if (Array.isArray(param.displayLegendIds)) {
+    param.displayLegendIds = param.displayLegendIds.join(",");
+  }
+
+  btnLoading.value = true;
+  try {
+    if (state.dialogType == 0) {
+      // 添加
+      const res: { [key: string]: any } = await addMapParams(param);
+      if (res.code == 200) {
+        ElMessage.success("创建成功");
+        emit("successAdd");
+        onClose();
+      }
+    } else if (state.dialogType == 1) {
+      // 编辑
+      const res: { [key: string]: any } = await editMapParams(param);
+      if (res.code == 200) {
+        ElMessage.success("编辑成功");
+        emit("successAdd");
+        onClose();
+      }
+    }
+  } finally {
+    btnLoading.value = false;
+  }
+};
+const onConfirm = () => {
+  refForm.value?.validate((valid: any) => {
+    if (valid) {
+      // 检查是否有文件尚未上传成功(准备中 上传中)
+      const hasUnsuccessfulUpload = Object.values(uploadMap)?.some((upload: any) => {
+        return upload?.fileUploadType && ["准备中", "上传中"].includes(upload?.currentProgressStatus);
+      });
+      if (hasUnsuccessfulUpload) {
+        ElMessageBox.confirm("有文件正在上传中，确定执行该操作？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          confirmFun();
+        });
+      } else {
+        confirmFun();
+      }
+    }
+  });
 };
 
 // 显示标签类型change及显示标签类型的全选、反选、清空调用
@@ -619,67 +683,6 @@ const attributeSelectReverse = (type: string) => {
       .filter((item: any) => !(form.value.displayLegendIds as any[])?.includes(item?.id))
       .map((filteredItem: any) => filteredItem?.id);
   }
-};
-
-const onConfirm = () => {
-  refForm.value?.validate(async (valid: any) => {
-    if (valid) {
-      let param = unref(form);
-      // 校验自定义树时是否配置自定义内容
-      if (param.customTreeType == "ExternalCustomTree") {
-        delete param.customTreeCode;
-        if (!param?.externalCustomTree || !param?.externalCustomTree?.code) {
-          ElMessage.warning("请设置自定义树配置");
-          return;
-        }
-      } else {
-        delete param.externalCustomTree;
-      }
-      // 标签类型参数处理
-      if (Array.isArray(param.displayLabelInfoIds)) {
-        param.displayLabelInfoIds = param.displayLabelInfoIds.join(",");
-      }
-      // 图层参数处理
-      if (Array.isArray(param.displayLayerIds)) {
-        param.displayLayerIds = param.displayLayerIds.join(",");
-      }
-      // 图层参数处理
-      if (Array.isArray(param.displaySearchIds)) {
-        param.displaySearchIds = param.displaySearchIds.join(",");
-      }
-      // 控件参数处理
-      if (Array.isArray(param.displayControlIds)) {
-        param.displayControlIds = param.displayControlIds.join(",");
-      }
-      // 图例参数处理
-      if (Array.isArray(param.displayLegendIds)) {
-        param.displayLegendIds = param.displayLegendIds.join(",");
-      }
-
-      btnLoading.value = true;
-      try {
-        if (state.dialogType == 0) {
-          // 添加
-          const res: { [key: string]: any } = await addMapParams(param);
-          if (res.code == 200) {
-            ElMessage.success("创建成功");
-            emit("successAdd");
-            state.open = false;
-          }
-        } else if (state.dialogType == 1) {
-          // 编辑
-          const res: { [key: string]: any } = await editMapParams(param);
-          if (res.code == 200) {
-            ElMessage.success("编辑成功");
-            emit("successAdd");
-            state.open = false;
-          }
-        }
-      } finally {
-        btnLoading.value = false;
-      }
-    }
-  });
 };
 
 // 控件列表

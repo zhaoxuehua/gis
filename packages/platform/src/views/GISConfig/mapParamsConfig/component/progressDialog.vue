@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    title="上传进度"
+    :title="progressDialogTitle[state.type]"
     v-model="state.open"
     width="560px"
     :close-on-click-modal="false"
@@ -29,6 +29,7 @@
 <script lang="ts" setup name="ProgressDialog">
 import { onBeforeUnmount, reactive, watch, ref } from "vue";
 import { getChunkFileUrl } from "@/api/visconfig.js";
+import { progressDialogTitle } from "@/utils/fileChunk";
 
 interface ProgressDialogProps {
   data: any;
@@ -90,6 +91,7 @@ const clearTimer = () => {
 const refreshProgressStatus = () => {
   clearTimer();
   timer.value = setInterval(async () => {
+    if (!props.data?.[state.type]?.fileHash) return;
     await getChunkFileUrl(props.data?.[state.type]?.fileHash).then((res: any) => {
       if (res?.code == 200) {
         emits("updateProgressStatus", state.type, res?.data?.status || "");
