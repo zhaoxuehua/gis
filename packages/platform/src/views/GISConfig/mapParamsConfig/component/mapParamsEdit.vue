@@ -508,6 +508,7 @@ const queryChunkFileUrl = async (fileHash: string, type: FileUploadType) => {
     await getChunkFileUrl(fileHash).then((res: any) => {
       if (res?.code == 200) {
         uploadTypeObj.fileUploadType && (form.value[uploadTypeObj.fileUploadType as FileUploadType] = res?.data?.url || "");
+        uploadTypeObj.currentProgressStatus = res?.data?.status || "";
         uploadTypeObj.isNeedRefresh = true;
       }
     });

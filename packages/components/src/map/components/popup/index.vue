@@ -184,9 +184,7 @@ const getDataFromAttr = (equipCodes: string, attributes: string) => {
     tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
   };
   if (isTrackPointClick) {
-    param.dataTimeStr = trackPointTime;
-  } else {
-    param.dataTime = state.currentTime;
+    param.dateTimeStr = trackPointTime;
   }
   // 实时对象时增加equipType传参，后端用于判断 需不需要判断是外部的还是资产
   if (realObjectTypeCode) {

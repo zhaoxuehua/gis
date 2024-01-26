@@ -113,7 +113,7 @@ watch(
   ([currentProgressStatus, completedUploadCount, allChunksFileLength, isNeedRefresh]) => {
     state.currentProgressStatus = currentProgressStatus;
     state.percentage = allChunksFileLength ? Math.floor((completedUploadCount / allChunksFileLength) * 100) || 0 : 0;
-    if (isNeedRefresh && currentProgressStatus != "解压完成") {
+    if (isNeedRefresh && ["解压中"].includes(currentProgressStatus)) {
       refreshProgressStatus();
     } else {
       clearTimer();
