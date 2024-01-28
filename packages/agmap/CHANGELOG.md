@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.4
+
+### Patch Changes
+
+- 轨迹可点击
+
 ## 2.0.3
 
 ### Patch Changes
