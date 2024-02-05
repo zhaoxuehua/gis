@@ -40,6 +40,8 @@
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_ADD">
             <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon>{{ "创建" }}</el-button>
           </Auth>
+          <el-button type="primary" @click="onImport"><Icon src="UploadFilled"></Icon>{{ "导入" }}</el-button>
+          <el-button type="primary" @click="onImportAttachments">{{ "导入附件" }}</el-button>
         </div>
       </div>
       <el-table
@@ -210,6 +212,8 @@
         <el-tag :color="scope.row.backGroundColor" class="w_30"></el-tag>
       </template>
     </DetailDialog>
+    <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入标签类型配置文件'"></UploadMainFileDialog>
+    <uploadAttachmentsDialog ref="uploadAttachmentsRef" :fileTitle="'导入标签类型配置附件'"></uploadAttachmentsDialog>
   </div>
 </template>
 
@@ -217,6 +221,8 @@
 import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
+import UploadMainFileDialog from "@/components/uploadFile/uploadMainFile.vue";
+import uploadAttachmentsDialog from "@/components/uploadFile/uploadAttachments.vue";
 import {
   getLabelTypeList,
   deleteLabelTypeCheck,
@@ -404,6 +410,17 @@ const sortChange = (val: SortChangeEvent) => {
   };
   query.value.params.isAsc = orderMap[val.order];
   table.value.getTableData();
+};
+
+const uploadMainFilRef = ref<InstanceType<typeof UploadMainFileDialog>>();
+const uploadAttachmentsRef = ref<InstanceType<typeof uploadAttachmentsDialog>>();
+
+const onImport = () => {
+  uploadMainFilRef.value?.openDialog();
+};
+
+const onImportAttachments = () => {
+  uploadAttachmentsRef.value?.openDialog();
 };
 
 const onDelete = async () => {
