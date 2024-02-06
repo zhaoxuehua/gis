@@ -21,23 +21,3 @@ export function queryDynamicForm(params: any) {
 export function dynamicTableList(queryString: string, params: object) {
   return request.post(`/api/equipment-service/equip/equip/list${queryString}`, params);
 }
-
-// 导入模块
-// 上传
-export function upLoadFile(params: any) {
-  return request.post(`/api/gis-service/minio/file/upload/picture`, params);
-}
-// 校验
-export function checkFile(params: any) {
-  return request.post(`/api/gis-service/minio/file/upload/picture`, params);
-}
-
-// 确认导入
-export function confirmImport(params: any) {
-  return request.post(`/api/gis-service/equip/gisLabelInfo`, params);
-}
-
-// 取消
-export function cancelImport(params: any) {
-  return request.post(`/api/gis-service/equip/gisLabelInfo`, params);
-}

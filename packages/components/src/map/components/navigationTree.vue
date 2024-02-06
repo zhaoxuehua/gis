@@ -3,12 +3,6 @@
   <div class="nav-tree" @click.stop>
     <div class="title">
       <span>导航树</span>
-      <!-- <el-link type="primary" class="title-icon" title="下载模板" :underline="false"
-        ><i class="iconfont icon-cloud-download"></i
-      ></el-link>
-      <el-link type="primary" class="title-icon" title="上传" :underline="false"
-        ><i class="iconfont icon-cloud-upload"></i
-      ></el-link> -->
       <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="nav-tree-content">

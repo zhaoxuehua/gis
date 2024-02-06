@@ -2,7 +2,15 @@
 <template>
   <div class="tag-tree">
     <div class="title">
-      <span>标签树</span>
+      <div>
+        <span>标签树</span>
+        <el-button type="primary" size="small" circle class="title-btn"
+          ><Icon src="Upload" title="导入" :size="14"></Icon
+        ></el-button>
+        <el-button type="primary" size="small" circle class="title-btn"
+          ><Icon src="Download" title="导出" :size="14"></Icon
+        ></el-button>
+      </div>
       <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="tag-tree-content">
@@ -38,6 +46,12 @@
       </div>
     </div>
   </div>
+  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入标签类型配置文件'" @click.stop="onImport"></UploadMainFileDialog>
+  <uploadAttachmentsDialog
+    ref="uploadAttachmentsRef"
+    :fileTitle="'导入标签类型配置附件'"
+    @click.stop="onExport"
+  ></uploadAttachmentsDialog>
 </template>
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
@@ -46,6 +60,8 @@ import { useGisStore } from "../../stores/modules/gis";
 import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
+import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
+import uploadAttachmentsDialog from "./uploadFile/uploadAttachments.vue";
 
 const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -62,6 +78,17 @@ const state: { defaultProps: { [key: string]: any }; expandedKeys: any[]; filter
   filterText: "", // 树搜索字段
   expandedKeys: [] // 已展开的节点键
 });
+
+const uploadMainFilRef = ref<InstanceType<typeof UploadMainFileDialog>>();
+const uploadAttachmentsRef = ref<InstanceType<typeof uploadAttachmentsDialog>>();
+
+const onImport = () => {
+  uploadMainFilRef.value?.openDialog();
+};
+
+const onExport = () => {
+  console.log("导出");
+};
 
 // 关闭标签树
 const onClose = () => {
@@ -221,38 +248,42 @@ onMounted(() => {});
   height: 500px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-}
-.title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 60px;
-  background-color: #f7f7fa;
-}
-.title span {
-  font-size: 16px;
-}
-.title .icon {
-  cursor: pointer;
-}
-.tag-tree .title {
-  padding: 0 20px;
-}
-.tag-tree-content {
-  height: calc(100% - 60px);
-  padding: 0 20px;
-}
-.tag-tree-content-filter {
-  width: 100%;
-  margin: 20px 0;
-}
-.tree-content {
-  height: calc(100% - 92px);
-}
-.custom-tree-node {
-  display: flex;
-  align-items: center;
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 60px;
+    padding: 0 20px;
+    background-color: #f7f7fa;
+    .title-btn {
+      margin-left: 15px;
+      i {
+        margin: auto;
+      }
+    }
+    span {
+      font-size: 16px;
+    }
+    .icon {
+      cursor: pointer;
+    }
+  }
+  .tag-tree-content {
+    height: calc(100% - 60px);
+    padding: 0 20px;
+    .tag-tree-content-filter {
+      width: 100%;
+      margin: 20px 0;
+    }
+    .tree-content {
+      height: calc(100% - 92px);
+      .custom-tree-node {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
 }
 .custom-tree-node i {
   margin-left: 8px;

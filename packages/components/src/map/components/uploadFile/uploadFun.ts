@@ -1,0 +1,76 @@
+import { ref } from "vue";
+import { ElMessage } from "element-plus";
+
+// 进度实现要求：导入时间超过2秒出现进度条，显示进度给一个假的，进度先按一定的速率更新，比如10秒从0-80%，如果时间更久则从80%-99降低进度条的更新速率
+const timer1: any = ref(null);
+const timer2: any = ref(null);
+
+const clearTimer = () => {
+  if (timer1.value) {
+    clearTimeout(timer1.value);
+  }
+  if (timer2.value) {
+    clearInterval(timer2.value);
+  }
+};
+
+const showProgressFun = (state: any) => {
+  state.canClickClose = false;
+  state.loading = true;
+  clearTimer();
+  timer1.value = setTimeout(() => {
+    processCountFun(state);
+  }, 2000);
+};
+
+const processCountFun = (state: any) => {
+  state.isShowLoadingProgress = true;
+  let progressCount = 0;
+  state.progressCount = progressCount;
+  clearTimer();
+  timer2.value = setInterval(() => {
+    progressCount += 10;
+    if (progressCount < 80) {
+      state.progressCount = progressCount;
+    } else {
+      state.progressCount = 80 + (progressCount - 80) / 2; // 降低速率
+    }
+
+    if (progressCount >= 99) {
+      state.progressCount = 99;
+      clearTimer();
+    }
+  }, 1000);
+};
+
+const closeLoadingProgress = (state: any) => {
+  clearTimer();
+  state.progressCount = 0;
+  state.loading = false;
+  state.isShowLoadingProgress = false;
+  state.canClickClose = true;
+};
+
+const beforeUploadFun = (file: any, accept: any, size: number, callback?: Function) => {
+  let arr = file?.name?.split(".");
+  if (!accept?.includes(arr[arr?.length - 1])) {
+    ElMessage.warning(`只能上传${accept?.[0]}格式!`);
+    return false;
+  } else if (file.size / 1024 / 1024 > size) {
+    ElMessage.warning(`单个文件大小不能超过${size}M!`);
+    return false;
+  }
+  callback && callback();
+  return true;
+};
+
+const downloadFun = (url: string, downloadFileName: string) => {
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = downloadFileName; // 设置下载的文件名
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+};
+
+export { clearTimer, showProgressFun, processCountFun, closeLoadingProgress, beforeUploadFun, downloadFun };

@@ -221,8 +221,8 @@
 import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
-import UploadMainFileDialog from "@/components/uploadFile/uploadMainFile.vue";
-import uploadAttachmentsDialog from "@/components/uploadFile/uploadAttachments.vue";
+import UploadMainFileDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
+import uploadAttachmentsDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
 import {
   getLabelTypeList,
   deleteLabelTypeCheck,
