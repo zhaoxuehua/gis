@@ -82,7 +82,6 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
     });
 
     /************************************************接口: 实时数据*********************************************/
-
     async function getShipListDataFn() {
       let shipFeatureArr: Feature[] = [];
       let res: { [key: string]: any } = await getRealDataList(equipTypeCode, {});
@@ -91,6 +90,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         realDataInfoCash[equipTypeCode] = []; // 清除该类型标签的存储数据重新存储（塞入基础引擎搜索定位等使用）
         // 经度lon 纬度lat 时间monitorTime 船4关注colorIndex  速度sog 都在监测属性中
         // 名称name 联系人person 在监测属性同级  编码code（取key值）
+
         Object.entries(data).forEach(([key, item]) => {
           const aisLocation = (item as any)?.[dataContent]; // 监测属性
           const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）eg、AISDATA-alarm
@@ -110,8 +110,10 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 
             const colorArr: any = realFeatureColor({
               monitorTime,
-              colorIndex: valInfo.colorIndex,
-              status
+              // colorIndex: valInfo.colorIndex,
+              status,
+              isWhiteList: (item as any)?.isWhiteList,
+              isAttention: (item as any)?.isAttention
             });
 
             const shipInfo = {
@@ -218,32 +220,57 @@ export function createdRealDataFeature(params: shipParamsType, dataType: string,
 
   03: status true 告警船只   => 红色
       I: 延迟大于8分钟并且是报警  => 灰色 + 红色
+  
+  优先级()
+    白名单 => 白色
+    关注 => 绿色
+    告警 => 红色
+    延迟大于8分钟  => 灰色
+    告警+大于8分钟 => 灰色 + 红色
+    不符合上述条件 => 黄色
+
 ************************************************************************/
 const eightMinutes = 8 * 60 * 1000;
 export function realFeatureColor(arg: shipColorParams) {
   let colorArr: string[] = [];
   const nowTime = +new Date();
-  const { monitorTime, colorIndex, status } = arg;
-  if (Number(colorIndex) === 4) {
-    // 关注船只
+  let { monitorTime, status, isAttention, isWhiteList } = arg;
+  // console.log(monitorTime, new Date(1706864625000), new Date());
+  // 白名单
+  if (isWhiteList) {
+    colorArr = ["#fff", "#fff"];
+    // console.log("白名单");
+  }
+
+  // 关注
+  if (isAttention) {
     colorArr = ["#00ff00", "#00ff00"];
-  } else {
-    if (monitorTime - nowTime > eightMinutes) {
-      // 延迟大于8分钟
-      colorArr = ["#c0c0c0", "#c0c0c0"];
-    } else {
-      // 延迟小于等于8分钟
-      colorArr = ["#ffff00", "#ffff00"];
-    }
+    // console.log("关注");
   }
+
+  // 告警
   if (status) {
-    // 告警船只
-    if (monitorTime - nowTime > eightMinutes) {
-      // 延迟大于8分钟
-      colorArr = ["#c0c0c0", "#ff0000"];
-    } else {
-      colorArr = ["#ff0000", "#ff0000"];
-    }
+    colorArr = ["#ff0000", "#ff0000"];
+    // console.log("告警");
   }
+
+  // 延迟大于8分钟
+  if (nowTime - monitorTime > eightMinutes) {
+    colorArr = ["#c0c0c0", "#c0c0c0"];
+    // console.log("延迟大于8分钟");
+  }
+
+  // 告警+大于8分钟
+  if (status && nowTime - monitorTime > eightMinutes) {
+    colorArr = ["#c0c0c0", "#ff0000"];
+    // console.log("告警+大于8分钟");
+  }
+
+  // 不符合上述条件
+  if (!isWhiteList && !isAttention && !status && !(nowTime - monitorTime > eightMinutes)) {
+    colorArr = ["#ffff00", "#ffff00"];
+    // console.log("不符合上述条件");
+  }
+
   return colorArr;
 }

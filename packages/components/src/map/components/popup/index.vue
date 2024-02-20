@@ -107,6 +107,10 @@ import AddRemarkDialog from "./addRemarkDialog.vue";
 import AlarmListDialog from "./alarmListDialog.vue";
 import { BUTTON_COLOR_MAP } from "../../../constant/index";
 
+import { initRealtimeData } from "../../hooks/initRealtimeData";
+import { useGisStore } from "../../../stores/modules/gis";
+const gisStore = useGisStore();
+
 // import { chartData, attrconfigData } from "./popupmock";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; data: { [key: string]: any } }>(), {
@@ -395,6 +399,7 @@ const onFocus = async () => {
   if (res.code === 200) {
     ElMessage.success("关注成功");
     focusType.value = 2;
+    initRealtimeData(props.map, gisStore?.realtimeDataList || []);
   }
 };
 // 取消关注
@@ -406,6 +411,7 @@ const cancelFocus = async () => {
   if (res.code === 200) {
     ElMessage.success("取消关注成功");
     focusType.value = 1;
+    initRealtimeData(props.map, gisStore?.realtimeDataList || []);
   }
 };
 

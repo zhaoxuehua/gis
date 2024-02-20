@@ -399,8 +399,6 @@ const searchForm = function () {
       }
       formData.pageNumber = 1;
       formData.pageSize = 6;
-      console.log(13212);
-
       table.value.getTableData();
     }
   });
@@ -504,7 +502,6 @@ onMounted(() => {});
 .w_220 {
   width: 220px;
 }
-
 .track-back {
   display: flex;
   flex-direction: column;
@@ -513,7 +510,6 @@ onMounted(() => {});
   max-height: 750px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-
   .title {
     display: flex;
     align-items: center;
@@ -522,22 +518,18 @@ onMounted(() => {});
     min-height: 60px;
     padding: 0 20px;
     background-color: #f7f7fa;
-
     span {
       font-size: 16px;
     }
-
     .icon {
       cursor: pointer;
     }
   }
-
   .track-back-content {
     height: calc(100% - 60px);
     padding: 20px;
     overflow-y: auto;
   }
-
   .operate-icon {
     color: var(--el-color-primary);
     cursor: pointer;
