@@ -142,4 +142,33 @@
   line-height: 18px;
 }
 .el-dialog .el-form .el-radio.el-radio--large {
-  height: 
+  height: 32px;
+}
+.el-overlay-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.el-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .el-dialog {
+    position: absolute;
+    margin: 0 auto !important;
+    .el-dialog__body {
+      padding: 20px;
+    }
+  }
+}
+.el-dialog__body {
+  max-height: calc(90vh - 111px) !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.el-input__wrapper {
+  width: 100%;
+}
+.el-scrollbar {
+  min-height: 60px !important;
+}
