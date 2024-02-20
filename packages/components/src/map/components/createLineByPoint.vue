@@ -63,8 +63,22 @@
           </el-table-column>
           <el-table-column label="操作" width="150">
             <template #default="scope">
-              <el-link class="my-el-link" type="primary" :underline="false" @click="onUp(scope.row)">上移</el-link>
-              <el-link class="my-el-link" type="primary" :underline="false" @click="onDown(scope.row)">下移</el-link>
+              <el-link
+                class="my-el-link"
+                type="primary"
+                :underline="false"
+                :disabled="scope.$index === 0"
+                @click="onUp(scope.$index)"
+                >上移</el-link
+              >
+              <el-link
+                class="my-el-link"
+                type="primary"
+                :underline="false"
+                :disabled="scope.$index === table.data?.length - 1"
+                @click="onDown(scope.$index)"
+                >下移</el-link
+              >
               <el-link class="my-el-link" type="primary" :underline="false" @click="onRemove(scope.row)">删除</el-link>
             </template>
           </el-table-column>
@@ -94,7 +108,7 @@ import { ElMessage, ElTree, ElMessageBox } from "element-plus";
 import type { TableList } from "../type";
 import SelectDeviceDialog from "./selectDeviceDialog.vue";
 import StyleDialog from "./styleDialog.vue";
-import { MAP_DATA_TYPE } from "../hooks/createGeometry";
+import { MAP_DATA_TYPE, DATA_TYPE_ARR } from "../hooks/createGeometry";
 import { transformLabelType } from "../hooks/index";
 
 const state = reactive({
@@ -333,7 +347,7 @@ const drawHandler = () => {
     result.labelData = JSON.stringify(labelData);
   } else {
     let type = gisLabelConfig.dataType;
-    if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+    if (DATA_TYPE_ARR.includes(type)) {
       type = MAP_DATA_TYPE[type]?.value;
     }
 
@@ -367,7 +381,6 @@ const deleteHandler = () => {
     },
     err => {
       console.warn(err);
-      // ElMessage.error("删除失败");
     }
   );
 };
@@ -383,26 +396,16 @@ const onDialogClose = () => {
 };
 
 // 上移
-const onUp = (item: any) => {
-  const currentIndex = table.value.data.findIndex(element => element.assetId === item.assetId);
-  if (currentIndex === 0) {
-    ElMessage.warning("不能再往上移了");
-    return;
-  }
-  const currentItem = table.value.data.splice(currentIndex, 1)[0];
-  table.value.data.splice(currentIndex - 1, 0, currentItem);
+const onUp = (index: number) => {
+  const currentItem = table.value.data.splice(index, 1)[0];
+  table.value.data.splice(index - 1, 0, currentItem);
   calcSequence();
 };
 
 // 下移
-const onDown = (item: any) => {
-  const currentIndex = table.value.data.findIndex(element => element.assetId === item.assetId);
-  if (currentIndex === table.value.data.length - 1) {
-    ElMessage.warning("不能再往下移了");
-    return;
-  }
-  const currentItem = table.value.data.splice(currentIndex, 1)[0];
-  table.value.data.splice(currentIndex + 1, 0, currentItem);
+const onDown = (index: number) => {
+  const currentItem = table.value.data.splice(index, 1)[0];
+  table.value.data.splice(index + 1, 0, currentItem);
   calcSequence();
 };
 

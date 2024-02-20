@@ -25,7 +25,11 @@
         </el-form-item>
         <el-form-item label="离线电子地图" prop="normalUrl">
           <el-input placeholder="请输入..." v-model="form.normalUrl" clearable style="width: 240px" />
-          <el-upload :before-upload="beforeUpload" :http-request="uploadMapImage" :show-file-list="false">
+          <el-upload
+            :before-upload="file => beforeUpload(file, 'normalUrl')"
+            :http-request="() => uploadMapImage('normalUrl')"
+            :show-file-list="false"
+          >
             <el-button type="primary">上传</el-button>
           </el-upload>
           <el-tooltip effect="dark" content="若地图过大，建议直接拷贝至服务器对应目录下" placement="top">
@@ -34,13 +38,21 @@
         </el-form-item>
         <el-form-item label="离线卫星地图" prop="sateUrl">
           <el-input placeholder="请输入..." v-model="form.sateUrl" clearable style="width: 240px" />
-          <el-upload :before-upload="beforeUpload" :http-request="uploadMapImage" :show-file-list="false">
+          <el-upload
+            :before-upload="file => beforeUpload(file, 'sateUrl')"
+            :http-request="() => uploadMapImage('sateUrl')"
+            :show-file-list="false"
+          >
             <el-button type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
         <el-form-item label="离线路网叠加层" prop="overlayUrl">
           <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable style="width: 240px" />
-          <el-upload :before-upload="beforeUpload" :http-request="uploadMapImage" :show-file-list="false">
+          <el-upload
+            :before-upload="file => beforeUpload(file, 'overlayUrl')"
+            :http-request="() => uploadMapImage('overlayUrl')"
+            :show-file-list="false"
+          >
             <el-button type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
@@ -193,32 +205,56 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
+          <el-dropdown v-if="progressList?.length" style="margin: 0 10px">
+            <el-button>
+              <Icon src="More" :size="18"></Icon>
+              {{ "查看进度" }}
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-for="(item, index) in progressList"
+                  :key="index"
+                  @click.stop="checkProgress(item.fileUploadType)"
+                >
+                  {{ item.label }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <el-button type="primary" @click="onConfirm" :loading="btnLoading">确认</el-button>
         </span>
       </template>
     </el-dialog>
     <KeywordConfigDialog ref="keywordConfigRef" @success-add="saveKeywordConfig"></KeywordConfigDialog>
     <NavTreeConfigDialog ref="navTreeConfigRef" @success-add="saveNavTreeConfig"></NavTreeConfigDialog>
+    <ProgressDialog ref="progressDialogRef" :data="uploadMap" @update-progress-status="updateProgressStatus"></ProgressDialog>
   </div>
 </template>
 
 <script lang="ts" setup name="MapParamsEdit">
 import { reactive, onMounted, ref, unref, computed } from "vue";
-import { ElForm, ElMessage } from "element-plus";
+import { ElForm, ElMessage, ElMessageBox } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
+import { calculateChunkSize, splitFile, getFileUniqueHash, progressStatus, progressLabel } from "@/utils/fileChunk";
 import {
   addMapParams,
   editMapParams,
   getLayerList,
   getLabelTypeList,
   getLegendConfigList,
-  getLegendListByLabelType
+  getLegendListByLabelType,
+  getFileMaxChunks,
+  uploadCheckChunkFile,
+  uploadChunkFile,
+  getChunkFileUrl
 } from "@/api/visconfig.js";
 import { customTreeList } from "@/api/device.js";
 import { GIS_CONTROLS } from "@/constant/gisConstant";
 import KeywordConfigDialog from "./keywordConfigDialog.vue";
 import NavTreeConfigDialog from "./navTreeConfigDialog.vue";
+import ProgressDialog from "./progressDialog.vue";
 
 interface MapParamsForm {
   id?: number;
@@ -320,8 +356,9 @@ const state = reactive({
   }
 });
 const refForm = ref<InstanceType<typeof ElForm>>();
-const keywordConfigRef = ref();
-const navTreeConfigRef = ref();
+const keywordConfigRef = ref<InstanceType<typeof KeywordConfigDialog>>();
+const navTreeConfigRef = ref<InstanceType<typeof NavTreeConfigDialog>>();
+const progressDialogRef = ref<InstanceType<typeof ProgressDialog>>();
 const btnLoading = ref(false);
 
 const defaultParam = {
@@ -378,26 +415,207 @@ const openDialog = (row?: { [key: string]: any }) => {
   state.open = true;
 };
 
-const beforeUpload = (file: any) => {
-  // 上传前文件校验
-  let typeOk = false;
+type FileUploadType = "normalUrl" | "sateUrl" | "overlayUrl";
+const minChunkSize = 50 * 1024 * 1024; // 50MB
+const maxChunks = ref<number>(30);
+const uploadMap: any = reactive({
+  normalUrl: {},
+  sateUrl: {},
+  overlayUrl: {}
+});
+const resetUploadParams = (type: FileUploadType) => {
+  uploadMap[type] = {};
+};
+
+const beforeUpload = async (file: any, type: FileUploadType) => {
   let arr = file?.name?.split(".");
-  if (arr[arr?.length - 1] == "zip") {
-    typeOk = true;
-  }
-  if (!typeOk) {
-    ElMessage.warning("导入文件必须是zip格式!");
+  if (!["zip", "tar", "7z"]?.includes(arr[arr?.length - 1])) {
+    ElMessage.warning("导入文件必须是【.zip、.tar、.7z】格式!");
     return false;
   }
-
-  return true;
+  if (file?.size / 1024 / 1024 / 1024 > 10) {
+    ElMessage.warning("文件大小不能超过【10GB】!");
+    return false;
+  }
+  resetUploadParams(type);
+  const uploadTypeObj = uploadMap[type];
+  uploadTypeObj.currentProgressStatus = progressStatus.ready;
+  uploadTypeObj.fileUploadType = type;
+  progressDialogRef.value?.openDialog(type);
+  uploadTypeObj.chunksSize = calculateChunkSize(file?.size, maxChunks.value, minChunkSize); // 计算分片大小
+  let hashHex: string = "";
+  try {
+    hashHex = (await getFileUniqueHash(file)) as string;
+  } catch (error) {
+    console.error("计算哈希值时发生错误:", error);
+    return false;
+  }
+  uploadTypeObj.allChunksFile = splitFile(file, uploadTypeObj.chunksSize); // 文件分片后的[]
+  uploadTypeObj.fileHash = hashHex;
+  uploadTypeObj.currentProgressStatus = progressStatus.uploading;
+  try {
+    const res: any = await uploadCheckChunkFile(hashHex, uploadTypeObj.allChunksFile?.length);
+    if (res.code === 200) {
+      uploadTypeObj.unUploadFileIdx = res?.data || [];
+      uploadTypeObj.completedUploadCount = uploadTypeObj.allChunksFile?.length - uploadTypeObj.unUploadFileIdx?.length;
+      return true;
+    }
+  } catch (error) {
+    uploadTypeObj.currentProgressStatus = progressStatus.uploadFail;
+    return false;
+  }
 };
 
-const uploadMapImage = async (content: any) => {
-  console.log(content);
+const uploadMapImage = async (type: FileUploadType) => {
+  const uploadTypeObj = uploadMap[type];
+  if (uploadTypeObj.unUploadFileIdx?.length) {
+    const requests = uploadTypeObj.allChunksFile?.map((file: any, index: number) => {
+      if (uploadTypeObj.unUploadFileIdx?.includes(index)) {
+        let formData = new FormData();
+        formData.append("file", file);
+        const uploadHeaders = {
+          headers: {
+            chunkNum: index,
+            size: uploadTypeObj.chunksSize,
+            chunks: uploadTypeObj.allChunksFile?.length,
+            fileHash: uploadTypeObj.fileHash
+          },
+          timeout: 0
+        };
+        return uploadChunkFile(formData, uploadHeaders).then(() => {
+          uploadTypeObj.completedUploadCount++; // 每个请求完成时，增加已完成请求数
+        });
+      }
+    });
+    Promise.all(requests)
+      .then(() => {
+        queryChunkFileUrl(uploadTypeObj.fileHash, type);
+      })
+      .catch(error => {
+        uploadTypeObj.currentProgressStatus = progressStatus.uploadFail;
+        console.error("有一个请求失败：", error);
+      });
+  } else {
+    queryChunkFileUrl(uploadTypeObj.fileHash, type);
+  }
 };
+
+// 获取上传成功后url
+const queryChunkFileUrl = async (fileHash: string, type: FileUploadType) => {
+  const uploadTypeObj = uploadMap[type];
+  uploadTypeObj.currentProgressStatus = progressStatus.uploadSuccess;
+  try {
+    await getChunkFileUrl(fileHash).then((res: any) => {
+      if (res?.code == 200) {
+        uploadTypeObj.fileUploadType && (form.value[uploadTypeObj.fileUploadType as FileUploadType] = res?.data?.url || "");
+        uploadTypeObj.currentProgressStatus = res?.data?.status || "";
+        uploadTypeObj.isNeedRefresh = true;
+      }
+    });
+  } catch {
+    uploadTypeObj.currentProgressStatus = progressStatus.decompressionFail;
+  }
+};
+
+const updateProgressStatus = (type: FileUploadType, ProgressStatus: string) => {
+  uploadMap[type].currentProgressStatus = ProgressStatus;
+};
+
+const progressList = computed(() => {
+  return (Object.entries(uploadMap) as any[])
+    .filter(([, obj]) => obj?.fileUploadType)
+    .map(([key, obj]) => ({
+      ...obj,
+      label: progressLabel[key as FileUploadType]
+    }));
+});
+
+// 上传进度查看
+const checkProgress = (type: FileUploadType) => {
+  progressDialogRef.value?.openDialog(type);
+};
+
 const onClose = () => {
+  (["normalUrl", "sateUrl", "overlayUrl"] as FileUploadType[])?.forEach((type: FileUploadType) => resetUploadParams(type));
   state.open = false;
+};
+
+const confirmFun = async () => {
+  let param = unref(form);
+  // 校验自定义树时是否配置自定义内容
+  if (param.customTreeType == "ExternalCustomTree") {
+    delete param.customTreeCode;
+    if (!param?.externalCustomTree || !param?.externalCustomTree?.code) {
+      ElMessage.warning("请设置自定义树配置");
+      return;
+    }
+  } else {
+    delete param.externalCustomTree;
+  }
+  // 标签类型参数处理
+  if (Array.isArray(param.displayLabelInfoIds)) {
+    param.displayLabelInfoIds = param.displayLabelInfoIds.join(",");
+  }
+  // 图层参数处理
+  if (Array.isArray(param.displayLayerIds)) {
+    param.displayLayerIds = param.displayLayerIds.join(",");
+  }
+  // 图层参数处理
+  if (Array.isArray(param.displaySearchIds)) {
+    param.displaySearchIds = param.displaySearchIds.join(",");
+  }
+  // 控件参数处理
+  if (Array.isArray(param.displayControlIds)) {
+    param.displayControlIds = param.displayControlIds.join(",");
+  }
+  // 图例参数处理
+  if (Array.isArray(param.displayLegendIds)) {
+    param.displayLegendIds = param.displayLegendIds.join(",");
+  }
+
+  btnLoading.value = true;
+  try {
+    if (state.dialogType == 0) {
+      // 添加
+      const res: { [key: string]: any } = await addMapParams(param);
+      if (res.code == 200) {
+        ElMessage.success("创建成功");
+        emit("successAdd");
+        onClose();
+      }
+    } else if (state.dialogType == 1) {
+      // 编辑
+      const res: { [key: string]: any } = await editMapParams(param);
+      if (res.code == 200) {
+        ElMessage.success("编辑成功");
+        emit("successAdd");
+        onClose();
+      }
+    }
+  } finally {
+    btnLoading.value = false;
+  }
+};
+const onConfirm = () => {
+  refForm.value?.validate((valid: any) => {
+    if (valid) {
+      // 检查是否有文件尚未上传成功(准备中 上传中)
+      const hasUnsuccessfulUpload = Object.values(uploadMap)?.some((upload: any) => {
+        return upload?.fileUploadType && ["准备中", "上传中"].includes(upload?.currentProgressStatus);
+      });
+      if (hasUnsuccessfulUpload) {
+        ElMessageBox.confirm("有文件正在上传中，确定执行该操作？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          confirmFun();
+        });
+      } else {
+        confirmFun();
+      }
+    }
+  });
 };
 
 // 显示标签类型change及显示标签类型的全选、反选、清空调用
@@ -466,64 +684,6 @@ const attributeSelectReverse = (type: string) => {
       .filter((item: any) => !(form.value.displayLegendIds as any[])?.includes(item?.id))
       .map((filteredItem: any) => filteredItem?.id);
   }
-};
-
-const onConfirm = () => {
-  refForm.value?.validate(async (valid: any) => {
-    if (valid) {
-      let param = unref(form);
-      // 校验自定义树时是否配置自定义内容
-      if (param.customTreeType == "ExternalCustomTree") {
-        if (!param?.externalCustomTree || !param?.externalCustomTree?.code) {
-          ElMessage.warning("请设置自定义树配置");
-          return;
-        }
-      }
-      // 标签类型参数处理
-      if (Array.isArray(param.displayLabelInfoIds)) {
-        param.displayLabelInfoIds = param.displayLabelInfoIds.join(",");
-      }
-      // 图层参数处理
-      if (Array.isArray(param.displayLayerIds)) {
-        param.displayLayerIds = param.displayLayerIds.join(",");
-      }
-      // 图层参数处理
-      if (Array.isArray(param.displaySearchIds)) {
-        param.displaySearchIds = param.displaySearchIds.join(",");
-      }
-      // 控件参数处理
-      if (Array.isArray(param.displayControlIds)) {
-        param.displayControlIds = param.displayControlIds.join(",");
-      }
-      // 图例参数处理
-      if (Array.isArray(param.displayLegendIds)) {
-        param.displayLegendIds = param.displayLegendIds.join(",");
-      }
-
-      btnLoading.value = true;
-      try {
-        if (state.dialogType == 0) {
-          // 添加
-          const res: { [key: string]: any } = await addMapParams(param);
-          if (res.code == 200) {
-            ElMessage.success("创建成功");
-            emit("successAdd");
-            state.open = false;
-          }
-        } else if (state.dialogType == 1) {
-          // 编辑
-          const res: { [key: string]: any } = await editMapParams(param);
-          if (res.code == 200) {
-            ElMessage.success("编辑成功");
-            emit("successAdd");
-            state.open = false;
-          }
-        }
-      } finally {
-        btnLoading.value = false;
-      }
-    }
-  });
 };
 
 // 控件列表
@@ -705,9 +865,17 @@ const legendListByLabelType = ref<{
   }
 });
 
+// 获取总包数限制
+const maxChunksFetchData = async () => {
+  const res: { [key: string]: any } = await getFileMaxChunks();
+  if (res?.code == 200) {
+    maxChunks.value = res?.data;
+  }
+};
+
 // 关键词显示配置
 const keywordConfigClick = () => {
-  keywordConfigRef.value.openDialog(form.value.keywordConfig);
+  keywordConfigRef.value?.openDialog(form.value.keywordConfig);
 };
 
 // 存储键值对
@@ -717,7 +885,7 @@ const saveKeywordConfig = (keywordConfig: { [key: string]: any }) => {
 
 // 自定义导航树配置弹框
 const customTreeConfigClick = () => {
-  navTreeConfigRef.value.openDialog(form.value.externalCustomTree, state.dialogType);
+  navTreeConfigRef.value?.openDialog(form.value.externalCustomTree, state.dialogType);
 };
 
 // 自定义导航树配置内容存储
@@ -730,6 +898,7 @@ onMounted(() => {
   layerList.value.fetchData();
   legendIdsList.value.fetchData();
   customTreeCodeList.value.fetchData();
+  maxChunksFetchData();
 });
 
 defineExpose({

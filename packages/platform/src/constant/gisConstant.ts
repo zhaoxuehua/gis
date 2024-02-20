@@ -106,3 +106,23 @@ export const ANIMATION_SET = {
   animations: "有",
   no: "无"
 };
+
+interface CustomTreeConfig {
+  code: string;
+  name: string;
+  gateway: string;
+  method: string;
+  route: string;
+  enable: string;
+  [key: string]: string; // 字符串索引签名
+}
+
+// 自定义树配置
+export const CUSTOM_TREE_CONFIG: CustomTreeConfig = {
+  code: "树编码",
+  name: "树名称",
+  gateway: "网关",
+  method: "请求方法",
+  route: "路径",
+  enable: "启用状态"
+};

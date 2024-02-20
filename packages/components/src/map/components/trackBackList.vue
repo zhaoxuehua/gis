@@ -17,7 +17,7 @@
             stripe
             border
           >
-            <el-table-column :label="keywordConfig?.code || '编码'">
+            <el-table-column :label="keywordConfig?.code || '编码'" width="100">
               <template #default="scope">
                 <span :style="{ color: scope.row.color }">{{ scope.row.code }}</span>
               </template>
@@ -218,7 +218,7 @@ watch(
   background: #ffffff;
   box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
   .popup-box {
-    width: 340px;
+    width: 400px;
     .map-popup-header {
       display: flex;
       align-items: center;

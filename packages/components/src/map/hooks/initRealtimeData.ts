@@ -2,7 +2,7 @@ import { ElMessage } from "element-plus";
 import { Style, Icon } from "ol/style";
 import Feature from "ol/Feature.js";
 import Point from "ol/geom/Point.js";
-import * as olProj from "ol/proj";
+import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
 import { getRealLabelTypeInfo, getRealDataList } from "../../api/gis";
 import type { VisualMap } from "../type";
@@ -132,7 +132,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
             const shipFeature = createdRealDataFeature(shipInfo, dataType, labelTypeCode);
             shipFeatureArr.push(shipFeature);
 
-            // 基础引擎搜索、左键使用
+            // 基础引擎搜索（定位）、左键使用
             realDataInfoCash?.[equipTypeCode].push({
               lat: valInfo.lat,
               lon: valInfo.lon,
@@ -152,7 +152,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
         realDataSource?.addFeatures(shipFeatureArr);
         gisStore?.updateRealtimeDataCountList(equipTypeCode, shipFeatureArr?.length || 0); // 更新存储实时数据的数量count
 
-        map.set("trackInfoMap", Object.values(realDataInfoCash)?.flat()); // 基础引擎定位、搜索、弹框等处使用
+        map.set("trackInfoMap", Object.values(realDataInfoCash)?.flat()); // 基础引擎定位、搜索、左键弹框等处使用
       } else {
         ElMessage.error("获取数据报错");
       }
@@ -188,8 +188,7 @@ export function createLayerStyle(styleObject: string, extendsData: any = {}) {
 // 创建要素
 export function createdRealDataFeature(params: shipParamsType, dataType: string, labelTypeCode: string) {
   const shipFeature = new Feature({
-    name: params.name, // 鼠标经过及左击使用
-    geometry: new Point(olProj.fromLonLat([params.lon, params.lat])),
+    geometry: new Point(fromLonLat([params.lon, params.lat])),
     // 图层样式根据要素属性渲染 、鼠标经过时使用
     extendsData: {
       code: params.code,
@@ -200,13 +199,14 @@ export function createdRealDataFeature(params: shipParamsType, dataType: string,
       color: params.color,
       showHeadline: params.showHeadline,
       angle: params.angle
-    }
+    },
+    name: params.name, // 鼠标经过及左击使用
+    code: params.code,
+    type: dataType,
+    labelTypeCode: labelTypeCode
   });
   // 基础引擎，左键点击使用
   shipFeature.setId(params.code);
-  shipFeature.set("code", params.code);
-  shipFeature.set("type", dataType);
-  shipFeature.set("labelTypeCode", labelTypeCode);
   return shipFeature;
 }
 

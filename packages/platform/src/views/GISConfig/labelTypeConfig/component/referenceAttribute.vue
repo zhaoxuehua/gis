@@ -18,7 +18,7 @@
           v-loading="attributeList.loading"
           highlight-current-row
           empty-text="暂无数据"
-          :row-style="{ height: 40 + 'px' }"
+          :row-style="{ height: 32 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="attributeList.onSelectionChange"
           ref="attributeTableRef"

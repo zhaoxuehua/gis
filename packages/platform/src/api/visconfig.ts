@@ -51,6 +51,23 @@ export function editMapParams(params: object) {
 export function getLegendListByLabelType(params: any) {
   return request.get(`/api/gis-service/equip/mapParams/config/legend4SelectedLabelType/${params.join(",")}`);
 }
+// 获取总包数限制
+export function getFileMaxChunks() {
+  return request.get(`/api/gis-service/equip/mapParams/config/maxChunks`);
+}
+
+// 文件上传秒传判断
+export function uploadCheckChunkFile(fileHash: any, chunks: number) {
+  return request.get(`/api/gis-service/equip/mapParams/config/checkFile?fileHash=${fileHash}&chunks=${chunks}`);
+}
+// 文件上传
+export function uploadChunkFile(params: any, config: object) {
+  return request.post(`/api/gis-service/equip/mapParams/config/upload`, params, config);
+}
+// 获取文件上传地址
+export function getChunkFileUrl(fileHash: string) {
+  return request.get(`/api/gis-service/equip/mapParams/config/getFileUrlAndStatus?fileHash=${fileHash}`);
+}
 
 // 标签类型
 // 获取标签类型列表

@@ -1,5 +1,29 @@
 # @adm-gis-ui/agmap
 
+## 2.0.4
+
+### Patch Changes
+
+- 轨迹可点击
+
+## 2.0.3
+
+### Patch Changes
+
+- 轨迹优化
+
+## 2.0.2
+
+### Patch Changes
+
+- 删除无用样式及合并样式文件
+
+## 2.0.1
+
+### Patch Changes
+
+- 增加轨迹回放按 code 查询的通用功能
+
 ## 2.0.0
 
 ### Major Changes

@@ -1,5 +1,37 @@
 # adm-gis-platform
 
+## 2.0.4
+
+### Patch Changes
+
+- 轨迹可点击
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.4
+
+## 2.0.3
+
+### Patch Changes
+
+- 轨迹优化
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.3
+
+## 2.0.2
+
+### Patch Changes
+
+- 删除无用样式及合并样式文件
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.2
+
+## 2.0.1
+
+### Patch Changes
+
+- 增加轨迹回放按 code 查询的通用功能
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

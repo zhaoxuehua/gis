@@ -32,13 +32,10 @@
     border-width: 11px;
     border-top-color: #cccccc;
   }
-  .popup-box {
-    width: 450px;
-  }
   .popup-custom-box {
     display: flex;
     flex-direction: column;
-    width: 560px;
+    width: 564px;
     max-height: 300px;
   }
   .map-popup-header {
@@ -83,7 +80,7 @@
       font-size: 14px;
       .list-item {
         display: flex;
-        width: 32%;
+        width: 33%;
         padding-bottom: 12px;
         line-height: 23px;
         .label {
@@ -94,7 +91,9 @@
         .value {
           // width: 40%;
           // margin-left: 10px;
+          overflow: hidden;
           color: var(--el-text-color-primary);
+          text-overflow: ellipsis;
           white-space: nowrap;
         }
       }
