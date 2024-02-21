@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.5
+
+### Patch Changes
+
+- 关注实时生效+轨迹优化+船人颜色逻辑修改
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.5
+
 ## 2.0.4
 
 ### Patch Changes
