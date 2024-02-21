@@ -18,22 +18,28 @@
         </div>
       </div>
       <div class="btn-area">
-        <el-button type="primary" class="ml10" @click="onStop">取消</el-button>
-        <el-button type="primary" :disabled="state.disabledConfirmBtn" @click="confirmImportFun">确认导入</el-button>
-        <el-button type="primary" :disabled="state.disabledErrorInfoBtn" @click="openErrorMsg">错误信息</el-button>
+        <el-button type="primary" class="ml10" @click="onStop" :disabled="!state.isProcessing">取消</el-button>
+        <el-button type="primary" :disabled="state.disabledConfirmBtn || state.isProcessing" @click="confirmImportFun"
+          >确认导入</el-button
+        >
+        <el-button type="primary" :disabled="state.disabledErrorInfoBtn || state.isProcessing" @click="openErrorMsg"
+          >错误信息</el-button
+        >
         <el-upload :before-upload="beforeUpload" :http-request="uploadFile" :show-file-list="false" ref="uploadRef" class="ml10">
-          <el-button type="primary">选择本地文件</el-button>
+          <el-button type="primary" :disabled="state.isProcessing">选择本地文件</el-button>
         </el-upload>
+
+        <!-- 选择导入字段 -->
       </div>
     </div>
     <div class="attachments-area" v-loading="state.loading && { text: state.loadingText }">
       <div v-for="(file, index) in state.selectedFiles" :key="index" class="attachments">
         {{ file.name }}
-        <el-button type="primary" link @click="onDeleteFile(index, file)">撤销</el-button>
+        <el-button type="primary" link @click="onDeleteFile(index, file)" :disabled="state.isProcessing">撤销</el-button>
       </div>
     </div>
   </el-dialog>
-  <ErrorMsgDialog ref="errorMsgDialogRef" :data="state.errorDataMsg"></ErrorMsgDialog>
+  <ErrorMsgDialog ref="errorMsgDialogRef" :data="state.errorDataMsg" type="attachments"></ErrorMsgDialog>
 </template>
 
 <script lang="ts" setup name="DownloadImport">
@@ -47,7 +53,7 @@ const config: any = {
   dialogTitle: "导入附件",
   accept: ["zip"],
   size: 100,
-  tip: "1. 仅支持单个压缩包上传，格式为.zip，最大不超过100M\n2. 请确认压缩包中的文件格式为.png、.jpg\n3. 文件命名方式为【唯一值_字段名称_序号】，（如XJ00_设备标签_1,则代表XJ001的字段'设备标签'中上传的第一个附件）\n4. 当前唯一值为设备编码\n5. 序号按所填字段需要的附件数量填写，如需要3个附件，则序号为1、2、3"
+  tip: "1. 仅支持单个压缩包上传，格式为.zip，最大不超过100M\n2. 请确认压缩包中的文件格式为.png、.jpg\n3. 文件命名方式为【唯一值_字段名称_序号】，（如XJ00_设备标签_1,则代表XJ001的字段'设备标签'中上传的第一个附件）\n4. 当前唯一值为设备编码"
 };
 
 withDefaults(defineProps<{ fileTitle: string }>(), {
@@ -67,7 +73,7 @@ const state: any = reactive({
   loadingText: " ",
   selectedFiles: [],
   loading: false,
-  canClickClose: true // 上传、导入过程中不可点击
+  isProcessing: false // 是否上传、导入过程中
 });
 
 const resetFun = () => {
@@ -81,12 +87,12 @@ const openDialog = () => {
   state.open = true;
   state.loading = false;
   state.selectedFiles = [];
-  state.canClickClose = true;
+  state.isProcessing = false;
   resetFun();
 };
 
 const onClose = () => {
-  if (!state.canClickClose) {
+  if (state.isProcessing) {
     return ElMessage.warning(`有文件正在处理中，请先取消后再关闭！`);
   }
   state.open = false;
@@ -104,19 +110,18 @@ const beforeUpload = (file: any) => {
 const uploadFile = async (content: any) => {
   let formData = new FormData();
   formData.append("uploadFile", content.file);
-  // 需要确认导入禁用
+  // 需要将确认导入禁用
   resetFun();
   showProgressFun(state);
   try {
     const res: { [key: string]: any } = await upLoadFile(formData);
     if (res.code == 200) {
       state.progressCount = 100;
-      // 错误信息处理（看有无错误信息，确认导入是否可点击）
       state.errorDataMsg = [
         {
           equipType: 1022,
           id: 172711,
-          rn: 4,
+          fileName: "文件1",
           equipTypeName: "浮球",
           errorMsg:
             "字段【所属公司】为关联表型，值【我】不合法；设备类别【我】不一致；字段【所属分区】为关联表型，值【我】不合法；字段【所属部门】为关联表型，值【我】不合法；字段【所属通道】为关联表型，值【我】不合法；设备类型【我】不一致；"
@@ -124,17 +129,18 @@ const uploadFile = async (content: any) => {
         {
           equipType: 1022,
           id: 172712,
-          rn: 5,
+          fileName: "文件2",
           equipTypeName: "浮球",
           errorMsg:
             "字段【所属公司】为关联表型，值【44】不合法；设备类别【22】不一致；字段【所属分区】为关联表型，值【44】不合法；字段【所属部门】为关联表型，值【44】不合法；字段【所属通道】为关联表型，值【44】不合法；设备类型【44】不一致；"
         }
       ];
-      if (!state.errorDataMsg?.length) {
+      if (state.errorDataMsg?.length) {
+        state.disabledErrorInfoBtn = false;
+        errorMsgDialogRef.value?.openDialog();
+      } else {
         state.disabledConfirmBtn = false;
       }
-
-      state.disabledErrorInfoBtn = false;
     }
   } finally {
     closeLoadingProgress(state);
@@ -146,38 +152,49 @@ const openErrorMsg = () => {
   errorMsgDialogRef.value?.openDialog();
 };
 
-// 导入（问题：校验通过后还可以修改，那最终导入的会不会有问题,是后端根据上次导入的入库吗）
+// 导入
 const confirmImportFun = async () => {
-  showProgressFun(state);
-  try {
-    await confirmImport({}).then((res: any) => {
-      if (res.code == 200) {
-        state.progressCount = 100;
-        ElMessage.success(`${res?.msg}`);
-      }
-    });
-  } finally {
-    closeLoadingProgress(state);
-  }
+  ElMessageBox.confirm(
+    "<span style='color:red'>导入对应字段附件时，如果该字段已存在文件，会清除原有文件后进行导入操作，是否继续？</span>",
+    "提示",
+    {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+      dangerouslyUseHTMLString: true
+    }
+  ).then(async () => {
+    showProgressFun(state);
+    try {
+      await confirmImport({}).then((res: any) => {
+        if (res.code == 200) {
+          state.progressCount = 100;
+          ElMessage.success(`${res?.msg}`);
+        }
+      });
+    } finally {
+      closeLoadingProgress(state);
+    }
+  });
 };
 
-// 取消(会停止上传、校验、导入并将导入数据丢掉)  是后端把正在处理的接口处理返回还是前端根据此接口将进度及关闭可点击自己维护（即调用closeLoadingProgress）
+// 取消
 const onStop = () => {
-  ElMessageBox.confirm("取消会把导入的数据都丢弃！确定取消？", "提示", {
+  ElMessageBox.confirm("<span style='color:red'>取消会把导入的数据都丢弃！确定取消？</span>", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
-    type: "warning"
-  })
-    .then(async () => {
-      try {
-        await cancelImport({}).then((res: any) => {
-          if (res.code == 200) {
-            ElMessage.success(`${res?.msg}`);
-          }
-        });
-      } catch {}
-    })
-    .catch(() => {});
+    type: "warning",
+    dangerouslyUseHTMLString: true
+  }).then(async () => {
+    try {
+      await cancelImport({}).then((res: any) => {
+        if (res.code == 200) {
+          ElMessage.success(`${res?.msg}`);
+          closeLoadingProgress(state);
+        }
+      });
+    } catch {}
+  });
 };
 
 const onDeleteFile = (index: number, file: any) => {

@@ -15,7 +15,7 @@ const clearTimer = () => {
 };
 
 const showProgressFun = (state: any) => {
-  state.canClickClose = false;
+  state.isProcessing = true;
   state.loading = true;
   clearTimer();
   timer1.value = setTimeout(() => {
@@ -48,7 +48,7 @@ const closeLoadingProgress = (state: any) => {
   state.progressCount = 0;
   state.loading = false;
   state.isShowLoadingProgress = false;
-  state.canClickClose = true;
+  state.isProcessing = false;
 };
 
 const beforeUploadFun = (file: any, accept: any, size: number, callback?: Function) => {
