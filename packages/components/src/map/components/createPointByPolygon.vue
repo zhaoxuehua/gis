@@ -86,7 +86,7 @@ import { Polygon } from "ol/geom";
 import { point as turfPoint, polygon as turfPolygon, randomPosition, booleanPointInPolygon } from "@turf/turf";
 import type { TableList } from "../type";
 import { transformLabelType } from "../hooks/index";
-import { MAP_DATA_TYPE } from "../hooks/createGeometry";
+import { MAP_DATA_TYPE, DATA_TYPE_ARR } from "../hooks/createGeometry";
 import paginationCom from "./paginationCom.vue";
 
 const state = reactive({
@@ -297,7 +297,7 @@ const drawHandler = () => {
       }
       const labelData = createLabelData(gisLabelConfig, points[index]); // 标签类型及点坐标
       let type = gisLabelConfig.dataType;
-      if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+      if (DATA_TYPE_ARR.includes(type)) {
         type = MAP_DATA_TYPE[type]?.value;
       }
       const labelCode = "GIS" + type + +new Date() + "_" + index;

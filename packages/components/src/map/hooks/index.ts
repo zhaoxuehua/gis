@@ -665,7 +665,8 @@ export function getSelectedFeature(map: VisualMap, pixel: any) {
       }
       if (targetFeature) {
         const type = targetFeature.get("type");
-        if (type == "1" || type == "6") {
+        // 点 文本  轨迹圆圈
+        if (type == "1" || type == "6" || type == "trackPoint") {
           typeMap["point"].push(targetFeature);
         } else if (type == "2" || type == "7") {
           typeMap["line"].push(targetFeature);

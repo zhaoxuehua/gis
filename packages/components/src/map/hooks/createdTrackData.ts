@@ -1,6 +1,6 @@
 // ⤵ ol库
 import Feature from "ol/Feature";
-import * as olProj from "ol/proj";
+import { fromLonLat } from "ol/proj";
 import { LineString, Point } from "ol/geom";
 import { Vector as VectorLayer } from "ol/layer";
 import BaseLayer from "ol/layer/Base.js";
@@ -75,31 +75,19 @@ const createdTrackData = async function (param: trackLayerParamType) {
   const { data, id } = param;
   const { code, name, layerLevel, layerMaxLevel, layerMinLevel, trackAggDistance } = labelTypeInfoCash?.data?.layerConfigVO; // 图层信息
   const strategyTime = 10 * 60 * 1000; //分钟(策略时间，用于是否绘制虚线)
-  const trackLineFeatureArr: Feature[] = [];
-  const trackLineCircleFeatureArr: Feature[] = [];
-  const trackLineLabelFeatureArr: Feature[] = [];
+  const trackLineFeatureArr: Feature[] = []; // 线+尾船
+  const trackLineCircleFeatureArr: Feature[] = []; // 圆
+  const trackLineLabelFeatureArr: Feature[] = []; // Label(利用speed绘制上下箭头)
   if (!data.length) {
     return ElMessage.warning("暂无轨迹数");
   }
   for (let i = 0; i < data.length; i++) {
-    if (!data[i + 1]) {
-      break; // 下一个数据
-    }
     const currData = data[i];
-    const nextData = data[i + 1];
     const {
       labelInfo: { time: currDataTime, speed: currDataSpeed },
       posInfo: { lon: currDataLon, lat: currDataLat },
       detailInfo: currDataDetailInfo
     } = currData;
-    const {
-      labelInfo: { time: nextDataTime, speed: nextDataSpeed },
-      posInfo: { lon: nextDataLon, lat: nextDataLat }
-    } = nextData;
-
-    const dotted = +new Date(nextDataTime) - +new Date(currDataTime) >= strategyTime; // 是否大于策略时间
-    const currDataLonLat = olProj?.fromLonLat([Number(currDataLon), Number(currDataLat)]);
-    const nextDataLonLat = olProj?.fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
     const extendsData = {
       labelInfo: currData.labelInfo,
       detailInfo: currDataDetailInfo,
@@ -107,8 +95,32 @@ const createdTrackData = async function (param: trackLayerParamType) {
       lineWidth: labelTypeInfoCash.data.lineWidth,
       unit: labelTypeInfoCash.data.speedUnit || "",
       color,
-      dotted // true:虚线  false:实线
+      dotted: true // true:虚线  false:实线(只有绘制线时用)
     };
+    const currDataLonLat = fromLonLat([Number(currDataLon), Number(currDataLat)]);
+    if (!data[i + 1]) {
+      // 最后一个只绘制 圆+label且最后一个不显示加速减速
+      currData._speed = "normal"; // 默认label无速度箭头
+      createCircleLabelFeature(
+        currDataLonLat,
+        extendsData,
+        currData._speed,
+        trackLineCircleFeatureArr,
+        trackLineLabelFeatureArr,
+        param
+      );
+      break;
+    }
+
+    const nextData = data[i + 1]; // 下一个数据
+    const {
+      labelInfo: { time: nextDataTime, speed: nextDataSpeed },
+      posInfo: { lon: nextDataLon, lat: nextDataLat }
+    } = nextData;
+
+    const dotted = +new Date(nextDataTime) - +new Date(currDataTime) >= strategyTime; // 是否大于策略时间
+    const nextDataLonLat = fromLonLat([Number(nextDataLon), Number(nextDataLat)]);
+    extendsData.dotted = dotted; // 绘制线段是虚线还是实线
 
     // 加速 || 减速
     if (currDataSpeed > nextDataSpeed) {
@@ -118,13 +130,19 @@ const createdTrackData = async function (param: trackLayerParamType) {
     } else {
       nextData._speed = "faster";
     }
-
     // ☆ 第一个点
     i === 0 && (currData._speed = "normal");
-
     // ☆ 虚线第二个点
     dotted && (nextData._speed = "normal");
-
+    // 绘制 圆+Label
+    createCircleLabelFeature(
+      currDataLonLat,
+      extendsData,
+      currData._speed,
+      trackLineCircleFeatureArr,
+      trackLineLabelFeatureArr,
+      param
+    );
     // 绘制线
     const lineFeature = new Feature({
       geometry: new LineString([currDataLonLat, nextDataLonLat]),
@@ -132,32 +150,15 @@ const createdTrackData = async function (param: trackLayerParamType) {
       type: "trackLine"
     });
     trackLineFeatureArr.push(lineFeature);
-
-    // 绘制圆圈
-    const circleFeature = new Feature({
-      geometry: new Point(currDataLonLat),
-      extendsData,
-      type: "trackPoint"
-    });
-    trackLineCircleFeatureArr.push(circleFeature);
-
-    // 绘制Label
-    const labelFeature = new Feature({
-      geometry: new Point(currDataLonLat),
-      extendsData,
-      speed: currData._speed,
-      type: "trackLabel"
-    });
-    trackLineLabelFeatureArr.push(labelFeature);
   }
 
-  // 创建船(绘制在轨迹线图层)
+  // 最后一个位置处创建船(绘制在轨迹线图层)
   const shipData = data[data.length - 1];
   const {
     name: shipName,
     posInfo: { lon: shipLon, lat: shipLat }
   } = shipData;
-  const shipLonLat = olProj?.fromLonLat([Number(shipLon), Number(shipLat)]);
+  const shipLonLat = fromLonLat([Number(shipLon), Number(shipLat)]);
   const shipFeature = new Feature({
     name: shipName,
     geometry: new Point(shipLonLat),
@@ -208,8 +209,8 @@ const createdTrackData = async function (param: trackLayerParamType) {
   const mapTackListMap = mapCase.get("tackListMap");
   const layerManageData = {
     trackLine: {
-      name: name + "_轨迹线",
-      code: code + "TrackLine",
+      name: name + "_轨迹线", // 图层name
+      code: code + "TrackLine", // 图层code
       isCluster: false,
       distance: trackAggDistance,
       vector: new VectorSource(),
@@ -472,12 +473,40 @@ const delTrackData: delTrackDataType = function (id) {
   delete mapTackListMap[id];
 };
 
-/********************************************************************************************
-  轨迹回放隐藏的图层
-  读取localStorage 中需要隐藏的船只
-*****************************************************************************************/
+// 轨迹回放隐藏的图层读取localStorage 中需要隐藏的船只
+
 const showHideLayer = function (flag: boolean) {
   hideLayer && hideLayer?.setVisible(flag);
+};
+
+// 绘制 圆+Lable
+const createCircleLabelFeature = (
+  currDataLonLat: any,
+  extendsData: any,
+  speed: string,
+  trackLineCircleFeatureArr: any[],
+  trackLineLabelFeatureArr: any[],
+  param?: any
+) => {
+  // 绘制圆圈
+  const circleFeature = new Feature({
+    geometry: new Point(currDataLonLat),
+    extendsData,
+    type: "trackPoint",
+    code: param?.id,
+    name: param?.name,
+    objectTypeCode: param?.objectTypeCode,
+    trackPointTime: extendsData?.labelInfo?.time || ""
+  });
+  trackLineCircleFeatureArr.push(circleFeature);
+  // 绘制Label
+  const labelFeature = new Feature({
+    geometry: new Point(currDataLonLat),
+    extendsData,
+    speed: speed,
+    type: "trackLabel"
+  });
+  trackLineLabelFeatureArr.push(labelFeature);
 };
 
 export { createdTrackData, showHideTrackData, delTrackData, showHideLayer };

@@ -171,7 +171,7 @@
       </template>
       <!-- 线型、线色（文本、点无） -->
       <template #lineColor="scope">
-        <el-tag :color="scope.row.lineColor"></el-tag>
+        <el-tag :color="scope.row.lineColor" class="w_30"></el-tag>
       </template>
       <template #lineType="scope">
         {{ scope?.row?.lineType ? LINE_TYPE[scope?.row?.lineType as keyof typeof LINE_TYPE] : "" }}
@@ -182,7 +182,7 @@
       </template>
       <!-- 面 圆 矩形特有 -->
       <template #polygonColor="scope">
-        <el-tag :color="scope.row.polygonColor"></el-tag>
+        <el-tag :color="scope.row.polygonColor" class="w_30"></el-tag>
       </template>
       <!-- 文本特有 -->
       <template #content="scope">
@@ -195,7 +195,7 @@
         {{ scope?.row?.isBold }}
       </template>
       <template #fontColor="scope">
-        <el-tag :color="scope.row.fontColor"></el-tag>
+        <el-tag :color="scope.row.fontColor" class="w_30"></el-tag>
       </template>
       <template #fontSize="scope">
         {{ scope?.row?.fontSize ? scope?.row?.fontSize : "" }}
@@ -204,10 +204,10 @@
         {{ scope?.row?.borderWidth ? scope?.row?.borderWidth : "" }}
       </template>
       <template #borderColor="scope">
-        <el-tag :color="scope.row.borderColor"></el-tag>
+        <el-tag :color="scope.row.borderColor" class="w_30"></el-tag>
       </template>
       <template #backGroundColor="scope">
-        <el-tag :color="scope.row.backGroundColor"></el-tag>
+        <el-tag :color="scope.row.backGroundColor" class="w_30"></el-tag>
       </template>
     </DetailDialog>
   </div>
@@ -479,4 +479,8 @@ const displayLabelLegendImage = (row: { [key: string]: any }) => {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.w_30 {
+  width: 30px;
+}
+</style>

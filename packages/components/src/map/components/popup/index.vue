@@ -1,6 +1,6 @@
 <template>
   <div class="map-popup" ref="popupRef">
-    <div :class="['popup-box', 'popup-custom-box']" v-if="props?.data?.featureCode">
+    <div :class="['popup-custom-box']" v-if="props?.data?.featureCode">
       <div class="map-popup-header">
         <span v-if="state.isRelationBody">{{ state.dialogTitle || configInfo?.label || "标签信息" }} </span>
         <span v-else>{{ "标签信息" }} </span>
@@ -23,7 +23,15 @@
           <ul class="static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
-              <span class="value">{{ item.value }}{{ item?.unitName || "" }}</span>
+              <el-tooltip
+                v-if="`${item.value}${item?.unitName || ''}`"
+                effect="light"
+                :content="`${item.value}${item?.unitName || ''}`"
+                placement="top-start"
+                :offset="6"
+              >
+                <span class="value">{{ item.value }}{{ item?.unitName || "" }}</span>
+              </el-tooltip>
             </li>
           </ul>
           <!-- 监测属性：非线性数据 -->
@@ -57,7 +65,7 @@
             :jsonbodyMap="attrData.monitorJSONbodyMap"
           ></jsonBody>
           <!-- 链接配置 -->
-          <div class="link-config" v-if="linkData.length">
+          <div class="link-config" v-if="linkData.length && !equipInfo.isTrackPointClick">
             <el-button v-for="btn in attrData.linkData" :key="btn.name" type="primary" @click="onAction(btn.buttonType)">{{
               btn.name
             }}</el-button>
@@ -98,6 +106,7 @@ import dayjs from "dayjs";
 import lineChart from "../lineChart.vue";
 import jsonBody from "./jsonBody.vue";
 import { ElMessage } from "element-plus";
+import moment from "moment";
 import { addAttentionApi, getAttentionList, deleteDialogAttentionApi } from "../../../api/gis.js";
 import type { VisualMap } from "../../type";
 import { useJSONBody } from "../../hooks/useJSONBody";
@@ -106,6 +115,10 @@ import { labelOnSelect } from "../../hooks/index";
 import AddRemarkDialog from "./addRemarkDialog.vue";
 import AlarmListDialog from "./alarmListDialog.vue";
 import { BUTTON_COLOR_MAP } from "../../../constant/index";
+
+import { initRealtimeData } from "../../hooks/initRealtimeData";
+import { useGisStore } from "../../../stores/modules/gis";
+const gisStore = useGisStore();
 
 // import { chartData, attrconfigData } from "./popupmock";
 
@@ -132,23 +145,24 @@ const { configInfo, staticAttr, linkData, monitorSeqAttr, monitorLineAttr, monit
 
 // 左键配置信息
 const attrData: any = reactive({
-  // 静态属性数据
-  staticData: [],
+  staticData: [], // 静态属性数据
   monitorSequenceData: [], // 监测散点数据
   monitorLineAttr: [], //监测线性属性code
   monitorJSONbodyData: [], // 监测结构体数据
+  monitorJSONbodyMap: {},
   linkData: [], // 链接按钮后端数据
-  hasFocusBtn: false, // 关注（取消关注）
-  monitorJSONbodyMap: {}
+  hasFocusBtn: false // 关注（取消关注）
 });
 
-// 左键选择的设备信息
+// 左键选择的设备信息（即relationMap标签关联的信息）
 const equipInfo: any = ref({
-  equipType: 0,
   code: "",
-  isRealTimeData: false,
+  equipType: 0, // 设备类型id（实时数据是传过来的，非实时数据接口请求获取设备类型id）
+  isRealTimeData: false, // 是实时数据点击还是绘制标签点击
   associationInfo: {},
-  realObjectTypeCode: "" // 实时查询对象code（只有关注使用，关注只针对实时数据对象）
+  realObjectTypeCode: "", // 实时查询对象类型code（只有关注使用，关注只针对实时数据对象）
+  isTrackPointClick: false, // 是否轨迹圆圈的点击（只有轨迹点击有这个值,涉及按钮的隐藏及获取静态监测数据接口请求）
+  trackPointTime: null
 });
 
 const state = reactive({
@@ -165,16 +179,20 @@ const state = reactive({
 
 // 获取设备数据
 const getDataFromAttr = (equipCodes: string, attributes: string) => {
+  let { isTrackPointClick, trackPointTime, realObjectTypeCode } = equipInfo.value;
   let param: any = {
     equipCodes, // 设备编码集合
     attributes,
-    isHistory: false, // 是否是历史数据 , 实时数据查询最近一条记录
+    isHistory: isTrackPointClick ? true : false, // 是否是历史数据 , 实时数据查询最近一条记录
     isLineData: false, // 是否线性数据--数据类型
-    dataTime: state.currentTime, //数据时间，针对具体时间
     tenantId: JSON.parse(window.localStorage.getItem("udp-user") || "{}")?.loginTenant // 租户
   };
-  if (equipInfo.value?.realObjectTypeCode) {
-    param.equipType = equipInfo.value?.realObjectTypeCode;
+  if (isTrackPointClick) {
+    param.dateTimeStr = trackPointTime;
+  }
+  // 实时对象时增加equipType传参，后端用于判断 需不需要判断是外部的还是资产
+  if (realObjectTypeCode) {
+    param.equipType = realObjectTypeCode;
   }
   return new Promise(async (resolve, reject) => {
     const res: any = await getEquipData(param);
@@ -203,8 +221,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   attrData.monitorSequenceData = [];
   attrData.monitorLineAttr = [];
   attrData.monitorJSONbodyData = [];
-  attrData.linkData = [];
   attrData.monitorJSONbodyMap = {};
+  attrData.linkData = [];
 
   if (!Object.keys(relationMap || {}).length) {
     state.isRelationBody = false;
@@ -212,10 +230,9 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   state.isRelationBody = true;
 
-  state.dialogTitle = relationMap?.name || "";
-
+  state.dialogTitle = relationMap?.name || ""; // 设备名
   state.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
-  const { isRealTimeData = false } = relationMap || {};
+  const { isRealTimeData = false } = relationMap || {}; // 是否实时数据
   equipInfo.value = relationMap;
   // 获取设备类型id（非实时数据需要获取设备类型id）
   if (!isRealTimeData && relationMap?.model.toLocaleLowerCase() === "eam_eqp_equip") {
@@ -314,6 +331,7 @@ const onAction = (actionType: number) => {
   };
   if (actionType === 4) {
     // 4  轨迹
+    state.dateTimes = [moment().subtract(2, "hours").format("YYYY-MM-DD HH:mm:ss"), moment().format("YYYY-MM-DD HH:mm:ss")];
     state.dialogVisible = true;
   } else if (actionType === 5) {
     // 5 备注
@@ -395,6 +413,7 @@ const onFocus = async () => {
   if (res.code === 200) {
     ElMessage.success("关注成功");
     focusType.value = 2;
+    initRealtimeData(props.map, gisStore?.realtimeDataList || []);
   }
 };
 // 取消关注
@@ -406,15 +425,13 @@ const cancelFocus = async () => {
   if (res.code === 200) {
     ElMessage.success("取消关注成功");
     focusType.value = 1;
+    initRealtimeData(props.map, gisStore?.realtimeDataList || []);
   }
 };
 
-watch(
-  () => props.data.featureCode,
-  () => {
-    getLabelDialogConfigInfo(props.data.relationMap);
-  }
-);
+watch([() => props.data.featureCode, () => props.data.relationMap], () => {
+  getLabelDialogConfigInfo(props.data.relationMap);
+});
 
 defineExpose({
   getDOMElement

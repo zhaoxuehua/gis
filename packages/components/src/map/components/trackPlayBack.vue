@@ -167,7 +167,7 @@ import { useGisStore } from "../../stores/modules/gis";
 // ⤵ 辅助函数
 import { selectionAddDrawInteraction } from "../hooks/index"; // 框选方法
 import { clearSelectionDrawInteraction } from "../hooks/clearSelectionDrawInteraction"; // 清除框选
-import { toLonLatFN } from "../hooks/toLonLat"; // 坐标转换
+import { toLonLatFN } from "../hooks/useCoordinateTransform"; // 坐标转换
 import { labelOnSelect } from "../hooks/index"; // 定位
 import { getTrackDataByIdFn } from "../hooks/getTrackDataById"; // 获取单个轨迹数据
 import { disabledDateFun } from "../hooks/validateFun";

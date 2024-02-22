@@ -39,9 +39,11 @@ type searchShipDataType = searchShipType[];
 
 interface shipColorParams {
   monitorTime: number;
-  colorIndex: number | undefined;
+  colorIndex?: number | undefined;
   status: string;
   styleObject?: string;
+  isAttention?: boolean;
+  isWhiteList?: boolean;
 }
 
 export type { getInitMapExportDataType, shipParamsType, shipStyCashType, searchShipDataType, shipColorParams };

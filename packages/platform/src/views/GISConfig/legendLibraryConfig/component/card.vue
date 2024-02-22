@@ -16,15 +16,18 @@
                 <img :src="`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${info?.legendPath}`" alt="" />
                 <div class="upload-image-btn">
                   <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_EDIT">
-                    <span @click="editLegend">
+                    <span @click="editLegend" title="编辑">
                       <Icon src="EditPen" :size="16"></Icon>
                     </span>
                   </Auth>
                   <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_MAPLegendCONFIG_DELETE">
-                    <span @click="deleteLegend">
+                    <span @click="deleteLegend" title="删除">
                       <Icon src="Delete" :size="16"></Icon>
                     </span>
                   </Auth>
+                  <span @click="downloadLegend(info?.legendPath)" title="下载">
+                    <Icon src="Download" :size="16"></Icon>
+                  </span>
                 </div>
               </div>
             </el-upload>
@@ -42,6 +45,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteLegendConfig } from "@/api/visconfig.js";
 import CreateEditLegend from "./createEditLegend.vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
+import { downloadFun } from "@/hooks/useDownload";
 
 const props = defineProps({
   info: {
@@ -75,6 +79,10 @@ const deleteLegend = () => {
     .catch(() => {
       ElMessage.info("已取消操作");
     });
+};
+
+const downloadLegend = (url: string) => {
+  downloadFun(`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${url}`, url);
 };
 
 const onReSearch = () => {

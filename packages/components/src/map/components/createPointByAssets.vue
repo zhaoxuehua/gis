@@ -85,7 +85,7 @@ import { getAssetDeviceEquipList } from "../../api/device";
 import { getLabelInfoByEquipId, addLabelBatch, deleteLabelBatch } from "../../api/gis.js";
 import Icon from "./Icon.vue";
 import type { TableList } from "../type";
-import { MAP_DATA_TYPE } from "../hooks/createGeometry";
+import { MAP_DATA_TYPE, DATA_TYPE_ARR } from "../hooks/createGeometry";
 import { transformLabelType } from "../hooks/index";
 import paginationCom from "./paginationCom.vue";
 
@@ -202,7 +202,7 @@ const drawHandler = () => {
       }
       const labelData = createLabelData(gisLabelConfig, lonLat);
       let type = gisLabelConfig.dataType;
-      if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+      if (DATA_TYPE_ARR.includes(type)) {
         type = MAP_DATA_TYPE[type]?.value;
       }
       const labelCode = "GIS" + type + +new Date() + "_" + index;
