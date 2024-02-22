@@ -4,10 +4,10 @@
     <div class="title">
       <div>
         <span>标签树</span>
-        <el-button type="primary" size="small" circle class="title-btn"
+        <el-button type="primary" size="small" circle class="title-btn" @click.stop="onImport"
           ><Icon src="Upload" title="导入" :size="14"></Icon
         ></el-button>
-        <el-button type="primary" size="small" circle class="title-btn"
+        <el-button type="primary" size="small" circle class="title-btn" @click.stop="onExport"
           ><Icon src="Download" title="导出" :size="14"></Icon
         ></el-button>
       </div>
@@ -46,12 +46,7 @@
       </div>
     </div>
   </div>
-  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入标签类型配置文件'" @click.stop="onImport"></UploadMainFileDialog>
-  <uploadAttachmentsDialog
-    ref="uploadAttachmentsRef"
-    :fileTitle="'导入标签类型配置附件'"
-    @click.stop="onExport"
-  ></uploadAttachmentsDialog>
+  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入标签信息文件'"></UploadMainFileDialog>
 </template>
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
@@ -61,7 +56,6 @@ import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
-import uploadAttachmentsDialog from "./uploadFile/uploadAttachments.vue";
 
 const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -80,14 +74,13 @@ const state: { defaultProps: { [key: string]: any }; expandedKeys: any[]; filter
 });
 
 const uploadMainFilRef = ref<InstanceType<typeof UploadMainFileDialog>>();
-const uploadAttachmentsRef = ref<InstanceType<typeof uploadAttachmentsDialog>>();
 
 const onImport = () => {
   uploadMainFilRef.value?.openDialog();
 };
 
 const onExport = () => {
-  console.log("导出");
+  console.log("导出excel");
 };
 
 // 关闭标签树
