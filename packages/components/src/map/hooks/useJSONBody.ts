@@ -41,7 +41,7 @@ export const useJSONBody = () => {
   };
   /**
    * 获取绑定的属性
-   * @param param0 equipType  设备类型id   objectTypeCode   实时数据code
+   * @param equipType  设备类型id   objectTypeCode   实时数据code
    * @returns
    */
   const getBindAttr = async ({ equipType, objectTypeCode, equipCode }: any) => {

@@ -3,7 +3,7 @@ import { Canvg } from "canvg";
 import RBush from "rbush";
 import { Fill, Stroke, Style, Circle as CircleStyle, Icon, Text, RegularShape, Circle } from "ol/style";
 import { LineString, Point } from "ol/geom";
-import { MAP_DATA_TYPE } from "./createGeometry.js";
+import { MAP_DATA_TYPE, DATA_TYPE_ARR } from "./createGeometry.js";
 import selectImg from "../img/select.png";
 
 // 选中样式(点、线、面)
@@ -348,7 +348,7 @@ export function layerStyle(features: any, isDynamicLine: boolean = false, imgInd
   const typeStats = feature.get("typeStats"); // 为了区分静态点、动态点、静态线、动态线、静态环、动态环增加的
 
   // 兼容type类型
-  if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+  if (DATA_TYPE_ARR.includes(type)) {
     type = MAP_DATA_TYPE[type]?.value;
   }
 

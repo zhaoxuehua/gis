@@ -1,0 +1,104 @@
+// 页面大盒子
+.standard-page {
+  // height: calc(100vh - 138px);
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+.standard-page .inline-input {
+  width: 100%;
+}
+.one-search {
+  width: 100%;
+  padding: 20px 20px 0;
+  margin-bottom: 10px;
+  background: #ffffff;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgb(0 0 0 / 5%);
+  .el-form {
+    width: 100%;
+    .el-input,
+    .el-select {
+      width: 100%;
+    }
+  }
+  .el-input,
+  .el-select,
+  .el-form-item {
+    width: 100%;
+  }
+  .el-autocomplete {
+    width: 100%;
+  }
+}
+.table-card {
+  width: 100%;
+  height: calc(100% - 82px);
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgb(0 0 0 / 5%);
+  .option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 32px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .config-table {
+    height: calc(100% - 94px);
+  }
+  .el-table {
+    // 表头
+    --el-table-header-bg-color: #f5f7fa;
+    --el-table-header-text-color: #606266;
+    --el-table-text-color: #606266;
+
+    font-size: 14px;
+    .el-table__inner-wrapper {
+      height: 100%;
+    }
+    .el-table__body .el-table__row {
+      .el-table__cell {
+        height: 32px;
+        padding: 0;
+      }
+    }
+    .el-table__header-wrapper th,
+    .el-table .el-table__fixed-header-wrapper th {
+      height: 40px;
+      padding: 0;
+    }
+  }
+}
+.pagination-container {
+  position: relative;
+  padding: 0 !important;
+  .el-pagination__sizes {
+    margin-left: 16px;
+  }
+}
+.pagination-container .el-pagination {
+  position: absolute;
+  right: 0;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: center;
+}
+.small-padding {
+  .cell {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+}
+.fixed-width {
+  .el-button--mini {
+    width: 60px;
+    padding: 7px 10px;
+  }
+}

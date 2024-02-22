@@ -18,7 +18,7 @@ export function multiArray(array: any) {
 export function createGeometry(labelData: LabelData) {
   let geometry;
   let type = labelData?.style?.type;
-  if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+  if (DATA_TYPE_ARR.includes(type)) {
     type = MAP_DATA_TYPE[type]?.value;
   }
 
@@ -54,6 +54,8 @@ export function createGeometry(labelData: LabelData) {
   return geometry;
 }
 
+// 数据类型(兼容老数据)
+export const DATA_TYPE_ARR = ["1", "2", "3", "4", "5", "6", "7"];
 // 数据类型常量映射
 export const MAP_DATA_TYPE: { [key: string]: any } = {
   "1": {
@@ -90,7 +92,7 @@ export const MAP_DATA_TYPE: { [key: string]: any } = {
 export function getGeometryCenter(labelData: LabelData) {
   let geometryCenter;
   let type = labelData.style.type;
-  if (["1", "2", "3", "4", "5", "6", "7"].includes(type)) {
+  if (DATA_TYPE_ARR.includes(type)) {
     type = MAP_DATA_TYPE[type]?.value;
   }
   let coordinates = labelData.coordinates;
