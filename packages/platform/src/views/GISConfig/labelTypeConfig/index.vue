@@ -379,6 +379,7 @@ const table = ref<TableList>({
       // 图例列表
       const resLegend: { [key: string]: any } = await getLegendConfigList("?pageSize=10000&pageNumber=1", {});
       legendConfigList.value = resLegend?.data?.items || [];
+
       // 数据内容(是点 有绑定关联关系 是动态查询才去请求)
       if (res.data?.dataType == "1" && res.data?.equipTypeId && res.data?.dataSource == "dynamicQuery") {
         const dataContentRes: { [key: string]: any } = await getBindAttributeMonitor(
