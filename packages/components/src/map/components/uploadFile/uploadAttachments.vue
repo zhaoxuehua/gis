@@ -42,7 +42,7 @@
   <ErrorMsgDialog ref="errorMsgDialogRef" :data="state.errorDataMsg" type="attachments"></ErrorMsgDialog>
 </template>
 
-<script lang="ts" setup name="DownloadImport">
+<script lang="ts" setup name="UploadAttachments">
 import { reactive, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { upLoadFile, confirmImport, cancelImport } from "../../../api/device";

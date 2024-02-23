@@ -84,10 +84,10 @@
   <ErrorMsgDialog ref="errorMsgDialogRef" :data="state.errorDataMsg" type="file"></ErrorMsgDialog>
 </template>
 
-<script lang="ts" setup name="DownloadImport">
+<script lang="ts" setup name="UploadMainFile">
 import { reactive, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { handleParam } from "@/utils/common.js";
+import { handleParam } from "@/utils/common";
 import {
   upLoadFile,
   checkFile,

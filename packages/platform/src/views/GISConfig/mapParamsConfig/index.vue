@@ -205,8 +205,7 @@ const query = ref({
     query.value.onQuery();
   },
   onClear: () => {
-    query.value.params.appName = "";
-    query.value.params.pageNumber = 1;
+    query.value.params = { ...defaultParams };
     query.value.onQuery();
   },
   querySearch: () => {

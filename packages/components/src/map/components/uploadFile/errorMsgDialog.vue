@@ -27,7 +27,7 @@
   </el-dialog>
 </template>
 
-<script lang="ts" setup name="DownloadImport">
+<script lang="ts" setup name="ErrorMsgDialog">
 import { reactive } from "vue";
 
 withDefaults(defineProps<{ data: any; type: string }>(), {

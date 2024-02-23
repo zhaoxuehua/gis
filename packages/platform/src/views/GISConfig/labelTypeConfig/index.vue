@@ -268,8 +268,7 @@ const query = ref({
     query.value.onQuery();
   },
   onClear: () => {
-    query.value.params.pageNumber = 1;
-    query.value.params.name = "";
+    query.value.params = { ...defaultParams };
     query.value.onQuery();
   },
   querySearch: () => {
