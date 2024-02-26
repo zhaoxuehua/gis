@@ -25,7 +25,7 @@
                       <Icon src="Delete" :size="16"></Icon>
                     </span>
                   </Auth>
-                  <span @click="downloadLegend(info?.legendPath)" title="下载">
+                  <span @click="downloadLegend(info?.legendPath, info?.legendName)" title="下载">
                     <Icon src="Download" :size="16"></Icon>
                   </span>
                 </div>
@@ -81,8 +81,8 @@ const deleteLegend = () => {
     });
 };
 
-const downloadLegend = (url: string) => {
-  downloadFun(`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${url}`, url);
+const downloadLegend = (url: string, fileName: string) => {
+  downloadFun(`/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${url}`, fileName);
 };
 
 const onReSearch = () => {
