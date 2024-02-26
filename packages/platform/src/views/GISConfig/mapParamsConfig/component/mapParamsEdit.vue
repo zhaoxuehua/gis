@@ -206,10 +206,7 @@
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
           <el-dropdown v-if="progressList?.length" style="margin: 0 10px">
-            <el-button>
-              <Icon src="More" :size="18"></Icon>
-              {{ "查看进度" }}
-            </el-button>
+            <el-button> 查看进度 </el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
