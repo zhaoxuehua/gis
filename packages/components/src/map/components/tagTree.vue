@@ -46,7 +46,7 @@
       </div>
     </div>
   </div>
-  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入标签信息文件'"></UploadMainFileDialog>
+  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入标签信息文件'" sceneCode="gisLabel"></UploadMainFileDialog>
 </template>
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
@@ -56,6 +56,8 @@ import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
+import { downloadFun, fileNameMap } from "./uploadFile/uploadFun";
+import { tableDataExport } from "../../api/gis";
 
 const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -79,8 +81,18 @@ const onImport = () => {
   uploadMainFilRef.value?.openDialog();
 };
 
-const onExport = () => {
-  console.log("导出excel");
+const onExport = async () => {
+  const params = {
+    queryStr: "",
+    sceneCode: "gisLabel"
+  };
+  try {
+    const res: any = await tableDataExport(params);
+    const url = window.URL.createObjectURL(new Blob([res]));
+    downloadFun(url, `${fileNameMap["gisLabelExport"]}`);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // 关闭标签树

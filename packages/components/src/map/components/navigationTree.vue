@@ -47,7 +47,7 @@
       </div>
     </div>
   </div>
-  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入设备信息文件'"></UploadMainFileDialog>
+  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入设备信息文件'" sceneCode="gisTree"></UploadMainFileDialog>
 </template>
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
@@ -60,6 +60,8 @@ import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
+import { downloadFun, fileNameMap } from "./uploadFile/uploadFun";
+import { tableDataExport } from "../../api/gis";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -83,8 +85,18 @@ const onImport = () => {
   uploadMainFilRef.value?.openDialog();
 };
 
-const onExport = () => {
-  console.log("导出excel");
+const onExport = async () => {
+  const params = {
+    queryStr: "",
+    sceneCode: "gisTree"
+  };
+  try {
+    const res: any = await tableDataExport(params);
+    const url = window.URL.createObjectURL(new Blob([res]));
+    downloadFun(url, `${fileNameMap["gisTreeExport"]}`);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // 关闭导航树

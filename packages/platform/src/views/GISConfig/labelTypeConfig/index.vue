@@ -41,7 +41,7 @@
             <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon> 创建 </el-button>
           </Auth>
           <el-button type="primary" @click="onImport"><Icon src="UploadFilled"></Icon> 导入 </el-button>
-          <el-button type="primary" @click="onImportAttachments"> 导入附件 </el-button>
+          <!-- <el-button type="primary" @click="onImportAttachments"> 导入附件 </el-button> -->
           <el-button type="primary" @click.stop="onExport"><Icon src="Download" title="导出" :size="14"></Icon> 导出 </el-button>
         </div>
       </div>
@@ -213,8 +213,12 @@
         <el-tag :color="scope.row.backGroundColor" class="w_30"></el-tag>
       </template>
     </DetailDialog>
-    <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入标签类型配置文件'"></UploadMainFileDialog>
-    <uploadAttachmentsDialog ref="uploadAttachmentsRef" :fileTitle="'导入标签类型配置附件'"></uploadAttachmentsDialog>
+    <UploadMainFileDialog
+      ref="uploadMainFilRef"
+      :fileTitle="'导入标签类型配置文件'"
+      sceneCode="gisLabelType"
+    ></UploadMainFileDialog>
+    <!-- <uploadAttachmentsDialog ref="uploadAttachmentsRef" :fileTitle="'导入标签类型配置附件'"></uploadAttachmentsDialog> -->
   </div>
 </template>
 
@@ -223,13 +227,16 @@ import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
 import UploadMainFileDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
-import uploadAttachmentsDialog from "../../../../../components/src/map/components/uploadFile/uploadAttachments.vue";
+// import uploadAttachmentsDialog from "../../../../../components/src/map/components/uploadFile/uploadAttachments.vue";
+import { downloadFun, fileNameMap } from "../../../../../components/src/map/components/uploadFile/uploadFun";
+
 import {
   getLabelTypeList,
   deleteLabelTypeCheck,
   deleteLabelType,
   getLabelTypeDetail,
-  getLegendConfigList
+  getLegendConfigList,
+  tableDataExport
 } from "@/api/visconfig.js";
 import { getBindAttributeMonitor } from "@/api/device.js";
 import { handleParam } from "@/utils/common.js";
@@ -413,18 +420,28 @@ const sortChange = (val: SortChangeEvent) => {
 };
 
 const uploadMainFilRef = ref<InstanceType<typeof UploadMainFileDialog>>();
-const uploadAttachmentsRef = ref<InstanceType<typeof uploadAttachmentsDialog>>();
+// const uploadAttachmentsRef = ref<InstanceType<typeof uploadAttachmentsDialog>>();
 
 const onImport = () => {
   uploadMainFilRef.value?.openDialog();
 };
 
-const onImportAttachments = () => {
-  uploadAttachmentsRef.value?.openDialog();
-};
+// const onImportAttachments = () => {
+//   uploadAttachmentsRef.value?.openDialog();
+// };
 
-const onExport = () => {
-  console.log("导出excel");
+const onExport = async () => {
+  const params = {
+    queryStr: "",
+    sceneCode: "gisLabelType"
+  };
+  try {
+    const res: any = await tableDataExport(params);
+    const url = window.URL.createObjectURL(new Blob([res]));
+    downloadFun(url, `${fileNameMap["gisLabelTypeExport"]}`);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const onDelete = async () => {

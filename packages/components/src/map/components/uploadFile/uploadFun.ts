@@ -66,11 +66,23 @@ const beforeUploadFun = (file: any, accept: any, size: number, callback?: Functi
 
 const downloadFun = (url: string, downloadFileName: string) => {
   const downloadLink = document.createElement("a");
+  downloadLink.style.display = "none";
+  downloadLink.download = downloadFileName;
   downloadLink.href = url;
-  downloadLink.download = downloadFileName; // 设置下载的文件名
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
+  window.URL.revokeObjectURL(url);
 };
 
-export { clearTimer, showProgressFun, processCountFun, closeLoadingProgress, beforeUploadFun, downloadFun };
+const fileNameMap: { [key: string]: string } = {
+  gisLabel: "标签信息模板.xlsx",
+  gisTree: "设备信息模板.xlsx",
+  gisLabelType: "标签类型信息模板.xlsx",
+
+  gisLabelExport: "标签信息.xlsx",
+  gisTreeExport: "设备信息.xlsx",
+  gisLabelTypeExport: "标签类型信息.xlsx"
+};
+
+export { clearTimer, showProgressFun, processCountFun, closeLoadingProgress, beforeUploadFun, downloadFun, fileNameMap };

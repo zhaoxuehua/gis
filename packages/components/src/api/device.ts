@@ -151,34 +151,3 @@ export function getEquipListByType(equipTypeCodes: string) {
 export function getDepthWater(params: object) {
   return request.post(`/api/custom-service/buriedDepth/open/fillWaterValue`, params);
 }
-
-// 导入模块
-// 上传
-export function upLoadFile(params: any) {
-  return request.post(`/api/gis-service/minio/file/upload/picture`, params);
-}
-
-// 获取excel列表数据
-export function getFileExcelList(queryString: string, params: object) {
-  return request.post(`/api/equipment-service/object/whitelist/list${queryString}`, params);
-}
-
-// 删除excel行数据
-export function deleteFileExcelRowData(id: number) {
-  return request.delete(`/api/equipment-service/object/whitelist/remove/${id}`);
-}
-
-// 校验
-export function checkFile(params: any) {
-  return request.post(`/api/gis-service/minio/file/upload/picture`, params);
-}
-
-// 确认导入
-export function confirmImport(params: any) {
-  return request.post(`/api/gis-service/equip/gisLabelInfo`, params);
-}
-
-// 取消
-export function cancelImport(params: any) {
-  return request.post(`/api/gis-service/equip/gisLabelInfo`, params);
-}

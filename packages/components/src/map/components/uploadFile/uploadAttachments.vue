@@ -45,7 +45,7 @@
 <script lang="ts" setup name="UploadAttachments">
 import { reactive, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { upLoadFile, confirmImport, cancelImport } from "../../../api/device";
+import { upLoadFileGetTableData, confirmImport, cancelImport } from "../../../api/gis";
 import ErrorMsgDialog from "./errorMsgDialog.vue";
 import { showProgressFun, closeLoadingProgress, beforeUploadFun } from "./uploadFun";
 
@@ -114,7 +114,7 @@ const uploadFile = async (content: any) => {
   resetFun();
   showProgressFun(state);
   try {
-    const res: { [key: string]: any } = await upLoadFile(formData);
+    const res: { [key: string]: any } = await upLoadFileGetTableData(formData);
     if (res.code == 200) {
       state.progressCount = 100;
       state.errorDataMsg = [

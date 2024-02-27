@@ -24,11 +24,11 @@
         <el-button type="primary" :disabled="state.disabledErrorInfoBtn || state.isProcessing" @click="openErrorMsg"
           >错误信息</el-button
         >
-        <el-button type="primary" :disabled="state.disabledCheckBtn || state.isProcessing" @click="checkFileFun">校验</el-button>
+        <el-button type="primary" :disabled="state.disabledCheckBtn || state.isProcessing" @click="onCheckFile">校验</el-button>
         <el-upload :before-upload="beforeUpload" :http-request="uploadFile" :show-file-list="false" class="ml10">
           <el-button type="primary" :disabled="state.isProcessing">选择本地文件</el-button>
         </el-upload>
-        <el-button @click="downloadTemplate">下载文件模板</el-button>
+        <el-button @click="onDownloadTemplate">下载文件模板</el-button>
       </div>
     </div>
     <div>
@@ -45,28 +45,25 @@
         border
       >
         <el-table-column
-          v-for="column in table?.tableColumns"
-          :key="column.fieldCode"
-          :prop="column.fieldCode"
-          :label="column.fieldName"
+          v-for="(column, index) in table?.tableColumns"
+          :key="index"
+          :prop="column?.[0]"
+          :label="column?.[1]"
           :sortable="false"
           :min-width="120"
         >
           <template #default="scope">
-            <template v-if="scope.row?.errorField?.[column?.fieldCode]">
-              <el-input
-                v-model="scope.row[column.fieldCode]"
-                :class="{ 'error-field': scope.row.errorField[column.fieldCode] }"
-              />
+            <template v-if="scope.row?.errorField?.[column?.[0]]">
+              <el-input v-model="scope.row[column?.[0]]" :class="{ 'error-field': scope.row.errorField[column?.[0]] }" />
             </template>
             <template v-else>
-              <el-input v-model="scope.row[column.fieldCode]" />
+              <el-input v-model="scope.row[column?.[0]]" />
             </template>
           </template>
         </el-table-column>
         <el-table-column prop="path" label="操作" width="80" fixed="right" v-if="table?.tableData?.length">
           <template #default="scope">
-            <el-button type="primary" link @click="table.onDelete(scope.row)"> 删除 </el-button>
+            <el-button type="primary" link @click="table.onDelete(scope.$index)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -87,17 +84,19 @@
 <script lang="ts" setup name="UploadMainFile">
 import { reactive, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { handleParam } from "@/utils/common";
 import {
-  upLoadFile,
+  downloadTemplate,
+  upLoadFileGetTableData,
+  upLoadFileGetTableColumnData,
+  getTableDataByChangePageSize,
+  getTableDataByChangePageNumber,
   checkFile,
   confirmImport,
   cancelImport,
-  getFileExcelList,
-  deleteFileExcelRowData
-} from "../../../api/device";
+  editFileExcelTableData
+} from "../../../api/gis";
 import ErrorMsgDialog from "./errorMsgDialog.vue";
-import { showProgressFun, closeLoadingProgress, beforeUploadFun, downloadFun } from "./uploadFun";
+import { showProgressFun, closeLoadingProgress, beforeUploadFun, downloadFun, fileNameMap } from "./uploadFun";
 import paginationCom from "../paginationCom.vue";
 
 const config: any = {
@@ -107,8 +106,9 @@ const config: any = {
   tip: "1. 如果没有导入文件模板，请先点击下载模板\n2. 请选择xlsx格式文件进行上传，单个文件最大支持50M\n3. 支持在窗口内直接编辑表格内容或删除行"
 };
 
-withDefaults(defineProps<{ fileTitle: string }>(), {
-  fileTitle: () => "导入文件"
+const props = withDefaults(defineProps<{ fileTitle: string; sceneCode: string }>(), {
+  fileTitle: () => "导入文件",
+  sceneCode: () => ""
 });
 
 const errorMsgDialogRef = ref<InstanceType<typeof ErrorMsgDialog>>();
@@ -116,6 +116,7 @@ const errorMsgDialogRef = ref<InstanceType<typeof ErrorMsgDialog>>();
 const state: any = reactive({
   open: false,
   loading: false,
+  fileName: "",
   disabledCheckBtn: true,
   disabledErrorInfoBtn: true,
   disabledConfirmBtn: true,
@@ -141,131 +142,72 @@ const resetFun = () => {
   state.pageSize = 20;
 };
 
-const getPagination = (obj: any) => {
-  if (obj?.isSizeChange) {
-    state.pageNumber = 1;
-  } else {
-    state.pageNumber = obj.page;
-  }
+// 跟新列表的数据、总条数、当前页及条数
+const changeTableData = (data: any) => {
+  state.pageNumber = data?.currentPage;
+  state.pageSize = data?.pageSize;
+  table.value.total = data?.totalNum;
+  table.value.tableData = data?.items || [];
+  table.value.originTableData = JSON.parse(JSON.stringify(data?.items || []));
+};
+
+const getPagination = async (obj: any) => {
+  state.pageNumber = obj.page;
   state.pageSize = obj.limit;
-  table.value.getTableData();
+  obj?.isSizeChange && (state.pageNumber = 1);
+
+  const fetchData = async () => {
+    const params: any = {
+      sceneCode: props.sceneCode,
+      sessionId: localStorage.getItem("sessionId"),
+      fileName: state.fileName
+    };
+    if (obj?.isSizeChange) {
+      params.pageSize = state.pageSize;
+      await getTableDataByChangePageSize(params).then((res: any) => {
+        changeTableData(res?.data || {});
+      });
+    } else {
+      params.pageNum = state.pageNumber;
+      await getTableDataByChangePageNumber(params).then((res: any) => {
+        changeTableData(res?.data || {});
+      });
+    }
+  };
+
+  // 判断数据有无变化有的话更新接口，更新成功再翻页
+  if (isTableDataChange()) {
+    const params = {
+      sceneCode: props.sceneCode,
+      sessionId: localStorage.getItem("sessionId"),
+      fileName: state.fileName,
+      pageIndex: state.pageNumber,
+      data: table.value?.tableData
+    };
+    await editFileExcelTableData(params).then(async () => {
+      fetchData();
+    });
+  } else {
+    fetchData();
+  }
 };
 
 const table: any = ref({
   tableColumns: [], // 表头
+  originTableData: [], // 列表原始数据
   tableData: [], // 列表数据
   total: 0,
-  getTableData: async () => {
-    // 获取表头+表格数据
-    try {
-      state.loading = true;
-      const params = {
-        pageNumber: state.pageNumber,
-        pageSize: state.pageSize
-      };
-      const res: { [key: string]: any } = await getFileExcelList(...(handleParam(params) as [string, object]));
-      table.value.loading = true;
-      if (res.code == 200) {
-        state.progressCount = 100;
-        // 表头数据+列表赋值
-        table.value.tableColumns = [
-          {
-            isRequired: true,
-            fieldName: "设备编码",
-            fieldCode: "code",
-            isBase: true
-          },
-          {
-            isRequired: true,
-            fieldName: "设备名称",
-            fieldCode: "name",
-            isBase: true
-          },
-          {
-            isRequired: true,
-            fieldName: "设备类别",
-            fieldCode: "equip_category",
-            isBase: true
-          },
-          {
-            isRequired: true,
-            fieldName: "设备类型",
-            fieldCode: "equip_type",
-            isBase: true
-          },
-          {
-            isRequired: true,
-            fieldName: "所属公司",
-            fieldCode: "company_by",
-            isBase: true
-          },
-          {
-            isRequired: false,
-            fieldName: "所属部门",
-            fieldCode: "department_by",
-            isBase: true
-          },
-          {
-            isRequired: false,
-            fieldName: "所属通道",
-            fieldCode: "SBSXSM0052",
-            isBase: false
-          },
-          {
-            isRequired: false,
-            fieldName: "所属分区",
-            fieldCode: "BTPART",
-            isBase: false
-          }
-        ];
-        table.value.tableData = [
-          {
-            company_by: "44",
-            equip_category: "22",
-            BTPART: "44",
-            code: "11",
-            name: "22",
-            department_by: "44",
-            SBSXSM0052: "44",
-            id: 172704,
-            rn: 5,
-            equip_type: "44"
-          },
-          {
-            company_by: "我",
-            equip_category: "我",
-            BTPART: "我",
-            code: "风骨色鬼",
-            name: "4如法网",
-            department_by: "我",
-            SBSXSM0052: "我",
-            id: 172703,
-            rn: 4,
-            equip_type: "我"
-          },
-          {
-            company_by: "我",
-            equip_category: "我",
-            BTPART: "我",
-            code: "风骨色鬼",
-            name: "4如法网",
-            department_by: "我",
-            SBSXSM0052: "我",
-            id: 172703,
-            rn: 4,
-            equip_type: "我"
-          }
-        ];
-        table.value.total = table.value.tableData?.length;
-        state.disabledCheckBtn = false;
-      }
-    } finally {
-      closeLoadingProgress(state);
-    }
-  },
-  onDelete: async (row: { [key: string]: any }) => {
-    await deleteFileExcelRowData(row.id).then(() => {
-      table.value.getTableData();
+  onDelete: async (index: number) => {
+    table.value.tableData?.splice(index, 1);
+    const params = {
+      sceneCode: props.sceneCode,
+      sessionId: localStorage.getItem("sessionId"),
+      fileName: state.fileName,
+      pageIndex: state.pageNumber,
+      data: table.value?.tableData
+    };
+    await editFileExcelTableData(params).then((res: any) => {
+      changeTableData(res?.data || {});
     });
   }
 });
@@ -284,124 +226,105 @@ const onClose = () => {
   state.open = false;
 };
 
-const downloadTemplate = () => {
-  downloadFun("url", "模板.xlsx");
+const onDownloadTemplate = async () => {
+  try {
+    const res: any = await downloadTemplate({ sceneCode: props?.sceneCode });
+    const url = window.URL.createObjectURL(new Blob([res]));
+    downloadFun(url, `${fileNameMap?.[props.sceneCode]}`);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const beforeUpload = (file: any) => {
   const { accept, size } = config;
+  state.fileName = file.name;
   return beforeUploadFun(file, accept, size);
 };
 
 const uploadFile = async (content: any) => {
   let formData = new FormData();
-  formData.append("uploadFile", content.file);
-  // 需要将校验、错误信息、确认导入禁用
+  formData.append("file", content.file);
+  const params = {
+    sceneCode: props.sceneCode,
+    sessionId: localStorage.getItem("sessionId"),
+    excelFile: formData
+  };
+
+  // mock 数据
+  // let tableColumns: any = {
+  //   data: [
+  //     ["name", "姓名"],
+  //     ["age", "年纪(必填)"]
+  //   ]
+  // };
+  // let tableData: any = {
+  //   data: {
+  //     currentPage: 1,
+  //     pageSize: 10,
+  //     totalNum: 3,
+  //     items: [
+  //       {
+  //         name: "名字1",
+  //         age: 11
+  //       },
+  //       {
+  //         name: "名字2",
+  //         age: 22
+  //       }
+  //     ]
+  //   }
+  // };
+  // state.progressCount = 100;
+  // table.value.tableColumns = tableColumns?.data || []; // 表头
+  // changeTableData(tableData?.data || {});
+  // closeLoadingProgress(state);
+  // state.disabledCheckBtn = false;
+  // mock数据结束
+
+  // 再次传文件时需要将校验、错误信息、确认导入禁用
   resetFun();
   showProgressFun(state);
-  try {
-    const res: { [key: string]: any } = await upLoadFile(formData);
-    if (res.code == 200) {
-      table.value?.getTableData();
-    }
-  } catch {
-    closeLoadingProgress(state);
+  // 获取表头数据及列表数据
+  Promise.all([upLoadFileGetTableColumnData({ sceneCode: props.sceneCode }), upLoadFileGetTableData(params)])
+    .then(([tableColumns, tableData]: [any, any]) => {
+      state.progressCount = 100;
+      table.value.tableColumns = tableColumns?.data || []; // 表头
+      changeTableData(tableData?.data || {});
+      closeLoadingProgress(state);
+      state.disabledCheckBtn = false;
+    })
+    .catch(() => {
+      closeLoadingProgress(state);
+    });
+};
+
+const isTableDataChange = () => {
+  if (JSON.stringify(table.value?.tableData) !== JSON.stringify(table.value?.originTableData)) {
+    return true;
+  } else {
+    return false;
   }
 };
 
-// 校验
+// 校验（返回校验信息针对整个excel）
 const checkFileFun = async () => {
-  // 校验信息及新列表数据
   try {
-    const params: any = {
-      data: table.value.tableData
+    const params = {
+      sceneCode: props.sceneCode,
+      fileName: state.fileName,
+      sessionId: localStorage.getItem("sessionId")
     };
     showProgressFun(state);
     const res: any = await checkFile(params);
     if (res.code == 200) {
       state.progressCount = 100;
-      // 列表及校验信息
-      table.value.tableData = [
-        {
-          company_by: "44",
-          equip_category: "22",
-          BTPART: "44",
-          errorField: {
-            company_by: true,
-            equip_category: true,
-            BTPART: true,
-            department_by: true,
-            SBSXSM0052: true,
-            equip_type: true
-          },
-          code: "11",
-          name: "22",
-          department_by: "44",
-          SBSXSM0052: "44",
-          id: 172704,
-          rn: 5,
-          equip_type: "44"
-        },
-        {
-          company_by: "我",
-          equip_category: "我",
-          BTPART: "我",
-          errorField: {
-            company_by: true,
-            equip_category: true,
-            BTPART: true,
-            department_by: true,
-            SBSXSM0052: true,
-            equip_type: true
-          },
-          code: "风骨色鬼",
-          name: "4如法网",
-          department_by: "我",
-          SBSXSM0052: "我",
-          id: 172703,
-          rn: 4,
-          equip_type: "我"
-        },
-        {
-          company_by: "我",
-          equip_category: "我",
-          BTPART: "我",
-          errorField: {
-            company_by: true,
-            equip_category: true,
-            BTPART: true,
-            department_by: true,
-            SBSXSM0052: true,
-            equip_type: true
-          },
-          code: "风骨色鬼",
-          name: "4如法网",
-          department_by: "我",
-          SBSXSM0052: "我",
-          id: 172703,
-          rn: 4,
-          equip_type: "我"
-        }
-      ];
-
-      state.errorDataMsg = [
-        {
-          equipType: 1022,
-          id: 172711,
-          rn: 4,
-          equipTypeName: "浮球",
-          errorMsg:
-            "字段【所属公司】为关联表型，值【我】不合法；设备类别【我】不一致；字段【所属分区】为关联表型，值【我】不合法；字段【所属部门】为关联表型，值【我】不合法；字段【所属通道】为关联表型，值【我】不合法；设备类型【我】不一致；"
-        },
-        {
-          equipType: 1022,
-          id: 172712,
-          rn: 5,
-          equipTypeName: "浮球",
-          errorMsg:
-            "字段【所属公司】为关联表型，值【44】不合法；设备类别【22】不一致；字段【所属分区】为关联表型，值【44】不合法；字段【所属部门】为关联表型，值【44】不合法；字段【所属通道】为关联表型，值【44】不合法；设备类型【44】不一致；"
-        }
-      ];
+      state.errorDataMsg = (res?.data || []).map((row: any) => {
+        return {
+          rn: row?.[0],
+          errorMsg: row?.[1]
+        };
+      });
       if (state.errorDataMsg?.length) {
         state.disabledErrorInfoBtn = false;
         errorMsgDialogRef.value?.openDialog();
@@ -414,6 +337,25 @@ const checkFileFun = async () => {
   }
 };
 
+const onCheckFile = async () => {
+  // 判断数据有无变化有的话更新接口，更新成功再校验
+  if (isTableDataChange()) {
+    const params = {
+      sceneCode: props.sceneCode,
+      sessionId: localStorage.getItem("sessionId"),
+      fileName: state.fileName,
+      pageIndex: state.pageNumber,
+      data: table.value?.tableData
+    };
+    await editFileExcelTableData(params).then((res: any) => {
+      changeTableData(res?.data || {});
+      checkFileFun();
+    });
+  } else {
+    checkFileFun();
+  }
+};
+
 // 错误信息
 const openErrorMsg = () => {
   errorMsgDialogRef.value?.openDialog();
@@ -422,14 +364,16 @@ const openErrorMsg = () => {
 // 导入
 const confirmImportFun = async () => {
   const params: any = {
-    data: table.value.tableData
+    sceneCode: props.sceneCode,
+    sessionId: localStorage.getItem("sessionId"),
+    fileName: state.fileName
   };
   showProgressFun(state);
   try {
     await confirmImport(params).then((res: any) => {
       if (res.code == 200) {
         state.progressCount = 100;
-        ElMessage.success(`${res?.msg}`);
+        ElMessage.success(`${res?.data}`);
       }
     });
   } finally {
@@ -446,8 +390,13 @@ const onStop = () => {
     dangerouslyUseHTMLString: true
   })
     .then(async () => {
+      const params: any = {
+        sceneCode: props.sceneCode,
+        sessionId: localStorage.getItem("sessionId"),
+        fileName: state.fileName
+      };
       try {
-        await cancelImport({}).then((res: any) => {
+        await cancelImport(params).then((res: any) => {
           if (res.code == 200) {
             ElMessage.success(`${res?.msg}`);
             closeLoadingProgress(state);
@@ -510,10 +459,6 @@ watch(
     .error-field {
       border: 1px solid red;
       border-radius: 5px;
-
-      // :deep(.el-input) {
-      //   border-color: red !important;
-      // }
     }
   }
 }
