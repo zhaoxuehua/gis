@@ -1,6 +1,22 @@
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
 
+import { read, utils, writeFileXLSX } from "xlsx";
+
+const useExportExcel = (excelData: string, fileName: string) => {
+  const wb = read(excelData);
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  // 从工作表生成数据行
+  const data = utils.sheet_to_json(ws);
+  // 从对象数组创建工作表
+  const worksheet = utils.json_to_sheet(data);
+  // 创建新工作簿
+  const workbook = utils.book_new();
+  // 工作表加到工作簿
+  utils.book_append_sheet(workbook, worksheet);
+  writeFileXLSX(workbook, fileName);
+};
+
 // 进度实现要求：导入时间超过2秒出现进度条，显示进度给一个假的，进度先按一定的速率更新，比如10秒从0-80%，如果时间更久则从80%-99降低进度条的更新速率
 const timer1: any = ref(null);
 const timer2: any = ref(null);
@@ -85,4 +101,13 @@ const fileNameMap: { [key: string]: string } = {
   gisLabelTypeExport: "标签类型信息.xlsx"
 };
 
-export { clearTimer, showProgressFun, processCountFun, closeLoadingProgress, beforeUploadFun, downloadFun, fileNameMap };
+export {
+  clearTimer,
+  showProgressFun,
+  processCountFun,
+  closeLoadingProgress,
+  beforeUploadFun,
+  downloadFun,
+  fileNameMap,
+  useExportExcel
+};

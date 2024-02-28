@@ -50,14 +50,16 @@
           :prop="column?.[0]"
           :label="column?.[1]"
           :sortable="false"
-          :min-width="120"
+          :min-width="column?.[0] == 'rowNum' ? 50 : 120"
         >
           <template #default="scope">
+            <!-- 错误校验样式，目前暂时后端未做 -->
             <template v-if="scope.row?.errorField?.[column?.[0]]">
               <el-input v-model="scope.row[column?.[0]]" :class="{ 'error-field': scope.row.errorField[column?.[0]] }" />
             </template>
             <template v-else>
-              <el-input v-model="scope.row[column?.[0]]" />
+              <span v-if="column?.[0] == 'rowNum'"></span>
+              <el-input v-else v-model="scope.row[column?.[0]]" />
             </template>
           </template>
         </el-table-column>
@@ -96,7 +98,7 @@ import {
   editFileExcelTableData
 } from "../../../api/gis";
 import ErrorMsgDialog from "./errorMsgDialog.vue";
-import { showProgressFun, closeLoadingProgress, beforeUploadFun, downloadFun, fileNameMap } from "./uploadFun";
+import { showProgressFun, closeLoadingProgress, beforeUploadFun, fileNameMap, useExportExcel } from "./uploadFun";
 import paginationCom from "../paginationCom.vue";
 
 const config: any = {
@@ -142,6 +144,15 @@ const resetFun = () => {
   state.pageSize = 20;
 };
 
+const createFormDataParams = (params: any = {}) => {
+  const formData = new FormData();
+  formData.append("sceneCode", props?.sceneCode);
+  for (const [key, value] of Object.entries(params)) {
+    formData.append(key, value as any);
+  }
+  return formData;
+};
+
 // 跟新列表的数据、总条数、当前页及条数
 const changeTableData = (data: any) => {
   state.pageNumber = data?.currentPage;
@@ -157,35 +168,39 @@ const getPagination = async (obj: any) => {
   obj?.isSizeChange && (state.pageNumber = 1);
 
   const fetchData = async () => {
-    const params: any = {
-      sceneCode: props.sceneCode,
-      sessionId: localStorage.getItem("sessionId"),
+    let formData = createFormDataParams({
+      sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName
-    };
+    });
     if (obj?.isSizeChange) {
-      params.pageSize = state.pageSize;
-      await getTableDataByChangePageSize(params).then((res: any) => {
-        changeTableData(res?.data || {});
+      formData.append("pageSize", state.pageSize);
+      await getTableDataByChangePageSize(formData).then((res: any) => {
+        if (res?.code == 200) {
+          changeTableData(res?.data || {});
+        }
       });
     } else {
-      params.pageNum = state.pageNumber;
-      await getTableDataByChangePageNumber(params).then((res: any) => {
-        changeTableData(res?.data || {});
+      formData.append("pageNum", state.pageNumber);
+      await getTableDataByChangePageNumber(formData).then((res: any) => {
+        if (res?.code == 200) {
+          changeTableData(res?.data || {});
+        }
       });
     }
   };
 
   // 判断数据有无变化有的话更新接口，更新成功再翻页
   if (isTableDataChange()) {
-    const params = {
-      sceneCode: props.sceneCode,
-      sessionId: localStorage.getItem("sessionId"),
+    let formData = createFormDataParams({
+      sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
       pageIndex: state.pageNumber,
-      data: table.value?.tableData
-    };
-    await editFileExcelTableData(params).then(async () => {
-      fetchData();
+      data: JSON.stringify(table.value?.tableData)
+    });
+    await editFileExcelTableData(formData).then(async (res: any) => {
+      if (res?.code == 200) {
+        fetchData();
+      }
     });
   } else {
     fetchData();
@@ -199,15 +214,19 @@ const table: any = ref({
   total: 0,
   onDelete: async (index: number) => {
     table.value.tableData?.splice(index, 1);
-    const params = {
-      sceneCode: props.sceneCode,
-      sessionId: localStorage.getItem("sessionId"),
+    const formData = createFormDataParams({
+      sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
       pageIndex: state.pageNumber,
-      data: table.value?.tableData
-    };
-    await editFileExcelTableData(params).then((res: any) => {
-      changeTableData(res?.data || {});
+      data: JSON.stringify(table.value?.tableData)
+    });
+
+    await editFileExcelTableData(formData).then((res: any) => {
+      if (res?.code == 200) {
+        table.value.total = table.value.total - 1 || 0;
+        ElMessage.success(`删除成功`);
+        table.value.originTableData = JSON.parse(JSON.stringify(table.value.tableData || []));
+      }
     });
   }
 });
@@ -228,9 +247,10 @@ const onClose = () => {
 
 const onDownloadTemplate = async () => {
   try {
-    const res: any = await downloadTemplate({ sceneCode: props?.sceneCode });
-    const url = window.URL.createObjectURL(new Blob([res]));
-    downloadFun(url, `${fileNameMap?.[props.sceneCode]}`);
+    const res: any = await downloadTemplate(createFormDataParams());
+    if (res?.code == 200) {
+      useExportExcel(res?.data, `${fileNameMap?.[props.sceneCode]}`);
+    }
   } catch (error) {
     console.log(error);
   }
@@ -243,50 +263,17 @@ const beforeUpload = (file: any) => {
 };
 
 const uploadFile = async (content: any) => {
-  let formData = new FormData();
-  formData.append("file", content.file);
-  const params = {
-    sceneCode: props.sceneCode,
-    sessionId: localStorage.getItem("sessionId"),
-    excelFile: formData
-  };
-
-  // mock 数据
-  // let tableColumns: any = {
-  //   data: [
-  //     ["name", "姓名"],
-  //     ["age", "年纪(必填)"]
-  //   ]
-  // };
-  // let tableData: any = {
-  //   data: {
-  //     currentPage: 1,
-  //     pageSize: 10,
-  //     totalNum: 3,
-  //     items: [
-  //       {
-  //         name: "名字1",
-  //         age: 11
-  //       },
-  //       {
-  //         name: "名字2",
-  //         age: 22
-  //       }
-  //     ]
-  //   }
-  // };
-  // state.progressCount = 100;
-  // table.value.tableColumns = tableColumns?.data || []; // 表头
-  // changeTableData(tableData?.data || {});
-  // closeLoadingProgress(state);
-  // state.disabledCheckBtn = false;
-  // mock数据结束
+  let formDataTableColumn = createFormDataParams();
+  let formDataTableData = createFormDataParams({
+    sessionId: localStorage.getItem("sessionId") || "",
+    excelFile: content.file
+  });
 
   // 再次传文件时需要将校验、错误信息、确认导入禁用
   resetFun();
   showProgressFun(state);
   // 获取表头数据及列表数据
-  Promise.all([upLoadFileGetTableColumnData({ sceneCode: props.sceneCode }), upLoadFileGetTableData(params)])
+  Promise.all([upLoadFileGetTableColumnData(formDataTableColumn), upLoadFileGetTableData(formDataTableData)])
     .then(([tableColumns, tableData]: [any, any]) => {
       state.progressCount = 100;
       table.value.tableColumns = tableColumns?.data || []; // 表头
@@ -310,13 +297,13 @@ const isTableDataChange = () => {
 // 校验（返回校验信息针对整个excel）
 const checkFileFun = async () => {
   try {
-    const params = {
-      sceneCode: props.sceneCode,
-      fileName: state.fileName,
-      sessionId: localStorage.getItem("sessionId")
-    };
+    let formData = createFormDataParams({
+      sessionId: localStorage.getItem("sessionId") || "",
+      fileName: state.fileName
+    });
+
     showProgressFun(state);
-    const res: any = await checkFile(params);
+    const res: any = await checkFile(formData);
     if (res.code == 200) {
       state.progressCount = 100;
       state.errorDataMsg = (res?.data || []).map((row: any) => {
@@ -340,16 +327,18 @@ const checkFileFun = async () => {
 const onCheckFile = async () => {
   // 判断数据有无变化有的话更新接口，更新成功再校验
   if (isTableDataChange()) {
-    const params = {
-      sceneCode: props.sceneCode,
-      sessionId: localStorage.getItem("sessionId"),
+    const formData = createFormDataParams({
+      sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
       pageIndex: state.pageNumber,
-      data: table.value?.tableData
-    };
-    await editFileExcelTableData(params).then((res: any) => {
-      changeTableData(res?.data || {});
-      checkFileFun();
+      data: JSON.stringify(table.value?.tableData)
+    });
+
+    await editFileExcelTableData(formData).then((res: any) => {
+      if (res?.code == 200) {
+        table.value.originTableData = JSON.parse(JSON.stringify(table.value.tableData || []));
+        checkFileFun();
+      }
     });
   } else {
     checkFileFun();
@@ -363,14 +352,13 @@ const openErrorMsg = () => {
 
 // 导入
 const confirmImportFun = async () => {
-  const params: any = {
-    sceneCode: props.sceneCode,
-    sessionId: localStorage.getItem("sessionId"),
+  const formData = createFormDataParams({
+    sessionId: localStorage.getItem("sessionId") || "",
     fileName: state.fileName
-  };
+  });
   showProgressFun(state);
   try {
-    await confirmImport(params).then((res: any) => {
+    await confirmImport(formData).then((res: any) => {
       if (res.code == 200) {
         state.progressCount = 100;
         ElMessage.success(`${res?.data}`);
@@ -390,15 +378,14 @@ const onStop = () => {
     dangerouslyUseHTMLString: true
   })
     .then(async () => {
-      const params: any = {
-        sceneCode: props.sceneCode,
-        sessionId: localStorage.getItem("sessionId"),
+      const formData = createFormDataParams({
+        sessionId: localStorage.getItem("sessionId") || "",
         fileName: state.fileName
-      };
+      });
       try {
-        await cancelImport(params).then((res: any) => {
+        await cancelImport(formData).then((res: any) => {
           if (res.code == 200) {
-            ElMessage.success(`${res?.msg}`);
+            ElMessage.success(`${res?.msg}` || "取消成功");
             closeLoadingProgress(state);
           }
         });

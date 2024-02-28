@@ -56,7 +56,7 @@ import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
-import { downloadFun, fileNameMap } from "./uploadFile/uploadFun";
+import { fileNameMap, useExportExcel } from "./uploadFile/uploadFun";
 import { tableDataExport } from "../../api/gis";
 
 const gisStore = useGisStore();
@@ -82,14 +82,14 @@ const onImport = () => {
 };
 
 const onExport = async () => {
-  const params = {
-    queryStr: "",
-    sceneCode: "gisLabel"
-  };
+  const formData = new FormData();
+  formData.append("sceneCode", "gisLabel");
+  formData.append("queryStr", JSON.stringify({ appId: gisStore?.mapIdentificationConfig?.mapParams }));
   try {
-    const res: any = await tableDataExport(params);
-    const url = window.URL.createObjectURL(new Blob([res]));
-    downloadFun(url, `${fileNameMap["gisLabelExport"]}`);
+    const res: any = await tableDataExport(formData);
+    if (res?.code == 200) {
+      useExportExcel(res?.data, `${fileNameMap["gisLabelExport"]}`);
+    }
   } catch (error) {
     console.log(error);
   }

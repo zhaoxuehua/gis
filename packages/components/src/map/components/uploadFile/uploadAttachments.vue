@@ -29,7 +29,7 @@
           <el-button type="primary" :disabled="state.isProcessing">选择本地文件</el-button>
         </el-upload>
 
-        <!-- 选择导入字段 -->
+        <!-- 选择导入字段需要后端返回添加 -->
       </div>
     </div>
     <div class="attachments-area" v-loading="state.loading && { text: state.loadingText }">
@@ -56,8 +56,9 @@ const config: any = {
   tip: "1. 仅支持单个压缩包上传，格式为.zip，最大不超过100M\n2. 请确认压缩包中的文件格式为.png、.jpg\n3. 文件命名方式为【唯一值_字段名称_序号】，（如XJ00_设备标签_1,则代表XJ001的字段'设备标签'中上传的第一个附件）\n4. 当前唯一值为设备编码"
 };
 
-withDefaults(defineProps<{ fileTitle: string }>(), {
-  fileTitle: () => "导入文件"
+const props = withDefaults(defineProps<{ fileTitle: string; sceneCode: string }>(), {
+  fileTitle: () => "导入文件",
+  sceneCode: () => ""
 });
 
 const errorMsgDialogRef = ref<InstanceType<typeof ErrorMsgDialog>>();
@@ -65,6 +66,7 @@ const uploadRef = ref();
 
 const state: any = reactive({
   open: false,
+  fileName: "",
   disabledErrorInfoBtn: true,
   disabledConfirmBtn: true,
   errorDataMsg: [],
@@ -100,6 +102,7 @@ const onClose = () => {
 
 const beforeUpload = (file: any) => {
   const { accept, size } = config;
+  state.fileName = file.name;
   return beforeUploadFun(file, accept, size, () => {
     state.selectedFiles = [];
     state.selectedFiles.push(file);
@@ -108,33 +111,23 @@ const beforeUpload = (file: any) => {
 
 // 后端返回校验信息
 const uploadFile = async (content: any) => {
-  let formData = new FormData();
-  formData.append("uploadFile", content.file);
   // 需要将确认导入禁用
   resetFun();
   showProgressFun(state);
+  let formData = createFormDataParams({
+    sessionId: localStorage.getItem("sessionId") || "",
+    excelFile: content.file
+  });
   try {
     const res: { [key: string]: any } = await upLoadFileGetTableData(formData);
     if (res.code == 200) {
       state.progressCount = 100;
-      state.errorDataMsg = [
-        {
-          equipType: 1022,
-          id: 172711,
-          fileName: "文件1",
-          equipTypeName: "浮球",
-          errorMsg:
-            "字段【所属公司】为关联表型，值【我】不合法；设备类别【我】不一致；字段【所属分区】为关联表型，值【我】不合法；字段【所属部门】为关联表型，值【我】不合法；字段【所属通道】为关联表型，值【我】不合法；设备类型【我】不一致；"
-        },
-        {
-          equipType: 1022,
-          id: 172712,
-          fileName: "文件2",
-          equipTypeName: "浮球",
-          errorMsg:
-            "字段【所属公司】为关联表型，值【44】不合法；设备类别【22】不一致；字段【所属分区】为关联表型，值【44】不合法；字段【所属部门】为关联表型，值【44】不合法；字段【所属通道】为关联表型，值【44】不合法；设备类型【44】不一致；"
-        }
-      ];
+      state.errorDataMsg = (res?.data || []).map((row: any) => {
+        return {
+          fileName: row?.[0],
+          errorMsg: row?.[1]
+        };
+      });
       if (state.errorDataMsg?.length) {
         state.disabledErrorInfoBtn = false;
         errorMsgDialogRef.value?.openDialog();
@@ -164,9 +157,13 @@ const confirmImportFun = async () => {
       dangerouslyUseHTMLString: true
     }
   ).then(async () => {
+    const formData = createFormDataParams({
+      sessionId: localStorage.getItem("sessionId") || "",
+      fileName: state.fileName
+    });
     showProgressFun(state);
     try {
-      await confirmImport({}).then((res: any) => {
+      await confirmImport(formData).then((res: any) => {
         if (res.code == 200) {
           state.progressCount = 100;
           ElMessage.success(`${res?.msg}`);
@@ -178,6 +175,15 @@ const confirmImportFun = async () => {
   });
 };
 
+const createFormDataParams = (params: any = {}) => {
+  const formData = new FormData();
+  formData.append("sceneCode", props?.sceneCode);
+  for (const [key, value] of Object.entries(params)) {
+    formData.append(key, value as any);
+  }
+  return formData;
+};
+
 // 取消
 const onStop = () => {
   ElMessageBox.confirm("<span style='color:red'>取消会把导入的数据都丢弃！确定取消？</span>", "提示", {
@@ -186,8 +192,12 @@ const onStop = () => {
     type: "warning",
     dangerouslyUseHTMLString: true
   }).then(async () => {
+    const formData = createFormDataParams({
+      sessionId: localStorage.getItem("sessionId") || "",
+      fileName: state.fileName
+    });
     try {
-      await cancelImport({}).then((res: any) => {
+      await cancelImport(formData).then((res: any) => {
         if (res.code == 200) {
           ElMessage.success(`${res?.msg}`);
           closeLoadingProgress(state);

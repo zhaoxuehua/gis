@@ -60,7 +60,7 @@ import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
-import { downloadFun, fileNameMap } from "./uploadFile/uploadFun";
+import { fileNameMap, useExportExcel } from "./uploadFile/uploadFun";
 import { tableDataExport } from "../../api/gis";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -86,14 +86,14 @@ const onImport = () => {
 };
 
 const onExport = async () => {
-  const params = {
-    queryStr: "",
-    sceneCode: "gisTree"
-  };
+  const formData = new FormData();
+  formData.append("sceneCode", "gisTree");
+  formData.append("queryStr", JSON.stringify({ appId: gisStore?.mapIdentificationConfig?.mapParams }));
   try {
-    const res: any = await tableDataExport(params);
-    const url = window.URL.createObjectURL(new Blob([res]));
-    downloadFun(url, `${fileNameMap["gisTreeExport"]}`);
+    const res: any = await tableDataExport(formData);
+    if (res?.code == 200) {
+      useExportExcel(res?.data, `${fileNameMap["gisTreeExport"]}`);
+    }
   } catch (error) {
     console.log(error);
   }
