@@ -426,7 +426,7 @@ const onImport = () => {
 const onExport = async () => {
   const formData = new FormData();
   formData.append("sceneCode", "gisLabelType");
-  formData.append("queryStr", "");
+  formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
   try {
     const res: any = await tableDataExport(formData);
     if (res?.code == 200) {
