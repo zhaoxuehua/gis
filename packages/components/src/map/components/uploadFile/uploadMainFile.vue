@@ -58,7 +58,7 @@
               <el-input v-model="scope.row[column?.[0]]" :class="{ 'error-field': scope.row.errorField[column?.[0]] }" />
             </template>
             <template v-else>
-              <span v-if="column?.[0] == 'rowNum'"></span>
+              <span v-if="column?.[0] == 'rowNum'">{{ scope.row?.[column?.[0]] }}</span>
               <el-input v-else v-model="scope.row[column?.[0]]" />
             </template>
           </template>
@@ -163,6 +163,8 @@ const changeTableData = (data: any) => {
 };
 
 const getPagination = async (obj: any) => {
+  const oldPageNumber = state.pageNumber;
+
   state.pageNumber = obj.page;
   state.pageSize = obj.limit;
   obj?.isSizeChange && (state.pageNumber = 1);
@@ -194,7 +196,7 @@ const getPagination = async (obj: any) => {
     let formData = createFormDataParams({
       sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
-      pageIndex: state.pageNumber,
+      pageIndex: oldPageNumber,
       data: JSON.stringify(table.value?.tableData)
     });
     await editFileExcelTableData(formData).then(async (res: any) => {
@@ -276,7 +278,7 @@ const uploadFile = async (content: any) => {
   Promise.all([upLoadFileGetTableColumnData(formDataTableColumn), upLoadFileGetTableData(formDataTableData)])
     .then(([tableColumns, tableData]: [any, any]) => {
       state.progressCount = 100;
-      table.value.tableColumns = tableColumns?.data || []; // 表头
+      table.value.tableColumns = [["rowNum", "行号"]]?.concat(tableColumns?.data || []); // 表头
       changeTableData(tableData?.data || {});
       closeLoadingProgress(state);
       state.disabledCheckBtn = false;
