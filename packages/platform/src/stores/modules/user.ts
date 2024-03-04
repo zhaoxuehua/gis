@@ -4,7 +4,7 @@ import { UserState } from "@/stores/interface";
 export const useUserStore = defineStore({
   id: "gis-user",
   state: (): UserState => ({
-    token: "569_f6e85cd020c94276af8cbfb57eafc594",
+    token: "",
     userInfo: { name: "admin" }
   }),
   getters: {},

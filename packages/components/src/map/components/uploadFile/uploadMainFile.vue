@@ -50,17 +50,11 @@
           :prop="column?.[0]"
           :label="column?.[1]"
           :sortable="false"
-          :min-width="column?.[0] == 'rowNum' ? 50 : 120"
+          :min-width="column?.[0] == 'rowNum' ? 60 : 120"
         >
           <template #default="scope">
-            <!-- 错误校验样式，目前暂时后端未做 -->
-            <template v-if="scope.row?.errorField?.[column?.[0]]">
-              <el-input v-model="scope.row[column?.[0]]" :class="{ 'error-field': scope.row.errorField[column?.[0]] }" />
-            </template>
-            <template v-else>
-              <span v-if="column?.[0] == 'rowNum'">{{ scope.row?.[column?.[0]] }}</span>
-              <el-input v-else v-model="scope.row[column?.[0]]" />
-            </template>
+            <span v-if="column?.[0] == 'rowNum'">{{ scope.row?.[column?.[0]] }}</span>
+            <input v-else v-model="scope.row[column?.[0]]" style="width: 100%; height: 40px; background: none; border: none" />
           </template>
         </el-table-column>
         <el-table-column prop="path" label="操作" width="80" fixed="right" v-if="table?.tableData?.length">
@@ -153,13 +147,31 @@ const createFormDataParams = (params: any = {}) => {
   return formData;
 };
 
+// 根据表头字段补齐对应的列表字段
+const completeTableDataCode = (tableHeaders: any[], tableData: any[]) => {
+  let data = JSON.parse(JSON.stringify(tableData || []));
+  const headersCode = tableHeaders?.map((subArray: any) => subArray?.[0]) || []; // 表头字段code
+  data?.forEach((item: any) => {
+    headersCode?.forEach((headerCode: any) => {
+      // 兼容后端返[null,null]
+      if (item) {
+        if (!(headerCode in item)) {
+          item[headerCode] = "";
+        }
+      }
+    });
+  });
+  return data;
+};
+
 // 跟新列表的数据、总条数、当前页及条数
 const changeTableData = (data: any) => {
   state.pageNumber = data?.currentPage;
   state.pageSize = data?.pageSize;
   table.value.total = data?.totalNum;
-  table.value.tableData = data?.items || [];
-  table.value.originTableData = JSON.parse(JSON.stringify(data?.items || []));
+  let containAllCodeData = completeTableDataCode(table.value?.tableColumns, data?.items || []); // table数据字段补全
+  table.value.tableData = containAllCodeData || [];
+  table.value.originTableData = JSON.parse(JSON.stringify(containAllCodeData || []));
 };
 
 const getPagination = async (obj: any) => {
@@ -215,19 +227,21 @@ const table: any = ref({
   tableData: [], // 列表数据
   total: 0,
   onDelete: async (index: number) => {
-    table.value.tableData?.splice(index, 1);
+    const updatedTableData = table.value.tableData.filter((item: any, i: number) => i !== index); // 过滤删除项
+
     const formData = createFormDataParams({
       sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
       pageIndex: state.pageNumber,
-      data: JSON.stringify(table.value?.tableData)
+      data: JSON.stringify(updatedTableData)
     });
 
     await editFileExcelTableData(formData).then((res: any) => {
       if (res?.code == 200) {
         table.value.total = table.value.total - 1 || 0;
-        ElMessage.success(`删除成功`);
+        table.value.tableData?.splice(index, 1); // 将删除项移除
         table.value.originTableData = JSON.parse(JSON.stringify(table.value.tableData || []));
+        ElMessage.success(`删除成功`);
       }
     });
   }
@@ -236,7 +250,7 @@ const table: any = ref({
 const openDialog = () => {
   state.open = true;
   state.loading = false;
-  state.canClickClose = false;
+  state.isProcessing = false;
   resetFun();
 };
 
