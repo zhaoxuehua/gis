@@ -137,7 +137,7 @@ export function editFileExcelTableData(params: any) {
 
 // 校验
 export function checkFile(params: any) {
-  return request.post(`/api/gis-service/serviceMonitor/statusLineChart`, params);
+  return request.post(`/api/gis-service/excel/import/validData`, params);
 }
 
 // 确认导入

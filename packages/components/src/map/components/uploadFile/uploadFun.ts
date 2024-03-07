@@ -100,6 +100,12 @@ const fileNameMap: { [key: string]: string } = {
   gisLabelTypeExport: "标签类型信息.xlsx"
 };
 
+const exportSuccessTipMap: { [key: string]: string } = {
+  gisLabel: "标签信息配置表格",
+  gisTree: "设备信息配置表格",
+  gisLabelType: "标签类型配置表格"
+};
+
 export {
   clearTimer,
   showProgressFun,
@@ -108,5 +114,6 @@ export {
   beforeUploadFun,
   downloadFun,
   fileNameMap,
-  useExportExcel
+  useExportExcel,
+  exportSuccessTipMap
 };

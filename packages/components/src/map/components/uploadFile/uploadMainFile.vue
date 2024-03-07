@@ -18,7 +18,10 @@
       </div>
       <div class="btn-area">
         <el-button type="primary" class="ml10" @click="onStop" :disabled="!state.isProcessing">取消</el-button>
-        <el-button type="primary" :disabled="state.disabledConfirmBtn || state.isProcessing" @click="confirmImportFun"
+        <el-button
+          type="primary"
+          :disabled="state.disabledConfirmBtn || state.isProcessing || state.isTableDataChange"
+          @click="confirmImportFun"
           >确认导入</el-button
         >
         <el-button type="primary" :disabled="state.disabledErrorInfoBtn || state.isProcessing" @click="openErrorMsg"
@@ -43,6 +46,7 @@
         :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
         stripe
         border
+        max-height="450"
       >
         <el-table-column
           v-for="(column, index) in table?.tableColumns"
@@ -92,7 +96,14 @@ import {
   editFileExcelTableData
 } from "../../../api/gis";
 import ErrorMsgDialog from "./errorMsgDialog.vue";
-import { showProgressFun, closeLoadingProgress, beforeUploadFun, fileNameMap, useExportExcel } from "./uploadFun";
+import {
+  showProgressFun,
+  closeLoadingProgress,
+  beforeUploadFun,
+  fileNameMap,
+  useExportExcel,
+  exportSuccessTipMap
+} from "./uploadFun";
 import paginationCom from "../paginationCom.vue";
 
 const config: any = {
@@ -122,7 +133,8 @@ const state: any = reactive({
   loadingText: " ",
   isProcessing: false, // 是否上传、校验、导入过程中
   pageNumber: 1,
-  pageSize: 20
+  pageSize: 20,
+  isTableDataChange: false
 });
 
 // 弹框打开及重新传文件
@@ -136,6 +148,7 @@ const resetFun = () => {
   table.value.tableData = [];
   state.pageNumber = 1;
   state.pageSize = 20;
+  state.isTableDataChange = false;
 };
 
 const createFormDataParams = (params: any = {}) => {
@@ -204,7 +217,7 @@ const getPagination = async (obj: any) => {
   };
 
   // 判断数据有无变化有的话更新接口，更新成功再翻页
-  if (isTableDataChange()) {
+  if (state.isTableDataChange) {
     let formData = createFormDataParams({
       sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
@@ -235,12 +248,15 @@ const table: any = ref({
       pageIndex: state.pageNumber,
       data: JSON.stringify(updatedTableData)
     });
+    const isCurrentDataChange = state.isTableDataChange; // 存储表格是否变更过
 
     await editFileExcelTableData(formData).then((res: any) => {
       if (res?.code == 200) {
         table.value.total = table.value.total - 1 || 0;
         table.value.tableData?.splice(index, 1); // 将删除项移除
         table.value.originTableData = JSON.parse(JSON.stringify(table.value.tableData || []));
+
+        isCurrentDataChange && (state.disabledConfirmBtn = true); // 删除后如果之前表格有变更则需要重新点击校验后再导入
         ElMessage.success(`删除成功`);
       }
     });
@@ -302,14 +318,6 @@ const uploadFile = async (content: any) => {
     });
 };
 
-const isTableDataChange = () => {
-  if (JSON.stringify(table.value?.tableData) !== JSON.stringify(table.value?.originTableData)) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
 // 校验（返回校验信息针对整个excel）
 const checkFileFun = async () => {
   try {
@@ -330,9 +338,12 @@ const checkFileFun = async () => {
       });
       if (state.errorDataMsg?.length) {
         state.disabledErrorInfoBtn = false;
+        state.disabledConfirmBtn = true;
         errorMsgDialogRef.value?.openDialog();
       } else {
+        state.disabledErrorInfoBtn = true;
         state.disabledConfirmBtn = false;
+        ElMessage.success("校验通过");
       }
     }
   } finally {
@@ -342,7 +353,7 @@ const checkFileFun = async () => {
 
 const onCheckFile = async () => {
   // 判断数据有无变化有的话更新接口，更新成功再校验
-  if (isTableDataChange()) {
+  if (state.isTableDataChange) {
     const formData = createFormDataParams({
       sessionId: localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
@@ -353,6 +364,7 @@ const onCheckFile = async () => {
     await editFileExcelTableData(formData).then((res: any) => {
       if (res?.code == 200) {
         table.value.originTableData = JSON.parse(JSON.stringify(table.value.tableData || []));
+        state.isTableDataChange = false;
         checkFileFun();
       }
     });
@@ -377,7 +389,7 @@ const confirmImportFun = async () => {
     await confirmImport(formData).then((res: any) => {
       if (res.code == 200) {
         state.progressCount = 100;
-        ElMessage.success(`${res?.data}`);
+        ElMessage.success(`成功向${exportSuccessTipMap?.[props.sceneCode]}导入${res?.data || 0}条数据 `);
       }
     });
   } finally {
@@ -401,7 +413,7 @@ const onStop = () => {
       try {
         await cancelImport(formData).then((res: any) => {
           if (res.code == 200) {
-            ElMessage.success(`${res?.msg}` || "取消成功");
+            ElMessage.success("取消成功");
             closeLoadingProgress(state);
           }
         });
@@ -422,6 +434,16 @@ watch(
     } else {
       state.loadingText = " ";
     }
+  }
+);
+watch(
+  () => table.value.tableData,
+  () => {
+    state.isTableDataChange = JSON.stringify(table.value?.tableData) !== JSON.stringify(table.value?.originTableData); // 数据变更确认导入禁用
+  },
+  {
+    deep: true,
+    flush: "post"
   }
 );
 </script>
@@ -457,8 +479,6 @@ watch(
     color: #000000;
   }
   .import-data-table {
-    max-height: 300px;
-    overflow: auto;
     .error-field {
       border: 1px solid red;
       border-radius: 5px;
