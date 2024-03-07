@@ -91,7 +91,6 @@
         ></Pagination>
       </div>
     </div>
-
     <LabelTypeEdit ref="labelTypeEditRef" @success-add="query.onQuery"></LabelTypeEdit>
     <DetailDialog ref="detailDialogRef" :constant="'GIS_LABEL_TYPE_DETAIL'" :title="'标签类型详情'" :width="900">
       <template #layerConfigId="scope">

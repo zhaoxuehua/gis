@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.5
+
+### Patch Changes
+
+- 关注实时生效+轨迹优化+船人颜色逻辑修改
+
 ## 2.0.4
 
 ### Patch Changes

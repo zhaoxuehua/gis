@@ -20,7 +20,7 @@
     </div>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="onClose">取消</el-button>
+        <!-- <el-button @click="onClose">取消</el-button> -->
       </span>
     </template>
   </el-dialog>
@@ -113,7 +113,10 @@ watch(
   ([currentProgressStatus, completedUploadCount, allChunksFileLength, isNeedRefresh]) => {
     state.currentProgressStatus = currentProgressStatus;
     state.percentage = allChunksFileLength ? Math.floor((completedUploadCount / allChunksFileLength) * 100) || 0 : 0;
-    if (isNeedRefresh && ["解压中"].includes(currentProgressStatus)) {
+    if (isNeedRefresh && ["解压完成"]?.includes(currentProgressStatus)) {
+      state.open = false;
+    }
+    if (isNeedRefresh && ["解压中"]?.includes(currentProgressStatus)) {
       refreshProgressStatus();
     } else {
       clearTimer();

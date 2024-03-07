@@ -299,8 +299,7 @@
   .el-dialog__body {
     height: 100%;
     max-height: calc(90vh - 111px) !important;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    overflow: hidden scroll;
   }
   .el-form {
     .el-input,
@@ -447,8 +446,7 @@
 }
 .el-dialog__body {
   max-height: calc(90vh - 111px) !important;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
 }
 .el-input__wrapper {
   width: 100%;
