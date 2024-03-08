@@ -83,8 +83,7 @@ const query = ref({
     query.value.onQuery();
   },
   onClear: () => {
-    query.value.params.legendName = "";
-    query.value.params.pageNumber = 1;
+    query.value.params = { ...defaultParams };
     query.value.onQuery();
   },
   querySearch: () => {
