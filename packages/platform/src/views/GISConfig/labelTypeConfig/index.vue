@@ -35,11 +35,14 @@
         <div class="title">标签类型配置</div>
         <div class="btn">
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_DELETE">
-            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
+            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon> 删除 </el-button>
           </Auth>
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_ADD">
-            <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon>{{ "创建" }}</el-button>
+            <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon> 创建 </el-button>
           </Auth>
+          <el-button type="primary" @click="onImport"><Icon src="UploadFilled"></Icon> 导入 </el-button>
+          <!-- <el-button type="primary" @click="onImportAttachments"> 导入附件 </el-button> -->
+          <el-button type="primary" @click.stop="onExport"><Icon src="Download" title="导出" :size="14"></Icon> 导出 </el-button>
         </div>
       </div>
       <el-table
@@ -209,6 +212,11 @@
         <el-tag :color="scope.row.backGroundColor" class="w_30"></el-tag>
       </template>
     </DetailDialog>
+    <UploadMainFileDialog
+      ref="uploadMainFilRef"
+      :fileTitle="'导入标签类型配置文件'"
+      sceneCode="gisLabelType"
+    ></UploadMainFileDialog>
   </div>
 </template>
 
@@ -216,12 +224,16 @@
 import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
+import UploadMainFileDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
+import { fileNameMap, useExportExcel } from "../../../../../components/src/map/components/uploadFile/uploadFun";
+
 import {
   getLabelTypeList,
   deleteLabelTypeCheck,
   deleteLabelType,
   getLabelTypeDetail,
-  getLegendConfigList
+  getLegendConfigList,
+  tableDataExport
 } from "@/api/visconfig.js";
 import { getBindAttributeMonitor } from "@/api/device.js";
 import { handleParam } from "@/utils/common.js";
@@ -260,8 +272,7 @@ const query = ref({
     query.value.onQuery();
   },
   onClear: () => {
-    query.value.params.pageNumber = 1;
-    query.value.params.name = "";
+    query.value.params = { ...defaultParams };
     query.value.onQuery();
   },
   querySearch: () => {
@@ -403,6 +414,26 @@ const sortChange = (val: SortChangeEvent) => {
   };
   query.value.params.isAsc = orderMap[val.order];
   table.value.getTableData();
+};
+
+const uploadMainFilRef = ref<InstanceType<typeof UploadMainFileDialog>>();
+
+const onImport = () => {
+  uploadMainFilRef.value?.openDialog();
+};
+
+const onExport = async () => {
+  const formData = new FormData();
+  formData.append("sceneCode", "gisLabelType");
+  formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
+  try {
+    const res: any = await tableDataExport(formData);
+    if (res?.code == 200) {
+      useExportExcel(res?.data, `${fileNameMap["gisLabelTypeExport"]}`);
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const onDelete = async () => {

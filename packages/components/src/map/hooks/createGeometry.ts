@@ -7,7 +7,7 @@ import type { LabelData } from "../type";
 // 简单获取数组维度（只根据第一个元素判断）
 export function multiArray(array: any) {
   let deep = 1;
-  let first = array[0];
+  let first = array?.[0];
   while (Array.isArray(first)) {
     deep++;
     first = first[0];
@@ -152,15 +152,15 @@ export function getCoordinate(positionCoordinates: any[]) {
   const deep = multiArray(coordinates);
   // 兼容老数据
   if (deep === 3) {
-    if (coordinates[0][0][0] < 180) {
+    if (coordinates?.[0]?.[0]?.[0] < 180) {
       coordinates = coordinates?.map((item: any) => item.map((coord: Coordinate) => fromLonLat(coord)));
     }
   } else if (deep === 2) {
-    if (coordinates[0][0] < 180) {
+    if (coordinates?.[0]?.[0] < 180) {
       coordinates = coordinates?.map((coord: any) => fromLonLat(coord));
     }
   } else {
-    if (coordinates[0] < 180) {
+    if (coordinates?.[0] < 180) {
       coordinates = fromLonLat(coordinates);
     }
   }
@@ -172,9 +172,9 @@ export function getLonLatCoordinate(positionCoordinates: any[]) {
   let coordinates = positionCoordinates;
   const deep = multiArray(coordinates);
   if (deep === 3) {
-    coordinates = coordinates.map((item: any) => item.map((coord: any) => toLonLat(coord)));
+    coordinates = coordinates?.map((item: any) => item?.map((coord: any) => toLonLat(coord)));
   } else if (deep === 2) {
-    coordinates = coordinates.map((coord: any) => toLonLat(coord));
+    coordinates = coordinates?.map((coord: any) => toLonLat(coord));
   } else {
     coordinates = toLonLat(coordinates);
   }
