@@ -390,6 +390,7 @@ const confirmImportFun = async () => {
       if (res.code == 200) {
         state.progressCount = 100;
         ElMessage.success(`成功向${exportSuccessTipMap?.[props.sceneCode]}导入${res?.data || 0}条数据 `);
+        state.open = false;
       }
     });
   } finally {
