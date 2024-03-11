@@ -167,6 +167,7 @@ const confirmImportFun = async () => {
         if (res.code == 200) {
           state.progressCount = 100;
           ElMessage.success(`${res?.msg}`);
+          state.open = false;
         }
       });
     } finally {
