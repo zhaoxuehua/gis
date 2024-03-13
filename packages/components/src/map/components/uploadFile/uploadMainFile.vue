@@ -2,7 +2,7 @@
   <el-dialog
     :title="config?.dialogTitle"
     v-model="state.open"
-    width="1140px"
+    width="1440px"
     :close-on-click-modal="false"
     append-to-body
     :before-close="onClose"
@@ -46,7 +46,7 @@
         :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
         stripe
         border
-        max-height="450"
+        max-height="500"
       >
         <el-table-column
           v-for="(column, index) in table?.tableColumns"
