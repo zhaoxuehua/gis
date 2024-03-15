@@ -4,7 +4,7 @@
     <div class="title">
       <div>
         <span>导航树</span>
-        <el-button type="primary" size="small" circle class="title-btn" @click.stop="onImport"
+        <el-button type="primary" v-if="gisStore.isEdit" size="small" circle class="title-btn" @click.stop="onImport"
           ><Icon src="Upload" title="导入" :size="14"></Icon
         ></el-button>
         <el-button type="primary" size="small" circle class="title-btn" @click.stop="onExport"
