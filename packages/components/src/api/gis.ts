@@ -107,7 +107,9 @@ export function getRealDataList(code: string, params: any) {
 // 导入模块封装
 // 下载模板
 export function downloadTemplate(params: any) {
-  return request.post(`/api/gis-service/excel/import/exportHeader`, params);
+  return request.post(`/api/gis-service/excel/import/exportHeader`, params, {
+    responseType: "blob"
+  });
 }
 
 // 上传excel获取表格表头
@@ -152,5 +154,7 @@ export function cancelImport(params: any) {
 
 // 数据导出
 export function tableDataExport(params: any) {
-  return request.post(`/api/gis-service/excel/import/export`, params);
+  return request.post(`/api/gis-service/excel/import/export`, params, {
+    responseType: "blob"
+  });
 }

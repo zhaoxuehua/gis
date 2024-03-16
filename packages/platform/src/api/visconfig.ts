@@ -111,7 +111,9 @@ export function getBindAttributeByType(isVisitObject: boolean, id: number) {
 }
 // 导出
 export function tableDataExport(params: any) {
-  return request.post(`/api/gis-service/excel/import/export`, params);
+  return request.post(`/api/gis-service/excel/import/export`, params, {
+    responseType: "blob"
+  });
 }
 
 // 标签

@@ -225,10 +225,14 @@
 
 <script lang="ts" setup name="LabelTypeConfig">
 import { onMounted, ref } from "vue";
+import { saveAs } from "file-saver";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
 import UploadMainFileDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
-import { fileNameMap, useExportExcel } from "../../../../../components/src/map/components/uploadFile/uploadFun";
+import {
+  fileNameMap
+  // useExportExcel
+} from "../../../../../components/src/map/components/uploadFile/uploadFun";
 
 import {
   getLabelTypeList,
@@ -431,9 +435,10 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
   try {
     const res: any = await tableDataExport(formData);
-    if (res?.code == 200) {
-      useExportExcel(res?.data, `${fileNameMap["gisLabelTypeExport"]}`);
-    }
+    saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+    // if (res?.code == 200) {
+    //   useExportExcel(res?.data, `${fileNameMap["gisLabelTypeExport"]}`);
+    // }
   } catch (error) {
     console.log(error);
   }

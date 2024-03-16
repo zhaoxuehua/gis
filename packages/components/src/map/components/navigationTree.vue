@@ -52,6 +52,7 @@
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { saveAs } from "file-saver";
 import { useGisStore } from "../../stores/modules/gis";
 import { getLabelInfoByEquipId, addAssociation } from "../../api/gis.js";
 import { cloneDeep } from "lodash";
@@ -60,7 +61,10 @@ import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
-import { fileNameMap, useExportExcel } from "./uploadFile/uploadFun";
+import {
+  fileNameMap
+  // useExportExcel
+} from "./uploadFile/uploadFun";
 import { tableDataExport } from "../../api/gis";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -91,9 +95,10 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ appId: gisStore?.mapIdentificationConfig?.mapParams }));
   try {
     const res: any = await tableDataExport(formData);
-    if (res?.code == 200) {
-      useExportExcel(res?.data, `${fileNameMap["gisTreeExport"]}`);
-    }
+    saveAs(new Blob([res]), `${fileNameMap["gisTreeExport"]}`);
+    // if (res?.code == 200) {
+    //   useExportExcel(res?.data, `${fileNameMap["gisTreeExport"]}`);
+    // }
   } catch (error) {
     console.log(error);
   }

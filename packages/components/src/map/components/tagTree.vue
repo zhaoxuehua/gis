@@ -51,12 +51,16 @@
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { saveAs } from "file-saver";
 import { useGisStore } from "../../stores/modules/gis";
 import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
-import { fileNameMap, useExportExcel } from "./uploadFile/uploadFun";
+import {
+  fileNameMap
+  // useExportExcel
+} from "./uploadFile/uploadFun";
 import { tableDataExport } from "../../api/gis";
 
 const gisStore = useGisStore();
@@ -87,9 +91,10 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ gisLabelInfoVo: { appId: gisStore?.mapIdentificationConfig?.mapParams } }));
   try {
     const res: any = await tableDataExport(formData);
-    if (res?.code == 200) {
-      useExportExcel(res?.data, `${fileNameMap["gisLabelExport"]}`);
-    }
+    saveAs(new Blob([res]), `${fileNameMap["gisLabelExport"]}`);
+    // if (res?.code == 200) {
+    //   useExportExcel(res?.data, `${fileNameMap["gisLabelExport"]}`);
+    // }
   } catch (error) {
     console.log(error);
   }
