@@ -84,6 +84,7 @@
 <script lang="ts" setup name="UploadMainFile">
 import { reactive, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { saveAs } from "file-saver";
 import {
   downloadTemplate,
   upLoadFileGetTableData,
@@ -101,7 +102,7 @@ import {
   closeLoadingProgress,
   beforeUploadFun,
   fileNameMap,
-  useExportExcel,
+  // useExportExcel,
   exportSuccessTipMap
 } from "./uploadFun";
 import paginationCom from "../paginationCom.vue";
@@ -280,9 +281,10 @@ const onClose = () => {
 const onDownloadTemplate = async () => {
   try {
     const res: any = await downloadTemplate(createFormDataParams());
-    if (res?.code == 200) {
-      useExportExcel(res?.data, `${fileNameMap?.[props.sceneCode]}`);
-    }
+    saveAs(new Blob([res]), `${fileNameMap?.[props.sceneCode]}`);
+    // if (res?.code == 200) {
+    //   useExportExcel(res?.data, `${fileNameMap?.[props.sceneCode]}`);
+    // }
   } catch (error) {
     console.log(error);
   }

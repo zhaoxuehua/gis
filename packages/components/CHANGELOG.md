@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.6
+
+### Patch Changes
+
+- 增加导入导出功能
+
 ## 2.0.5
 
 ### Patch Changes
