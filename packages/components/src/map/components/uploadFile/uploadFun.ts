@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import { read, utils, writeFileXLSX } from "xlsx";
 
+// 处理excel二进制字符串
 const useExportExcel = (excelData: string, fileName: string) => {
   const wb = read(excelData);
   const ws = wb.Sheets[wb.SheetNames[0]];

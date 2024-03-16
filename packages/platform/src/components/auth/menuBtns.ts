@@ -9,6 +9,8 @@ export const MENU_BTNS_AUTH = {
   VISCONFIG_GISCONFIG_LABELTYPECONFIG_ADD: "visconfig:gisconfig:labeltypeconfig:add", //创建
   VISCONFIG_GISCONFIG_LABELTYPECONFIG_EDIT: "visconfig:gisconfig:labeltypeconfig:edit", //编辑
   VISCONFIG_GISCONFIG_LABELTYPECONFIG_DELETE: "visconfig:gisconfig:labeltypeconfig:delete", //删除
+  VISCONFIG_GISCONFIG_LABELTYPECONFIG_IMPORT: "visconfig:gisconfig:labeltypeconfig:import", //导入
+  VISCONFIG_GISCONFIG_LABELTYPECONFIG_EXPORT: "visconfig:gisconfig:labeltypeconfig:export", //导出
 
   // GIS配置-标签信息
   VISCONFIG_GISCONFIG_LABELCONFIG_DELETE: "visconfig:gisconfig:labelconfig:delete", //删除

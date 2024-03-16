@@ -40,9 +40,12 @@
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_ADD">
             <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon> 创建 </el-button>
           </Auth>
-          <el-button type="primary" @click="onImport"><Icon src="UploadFilled"></Icon> 导入 </el-button>
-          <!-- <el-button type="primary" @click="onImportAttachments"> 导入附件 </el-button> -->
-          <el-button type="primary" @click.stop="onExport"><Icon src="Download" title="导出" :size="14"></Icon> 导出 </el-button>
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_IMPORT">
+            <el-button type="primary" @click="onImport"><Icon src="UploadFilled"></Icon> 导入 </el-button>
+          </Auth>
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_EXPORT">
+            <el-button type="primary" @click.stop="onExport"><Icon src="Download"></Icon> 导出 </el-button>
+          </Auth>
         </div>
       </div>
       <el-table
@@ -222,10 +225,14 @@
 
 <script lang="ts" setup name="LabelTypeConfig">
 import { onMounted, ref } from "vue";
+import { saveAs } from "file-saver";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
 import UploadMainFileDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
-import { fileNameMap, useExportExcel } from "../../../../../components/src/map/components/uploadFile/uploadFun";
+import {
+  fileNameMap
+  // useExportExcel
+} from "../../../../../components/src/map/components/uploadFile/uploadFun";
 
 import {
   getLabelTypeList,
@@ -428,9 +435,10 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
   try {
     const res: any = await tableDataExport(formData);
-    if (res?.code == 200) {
-      useExportExcel(res?.data, `${fileNameMap["gisLabelTypeExport"]}`);
-    }
+    saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+    // if (res?.code == 200) {
+    //   useExportExcel(res?.data, `${fileNameMap["gisLabelTypeExport"]}`);
+    // }
   } catch (error) {
     console.log(error);
   }
