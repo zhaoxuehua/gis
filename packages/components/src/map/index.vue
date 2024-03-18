@@ -836,7 +836,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       popupData.featureName = featureName;
       popupData.relationMap = trackPointInfo || gisStore?.relationMap[featureCode] || currentRealData; // 轨迹圆圈数据|绘制标签关联信息|实时数据信息
       if (leftClickDialogPosition.value === "current") {
-        overlay.setPosition(center);
+        // 解决首次点击overlay没有完全移动到可是区域的问题
+        requestAnimationFrame(() => {
+          overlay.setPosition(center);
+        });
       }
     };
 
@@ -888,7 +891,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             map.popupInfo({ featureCode, featureName, center }, trackPointInfo);
           } else {
             // 绘制标签或实时数据标签
-            const currentRealData = (map.get("trackInfoMap") || [])?.filter((item: any) => item.code === featureCode)?.[0]; // 获取实时数据（判断点击的是实时数据还是绘制数据）
+            const currentRealData = (map.get("trackInfoMap") || [])?.filter((item: any) => item.code === featureCode)?.[0]; // 获取实时数据（判断点击的是实时数据还是绘制数据）=
             map.popupInfo({ featureCode, featureName, center });
             // 以下是选中+编辑要素逻辑
             // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
