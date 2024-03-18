@@ -347,8 +347,9 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
         }, 200);
       }
     );
+  } else {
+    SelectFeatureAndPopData();
   }
-  SelectFeatureAndPopData();
 
   // 选中及弹框
   function SelectFeatureAndPopData() {
@@ -379,7 +380,8 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
       }
     }
     let featureName = labelInfo?.name;
-    map.popupInfo({ featureCode, featureName, center });
+    // 地图上直接点击要素不需要走弹框弹出（因为地图上有的要素需要选中状态有的不需要所以直接根据需要调用弹框展示及要素显示）
+    !isFeatureClick && map.popupInfo({ featureCode, featureName, center });
     clearSelectFeatureTimer.value = window.setTimeout(function () {
       // 3秒后清空选中状态
       clearSelectedFeature(map);
