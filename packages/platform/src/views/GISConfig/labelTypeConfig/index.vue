@@ -435,10 +435,23 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
   try {
     const res: any = await tableDataExport(formData);
-    saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
-    // if (res?.code == 200) {
-    //   useExportExcel(res?.data, `${fileNameMap["gisLabelTypeExport"]}`);
-    // }
+    const reader: any = new FileReader();
+    reader.onload = function () {
+      console.log(8888888);
+      try {
+        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
+        if (resData?.code) {
+          if (resData.code !== 200) {
+            ElMessage.error(resData.msg || "接口异常");
+          }
+        } else {
+          saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+        }
+      } catch (error) {
+        saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+      }
+    };
+    reader.readAsText(res);
   } catch (error) {
     console.log(error);
   }

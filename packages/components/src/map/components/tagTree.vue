@@ -91,10 +91,22 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ gisLabelInfoVo: { appId: gisStore?.mapIdentificationConfig?.mapParams } }));
   try {
     const res: any = await tableDataExport(formData);
-    saveAs(new Blob([res]), `${fileNameMap["gisLabelExport"]}`);
-    // if (res?.code == 200) {
-    //   useExportExcel(res?.data, `${fileNameMap["gisLabelExport"]}`);
-    // }
+    const reader: any = new FileReader();
+    reader.onload = function () {
+      try {
+        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
+        if (resData?.code) {
+          if (resData.code !== 200) {
+            ElMessage.error(resData.msg || "接口异常");
+          }
+        } else {
+          saveAs(new Blob([res]), `${fileNameMap["gisLabelExport"]}`);
+        }
+      } catch (error) {
+        saveAs(new Blob([res]), `${fileNameMap["gisLabelExport"]}`);
+      }
+    };
+    reader.readAsText(res);
   } catch (error) {
     console.log(error);
   }
