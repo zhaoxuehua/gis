@@ -281,7 +281,14 @@ const onClose = () => {
 const onDownloadTemplate = async () => {
   try {
     const res: any = await downloadTemplate(createFormDataParams());
-    saveAs(new Blob([res]), `${fileNameMap?.[props.sceneCode]}`);
+    // 文件流要不直接文件的二进制流，要不就是正常的接口抛错的结构
+    if (res?.code) {
+      if (res?.code !== 200) {
+        ElMessage.error(`${res?.msg}` || "接口异常");
+      }
+    } else {
+      saveAs(new Blob([res]), `${fileNameMap?.[props.sceneCode]}`);
+    }
     // if (res?.code == 200) {
     //   useExportExcel(res?.data, `${fileNameMap?.[props.sceneCode]}`);
     // }

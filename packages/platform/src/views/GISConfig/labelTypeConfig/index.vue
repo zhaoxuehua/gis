@@ -435,7 +435,13 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
   try {
     const res: any = await tableDataExport(formData);
-    saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+    if (res?.code) {
+      if (res?.code !== 200) {
+        ElMessage.error(`${res?.msg}` || "接口异常");
+      }
+    } else {
+      saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+    }
     // if (res?.code == 200) {
     //   useExportExcel(res?.data, `${fileNameMap["gisLabelTypeExport"]}`);
     // }

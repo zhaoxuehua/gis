@@ -95,7 +95,13 @@ const onExport = async () => {
   formData.append("queryStr", JSON.stringify({ appId: gisStore?.mapIdentificationConfig?.mapParams }));
   try {
     const res: any = await tableDataExport(formData);
-    saveAs(new Blob([res]), `${fileNameMap["gisTreeExport"]}`);
+    if (res?.code) {
+      if (res?.code !== 200) {
+        ElMessage.error(`${res?.msg}` || "接口异常");
+      }
+    } else {
+      saveAs(new Blob([res]), `${fileNameMap["gisTreeExport"]}`);
+    }
     // if (res?.code == 200) {
     //   useExportExcel(res?.data, `${fileNameMap["gisTreeExport"]}`);
     // }
