@@ -281,17 +281,23 @@ const onClose = () => {
 const onDownloadTemplate = async () => {
   try {
     const res: any = await downloadTemplate(createFormDataParams());
-    // 文件流要不直接文件的二进制流，要不就是正常的接口抛错的结构
-    if (res?.code) {
-      if (res?.code !== 200) {
-        ElMessage.error(`${res?.msg}` || "接口异常");
+    const reader: any = new FileReader();
+    reader.onload = function () {
+      try {
+        const resData = JSON.parse(reader.result); // 尝试将 Blob 数据转换后的内容解析为对象
+        if (resData?.code) {
+          if (resData.code !== 200) {
+            ElMessage.error(resData.msg || "接口异常");
+          }
+        } else {
+          saveAs(new Blob([res]), `${fileNameMap?.[props.sceneCode]}`);
+        }
+      } catch (error) {
+        // 返回文件流时
+        saveAs(new Blob([res]), `${fileNameMap?.[props.sceneCode]}`);
       }
-    } else {
-      saveAs(new Blob([res]), `${fileNameMap?.[props.sceneCode]}`);
-    }
-    // if (res?.code == 200) {
-    //   useExportExcel(res?.data, `${fileNameMap?.[props.sceneCode]}`);
-    // }
+    };
+    reader.readAsText(res);
   } catch (error) {
     console.log(error);
   }
