@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.7
+
+### Patch Changes
+
+- 修复底层弹框未全部显示 bug
+
 ## 2.0.6
 
 ### Patch Changes
