@@ -179,9 +179,9 @@ const completeTableDataCode = (tableHeaders: any[], tableData: any[]) => {
 };
 
 // 跟新列表的数据、总条数、当前页及条数
-const changeTableData = (data: any) => {
+const changeTableData = (data: any, isUpdatePage = true) => {
   state.pageNumber = data?.currentPage;
-  state.pageSize = data?.pageSize;
+  isUpdatePage && (state.pageSize = data?.pageSize);
   table.value.total = data?.totalNum;
   let containAllCodeData = completeTableDataCode(table.value?.tableColumns, data?.items || []); // table数据字段补全
   table.value.tableData = containAllCodeData || [];
@@ -211,7 +211,7 @@ const getPagination = async (obj: any) => {
       formData.append("pageNum", state.pageNumber);
       await getTableDataByChangePageNumber(formData).then((res: any) => {
         if (res?.code == 200) {
-          changeTableData(res?.data || {});
+          changeTableData(res?.data || {}, false);
         }
       });
     }
