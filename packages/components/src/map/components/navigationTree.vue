@@ -2,13 +2,15 @@
 <template>
   <div class="nav-tree" @click.stop>
     <div class="title">
-      <span>导航树</span>
-      <!-- <el-link type="primary" class="title-icon" title="下载模板" :underline="false"
-        ><i class="iconfont icon-cloud-download"></i
-      ></el-link>
-      <el-link type="primary" class="title-icon" title="上传" :underline="false"
-        ><i class="iconfont icon-cloud-upload"></i
-      ></el-link> -->
+      <div>
+        <span>导航树</span>
+        <el-button type="primary" v-if="gisStore.isEdit" size="small" circle class="title-btn" @click.stop="onImport"
+          ><Icon src="Upload" title="导入" :size="14"></Icon
+        ></el-button>
+        <el-button type="primary" size="small" circle class="title-btn" @click.stop="onExport"
+          ><Icon src="Download" title="导出" :size="14"></Icon
+        ></el-button>
+      </div>
       <Icon src="Close" :size="14" @click.stop="onClose" class="icon"></Icon>
     </div>
     <div class="nav-tree-content">
@@ -45,10 +47,12 @@
       </div>
     </div>
   </div>
+  <UploadMainFileDialog ref="uploadMainFilRef" :fileTitle="'导入设备信息文件'" sceneCode="gisTree"></UploadMainFileDialog>
 </template>
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { saveAs } from "file-saver";
 import { useGisStore } from "../../stores/modules/gis";
 import { getLabelInfoByEquipId, addAssociation } from "../../api/gis.js";
 import { cloneDeep } from "lodash";
@@ -56,6 +60,12 @@ import { cloneDeep } from "lodash";
 import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
+import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
+import {
+  fileNameMap
+  // useExportExcel
+} from "./uploadFile/uploadFun";
+import { tableDataExport } from "../../api/gis";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -72,6 +82,39 @@ const state: { defaultProps: { [key: string]: any }; expandedKeys: any[]; filter
   filterText: "", // 树搜索字段
   expandedKeys: [] // 已展开的节点键
 });
+
+const uploadMainFilRef = ref<InstanceType<typeof UploadMainFileDialog>>();
+
+const onImport = () => {
+  uploadMainFilRef.value?.openDialog();
+};
+
+const onExport = async () => {
+  const formData = new FormData();
+  formData.append("sceneCode", "gisTree");
+  formData.append("queryStr", JSON.stringify({ appId: gisStore?.mapIdentificationConfig?.mapParams }));
+  try {
+    const res: any = await tableDataExport(formData);
+    const reader: any = new FileReader();
+    reader.onload = function () {
+      try {
+        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
+        if (resData?.code) {
+          if (resData.code !== 200) {
+            ElMessage.error(resData.msg || "接口异常");
+          }
+        } else {
+          saveAs(new Blob([res]), fileNameMap["gisTreeExport"]);
+        }
+      } catch (error) {
+        saveAs(new Blob([res]), fileNameMap["gisTreeExport"]);
+      }
+    };
+    reader.readAsText(res);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // 关闭导航树
 const onClose = () => {
@@ -243,50 +286,47 @@ onMounted(() => {});
   height: 500px;
   overflow: auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-}
-.title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 60px;
-  background-color: #f7f7fa;
-}
-.title span {
-  font-size: 16px;
-}
-.nav-tree .title {
-  padding: 0 20px;
-}
-.title .icon {
-  cursor: pointer;
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 60px;
+    padding: 0 20px;
+    background-color: #f7f7fa;
+    .title-btn {
+      margin-left: 15px;
+      i {
+        margin: auto;
+      }
+    }
+    span {
+      font-size: 16px;
+    }
+    .icon {
+      cursor: pointer;
+    }
+  }
 }
 .nav-tree-content {
   height: calc(100% - 60px);
   padding: 0 20px;
-}
-.nav-tree-content-filter {
-  width: 100%;
-  margin: 20px 0;
-}
-.tree-content {
-  height: calc(100% - 92px);
-}
-.custom-tree-node {
-  display: flex;
-  align-items: center;
-  color: #999999;
-  &.active {
-    color: #606266;
+  .nav-tree-content-filter {
+    width: 100%;
+    margin: 20px 0;
   }
-  .highlight {
-    color: var(--el-color-primary);
-  }
-  .action-btns {
-    padding-left: 5px;
-    visibility: hidden;
-    i {
-      margin-right: 6px;
+  .tree-content {
+    height: calc(100% - 92px);
+    .custom-tree-node {
+      display: flex;
+      align-items: center;
+      color: #999999;
+      &.active {
+        color: #606266;
+      }
+      .highlight {
+        color: var(--el-color-primary);
+      }
     }
   }
 }

@@ -3,7 +3,23 @@
     <div class="one-search">
       <el-form :model="query.params" @submit.prevent="query.querySearch">
         <el-row :gutter="20">
-          <el-col :span="6">
+          <el-col :span="5">
+            <el-form-item label="标签编码：">
+              <el-autocomplete
+                class="inline-input"
+                v-model="query.params.code"
+                :fetch-suggestions="querySearchCode"
+                placeholder="请输入..."
+                :trigger-on-focus="false"
+                @select="handleSelect"
+                value-key="code"
+                clearable
+                @clear="query.querySearch"
+              >
+              </el-autocomplete>
+            </el-form-item>
+          </el-col>
+          <el-col :span="5">
             <el-form-item label="标签名称：">
               <el-autocomplete
                 class="inline-input"
@@ -17,6 +33,37 @@
                 @clear="query.querySearch"
               >
               </el-autocomplete>
+            </el-form-item>
+          </el-col>
+          <el-col :span="5">
+            <el-form-item label="标签类型：">
+              <el-select
+                filterable
+                v-model="query.params.labelTypeId"
+                clearable
+                placeholder="请选择..."
+                @change="query.querySearch"
+              >
+                <el-option
+                  v-for="(item, index) in labelTypeList.data"
+                  :key="index"
+                  :label="item.name"
+                  :value="item.id"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="5">
+            <el-form-item label="所属图层：">
+              <el-select
+                filterable
+                v-model="query.params.refLayerId"
+                clearable
+                placeholder="请选择..."
+                @change="query.querySearch"
+              >
+                <el-option v-for="(item, index) in layerList.data" :key="index" :label="item.name" :value="item.id"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col style="flex: 1; text-align: end">
@@ -34,7 +81,7 @@
         <div class="title">标签信息</div>
         <div class="btn">
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELCONFIG_DELETE">
-            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
+            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>删除</el-button>
           </Auth>
           <!-- <el-button type="primary" icon="el-icon-plus" @click="onAdd">{{ '创建' }}</el-button> -->
         </div>
@@ -103,7 +150,8 @@
 <script lang="ts" setup name="LayerConfig">
 import { onMounted, ref } from "vue";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
-import { getLabelList, deleteLabelCheck, deleteLabel } from "@/api/visconfig.js";
+import { getLabelList, deleteLabelCheck, deleteLabel, getLabelTypeList, getLayerList } from "@/api/visconfig.js";
+
 import { handleParam } from "@/utils/common.js";
 import { ElMessage, ElMessageBox } from "element-plus";
 import DetailDialog from "@/components/detailDialog/index.vue";
@@ -115,7 +163,10 @@ const detailDialogRef = ref<InstanceType<typeof DetailDialog>>();
 
 // 查询条件
 const defaultParams = {
+  code: "",
   name: "",
+  labelTypeId: "",
+  refLayerId: "",
   orderByColumn: "",
   isAsc: "",
   pageNumber: 1,
@@ -130,8 +181,7 @@ const query = ref({
     query.value.onQuery();
   },
   onClear: () => {
-    query.value.params.name = "";
-    query.value.params.pageNumber = 1;
+    query.value.params = { ...defaultParams };
     query.value.onQuery();
   },
   querySearch: () => {
@@ -212,11 +262,28 @@ const onDelete = async () => {
   table.value.loading = false;
 };
 
+const querySearchCode: (queryString: string, cb: (arg: any) => void) => void = async (
+  queryString: string,
+  cb: (arg: any) => void
+) => {
+  queryAutoCompleteList(queryString, "code", cb);
+};
+
 const querySearchName: (queryString: string, cb: (arg: any) => void) => void = async (
   queryString: string,
   cb: (arg: any) => void
 ) => {
-  const res: { [key: string]: any } = await getLabelList("?pageSize=10000&pageNumber=1", { name: queryString });
+  queryAutoCompleteList(queryString, "name", cb);
+};
+
+const queryAutoCompleteList: (queryString: string, argName: string, cb: (arg: any) => void) => void = async (
+  queryString: string,
+  argName: string,
+  cb: (arg: any) => void
+) => {
+  const requestBody: { [key: string]: any } = {};
+  requestBody[argName] = queryString;
+  const res: { [key: string]: any } = await getLabelList("?pageSize=10000&pageNumber=1", requestBody);
   cb(res.data.items);
 };
 
@@ -224,7 +291,53 @@ const handleSelect = async () => {
   query.value.querySearch();
 };
 
+// 标签类型列表
+const labelTypeList = ref<{
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getLabelTypeList(
+      ...(handleParam({ pageNumber: 1, pageSize: 1000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+    );
+    if (res.data.items) {
+      labelTypeList.value.data = res.data.items;
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
+// 图层列表
+const layerList = ref<{
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+  }>;
+  fetchData: Function;
+}>({
+  data: [],
+  fetchData: async () => {
+    const res: { [key: string]: any } = await getLayerList(
+      ...(handleParam({ pageNumber: 1, pageSize: 1000, name: "", orderByColumn: "", isAsc: "" }) as [string, object])
+    );
+    if (res.data.items) {
+      layerList.value.data = res.data.items;
+    } else {
+      ElMessage.error("接口异常");
+    }
+  }
+});
+
 onMounted(() => {
+  labelTypeList.value.fetchData();
+  layerList.value.fetchData();
   table.value.getTableData();
 });
 </script>

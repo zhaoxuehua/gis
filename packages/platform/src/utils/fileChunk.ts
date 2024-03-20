@@ -40,22 +40,47 @@ export function splitFile(file: any, chunkSize: number) {
   file:文件
 */
 
-export function getFileUniqueHash(file: any) {
-  return new Promise((resolve, reject) => {
+export function getFileUniqueHash(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const chunkSize = 1024 * 1024 * 1024; // 1 GB
+    const chunks = Math.ceil(file.size / chunkSize);
+    let currentChunk = 0;
+    const hashArray: string[] = [];
+
     const reader = new FileReader();
+
     reader.onload = function (event: any) {
       const buffer = event?.target?.result;
       const hashHex = SHA256(buffer)?.toString();
-      // const wordArray = lib.WordArray?.create(buffer); // 用字节计算会导致浏览器内存崩溃（需分片拼接计算）
-      // const hashHex = SHA256(wordArray)?.toString(enc.Hex);
-      resolve(hashHex);
+      hashArray.push(hashHex);
+
+      currentChunk++;
+
+      if (currentChunk < chunks) {
+        loadNextChunk();
+      } else {
+        const finalHashHex = SHA256(hashArray?.join(""))?.toString();
+        resolve(finalHashHex);
+      }
     };
+
     reader.onerror = function (error) {
       reject(error);
     };
-    reader.readAsArrayBuffer(file); // 读取文件
+
+    function loadNextChunk() {
+      const start = currentChunk * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
+
+      const slice = file?.slice(start, end);
+      reader.readAsArrayBuffer(slice);
+    }
+
+    loadNextChunk();
   });
 }
+
+// 跟后端一致计算hash值且分片计算的方法，太慢
 // export function getFileUniqueHash(file: any) {
 //   return new Promise((resolve, reject) => {
 //     const chunkSize = 10 * 1024 * 1024; // 10MB

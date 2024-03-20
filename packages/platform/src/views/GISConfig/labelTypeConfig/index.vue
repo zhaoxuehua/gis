@@ -35,10 +35,16 @@
         <div class="title">标签类型配置</div>
         <div class="btn">
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_DELETE">
-            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon>{{ "删除" }}</el-button>
+            <el-button @click="onDelete" :disabled="!table.ids.length"><Icon src="Delete"></Icon> 删除 </el-button>
           </Auth>
           <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_ADD">
-            <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon>{{ "创建" }}</el-button>
+            <el-button type="primary" @click="onAdd"><Icon src="Plus"></Icon> 创建 </el-button>
+          </Auth>
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_IMPORT">
+            <el-button type="primary" @click="onImport"><Icon src="UploadFilled"></Icon> 导入 </el-button>
+          </Auth>
+          <Auth :value="MENU_BTNS_AUTH.VISCONFIG_GISCONFIG_LABELTYPECONFIG_EXPORT">
+            <el-button type="primary" @click.stop="onExport"><Icon src="Download"></Icon> 导出 </el-button>
           </Auth>
         </div>
       </div>
@@ -88,7 +94,6 @@
         ></Pagination>
       </div>
     </div>
-
     <LabelTypeEdit ref="labelTypeEditRef" @success-add="query.onQuery"></LabelTypeEdit>
     <DetailDialog ref="detailDialogRef" :constant="'GIS_LABEL_TYPE_DETAIL'" :title="'标签类型详情'" :width="900">
       <template #layerConfigId="scope">
@@ -210,19 +215,32 @@
         <el-tag :color="scope.row.backGroundColor" class="w_30"></el-tag>
       </template>
     </DetailDialog>
+    <UploadMainFileDialog
+      ref="uploadMainFilRef"
+      :fileTitle="'导入标签类型配置文件'"
+      sceneCode="gisLabelType"
+    ></UploadMainFileDialog>
   </div>
 </template>
 
 <script lang="ts" setup name="LabelTypeConfig">
 import { onMounted, ref } from "vue";
+import { saveAs } from "file-saver";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
+import UploadMainFileDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
+import {
+  fileNameMap
+  // useExportExcel
+} from "../../../../../components/src/map/components/uploadFile/uploadFun";
+
 import {
   getLabelTypeList,
   deleteLabelTypeCheck,
   deleteLabelType,
   getLabelTypeDetail,
-  getLegendConfigList
+  getLegendConfigList,
+  tableDataExport
 } from "@/api/visconfig.js";
 import { getBindAttributeMonitor } from "@/api/device.js";
 import { handleParam } from "@/utils/common.js";
@@ -261,8 +279,7 @@ const query = ref({
     query.value.onQuery();
   },
   onClear: () => {
-    query.value.params.pageNumber = 1;
-    query.value.params.name = "";
+    query.value.params = { ...defaultParams };
     query.value.onQuery();
   },
   querySearch: () => {
@@ -404,6 +421,40 @@ const sortChange = (val: SortChangeEvent) => {
   };
   query.value.params.isAsc = orderMap[val.order];
   table.value.getTableData();
+};
+
+const uploadMainFilRef = ref<InstanceType<typeof UploadMainFileDialog>>();
+
+const onImport = () => {
+  uploadMainFilRef.value?.openDialog();
+};
+
+const onExport = async () => {
+  const formData = new FormData();
+  formData.append("sceneCode", "gisLabelType");
+  formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
+  try {
+    const res: any = await tableDataExport(formData);
+    const reader: any = new FileReader();
+    reader.onload = function () {
+      console.log(8888888);
+      try {
+        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
+        if (resData?.code) {
+          if (resData.code !== 200) {
+            ElMessage.error(resData.msg || "接口异常");
+          }
+        } else {
+          saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+        }
+      } catch (error) {
+        saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
+      }
+    };
+    reader.readAsText(res);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const onDelete = async () => {

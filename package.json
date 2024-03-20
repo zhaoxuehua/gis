@@ -20,6 +20,7 @@
     "@changesets/pre": "^1.0.14",
     "@changesets/read": "^0.5.9",
     "@changesets/types": "^5.2.1",
+    "@types/file-saver": "^2.0.7",
     "@types/js-md5": "^0.7.0",
     "@types/nprogress": "^0.2.0",
     "@types/qs": "^6.9.7",
@@ -82,7 +83,9 @@
   "dependencies": {
     "@types/crypto-js": "^4.2.1",
     "crypto-js": "^4.2.0",
+    "file-saver": "^2.0.5",
     "moment": "^2.29.4",
-    "vue-clipboard3": "^2.0.0"
+    "vue-clipboard3": "^2.0.0",
+    "xlsx": "^0.18.5"
   }
 }

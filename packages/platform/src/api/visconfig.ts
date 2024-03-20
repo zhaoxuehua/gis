@@ -109,6 +109,12 @@ export function getAllLabelTypeList(isLogical: any, labelTypeName: any) {
 export function getBindAttributeByType(isVisitObject: boolean, id: number) {
   return request.get(`/api/gis-service/equip/gisLabel/type/description/${isVisitObject}/${id}`);
 }
+// 导出
+export function tableDataExport(params: any) {
+  return request.post(`/api/gis-service/excel/import/export`, params, {
+    responseType: "blob"
+  });
+}
 
 // 标签
 // 获取标签列表

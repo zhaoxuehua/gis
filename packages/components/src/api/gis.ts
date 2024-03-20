@@ -103,3 +103,58 @@ export function getRealDataList(code: string, params: any) {
     noLoading: true
   });
 }
+
+// 导入模块封装
+// 下载模板
+export function downloadTemplate(params: any) {
+  return request.post(`/api/gis-service/excel/import/exportHeader`, params, {
+    responseType: "blob"
+  });
+}
+
+// 上传excel获取表格表头
+export function upLoadFileGetTableColumnData(params: any) {
+  return request.post(`/api/gis-service/excel/import/getExcelHead`, params);
+}
+
+// 上传excel获取表格数据
+export function upLoadFileGetTableData(params: any) {
+  return request.post(`/api/gis-service/excel/import/loadExcelData`, params);
+}
+
+// 切换预览pageSize
+export function getTableDataByChangePageSize(params: any) {
+  return request.post(`/api/gis-service/excel/import/changePageSize`, params);
+}
+
+// 切换预览pageNumber
+export function getTableDataByChangePageNumber(params: any) {
+  return request.post(`/api/gis-service/excel/import/changePageNum`, params);
+}
+
+// 编辑excel行数据（删除、修改(校验及翻页时需要调用)）
+export function editFileExcelTableData(params: any) {
+  return request.post(`/api/gis-service/excel/import/changePageData`, params);
+}
+
+// 校验
+export function checkFile(params: any) {
+  return request.post(`/api/gis-service/excel/import/validData`, params);
+}
+
+// 确认导入
+export function confirmImport(params: any) {
+  return request.post(`/api/gis-service/excel/import/importData`, params);
+}
+
+// 取消
+export function cancelImport(params: any) {
+  return request.post(`/api/gis-service/excel/import/cancelImport`, params);
+}
+
+// 数据导出
+export function tableDataExport(params: any) {
+  return request.post(`/api/gis-service/excel/import/export`, params, {
+    responseType: "blob"
+  });
+}

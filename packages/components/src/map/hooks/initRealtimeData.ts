@@ -221,7 +221,7 @@ export function createdRealDataFeature(params: shipParamsType, dataType: string,
   03: status true 告警船只   => 红色
       I: 延迟大于8分钟并且是报警  => 灰色 + 红色
   
-  优先级()
+  优先级(低=>高)
     白名单 => 白色
     关注 => 绿色
     告警 => 红色
@@ -235,41 +235,34 @@ export function realFeatureColor(arg: shipColorParams) {
   let colorArr: string[] = [];
   const nowTime = +new Date();
   let { monitorTime, status, isAttention, isWhiteList } = arg;
-  // console.log(monitorTime, new Date(1706864625000), new Date());
   // 白名单
   if (isWhiteList) {
     colorArr = ["#fff", "#fff"];
-    // console.log("白名单");
   }
 
   // 关注
   if (isAttention) {
     colorArr = ["#00ff00", "#00ff00"];
-    // console.log("关注");
   }
 
   // 告警
   if (status) {
     colorArr = ["#ff0000", "#ff0000"];
-    // console.log("告警");
   }
 
   // 延迟大于8分钟
   if (nowTime - monitorTime > eightMinutes) {
     colorArr = ["#c0c0c0", "#c0c0c0"];
-    // console.log("延迟大于8分钟");
   }
 
   // 告警+大于8分钟
   if (status && nowTime - monitorTime > eightMinutes) {
     colorArr = ["#c0c0c0", "#ff0000"];
-    // console.log("告警+大于8分钟");
   }
 
   // 不符合上述条件
   if (!isWhiteList && !isAttention && !status && !(nowTime - monitorTime > eightMinutes)) {
     colorArr = ["#ffff00", "#ffff00"];
-    // console.log("不符合上述条件");
   }
 
   return colorArr;

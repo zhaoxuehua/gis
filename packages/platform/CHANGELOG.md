@@ -1,5 +1,29 @@
 # adm-gis-platform
 
+## 2.0.7
+
+### Patch Changes
+
+- 修复底层弹框未全部显示 bug
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.7
+
+## 2.0.6
+
+### Patch Changes
+
+- 增加导入导出功能
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.6
+
+## 2.0.5
+
+### Patch Changes
+
+- 关注实时生效+轨迹优化+船人颜色逻辑修改
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.5
+
 ## 2.0.4
 
 ### Patch Changes

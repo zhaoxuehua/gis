@@ -206,10 +206,7 @@
         <span class="dialog-footer">
           <el-button @click="onClose">取消</el-button>
           <el-dropdown v-if="progressList?.length" style="margin: 0 10px">
-            <el-button>
-              <Icon src="More" :size="18"></Icon>
-              {{ "查看进度" }}
-            </el-button>
+            <el-button> 查看进度 </el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
@@ -233,7 +230,7 @@
 </template>
 
 <script lang="ts" setup name="MapParamsEdit">
-import { reactive, onMounted, ref, unref, computed } from "vue";
+import { reactive, onMounted, ref, unref, computed, nextTick } from "vue";
 import { ElForm, ElMessage, ElMessageBox } from "element-plus";
 import * as Regular from "@/plugins/verification.js";
 import { handleParam } from "@/utils/common.js";
@@ -519,6 +516,12 @@ const queryChunkFileUrl = async (fileHash: string, type: FileUploadType) => {
 
 const updateProgressStatus = (type: FileUploadType, ProgressStatus: string) => {
   uploadMap[type].currentProgressStatus = ProgressStatus;
+  nextTick(() => {
+    // 为了处理首次自动关闭弹框
+    if (ProgressStatus !== "解压中") {
+      uploadMap[type].isNeedRefresh = false;
+    }
+  });
 };
 
 const progressList = computed(() => {

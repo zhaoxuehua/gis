@@ -63,15 +63,22 @@
           <template #default="scope">
             <div class="monitor-alarm-table-option">
               <div title="单个处理" class="footer-item-icon-only" @click="table.onEdit(scope.row, 'deal')">
-                <Icon src="Tools" :size="20" class="deal-icon"></Icon>
+                <i :class="`iconfont select-icon-style icon-bell`" class="deal-icon"></i>
               </div>
-              <div title="视频" class="footer-item-icon-only" @click="table.onEdit(scope.row, 'video')">
-                <Icon
-                  src="VideoCameraFilled"
-                  :size="20"
-                  @click="table.onEdit(scope.row, 'video')"
+              <div
+                :title="scope.row?.existEventVideo == undefined || scope.row?.existEventVideo ? '视频' : '视频归档中'"
+                class="footer-item-icon-only"
+                @click="
+                  scope.row?.existEventVideo == undefined || scope.row?.existEventVideo ? table.onEdit(scope.row, 'video') : null
+                "
+              >
+                <i
+                  :class="[
+                    `iconfont select-icon-style icon-video`,
+                    { 'disabled-icon': scope.row?.existEventVideo !== undefined ? !scope.row?.existEventVideo : false }
+                  ]"
                   v-if="scope.row.videoNum > 0"
-                ></Icon>
+                ></i>
               </div>
             </div>
           </template>
@@ -102,7 +109,6 @@ import BatchProcessing from "./batchProcessing.vue";
 import { SHOUT_CUTS } from "./componentConstant";
 import { eventList } from "../../../../api/device";
 import VideoDialog from "./videoDialog.vue";
-import Icon from "../../Icon.vue";
 import paginationCom from "../../paginationCom.vue";
 
 const emits = defineEmits(["successHandle", "successBatch"]);
@@ -221,5 +227,10 @@ defineExpose({
 }
 .monitor-todo-list-table .deal-icon {
   margin-right: 20px;
+}
+.disabled-icon {
+  pointer-events: none; /* 禁用鼠标事件 */
+  cursor: not-allowed; /* 可以改变鼠标样式 */
+  opacity: 0.5; /* 可以添加其他样式来表示禁用状态 */
 }
 </style>
