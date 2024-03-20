@@ -6,12 +6,11 @@ import * as echarts from "echarts";
 import { onMounted, ref } from "vue";
 
 const colorStyle = ["#16eba8", "#ffe051", "#00cbfa", "#c400be", "#6191a8", "#ff7e63", "#9ba2ff", "#c7e87d", "#3d9999"];
-
 const lineChartRef = ref();
 let myChart: any = null;
 const initOption = (chartData?: any) => {
   let option = {
-    color: chartData?.color || colorStyle,
+    color: chartData?.color.length ? chartData?.color : colorStyle,
     tooltip: {
       trigger: "axis",
       confine: true,
@@ -87,6 +86,7 @@ const initOption = (chartData?: any) => {
   option && myChart.setOption(option);
 };
 const setOption = (chartData: any) => {
+  chartData.color = chartData.color.filter(Boolean);
   chartData && initOption(chartData);
 };
 
@@ -94,6 +94,7 @@ onMounted(() => {
   myChart = echarts.init(lineChartRef.value);
   initOption();
 });
+
 defineExpose({
   setOption
 });

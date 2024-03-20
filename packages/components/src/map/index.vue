@@ -1322,7 +1322,7 @@ watch(
         display: none;
       }
       .popup-custom-box {
-        max-height: 500px;
+        max-height: 400px;
       }
     }
   }
