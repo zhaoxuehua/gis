@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.8
+
+### Patch Changes
+
+- 修复线性曲线不展示问题
+
 ## 2.0.7
 
 ### Patch Changes
