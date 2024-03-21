@@ -607,7 +607,7 @@ export const modifyStyle = new Style({
     })
   }),
   text: new Text({
-    text: "Drag to modify",
+    text: "拖动进行修改",
     font: "normal 12px 微软雅黑",
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)"
