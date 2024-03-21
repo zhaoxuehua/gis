@@ -10,7 +10,7 @@ const lineChartRef = ref();
 let myChart: any = null;
 const initOption = (chartData?: any) => {
   let option = {
-    color: chartData?.color.length ? chartData?.color : colorStyle,
+    color: chartData?.color?.length ? chartData?.color : colorStyle,
     tooltip: {
       trigger: "axis",
       confine: true,
