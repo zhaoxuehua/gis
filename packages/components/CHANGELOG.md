@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.9
+
+### Patch Changes
+
+- 修改文案
+
 ## 2.0.8
 
 ### Patch Changes
