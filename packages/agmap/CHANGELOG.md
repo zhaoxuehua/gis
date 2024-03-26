@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.10
+
+### Patch Changes
+
+- bugfix 导入翻页问题
+
 ## 2.0.9
 
 ### Patch Changes
