@@ -283,19 +283,35 @@ export function transformLabelType(originalData: LabelType) {
 }
 
 const clearSelectFeatureTimer = ref<number>();
-// 标签树、导航树选中label(是标签树或导航树的点击还是地图上的点击)
-export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isRealTimeData?: boolean) {
+// 标签树、导航树选中label
+/******************************************
+ * map:地图实例
+ * featureCode标签code
+ * isFeatureClick 地图上点击的要素(地图上的点击还是导航树、标签书等的)
+ * isRealTimeData：是都实时数据（船、人等）
+ * ************************************************/
+export function labelOnSelect(
+  map: VisualMap,
+  featureCode: string | number,
+  isFeatureClick: boolean,
+  isRealTimeData?: boolean,
+  isAlarmPoint?: boolean
+) {
   if (!map || !featureCode) {
     return;
   }
 
   let labelInfo: any;
-  if (!isRealTimeData) {
+  if (isAlarmPoint) {
+    let labelInfoMap = map?.get("alarmPointInfo") || [];
+    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {};
+    console.log(labelInfo, "labelInfo");
+  } else if (isRealTimeData) {
+    let labelInfoMap = map?.get("trackInfoMap") || [];
+    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {};
+  } else {
     let labelInfoMap = map?.get("labelInfoMap") || {};
     labelInfo = labelInfoMap[featureCode];
-  } else {
-    let labelInfoMap = map?.get("trackInfoMap") || [];
-    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {}; // code后端可能数字可能字符串
   }
   if (!labelInfo) {
     return;
@@ -306,11 +322,15 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     return;
   }
   let layer: any = null;
-  if (!isRealTimeData) {
+  if (isAlarmPoint) {
+    layer = map?.get("layerMap")[labelInfo.layerCode];
+  } else if (!isRealTimeData) {
     layer = map?.get("layerMap")[labelInfo.refLayer?.code];
   } else {
     layer = map?.get("layerMap")[labelInfo.layerCode];
   }
+
+  console.log(layer, 222);
 
   const minZoom = Math.ceil(layer?.getMinZoom()); // 图层最小层级
   const maxZoom = Math.floor(layer?.getMaxZoom()); // 图层最大层级
@@ -326,7 +346,9 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   }
 
   let center: any = null;
-  if (!isRealTimeData) {
+  if (isAlarmPoint) {
+    center = fromLonLat([labelInfo.lon, labelInfo.lat]);
+  } else if (!isRealTimeData) {
     const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
     center = getGeometryCenter(labelData);
   } else {

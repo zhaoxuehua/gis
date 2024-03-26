@@ -561,7 +561,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       layerMap[item.code] = new VectorLayer(options);
       map.addLayer(layerMap[item.code]);
     });
-    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
 
     /************************************创建固定的点图层用于定位时增加定位点到点图层**********************************/
     let positionPointLayer = new VectorLayer({
@@ -727,11 +726,15 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     let alarmLayer: any = new VectorLayer({
       source: new VectorSource(),
       zIndex: 9999,
+      minZoom: defaultOptions?.minZoom,
+      maxZoom: defaultOptions?.maxZoom,
       style: (feature: FeatureLike) => alarmLayerStyle(feature)
     });
-    alarmLayer.set("code", "alarmLayer");
-    alarmLayer.set("name", "报警图层");
+    alarmLayer?.set("code", "alarmLayer");
+    alarmLayer?.set("name", "报警图层");
+
     map.addLayer(alarmLayer);
+    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap, alarmLayer }); // 存储所有的图层信息
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
       try {
