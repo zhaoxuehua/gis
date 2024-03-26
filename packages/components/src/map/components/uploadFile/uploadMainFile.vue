@@ -67,7 +67,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div v-if="table.tableData?.length">
+      <div>
         <paginationCom
           :total="table.total"
           v-model:page="state.pageNumber"
