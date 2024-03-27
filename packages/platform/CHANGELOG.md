@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.10
+
+### Patch Changes
+
+- bugfix 导入翻页问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.10
+
 ## 2.0.9
 
 ### Patch Changes
