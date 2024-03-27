@@ -283,19 +283,34 @@ export function transformLabelType(originalData: LabelType) {
 }
 
 const clearSelectFeatureTimer = ref<number>();
-// 标签树、导航树选中label(是标签树或导航树的点击还是地图上的点击)
-export function labelOnSelect(map: VisualMap, featureCode: string | number, isFeatureClick: boolean, isRealTimeData?: boolean) {
+// 标签树、导航树选中label
+/******************************************
+ * map:地图实例
+ * featureCode标签code
+ * isFeatureClick 地图上点击的要素(地图上的点击还是导航树、标签书等的)
+ * isRealTimeData：是都实时数据（船、人等,非基础数据）
+ * ************************************************/
+export function labelOnSelect(
+  map: VisualMap,
+  featureCode: string | number,
+  isFeatureClick: boolean,
+  isRealTimeData?: boolean,
+  isAlarmPoint?: boolean
+) {
   if (!map || !featureCode) {
     return;
   }
 
   let labelInfo: any;
-  if (!isRealTimeData) {
+  if (isAlarmPoint) {
+    let labelInfoMap = map?.get("alarmPointFeatureInfoArr") || [];
+    labelInfo = labelInfoMap.filter((item: any) => item.id == featureCode)?.[0] || {};
+  } else if (isRealTimeData) {
+    let labelInfoMap = map?.get("trackInfoMap") || [];
+    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {};
+  } else {
     let labelInfoMap = map?.get("labelInfoMap") || {};
     labelInfo = labelInfoMap[featureCode];
-  } else {
-    let labelInfoMap = map?.get("trackInfoMap") || [];
-    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {}; // code后端可能数字可能字符串
   }
   if (!labelInfo) {
     return;
@@ -306,7 +321,9 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     return;
   }
   let layer: any = null;
-  if (!isRealTimeData) {
+  if (isAlarmPoint) {
+    layer = map?.get("layerMap")[labelInfo.layerCode];
+  } else if (!isRealTimeData) {
     layer = map?.get("layerMap")[labelInfo.refLayer?.code];
   } else {
     layer = map?.get("layerMap")[labelInfo.layerCode];
@@ -326,7 +343,9 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
   }
 
   let center: any = null;
-  if (!isRealTimeData) {
+  if (isAlarmPoint) {
+    center = fromLonLat([labelInfo.lon, labelInfo.lat]);
+  } else if (!isRealTimeData) {
     const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
     center = getGeometryCenter(labelData);
   } else {
@@ -371,6 +390,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     } else {
       let source = layer.getSource();
       const selectFeature = source?.getFeatureById(featureCode);
+
       if (selectFeature) {
         selectFeature.set("selected", true); // 非聚合图层的可以这样实现
         selectFeature.changed();
@@ -381,7 +401,7 @@ export function labelOnSelect(map: VisualMap, featureCode: string | number, isFe
     }
     let featureName = labelInfo?.name;
     // 地图上直接点击要素不需要走弹框弹出（因为地图上有的要素需要选中状态有的不需要所以直接根据需要调用弹框展示及要素显示）
-    !isFeatureClick && map.popupInfo({ featureCode, featureName, center });
+    !isFeatureClick && !isAlarmPoint && map.popupInfo({ featureCode, featureName, center });
     clearSelectFeatureTimer.value = window.setTimeout(function () {
       // 3秒后清空选中状态
       clearSelectedFeature(map);

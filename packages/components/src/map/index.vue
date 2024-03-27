@@ -561,7 +561,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       layerMap[item.code] = new VectorLayer(options);
       map.addLayer(layerMap[item.code]);
     });
-    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
+    // map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
 
     /************************************创建固定的点图层用于定位时增加定位点到点图层**********************************/
     let positionPointLayer = new VectorLayer({
@@ -727,11 +727,17 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     let alarmLayer: any = new VectorLayer({
       source: new VectorSource(),
       zIndex: 9999,
+      minZoom: defaultOptions?.minZoom,
+      maxZoom: defaultOptions?.maxZoom,
       style: (feature: FeatureLike) => alarmLayerStyle(feature)
     });
     alarmLayer.set("code", "alarmLayer");
     alarmLayer.set("name", "报警图层");
     map.addLayer(alarmLayer);
+
+    layerMap["alarmLayer"] = alarmLayer;
+    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
+
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
       try {
@@ -751,58 +757,86 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       autoPan: true,
       offset: [20, 0]
     });
+
     map.addOverlay(hoverInfoLayer);
+
     map.on("pointermove", function (event: any) {
       const pixel = map.getEventPixel(event.originalEvent); // 坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
+      let setNum: any = 0;
       if (hit) {
-        const pos = event.coordinate;
-        map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
-          let targetFeature = null;
-          if (Array.isArray(feature.get("features"))) {
-            targetFeature = feature.get("features")[0];
-          } else {
-            targetFeature = feature;
-          }
+        clearTimeout(setNum);
+        setNum = setTimeout(() => {
+          const pos = event.coordinate;
+          map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
+            let targetFeature = null;
+            if (Array.isArray(feature.get("features"))) {
+              targetFeature = feature.get("features")[0];
+            } else {
+              targetFeature = feature;
+            }
 
-          let { extendsData, type, name } = targetFeature.getProperties();
-          popupTitDOMRef.value.style.height = "40px";
-          if (type == "trackPoint" || type == "trackShip") {
-            const { detailInfo, titleInfo } = unref(extendsData);
-            const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
-            popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
-            popupContentDOMRef.value.innerHTML = infoStr;
-            hoverInfoLayer.setPosition(pos);
-          } else if (extendsData?.type == "realTimeTag") {
-            // 实时标签
-            const { code, sog, monitorTime, person } = unref(extendsData);
-            popupTitDOMRef.value.innerHTML = name || ""; // 标题
-            // 根据关键词配置拼接code person monitorTime sog
-            let contentStr = "";
-            let keywordConfig = gisStore?.keywordConfig;
-            if (keywordConfig?.code) {
-              contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
+            let { extendsData, type, name, typeStats } = targetFeature.getProperties();
+            popupTitDOMRef.value.style.height = "40px";
+
+            if (type == "trackPoint" || type == "trackShip") {
+              const { detailInfo, titleInfo } = unref(extendsData);
+              const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
+              popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
+              popupContentDOMRef.value.innerHTML = infoStr;
+              hoverInfoLayer.setPosition(pos);
+            } else if (extendsData?.type == "realTimeTag") {
+              // 实时标签
+              const { code, sog, monitorTime, person } = unref(extendsData);
+              popupTitDOMRef.value.innerHTML = name || ""; // 标题
+              // 根据关键词配置拼接code person monitorTime sog
+              let contentStr = "";
+              let keywordConfig = gisStore?.keywordConfig;
+              if (keywordConfig?.code) {
+                contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
+              }
+              if (keywordConfig?.monitorTime) {
+                contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
+              }
+              if (keywordConfig?.speed) {
+                contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
+              }
+              if (keywordConfig?.person) {
+                contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
+              }
+
+              popupContentDOMRef.value.innerHTML = contentStr;
+              hoverInfoLayer.setPosition(pos);
+            } else if (typeStats === "alarmPoint") {
+              // 报警点
+              showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
+            } else {
+              // 此处注释，点坐标存在穿透，可能导致点新要素无法显示，一直走到该逻辑
+              // hoverInfoLayer.setPosition(undefined);
             }
-            if (keywordConfig?.monitorTime) {
-              contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
-            }
-            if (keywordConfig?.speed) {
-              contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
-            }
-            if (keywordConfig?.person) {
-              contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
-            }
-            popupContentDOMRef.value.innerHTML = contentStr;
-            hoverInfoLayer.setPosition(pos);
-          } else {
-            hoverInfoLayer.setPosition(undefined);
-          }
-        });
+          });
+        }, 200);
       } else {
         hoverInfoLayer.setPosition(undefined);
       }
     });
+
+    // 显示报警点详情
+    // eventSubTypeColor 不存在红色，存在使用自身颜色
+    const showAlarmPointDetail = (title: HTMLElement, content: HTMLElement, extendsData: any, pos: number[]) => {
+      const { equipName, monitorTime, eventLevelName, eventTypeName, eventSubTypeName, eventName, desc } = extendsData || {};
+      title.innerHTML = `告警设备:${equipName}`; // 标题
+      content.innerHTML = `
+        <p>告警时间 : ${monitorTime}</p>
+        <p>告警等级 : ${eventLevelName}</p>
+        <p>事件类型 : ${eventTypeName}</p>
+        <p>事件子类型 : ${eventSubTypeName}</p>
+        <p>事件名称 : ${eventName}</p>
+        <p>事件描述 : ${desc}</p>
+      `;
+      hoverInfoLayer.setPosition(pos);
+    };
 
     /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）*****************************/
     // 地图点击弹框
@@ -1109,7 +1143,35 @@ watch(
 );
 
 /*************************************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***********************************************/
+/*
+  01：node有经纬度,将经纬度作为ID获取报警点要素
+       I: 找到要素高亮
+      II: 找不到要素,将经纬度作为偏移坐标
+
+  02: rowData 没有经纬度，则高亮海缆段
+*/
 const outsideTableRowDataSelect = (node: any) => {
+  const { lat, lon } = node;
+  lat && lon && lat != 0 && lon != 0 ? hasLatLngFn(node) : hasNoLatLngFn(node);
+};
+
+// 有经纬度
+const hasLatLngFn = (node: any) => {
+  const alarmLayer = exportMap.value.get("layerMap")["alarmLayer"];
+  const alarmSource = alarmLayer.getSource();
+  const alarmFeartureId = node.lat + "_" + node.lon;
+  const alarmFearture = alarmSource.getFeatures().find((val: any) => val.getId() === alarmFeartureId);
+  if (alarmFearture) {
+    labelOnSelect(exportMap.value, alarmFeartureId, false, false, true);
+  } else {
+    // 要素不存在
+    let center = fromLonLat([node.lon, node.lat]);
+    exportMap.value.getView().animate({ center: center });
+  }
+};
+
+// 没有经纬度
+const hasNoLatLngFn = (node: any) => {
   const { equip } = node; // 设备code或实时数据code
   const currentRealData = (exportMap.value?.get("trackInfoMap") || [])?.filter((item: any) => item.code == equip)?.[0];
   let isRealTimeData = !!currentRealData?.isRealTimeData; // 判断是否实时数据
@@ -1118,16 +1180,13 @@ const outsideTableRowDataSelect = (node: any) => {
     labelOnSelect(exportMap.value, featureCode, false, isRealTimeData);
   }
 };
+
 watch(
   () => props.outsideTableRowData,
   node => {
-    if (node) {
-      outsideTableRowDataSelect(node);
-    }
+    node && outsideTableRowDataSelect(node);
   },
-  {
-    deep: true
-  }
+  {}
 );
 </script>
 
