@@ -759,64 +759,57 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     });
 
     map.addOverlay(hoverInfoLayer);
-
+    let setNum: any = 0;
     map.on("pointermove", function (event: any) {
+      const pos = event.coordinate;
       const pixel = map.getEventPixel(event.originalEvent); // 坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
-      let setNum: any = 0;
+
       if (hit) {
         clearTimeout(setNum);
         setNum = setTimeout(() => {
-          const pos = event.coordinate;
-          map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
-            let targetFeature = null;
-            if (Array.isArray(feature.get("features"))) {
-              targetFeature = feature.get("features")[0];
-            } else {
-              targetFeature = feature;
+          const featuresArr = map.getFeaturesAtPixel(pixel); // 该坐标点下的要素集合
+          const firstFeature = featuresArr[0];
+          const targetFeature = (firstFeature && firstFeature.get("features")) || firstFeature;
+          let { extendsData, type, name, typeStats } = targetFeature.getProperties();
+          popupTitDOMRef.value.style.height = "40px";
+          console.log(targetFeature);
+          if (type == "trackPoint" || type == "trackShip") {
+            const { detailInfo, titleInfo } = unref(extendsData);
+            const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
+            popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
+            popupContentDOMRef.value.innerHTML = infoStr;
+            hoverInfoLayer.setPosition(pos);
+          } else if (extendsData?.type == "realTimeTag") {
+            // 实时标签
+            const { code, sog, monitorTime, person } = unref(extendsData);
+            popupTitDOMRef.value.innerHTML = name || ""; // 标题
+            // 根据关键词配置拼接code person monitorTime sog
+            let contentStr = "";
+            let keywordConfig = gisStore?.keywordConfig;
+            if (keywordConfig?.code) {
+              contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
             }
-
-            let { extendsData, type, name, typeStats } = targetFeature.getProperties();
-            popupTitDOMRef.value.style.height = "40px";
-
-            if (type == "trackPoint" || type == "trackShip") {
-              const { detailInfo, titleInfo } = unref(extendsData);
-              const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
-              popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
-              popupContentDOMRef.value.innerHTML = infoStr;
-              hoverInfoLayer.setPosition(pos);
-            } else if (extendsData?.type == "realTimeTag") {
-              // 实时标签
-              const { code, sog, monitorTime, person } = unref(extendsData);
-              popupTitDOMRef.value.innerHTML = name || ""; // 标题
-              // 根据关键词配置拼接code person monitorTime sog
-              let contentStr = "";
-              let keywordConfig = gisStore?.keywordConfig;
-              if (keywordConfig?.code) {
-                contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
-              }
-              if (keywordConfig?.monitorTime) {
-                contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
-              }
-              if (keywordConfig?.speed) {
-                contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
-              }
-              if (keywordConfig?.person) {
-                contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
-              }
-
-              popupContentDOMRef.value.innerHTML = contentStr;
-              hoverInfoLayer.setPosition(pos);
-            } else if (typeStats === "alarmPoint") {
-              // 报警点
-              showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
-            } else {
-              // 此处注释，点坐标存在穿透，可能导致点新要素无法显示，一直走到该逻辑
-              // hoverInfoLayer.setPosition(undefined);
+            if (keywordConfig?.monitorTime) {
+              contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
             }
-          });
-        }, 200);
+            if (keywordConfig?.speed) {
+              contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
+            }
+            if (keywordConfig?.person) {
+              contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
+            }
+            popupContentDOMRef.value.innerHTML = contentStr;
+            hoverInfoLayer.setPosition(pos);
+          } else if (typeStats === "alarmPoint") {
+            // 报警点
+            showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
+          } else {
+            // 此处注释，点坐标存在穿透，可能导致点新要素无法显示，一直走到该逻辑
+            hoverInfoLayer.setPosition(undefined);
+          }
+        }, 500);
       } else {
         hoverInfoLayer.setPosition(undefined);
       }
