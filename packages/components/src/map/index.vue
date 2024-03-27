@@ -760,6 +760,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.addOverlay(hoverInfoLayer);
 
     map.on("pointermove", function (event: any) {
+      popupDOMRef.value.style.display = "none";
       const pixel = map.getEventPixel(event.originalEvent); // 坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
@@ -775,17 +776,17 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             } else {
               targetFeature = feature;
             }
-
             let { extendsData, type, name, typeStats } = targetFeature.getProperties();
             popupTitDOMRef.value.style.height = "40px";
-
             if (type == "trackPoint" || type == "trackShip") {
+              popupDOMRef.value.style.display = "block";
               const { detailInfo, titleInfo } = unref(extendsData);
               const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
               popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
               popupContentDOMRef.value.innerHTML = infoStr;
               hoverInfoLayer.setPosition(pos);
             } else if (extendsData?.type == "realTimeTag") {
+              popupDOMRef.value.style.display = "block";
               // 实时标签
               const { code, sog, monitorTime, person } = unref(extendsData);
               popupTitDOMRef.value.innerHTML = name || ""; // 标题
@@ -808,10 +809,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
               popupContentDOMRef.value.innerHTML = contentStr;
               hoverInfoLayer.setPosition(pos);
             } else if (typeStats === "alarmPoint") {
+              popupDOMRef.value.style.display = "block";
               // 报警点
               showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
             } else {
-              // 此处注释，点坐标存在穿透，可能导致点新要素无法显示，一直走到该逻辑
+              // 此处注释，点坐标存在穿透，可能导致点新要素无法显示，一直走到该逻辑(目前通过样式的none及block解决)
               // hoverInfoLayer.setPosition(undefined);
             }
           });
@@ -1147,7 +1149,7 @@ watch(
        I: 找到要素高亮
       II: 找不到要素,将经纬度作为偏移坐标
 
-  02: rowData 没有经纬度，则高亮海缆段
+  02: rowData 没有经纬度，则高亮设备关联的标签
 */
 const outsideTableRowDataSelect = (node: any) => {
   const { lat, lon } = node;
@@ -1158,10 +1160,10 @@ const outsideTableRowDataSelect = (node: any) => {
 const hasLatLngFn = (node: any) => {
   const alarmLayer = exportMap.value.get("layerMap")["alarmLayer"];
   const alarmSource = alarmLayer.getSource();
-  const alarmFeartureId = node.lat + "_" + node.lon;
-  const alarmFearture = alarmSource.getFeatures().find((val: any) => val.getId() === alarmFeartureId);
-  if (alarmFearture) {
-    labelOnSelect(exportMap.value, alarmFeartureId, false, false, true);
+  const alarmFeatureId = node.lat + "_" + node.lon;
+  const alarmFeature = alarmSource?.getFeatures()?.find((val: any) => val.getId() === alarmFeatureId);
+  if (alarmFeature) {
+    labelOnSelect(exportMap.value, alarmFeatureId, false, false, true);
   } else {
     // 要素不存在
     let center = fromLonLat([node.lon, node.lat]);
