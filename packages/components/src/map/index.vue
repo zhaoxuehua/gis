@@ -561,7 +561,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       layerMap[item.code] = new VectorLayer(options);
       map.addLayer(layerMap[item.code]);
     });
-    // map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
 
     /************************************创建固定的点图层用于定位时增加定位点到点图层**********************************/
     let positionPointLayer = new VectorLayer({
@@ -736,7 +735,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.addLayer(alarmLayer);
 
     layerMap["alarmLayer"] = alarmLayer;
-    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
+    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息(项目中使用方式：根据图层code在layerMap中找对应的图层信息)
 
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
@@ -828,12 +827,12 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       const { equipName, monitorTime, eventLevelName, eventTypeName, eventSubTypeName, eventName, desc } = extendsData || {};
       title.innerHTML = `告警设备:${equipName}`; // 标题
       content.innerHTML = `
-        <p>告警时间 : ${monitorTime}</p>
-        <p>告警等级 : ${eventLevelName}</p>
-        <p>事件类型 : ${eventTypeName}</p>
-        <p>事件子类型 : ${eventSubTypeName}</p>
-        <p>事件名称 : ${eventName}</p>
-        <p>事件描述 : ${desc}</p>
+        <p>告警时间 : ${monitorTime || ""}</p>
+        <p>告警等级 : ${eventLevelName || ""}</p>
+        <p>事件类型 : ${eventTypeName || ""}</p>
+        <p>事件子类型 : ${eventSubTypeName || ""}</p>
+        <p>事件名称 : ${eventName || ""}</p>
+        <p>事件描述 : ${desc || ""}</p>
       `;
       hoverInfoLayer.setPosition(pos);
     };
