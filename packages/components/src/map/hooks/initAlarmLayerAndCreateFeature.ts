@@ -20,7 +20,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   const relationMapKeyIsEquipCode = gisStore?.relationMapKeyIsEquipCode; // 设备code与标签code关联map
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let alarmFeatures: any = []; // 报警图层要素
-  let alarmPointFeatureInfoArr: any = []; // 报警中点报警要素信息
+  let alarmPointFeatureInfoArr: any = []; // 报警中点报警要素信息（用于labelOnSelect中报警点要素选中逻辑）
   data?.forEach((item: { [key: string]: any }) => {
     let { equip, equipName, lon, lat } = item;
     let id = lat + "_" + lon;
@@ -29,15 +29,14 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
     if (lon && lat) {
       const alarmPointFeature = new Feature({
         name: equipName,
+        code: equip,
+        typeStats: "alarmPoint",
+        type: "1",
+        max: 1,
+        color: item.eventSubTypeColor || "red",
+        extendsData: item,
         geometry: new Point(fromLonLat([lon, lat]))
       });
-      alarmPointFeature.set("code", equip); // 设备编码
-      alarmPointFeature.set("typeStats", "alarmPoint");
-      alarmPointFeature.set("type", "1"); // 数据类型
-      alarmPointFeature.set("max", 1);
-
-      alarmPointFeature.set("color", item.eventSubTypeColor || "red");
-      alarmPointFeature.set("extendsData", item);
       alarmPointFeature.setId(id);
       alarmFeatures.push(alarmPointFeature);
       alarmPointFeatureInfoArr.push({
@@ -76,7 +75,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   });
 
   // 存储是点报警的信息
-  map.set("alarmPointFeatureInfoArr", alarmPointFeatureInfoArr); // 基础引擎定位、搜索、左键弹框等处使用
+  map.set("alarmPointFeatureInfoArr", alarmPointFeatureInfoArr);
 
   // 先清空数据源
   layer?.getSource()?.clear();

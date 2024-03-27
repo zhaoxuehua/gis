@@ -561,7 +561,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       layerMap[item.code] = new VectorLayer(options);
       map.addLayer(layerMap[item.code]);
     });
-    // map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
 
     /************************************创建固定的点图层用于定位时增加定位点到点图层**********************************/
     let positionPointLayer = new VectorLayer({
@@ -736,7 +735,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     map.addLayer(alarmLayer);
 
     layerMap["alarmLayer"] = alarmLayer;
-    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
+    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息(项目中使用方式：根据图层code在layerMap中找对应的图层信息)
 
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
@@ -818,7 +817,15 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     // 显示报警点详情
     // eventSubTypeColor 不存在红色，存在使用自身颜色
     const showAlarmPointDetail = (title: HTMLElement, content: HTMLElement, extendsData: any, pos: number[]) => {
-      const { equipName, monitorTime, eventLevelName, eventTypeName, eventSubTypeName, eventName, desc } = extendsData || {};
+      const {
+        equipName = "",
+        monitorTime = "",
+        eventLevelName = "",
+        eventTypeName = "",
+        eventSubTypeName = "",
+        eventName = "",
+        desc = ""
+      } = extendsData || {};
       title.innerHTML = `告警设备:${equipName}`; // 标题
       content.innerHTML = `
         <p>告警时间 : ${monitorTime}</p>
@@ -1141,7 +1148,7 @@ watch(
        I: 找到要素高亮
       II: 找不到要素,将经纬度作为偏移坐标
 
-  02: rowData 没有经纬度，则高亮海缆段
+  02: rowData 没有经纬度，则高亮设备关联的标签
 */
 const outsideTableRowDataSelect = (node: any) => {
   const { lat, lon } = node;
@@ -1152,10 +1159,10 @@ const outsideTableRowDataSelect = (node: any) => {
 const hasLatLngFn = (node: any) => {
   const alarmLayer = exportMap.value.get("layerMap")["alarmLayer"];
   const alarmSource = alarmLayer.getSource();
-  const alarmFeartureId = node.lat + "_" + node.lon;
-  const alarmFearture = alarmSource.getFeatures().find((val: any) => val.getId() === alarmFeartureId);
-  if (alarmFearture) {
-    labelOnSelect(exportMap.value, alarmFeartureId, false, false, true);
+  const alarmFeatureId = node.lat + "_" + node.lon;
+  const alarmFeature = alarmSource?.getFeatures()?.find((val: any) => val.getId() === alarmFeatureId);
+  if (alarmFeature) {
+    labelOnSelect(exportMap.value, alarmFeatureId, false, false, true);
   } else {
     // 要素不存在
     let center = fromLonLat([node.lon, node.lat]);
