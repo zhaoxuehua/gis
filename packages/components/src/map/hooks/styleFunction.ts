@@ -445,6 +445,9 @@ export function warnFault(color: string) {
   return [point, border1, border2];
 }
 
+// 点类型报警样式缓存(根据颜色绘制)
+const pointAlarmStyMap: any = {};
+
 // 报警点图层样式
 export function alarmLayerStyle(feature: any) {
   let targetFeature = feature;
@@ -455,7 +458,18 @@ export function alarmLayerStyle(feature: any) {
   if (type == "1" || type == "6") {
     // 点类型报警
     const max = targetFeature.get("max");
-    const alarmImg = styleAlarm.pointAlarmSty?.slice(0, max); // 返回3个样式（通过控制数组样式个数）
+    const selected = targetFeature.get("selected");
+    const color = targetFeature.get("color"); // 颜色
+    let alarmImg: any;
+
+    if (!pointAlarmStyMap[color]) {
+      pointAlarmStyMap[color] = warnFault(color);
+    }
+    if (selected) {
+      alarmImg = pointAlarmStyMap[color]?.slice(0, max).concat(styleAct.selectAct);
+    } else {
+      alarmImg = pointAlarmStyMap[color]?.slice(0, max); // 返回3个样式（通过控制数组样式个数）
+    }
     return alarmImg;
   } else {
     // 其他类型报警
