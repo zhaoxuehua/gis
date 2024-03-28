@@ -561,7 +561,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       layerMap[item.code] = new VectorLayer(options);
       map.addLayer(layerMap[item.code]);
     });
-    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息
 
     /************************************创建固定的点图层用于定位时增加定位点到点图层**********************************/
     let positionPointLayer = new VectorLayer({
@@ -727,11 +726,17 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     let alarmLayer: any = new VectorLayer({
       source: new VectorSource(),
       zIndex: 9999,
+      minZoom: defaultOptions?.minZoom,
+      maxZoom: defaultOptions?.maxZoom,
       style: (feature: FeatureLike) => alarmLayerStyle(feature)
     });
     alarmLayer.set("code", "alarmLayer");
     alarmLayer.set("name", "报警图层");
     map.addLayer(alarmLayer);
+
+    layerMap["alarmLayer"] = alarmLayer;
+    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息(项目中使用方式：根据图层code在layerMap中找对应的图层信息)
+
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
       try {
@@ -751,23 +756,24 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       autoPan: true,
       offset: [20, 0]
     });
+
     map.addOverlay(hoverInfoLayer);
+    let setNum: any = 0;
     map.on("pointermove", function (event: any) {
+      const pos = event.coordinate;
       const pixel = map.getEventPixel(event.originalEvent); // 坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
-      if (hit) {
-        const pos = event.coordinate;
-        map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
-          let targetFeature = null;
-          if (Array.isArray(feature.get("features"))) {
-            targetFeature = feature.get("features")[0];
-          } else {
-            targetFeature = feature;
-          }
 
-          let { extendsData, type, name } = targetFeature.getProperties();
+      if (hit) {
+        clearTimeout(setNum);
+        setNum = setTimeout(() => {
+          const featuresArr = map.getFeaturesAtPixel(pixel); // 该坐标点下的要素集合
+          const firstFeature = featuresArr[0];
+          const targetFeature = (firstFeature && firstFeature.get("features")) || firstFeature;
+          let { extendsData, type, name, typeStats } = targetFeature.getProperties();
           popupTitDOMRef.value.style.height = "40px";
+          console.log(targetFeature);
           if (type == "trackPoint" || type == "trackShip") {
             const { detailInfo, titleInfo } = unref(extendsData);
             const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
@@ -795,14 +801,42 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             }
             popupContentDOMRef.value.innerHTML = contentStr;
             hoverInfoLayer.setPosition(pos);
+          } else if (typeStats === "alarmPoint") {
+            // 报警点
+            showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
           } else {
+            // 此处注释，点坐标存在穿透，可能导致点新要素无法显示，一直走到该逻辑
             hoverInfoLayer.setPosition(undefined);
           }
-        });
+        }, 500);
       } else {
         hoverInfoLayer.setPosition(undefined);
       }
     });
+
+    // 显示报警点详情
+    // eventSubTypeColor 不存在红色，存在使用自身颜色
+    const showAlarmPointDetail = (title: HTMLElement, content: HTMLElement, extendsData: any, pos: number[]) => {
+      const {
+        equipName = "",
+        monitorTime = "",
+        eventLevelName = "",
+        eventTypeName = "",
+        eventSubTypeName = "",
+        eventName = "",
+        desc = ""
+      } = extendsData || {};
+      title.innerHTML = `告警设备:${equipName}`; // 标题
+      content.innerHTML = `
+        <p>告警时间 : ${monitorTime}</p>
+        <p>告警等级 : ${eventLevelName}</p>
+        <p>事件类型 : ${eventTypeName}</p>
+        <p>事件子类型 : ${eventSubTypeName}</p>
+        <p>事件名称 : ${eventName}</p>
+        <p>事件描述 : ${desc}</p>
+      `;
+      hoverInfoLayer.setPosition(pos);
+    };
 
     /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）*****************************/
     // 地图点击弹框
@@ -1109,7 +1143,35 @@ watch(
 );
 
 /*************************************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***********************************************/
+/*
+  01：node有经纬度,将经纬度作为ID获取报警点要素
+       I: 找到要素高亮
+      II: 找不到要素,将经纬度作为偏移坐标
+
+  02: rowData 没有经纬度，则高亮设备关联的标签
+*/
 const outsideTableRowDataSelect = (node: any) => {
+  const { lat, lon } = node;
+  lat && lon && lat != 0 && lon != 0 ? hasLatLngFn(node) : hasNoLatLngFn(node);
+};
+
+// 有经纬度
+const hasLatLngFn = (node: any) => {
+  const alarmLayer = exportMap.value.get("layerMap")["alarmLayer"];
+  const alarmSource = alarmLayer.getSource();
+  const alarmFeatureId = node.lat + "_" + node.lon;
+  const alarmFeature = alarmSource?.getFeatures()?.find((val: any) => val.getId() === alarmFeatureId);
+  if (alarmFeature) {
+    labelOnSelect(exportMap.value, alarmFeatureId, false, false, true);
+  } else {
+    // 要素不存在
+    let center = fromLonLat([node.lon, node.lat]);
+    exportMap.value.getView().animate({ center: center });
+  }
+};
+
+// 没有经纬度
+const hasNoLatLngFn = (node: any) => {
   const { equip } = node; // 设备code或实时数据code
   const currentRealData = (exportMap.value?.get("trackInfoMap") || [])?.filter((item: any) => item.code == equip)?.[0];
   let isRealTimeData = !!currentRealData?.isRealTimeData; // 判断是否实时数据
@@ -1118,16 +1180,13 @@ const outsideTableRowDataSelect = (node: any) => {
     labelOnSelect(exportMap.value, featureCode, false, isRealTimeData);
   }
 };
+
 watch(
   () => props.outsideTableRowData,
   node => {
-    if (node) {
-      outsideTableRowDataSelect(node);
-    }
+    node && outsideTableRowDataSelect(node);
   },
-  {
-    deep: true
-  }
+  {}
 );
 </script>
 
