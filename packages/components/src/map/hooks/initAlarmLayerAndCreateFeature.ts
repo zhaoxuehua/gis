@@ -54,15 +54,15 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
       if (matchedKey) {
         const labelInfo = labelInfoMap[matchedKey];
         if (labelInfo) {
+          const type = labelInfo?.labelData?.style?.type;
           // 绘制要素
           const labelFeature = new Feature({
             name: equipName, // 设备名称
+            code: equip,
+            typeStats: "alarmPoint",
+            type,
             geometry: createGeometry(labelInfo?.labelData)
           });
-          const type = labelInfo?.labelData?.style?.type;
-          labelFeature.set("code", equip); // 设备编码
-          labelFeature.set("typeStats", "alarmPoint");
-          labelFeature.set("type", type);
           if (["1", "6"].includes(type)) {
             labelFeature.set("max", 1);
           } else {

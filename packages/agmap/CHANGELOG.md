@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.11
+
+### Patch Changes
+
+- 双击表格定位报警点逻辑添加
+
 ## 2.0.10
 
 ### Patch Changes
