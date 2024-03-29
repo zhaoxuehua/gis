@@ -773,7 +773,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           const targetFeature = (firstFeature && firstFeature.get("features")) || firstFeature;
           let { extendsData, type, name, typeStats } = targetFeature.getProperties();
           popupTitDOMRef.value.style.height = "40px";
-          console.log(targetFeature);
           if (type == "trackPoint" || type == "trackShip") {
             const { detailInfo, titleInfo } = unref(extendsData);
             const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
