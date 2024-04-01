@@ -960,10 +960,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
               publishParams.equipCode = relationObj?.code;
               publishParams.equipId = relationObj?.isRealTimeData ? relationObj?.code : relationObj?.id;
             }
-            emits("geClickPublishData", publishParams);
           }
         }
       }
+      emits("geClickPublishData", publishParams);
     });
 
     /***************************************************地图右键（目前只有监控可用）*****************************************************/
