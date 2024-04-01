@@ -771,7 +771,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         setNum = setTimeout(() => {
           const featuresArr = map.getFeaturesAtPixel(pixel); // 该坐标点下的要素集合
           const firstFeature = featuresArr[0];
-          const targetFeature = (firstFeature && firstFeature.get("features")) || firstFeature;
+          let targetFeature = (firstFeature && firstFeature.get("features")) || firstFeature;
+          targetFeature = Array.isArray(targetFeature) ? targetFeature[0] : targetFeature;
+
           let { extendsData, type, name, typeStats } = targetFeature?.getProperties();
           popupTitDOMRef.value.style.height = "40px";
           if (type == "trackPoint" || type == "trackShip") {
