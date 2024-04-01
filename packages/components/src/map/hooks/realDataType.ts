@@ -44,6 +44,7 @@ interface shipColorParams {
   styleObject?: string;
   isAttention?: boolean;
   isWhiteList?: boolean;
+  timeoutRange?: number;
 }
 
 export type { getInitMapExportDataType, shipParamsType, shipStyCashType, searchShipDataType, shipColorParams };
