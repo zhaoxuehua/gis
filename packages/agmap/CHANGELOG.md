@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.13
+
+### Patch Changes
+
+- 左击发布参数
+
 ## 2.0.12
 
 ### Patch Changes
