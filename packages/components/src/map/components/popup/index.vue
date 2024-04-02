@@ -20,7 +20,7 @@
         <!-- 是关联设备配置了左键弹窗属性 -->
         <div v-if="state.isRelationBody && state.hasConfigAttr" class="relation-content">
           <!-- 静态属性 -->
-          <ul class="static-data" v-if="attrData.staticData.length">
+          <ul class="map-static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
               <el-tooltip
