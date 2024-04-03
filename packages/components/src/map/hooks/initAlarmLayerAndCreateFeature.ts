@@ -24,7 +24,6 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   data?.forEach((item: { [key: string]: any }) => {
     let { equip, equipName, lon, lat } = item;
     let id = lat + "_" + lon;
-
     // 如果有经纬度则说明是点，直接绘制报警点，没有则在abelInfoMap中匹配去标签进行绘制新的报警标签
     if (lon && lat) {
       const alarmPointFeature = new Feature({
