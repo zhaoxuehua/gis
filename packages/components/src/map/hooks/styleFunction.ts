@@ -459,7 +459,7 @@ export function alarmLayerStyle(feature: any) {
     // 点类型报警
     const max = targetFeature.get("max");
     const selected = targetFeature.get("selected");
-    const color = targetFeature.get("color") || "red"; // 颜色
+    const color = targetFeature.get("color"); // 颜色
     let alarmImg: any;
 
     if (!pointAlarmStyMap[color]) {
