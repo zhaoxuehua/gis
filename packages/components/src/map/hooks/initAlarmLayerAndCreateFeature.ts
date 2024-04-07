@@ -44,12 +44,12 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
         code: equip,
         lon,
         lat,
-        layerCode: "alarmLayer", // 所属图层
+        layerCode: "alarmLayer",
         dataType: "1",
         id
       });
     } else {
-      // 点、文本 线、面、圆、矩形、环(匹配基础引擎标签）, 报警点也可能走这里
+      // 报警类型点（点、文本）、 线、面、圆、矩形、环(匹配基础引擎标签）
       const matchedKey = relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code
       if (matchedKey) {
         const labelInfo = labelInfoMap[matchedKey];
@@ -68,14 +68,13 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
           if (["1", "6"].includes(type)) {
             labelFeature.set("max", 1);
             labelFeature.setId(id);
-            alarmFeatures.push(labelFeature);
             alarmPointFeatureInfoArr.push({
               name: equipName,
               code: equip,
               lon,
               lat,
-              layerCode: "alarmLayer", // 所属图层
-              dataType: "1",
+              layerCode: "alarmLayer",
+              dataType: type,
               id
             });
           } else {
