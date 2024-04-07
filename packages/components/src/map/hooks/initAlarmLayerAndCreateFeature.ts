@@ -21,10 +21,10 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let alarmFeatures: any = []; // 报警图层要素
   let alarmPointFeatureInfoArr: any = []; // 报警中点报警要素信息（用于labelOnSelect中报警点要素选中逻辑）
+
   data?.forEach((item: { [key: string]: any }) => {
     let { equip, equipName, lon, lat } = item;
     let id = lat + "_" + lon;
-
     // 如果有经纬度则说明是点，直接绘制报警点，没有则在abelInfoMap中匹配去标签进行绘制新的报警标签
     if (lon && lat) {
       const alarmPointFeature = new Feature({
@@ -44,27 +44,39 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
         code: equip,
         lon,
         lat,
-        layerCode: "alarmLayer", // 所属图层
+        layerCode: "alarmLayer",
         dataType: "1",
         id
       });
     } else {
-      // 点、文本 线、面、圆、矩形、环(匹配基础引擎标签）
+      // 报警类型点（点、文本）、 线、面、圆、矩形、环(匹配基础引擎标签）
       const matchedKey = relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code
       if (matchedKey) {
         const labelInfo = labelInfoMap[matchedKey];
         if (labelInfo) {
+          const type = labelInfo?.labelData?.style?.type;
           // 绘制要素
           const labelFeature = new Feature({
             name: equipName, // 设备名称
+            code: equip,
+            typeStats: "alarmPoint",
+            type,
+            color: item.eventSubTypeColor || "red",
+            extendsData: item,
             geometry: createGeometry(labelInfo?.labelData)
           });
-          const type = labelInfo?.labelData?.style?.type;
-          labelFeature.set("code", equip); // 设备编码
-          labelFeature.set("typeStats", "alarmPoint");
-          labelFeature.set("type", type);
           if (["1", "6"].includes(type)) {
             labelFeature.set("max", 1);
+            labelFeature.setId(id);
+            alarmPointFeatureInfoArr.push({
+              name: equipName,
+              code: equip,
+              lon,
+              lat,
+              layerCode: "alarmLayer",
+              dataType: type,
+              id
+            });
           } else {
             labelFeature.set("visible", true);
           }

@@ -1,5 +1,23 @@
 # @adm-gis-ui/components
 
+## 2.0.14
+
+### Patch Changes
+
+- 报警
+
+## 2.0.13
+
+### Patch Changes
+
+- 左击发布参数
+
+## 2.0.12
+
+### Patch Changes
+
+- 地图点击发布参数
+
 ## 2.0.11
 
 ### Patch Changes
