@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.14
+
+### Patch Changes
+
+- 报警
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.14
+
 ## 2.0.13
 
 ### Patch Changes
