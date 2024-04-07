@@ -130,6 +130,7 @@ const emits = defineEmits([
   "getClickBoxSelection",
   "getCustomSearchContent",
   "getInitMapExportData",
+  "geClickPublishData",
   "scada",
   "view"
 ]);
@@ -770,10 +771,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         setNum = setTimeout(() => {
           const featuresArr = map.getFeaturesAtPixel(pixel); // 该坐标点下的要素集合
           const firstFeature = featuresArr[0];
-          const targetFeature = (firstFeature && firstFeature.get("features")) || firstFeature;
-          let { extendsData, type, name, typeStats } = targetFeature.getProperties();
+          let targetFeature = (firstFeature && firstFeature.get("features")) || firstFeature;
+          targetFeature = Array.isArray(targetFeature) ? targetFeature[0] : targetFeature;
+
+          let { extendsData, type, name, typeStats } = targetFeature?.getProperties();
           popupTitDOMRef.value.style.height = "40px";
-          console.log(targetFeature);
           if (type == "trackPoint" || type == "trackShip") {
             const { detailInfo, titleInfo } = unref(extendsData);
             const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
@@ -838,7 +840,14 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       hoverInfoLayer.setPosition(pos);
     };
 
-    /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）*****************************/
+    /*************************************根据标签code获取关联信息***************************************************************/
+    const getRelationObj = (featureCode: string) => {
+      // 获取标签关联的设备信息|| 实时数据（船、人通过对象中isRealTimeData区分是否实时数据）
+      const currentRealData = (map.get("trackInfoMap") || [])?.filter((item: any) => item.code == featureCode)?.[0];
+      return gisStore?.relationMap?.[featureCode] || currentRealData;
+    };
+
+    /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）***********************************************/
     // 地图点击弹框
     // 弹窗图层  当前点击位置
     const overlay = new Overlay({
@@ -863,12 +872,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (gisStore?.isEdit) {
         return;
       }
-      // 获取标签关联的设备信息|| 实时数据（船、人通过isRealTimeData区分）
-      const trackInfoMap = map.get("trackInfoMap") || [];
-      const currentRealData = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0];
       popupData.featureCode = featureCode;
       popupData.featureName = featureName;
-      popupData.relationMap = trackPointInfo || gisStore?.relationMap[featureCode] || currentRealData; // 轨迹圆圈数据|绘制标签关联信息|实时数据信息
+      popupData.relationMap = trackPointInfo || getRelationObj(featureCode); // 轨迹圆圈数据|绘制标签关联信息|实时数据信息
       if (leftClickDialogPosition.value === "current") {
         // 解决首次点击overlay没有完全移动到可是区域的问题
         requestAnimationFrame(() => {
@@ -892,6 +898,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       let hit = map.hasFeatureAtPixel(pixel, {
         hitTolerance: 5
       }); // 当前点击处是否有要素
+
+      let publishParams: any = {
+        coordinate: toLonLat(map?.getCoordinateFromPixel(pixel)) // 点击像素处的经纬度（投影坐标3857=>4326）
+      };
+
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
         // 对选择的要素做弹框弹出及选中样式、编辑弹框
@@ -906,6 +917,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
           labelTypeCode = featureLabelType;
+          publishParams.event = currentSelectFeature?.get("extendsData")?.event || "";
         }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
@@ -924,8 +936,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             };
             map.popupInfo({ featureCode, featureName, center }, trackPointInfo);
           } else {
-            // 绘制标签或实时数据标签
-            const currentRealData = (map.get("trackInfoMap") || [])?.filter((item: any) => item.code === featureCode)?.[0]; // 获取实时数据（判断点击的是实时数据还是绘制数据）=
+            let relationObj = getRelationObj(featureCode); // 绘制标签关联信息|实时数据信息
             map.popupInfo({ featureCode, featureName, center });
             // 以下是选中+编辑要素逻辑
             // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
@@ -943,11 +954,18 @@ const initMap = async (mapId: string | number, isId: boolean) => {
                 timer.value = null;
               }, 200);
             } else {
-              labelOnSelect(exportMap.value, featureCode, true, currentRealData?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
+              labelOnSelect(exportMap.value, featureCode, true, relationObj?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
+            }
+            // 存储标签code及关联设备信息
+            publishParams.labelCode = featureCode;
+            if (relationObj) {
+              publishParams.equipCode = relationObj?.code;
+              publishParams.equipId = relationObj?.isRealTimeData ? relationObj?.code : relationObj?.id;
             }
           }
         }
       }
+      emits("geClickPublishData", publishParams);
     });
 
     /***************************************************地图右键（目前只有监控可用）*****************************************************/

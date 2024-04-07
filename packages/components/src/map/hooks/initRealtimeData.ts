@@ -86,7 +86,11 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       let shipFeatureArr: Feature[] = [];
       let res: { [key: string]: any } = await getRealDataList(equipTypeCode, {});
       if (res?.code == 200) {
-        const { data } = res;
+        const data = res.data.realtimeData || {};
+        let timeoutRange = 8 * 60 * 1000;
+        if (res.data?.timeoutRange) {
+          timeoutRange = res.data?.timeoutRange[dataContent + "-timeoutRange"] * 1000 || 8 * 60 * 1000; // 船只超时时间，没有值默认8分钟
+        }
         realDataInfoCash[equipTypeCode] = []; // 清除该类型标签的存储数据重新存储（塞入基础引擎搜索定位等使用）
         // 经度lon 纬度lat 时间monitorTime 船4关注colorIndex  速度sog 都在监测属性中
         // 名称name 联系人person 在监测属性同级  编码code（取key值）
@@ -110,10 +114,10 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 
             const colorArr: any = realFeatureColor({
               monitorTime,
-              // colorIndex: valInfo.colorIndex,
               status,
               isWhiteList: (item as any)?.isWhiteList,
-              isAttention: (item as any)?.isAttention
+              isAttention: (item as any)?.isAttention,
+              timeoutRange: timeoutRange
             });
 
             const shipInfo = {
@@ -230,11 +234,12 @@ export function createdRealDataFeature(params: shipParamsType, dataType: string,
     不符合上述条件 => 黄色
 
 ************************************************************************/
-const eightMinutes = 8 * 60 * 1000;
+// const eightMinutes = 8 * 60 * 1000;
 export function realFeatureColor(arg: shipColorParams) {
   let colorArr: string[] = [];
   const nowTime = +new Date();
-  let { monitorTime, status, isAttention, isWhiteList } = arg;
+  let { monitorTime, status, isAttention, isWhiteList, timeoutRange: eightMinutes } = arg;
+
   // 白名单
   if (isWhiteList) {
     colorArr = ["#fff", "#fff"];
@@ -251,17 +256,17 @@ export function realFeatureColor(arg: shipColorParams) {
   }
 
   // 延迟大于8分钟
-  if (nowTime - monitorTime > eightMinutes) {
+  if (nowTime - monitorTime > Number(eightMinutes)) {
     colorArr = ["#c0c0c0", "#c0c0c0"];
   }
 
   // 告警+大于8分钟
-  if (status && nowTime - monitorTime > eightMinutes) {
+  if (status && nowTime - monitorTime > Number(eightMinutes)) {
     colorArr = ["#c0c0c0", "#ff0000"];
   }
 
   // 不符合上述条件
-  if (!isWhiteList && !isAttention && !status && !(nowTime - monitorTime > eightMinutes)) {
+  if (!isWhiteList && !isAttention && !status && !(nowTime - monitorTime > Number(eightMinutes))) {
     colorArr = ["#ffff00", "#ffff00"];
   }
 
