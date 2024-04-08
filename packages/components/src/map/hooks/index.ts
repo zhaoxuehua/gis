@@ -285,11 +285,14 @@ export function transformLabelType(originalData: LabelType) {
 const clearSelectFeatureTimer = ref<number>();
 // 选中label(地图点击、导航树、标签树、外部树节点、外部表格)
 /******************************************
+ * 参数
  * map:地图实例
  * featureCode标签code
  * isFeatureClick 地图上点击的要素(地图上的点击还是导航树、标签书等的)
  * isRealTimeData：是都实时数据（船、人等,非基础数据）
  * isAlarmPoint：是否报警点选中（目前只有外部节点定位时使用）
+ * 功能
+ * 1、点位位置功能 2、选中功能（点的是聚焦框 线面改变颜色）
  * ************************************************/
 export function labelOnSelect(
   map: VisualMap,
@@ -349,7 +352,7 @@ export function labelOnSelect(
   if (isFeatureClick) {
     SelectFeatureAndPopData();
   } else {
-    // 对标签、导航树等要素定位（不是地图上直接点击需要定位到对应层级及中心点）
+    // 对标签、导航树、外部树、表格等需要对要素定位（不是地图上直接点击需要定位到对应层级及中心点）
     map.getView().animate(
       { zoom: zoom },
       { center: center },
@@ -374,8 +377,7 @@ export function labelOnSelect(
       clusterDataSource?.getFeatures()?.forEach(function (clusterFeature: any) {
         clusterFeature.get("features").forEach(function (originalFeature: any) {
           if (originalFeature.get("code") === featureCode) {
-            // 分是否外部对象(实时数据绘制与基础引擎标签)
-            originalFeature.set("selected", true); // 非聚合图层的可以这样实现
+            originalFeature.set("selected", true);
             originalFeature.changed();
             map.set("featureSelect", originalFeature);
           }
@@ -386,7 +388,7 @@ export function labelOnSelect(
       const selectFeature = source?.getFeatureById(featureCode);
 
       if (selectFeature) {
-        selectFeature.set("selected", true); // 非聚合图层的可以这样实现
+        selectFeature.set("selected", true);
         selectFeature.changed();
         map.set("featureSelect", selectFeature);
       } else {

@@ -847,9 +847,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       return gisStore?.relationMap?.[featureCode] || currentRealData;
     };
 
-    /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）***********************************************/
-    // 地图点击弹框
-    // 弹窗图层  当前点击位置
+    /***********************地图点击弹框（搜索、标签树、导航树、地图 点击对应弹框）***********************************************/
     const overlay = new Overlay({
       element: popupRef.value?.getDOMElement(), // 弹框组件
       autoPan: true
