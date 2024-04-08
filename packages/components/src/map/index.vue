@@ -971,6 +971,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             if (relationObj) {
               publishParams.equipCode = relationObj?.code;
               publishParams.equipId = relationObj?.isRealTimeData ? relationObj?.code : relationObj?.id;
+              publishParams.equipTypeCode = relationObj?.isRealTimeData
+                ? relationObj?.realObjectTypeCode
+                : relationObj?.equipTypeCode;
             }
           }
         }
