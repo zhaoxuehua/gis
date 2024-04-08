@@ -290,7 +290,7 @@ const clearSelectFeatureTimer = ref<number>();
  * featureCode标签code
  * isFeatureClick 地图上点击的要素(地图上的点击还是导航树、标签书等的)
  * isRealTimeData：是都实时数据（船、人等,非基础数据）
- * isAlarmPoint：是否报警点选中（目前只有外部节点定位时使用）
+ * isAlarmPoint：是否报警点选中（就是给要素一个选中框逻辑）
  * 功能
  * 1、点位位置功能 2、选中功能（点的是聚焦框 线面改变颜色）
  * ************************************************/

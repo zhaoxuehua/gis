@@ -38,18 +38,19 @@ export const styleAct = {
 
 // 报警样式（报警点、线、面）
 export const styleAlarm = {
-  pointAlarmSty: warnFault("rgba(255,0,0,1)"), // 报警点
+  // 报警点
+  pointAlarmSty: warnFault("rgba(255,0,0,1)"),
+  // 报警线的动画样式1 2
   lineAlarmSty1: new Style({
     stroke: new Stroke({
-      color: "rgba(255,0,0,0.7)",
+      color: "rgba(255,0,0,1)",
       width: 2
     }),
     zIndex: 10
   }),
-  // 报警线的动画样式1 2
   lineAlarmSty2: new Style({
     stroke: new Stroke({
-      color: "rgba(255,255,255,0)",
+      color: "rgba(255,255,255,0.1)",
       width: 2
     }),
     zIndex: 10
