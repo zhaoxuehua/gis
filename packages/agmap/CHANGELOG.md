@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.15
+
+### Patch Changes
+
+- 告警标签及增加地图发布参数
+
 ## 2.0.14
 
 ### Patch Changes

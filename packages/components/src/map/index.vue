@@ -847,9 +847,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       return gisStore?.relationMap?.[featureCode] || currentRealData;
     };
 
-    /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）***********************************************/
-    // 地图点击弹框
-    // 弹窗图层  当前点击位置
+    /***********************地图点击弹框（搜索、标签树、导航树、地图 点击对应弹框）***********************************************/
     const overlay = new Overlay({
       element: popupRef.value?.getDOMElement(), // 弹框组件
       autoPan: true
@@ -897,31 +895,32 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       let pixel = map.getEventPixel(evt.originalEvent);
       let hit = map.hasFeatureAtPixel(pixel, {
         hitTolerance: 5
-      }); // 当前点击处是否有要素
+      });
 
       let publishParams: any = {
         coordinate: toLonLat(map?.getCoordinateFromPixel(pixel)) // 点击像素处的经纬度（投影坐标3857=>4326）
       };
-
+      // 功能：（1）对选择的要素做弹框弹出 （2）选中样式 （3）编辑要素样式弹框（基础引擎绘制标签）
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
-        // 对选择的要素做弹框弹出及选中样式、编辑弹框
         let featureCode = currentSelectFeature?.get("code");
         let featureName = currentSelectFeature?.get("name");
         let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
-        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
         let type = currentSelectFeature?.get("type");
+        publishParams.labelCode = featureCode;
         if (typeStats == "alarmPoint") {
-          // 告警标签获取到的featureCode是设备code需要自己找对应的标签code
+          // 告警标签获取到的featureCode是设备code(需要根据该设备code找对应的标签code)
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
-          featureCode = featureLabelCode || featureCode;
+          featureCode = featureLabelCode || featureCode; // 告警标签则取对应的设备（弹框显示对应的设备，如果是实时数据设备code与告警的标签code相同）
           labelTypeCode = featureLabelType;
           publishParams.event = currentSelectFeature?.get("extendsData")?.event || "";
+          publishParams.mid = currentSelectFeature?.get("extendsData")?.mid || "";
         }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
-          // 轨迹
+          let isAlarmPoint = typeStats == "alarmPoint" && ["1", "6"].includes(type); // 是否告警标签中的点告警标签
+          // 轨迹点点击只有左键弹框
           if (type == "trackPoint") {
             let objectTypeCode = currentSelectFeature?.get("objectTypeCode");
             let trackPointTime = currentSelectFeature?.get("trackPointTime");
@@ -939,28 +938,41 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             let relationObj = getRelationObj(featureCode); // 绘制标签关联信息|实时数据信息
             map.popupInfo({ featureCode, featureName, center });
             // 以下是选中+编辑要素逻辑
-            // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
+            // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树，基础引擎绘制的才可以编辑） 将选中用定时器是因为编辑弹框会让选中消失
             if (
               labelTypeCode &&
               labelTypeMap[labelTypeCode]?.isHang &&
               gisStore?.isEdit &&
               map?.get("labelInfoMap")?.[featureCode]
             ) {
-              // 应用场景下基础引擎绘制标签存在则可编辑
               editLabelRef.value?.onOpen(featureCode);
               timer.value = setTimeout(() => {
-                labelOnSelect(exportMap.value, featureCode, true);
+                labelOnSelect(
+                  exportMap.value,
+                  isAlarmPoint ? currentSelectFeature?.getId() : featureCode, // 告警点是根据经纬度作为唯一id匹配
+                  true,
+                  false,
+                  isAlarmPoint
+                );
                 clearTimeout(timer);
                 timer.value = null;
               }, 200);
             } else {
-              labelOnSelect(exportMap.value, featureCode, true, relationObj?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
+              labelOnSelect(
+                exportMap.value,
+                isAlarmPoint ? currentSelectFeature?.getId() : featureCode, // 告警点是根据经纬度作为唯一id匹配
+                true,
+                relationObj?.isRealTimeData,
+                isAlarmPoint
+              );
             }
-            // 存储标签code及关联设备信息
-            publishParams.labelCode = featureCode;
+            // 存储关联设备信息
             if (relationObj) {
               publishParams.equipCode = relationObj?.code;
               publishParams.equipId = relationObj?.isRealTimeData ? relationObj?.code : relationObj?.id;
+              publishParams.equipTypeCode = relationObj?.isRealTimeData
+                ? relationObj?.realObjectTypeCode
+                : relationObj?.equipTypeCode;
             }
           }
         }
@@ -968,7 +980,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       emits("geClickPublishData", publishParams);
     });
 
-    /***************************************************地图右键（目前只有监控可用）*****************************************************/
+    /***************************************************地图右键（目前只有监控写了定制化逻辑）*****************************************************/
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
