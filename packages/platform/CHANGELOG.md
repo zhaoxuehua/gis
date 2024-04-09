@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.15
+
+### Patch Changes
+
+- 告警标签及增加地图发布参数
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.15
+
 ## 2.0.14
 
 ### Patch Changes
