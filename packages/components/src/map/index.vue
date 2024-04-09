@@ -895,33 +895,32 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       let pixel = map.getEventPixel(evt.originalEvent);
       let hit = map.hasFeatureAtPixel(pixel, {
         hitTolerance: 5
-      }); // 当前点击处是否有要素
+      });
 
       let publishParams: any = {
         coordinate: toLonLat(map?.getCoordinateFromPixel(pixel)) // 点击像素处的经纬度（投影坐标3857=>4326）
       };
-      // 对选择的要素做弹框弹出及选中样式、编辑弹框
+      // 功能：（1）对选择的要素做弹框弹出 （2）选中样式 （3）编辑要素样式弹框（基础引擎绘制标签）
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
         let featureCode = currentSelectFeature?.get("code");
         let featureName = currentSelectFeature?.get("name");
         let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
-        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
         let type = currentSelectFeature?.get("type");
         publishParams.labelCode = featureCode;
         if (typeStats == "alarmPoint") {
           // 告警标签获取到的featureCode是设备code(需要根据该设备code找对应的标签code)
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
-          featureCode = featureLabelCode || featureCode;
+          featureCode = featureLabelCode || featureCode; // 告警标签则取对应的设备（弹框显示对应的设备，如果是实时数据设备code与告警的标签code相同）
           labelTypeCode = featureLabelType;
           publishParams.event = currentSelectFeature?.get("extendsData")?.event || "";
           publishParams.mid = currentSelectFeature?.get("extendsData")?.mid || "";
         }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
-          let isAlarmPoint = typeStats == "alarmPoint" && ["1", "6"].includes(type);
-          // 轨迹
+          let isAlarmPoint = typeStats == "alarmPoint" && ["1", "6"].includes(type); // 是否告警标签中的点告警标签
+          // 轨迹点点击只有左键弹框
           if (type == "trackPoint") {
             let objectTypeCode = currentSelectFeature?.get("objectTypeCode");
             let trackPointTime = currentSelectFeature?.get("trackPointTime");
@@ -981,7 +980,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       emits("geClickPublishData", publishParams);
     });
 
-    /***************************************************地图右键（目前只有监控可用）*****************************************************/
+    /***************************************************地图右键（目前只有监控写了定制化逻辑）*****************************************************/
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
