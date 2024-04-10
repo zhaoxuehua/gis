@@ -437,7 +437,6 @@ const onExport = async () => {
     const res: any = await tableDataExport(formData);
     const reader: any = new FileReader();
     reader.onload = function () {
-      console.log(8888888);
       try {
         const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
         if (resData?.code) {
