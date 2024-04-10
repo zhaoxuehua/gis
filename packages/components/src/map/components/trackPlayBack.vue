@@ -456,7 +456,7 @@ const table = ref<TableList>({
     }
 
     if (formData.alarmLevel) {
-      (params as any).eventType = formData.alarmLevel;
+      (params as any).eventCode = formData.alarmLevel;
     }
     if (!formData.objectTypeId) {
       return ElMessage.warning("查询对象不能为空！");

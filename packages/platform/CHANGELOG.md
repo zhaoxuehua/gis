@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.16
+
+### Patch Changes
+
+- 修复轨迹回放问题及翻页问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.16
+
 ## 2.0.15
 
 ### Patch Changes
