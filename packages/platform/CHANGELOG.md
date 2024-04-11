@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.17
+
+### Patch Changes
+
+- 修复鼠标经过问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.17
+
 ## 2.0.16
 
 ### Patch Changes
