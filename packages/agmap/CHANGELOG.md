@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.18
+
+### Patch Changes
+
+- 修复告警唯一标识的问题
+
 ## 2.0.17
 
 ### Patch Changes

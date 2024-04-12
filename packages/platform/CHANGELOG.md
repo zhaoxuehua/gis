@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.18
+
+### Patch Changes
+
+- 修复告警唯一标识的问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.18
+
 ## 2.0.17
 
 ### Patch Changes
