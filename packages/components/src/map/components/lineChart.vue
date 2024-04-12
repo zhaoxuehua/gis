@@ -20,7 +20,7 @@ const initOption = (chartData?: any) => {
       formatter(params: any) {
         let str = `${params[0].data[0]}${chartData?.xAxisUnit}<br/>`;
         params.forEach((item: any) => {
-          str += `${item.marker}${item.seriesName}：${item.data[1]}${chartData?.yAxisUnit}<br/>`;
+          str += `${item.marker}${item.seriesName}：${item.data[1]}${chartData?.yAxisUnit || ""}<br/>`;
         });
         return str;
       }

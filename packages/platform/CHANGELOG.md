@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.19
+
+### Patch Changes
+
+- 修复线性数据没有单位时 undefined 问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.19
+
 ## 2.0.18
 
 ### Patch Changes
