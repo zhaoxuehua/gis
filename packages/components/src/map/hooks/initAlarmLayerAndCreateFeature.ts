@@ -23,8 +23,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   let alarmPointFeatureInfoArr: any = []; // 报警中点报警要素信息（用于labelOnSelect中报警点要素选中逻辑）
 
   data?.forEach((item: { [key: string]: any }) => {
-    let { equip, equipName, lon, lat } = item;
-    let id = lat + "_" + lon;
+    let { equip, equipName, lon, lat, mid } = item;
     // 如果有经纬度则说明是点，直接绘制报警点，没有则在abelInfoMap中匹配去标签进行绘制新的报警标签
     if (lon && lat) {
       const alarmPointFeature = new Feature({
@@ -37,7 +36,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
         extendsData: item,
         geometry: new Point(fromLonLat([lon, lat]))
       });
-      alarmPointFeature.setId(id);
+      alarmPointFeature.setId(mid);
       alarmFeatures.push(alarmPointFeature);
       alarmPointFeatureInfoArr.push({
         name: equipName,
@@ -46,7 +45,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
         lat,
         layerCode: "alarmLayer",
         dataType: "1",
-        id
+        id: mid
       });
     } else {
       // 报警类型点（点、文本）、 线、面、圆、矩形、环(匹配基础引擎标签）
@@ -67,7 +66,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
           });
           if (["1", "6"].includes(type)) {
             labelFeature.set("max", 1);
-            labelFeature.setId(id);
+            labelFeature.setId(mid);
             alarmPointFeatureInfoArr.push({
               name: equipName,
               code: equip,
@@ -75,7 +74,7 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
               lat,
               layerCode: "alarmLayer",
               dataType: type,
-              id
+              id: mid
             });
           } else {
             labelFeature.set("visible", true);
