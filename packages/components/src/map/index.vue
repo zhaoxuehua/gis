@@ -1165,8 +1165,8 @@ watch(
 
 /*************************************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***********************************************/
 /*
-  01：node有经纬度,将经纬度作为ID获取报警点要素
-       I: 找到要素高亮
+  01：node有经纬度,将mid作为ID获取报警点要素
+       I: 找到告警要素高亮
       II: 找不到要素,将经纬度作为偏移坐标
 
   02: rowData 没有经纬度，则高亮设备关联的标签
@@ -1180,7 +1180,7 @@ const outsideTableRowDataSelect = (node: any) => {
 const hasLatLngFn = (node: any) => {
   const alarmLayer = exportMap.value.get("layerMap")["alarmLayer"];
   const alarmSource = alarmLayer.getSource();
-  const alarmFeatureId = node.lat + "_" + node.lon;
+  const alarmFeatureId = node?.mid;
   const alarmFeature = alarmSource?.getFeatures()?.find((val: any) => val.getId() === alarmFeatureId);
   if (alarmFeature) {
     labelOnSelect(exportMap.value, alarmFeatureId, false, false, true);
