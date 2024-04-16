@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.20
+
+### Patch Changes
+
+- 修复左键线性数据为空时问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.20
+
 ## 2.0.19
 
 ### Patch Changes
