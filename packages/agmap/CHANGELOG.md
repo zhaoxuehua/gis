@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.20
+
+### Patch Changes
+
+- 修复左键线性数据为空时问题
+
 ## 2.0.19
 
 ### Patch Changes

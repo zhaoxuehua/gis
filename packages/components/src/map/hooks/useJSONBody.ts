@@ -9,7 +9,8 @@ export const useJSONBody = () => {
     monitorJSONbodyMap: {}, // 绑定的结构体
     staticAttr: [] as any, // 静态属性
     monitorSeqAttr: [] as any, // 监测散点属性
-    linkData: [] as any // 链接数据
+    linkData: [] as any, // 链接数据
+    lineExampleData: [] as any
   });
 
   const getDiffAttrCode = () => {
@@ -21,9 +22,14 @@ export const useJSONBody = () => {
     let monitorSeqAttr: string[] = [];
     let monitorLineAttr: string[] = [];
     let monitorJSONbodyMap: any = {};
+    let lineExampleData: any = [];
     state.configInfo.monitorAttribute.forEach((item: any) => {
       if (lineType.includes(Number(item.attributeType))) {
         monitorLineAttr.push(item.attributeCode);
+        lineExampleData.push({
+          code: item.attributeCode,
+          name: item.attributeName
+        });
       }
       if (sequenceType.includes(Number(item.attributeType))) {
         monitorSeqAttr.push(item.attributeCode);
@@ -36,7 +42,8 @@ export const useJSONBody = () => {
       staticAttr,
       monitorSeqAttr,
       monitorLineAttr,
-      monitorJSONbodyMap
+      monitorJSONbodyMap,
+      lineExampleData
     };
   };
   /**
@@ -53,11 +60,12 @@ export const useJSONBody = () => {
     state.linkData = state.configInfo?.linkConfig || [];
 
     // 获取不同属性的code
-    const { monitorJSONbodyMap, staticAttr, monitorSeqAttr, monitorLineAttr } = getDiffAttrCode();
+    const { monitorJSONbodyMap, staticAttr, monitorSeqAttr, monitorLineAttr, lineExampleData } = getDiffAttrCode();
     state.monitorJSONbodyMap = monitorJSONbodyMap;
     state.staticAttr = staticAttr;
     state.monitorSeqAttr = monitorSeqAttr;
     state.monitorLineAttr = monitorLineAttr;
+    state.lineExampleData = lineExampleData;
   };
 
   /**
