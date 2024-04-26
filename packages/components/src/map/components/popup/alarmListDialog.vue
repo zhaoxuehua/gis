@@ -18,12 +18,10 @@
         v-loading="table.loading"
         highlight-current-row
         empty-text="暂无数据"
-        :row-style="{ height: 32 + 'px' }"
+        :row-style="{ height: 48 + 'px' }"
         :cell-style="{ padding: '0px' }"
         @selection-change="table.onSelectionChange"
         height="360"
-        stripe
-        border
       >
         <el-table-column type="selection"></el-table-column>
         <el-table-column label="事件编码" prop="eventCode">
@@ -55,6 +53,9 @@
             </div>
           </template>
         </el-table-column>
+        <template #empty>
+          <el-empty class="no-data" description="暂无数据" />
+        </template>
       </el-table>
       <div v-if="table.data?.length">
         <paginationCom

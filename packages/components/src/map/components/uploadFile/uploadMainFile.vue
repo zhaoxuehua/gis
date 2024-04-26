@@ -44,8 +44,6 @@
         empty-text="暂无数据"
         :row-style="{ height: 40 + 'px' }"
         :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
-        stripe
-        border
         max-height="500"
       >
         <el-table-column
@@ -66,6 +64,9 @@
             <el-button type="primary" link @click="table.onDelete(scope.$index)"> 删除 </el-button>
           </template>
         </el-table-column>
+        <template #empty>
+          <el-empty class="no-data" description="暂无数据" />
+        </template>
       </el-table>
       <div>
         <paginationCom

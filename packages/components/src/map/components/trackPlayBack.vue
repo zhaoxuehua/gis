@@ -111,10 +111,8 @@
           v-loading="table.loading"
           highlight-current-row
           empty-text="暂无数据"
-          :row-style="{ height: 32 + 'px' }"
+          :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
-          stripe
-          border
         >
           <el-table-column :label="keywordConfig?.code || '编码'" prop="code" :min-width="90"></el-table-column>
           <el-table-column :label="keywordConfig?.name || '名称'" prop="name" :min-width="110"></el-table-column>
@@ -131,6 +129,9 @@
               <Icon src="Connection" :size="14" class="operate-icon" @click="trackPlayBack(scope.row)" title="轨迹"></Icon>
             </template>
           </el-table-column>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-table>
 
         <div v-if="table.data?.length">

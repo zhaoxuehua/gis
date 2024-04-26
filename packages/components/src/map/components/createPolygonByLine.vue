@@ -14,6 +14,9 @@
           :filter-node-method="filterNode"
           ref="treeRef"
         >
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-tree>
       </div>
     </div>
@@ -48,11 +51,9 @@
           v-loading="table.loading"
           highlight-current-row
           empty-text="暂无数据"
-          :row-style="{ height: 32 + 'px' }"
+          :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="table.onSelectionChange"
-          stripe
-          border
         >
           <el-table-column label="设备名称" prop="name"></el-table-column>
           <el-table-column label="设备编码" prop="code"></el-table-column>
@@ -82,6 +83,9 @@
               <el-link class="my-el-link" type="primary" :underline="false" @click="onRemove(scope.row)">删除</el-link>
             </template>
           </el-table-column>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-table>
       </div>
     </div>
