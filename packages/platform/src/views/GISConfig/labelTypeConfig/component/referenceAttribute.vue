@@ -18,13 +18,11 @@
           v-loading="attributeList.loading"
           highlight-current-row
           empty-text="暂无数据"
-          :row-style="{ height: 32 + 'px' }"
+          :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="attributeList.onSelectionChange"
           ref="attributeTableRef"
           max-height="400"
-          stripe
-          border
         >
           <el-table-column type="selection"></el-table-column>
           <el-table-column label="序号" type="index" width="60"></el-table-column>
@@ -106,6 +104,9 @@
               </el-input-number>
             </template>
           </el-table-column>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-table>
       </el-main>
     </el-container>

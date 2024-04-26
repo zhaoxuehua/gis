@@ -40,8 +40,6 @@
       </div>
 
       <el-table
-        border
-        stripe
         :data="table.data"
         class="monitor-todo-list-table"
         v-loading="table.loading"
@@ -83,6 +81,9 @@
             </div>
           </template>
         </el-table-column>
+        <template #empty>
+          <el-empty class="no-data" description="暂无数据" />
+        </template>
       </el-table>
       <div v-if="table.data?.length">
         <paginationCom

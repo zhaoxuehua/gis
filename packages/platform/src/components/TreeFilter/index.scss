@@ -3,7 +3,7 @@
   width: 240px;
   height: 100%;
   padding: 18px;
-  margin-right: 10px;
+  margin-right: 1px;
   .title {
     margin: 0 0 15px;
     font-size: 18px;
@@ -19,15 +19,15 @@
       height: 80%;
       overflow: auto;
       .el-tree-node__content {
-        height: 33px;
+        height: 40px;
       }
     }
     :deep(.el-tree--highlight-current) {
       .el-tree-node.is-current > .el-tree-node__content {
-        background-color: var(--el-color-primary);
+        background: var(--el-color-primary-light-9);
         .el-tree-node__label,
         .el-tree-node__expand-icon {
-          color: white;
+          color: var(--el-color-primary);
         }
         .is-leaf {
           color: transparent;

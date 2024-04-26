@@ -140,5 +140,8 @@ defineExpose({
 <style lang="scss" scoped>
 .link-table {
   height: 172px;
+  :deep(.el-empty) {
+    transform: scale(0.7);
+  }
 }
 </style>

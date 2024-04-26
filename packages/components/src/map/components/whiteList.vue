@@ -42,10 +42,8 @@
           v-loading="table.loading"
           highlight-current-row
           empty-text="暂无数据"
-          :row-style="{ height: 32 + 'px' }"
+          :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
-          stripe
-          border
         >
           <el-table-column :label="keywordConfig?.code || '对象编码'" prop="objectCode"></el-table-column>
           <el-table-column :label="keywordConfig?.name || '对象名称'" prop="objectName"></el-table-column>
@@ -66,6 +64,9 @@
               ></el-link>
             </template>
           </el-table-column>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-table>
         <div v-if="table.data?.length">
           <paginationCom
