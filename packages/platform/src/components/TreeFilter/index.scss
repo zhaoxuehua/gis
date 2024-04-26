@@ -16,8 +16,10 @@
   }
   .el-scrollbar {
     :deep(.el-tree) {
-      height: 80%;
+      height: 100%;
       overflow: auto;
+      font-size: 16px !important;
+      color: #5c5e66 !important;
       .el-tree-node__content {
         height: 40px;
       }
