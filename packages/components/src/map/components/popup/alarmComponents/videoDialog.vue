@@ -11,7 +11,11 @@
     >
       <div class="monitor-alarm-video-dialog">
         <div class="monitor-alarm-video-dialog-tree">
-          <el-tree :data="state?.data" :props="state.defaultProps" @node-click="handleNodeClick"></el-tree>
+          <el-tree :data="state?.data" :props="state.defaultProps" @node-click="handleNodeClick">
+            <template #empty>
+              <el-empty class="no-data" description="暂无数据" />
+            </template>
+          </el-tree>
         </div>
 
         <div class="monitor-alarm-video-dialog-video" ref="fullVideoRef">

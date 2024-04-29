@@ -29,6 +29,9 @@
             </slot>
           </span>
         </template>
+        <template #empty>
+          <el-empty class="no-data" description="暂无数据" />
+        </template>
       </el-tree>
     </el-scrollbar>
   </div>

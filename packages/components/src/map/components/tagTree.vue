@@ -32,6 +32,7 @@
           :expand-on-click-node="false"
           :default-expanded-keys="state.expandedKeys"
           node-key="code"
+          highlight-current
         >
           <template #default="{ node, data }">
             <span class="custom-tree-node">
@@ -41,6 +42,9 @@
               <Icon src="EditPen" :size="14" v-if="!data.isParent" @click.stop="onEdit(node, data)"></Icon>
               <Icon src="Delete" :size="14" v-if="!data.isParent" @click.stop="onDelete(node, data)"></Icon>
             </span>
+          </template>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
           </template>
         </el-tree>
       </div>
