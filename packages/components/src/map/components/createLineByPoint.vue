@@ -368,7 +368,7 @@ const drawHandler = () => {
       ElMessage.success("绘制成功");
       fetchLineInfo(assetId);
     },
-    error => {
+    (error: any) => {
       console.warn(error);
       // ElMessage.error("绘制失败");
     }
@@ -383,7 +383,7 @@ const deleteHandler = () => {
       fetchLineInfo(assetId);
       ElMessage.success("删除成功");
     },
-    err => {
+    (err: any) => {
       console.warn(err);
     }
   );

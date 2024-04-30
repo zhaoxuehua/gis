@@ -322,7 +322,7 @@ const drawHandler = () => {
         ElMessage.success("绘制成功");
         table.value.getTableData();
       },
-      error => {
+      (error: any) => {
         console.warn(error);
         // ElMessage.error("绘制失败");
       }
@@ -349,7 +349,7 @@ const deleteHandler = () => {
       ElMessage.success("删除成功");
       table.value.getTableData();
     },
-    error => {
+    (error: any) => {
       console.warn(error);
       // ElMessage.error("删除失败");
     }
