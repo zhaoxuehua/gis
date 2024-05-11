@@ -87,7 +87,7 @@ import { createStringXY } from "ol/coordinate";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
-import { getMapParamsDetail, getLabelList, getEquipAlarmList } from "../api/visconfig";
+import { getMapParamsDetail, getLabelList, getEquipAlarmList, getLineEquipMeterPosition } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find, cloneDeep } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
@@ -767,7 +767,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
 
       if (hit) {
         const targetFeature = getSelectedFeature(map, pixel);
-        let { extendsData, type, name, typeStats } = targetFeature?.getProperties();
+        let { extendsData, type, name, typeStats, code } = targetFeature?.getProperties();
         popupTitDOMRef.value.style.height = "40px";
         if (type == "trackPoint" || type == "trackShip") {
           const { detailInfo, titleInfo } = unref(extendsData);
@@ -799,6 +799,14 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         } else if (typeStats === "alarmPoint") {
           // 报警点
           showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
+        }
+        // 增加线性标签的鼠标经过逻辑（后端有返回值才显示且防抖处理）基础引擎绘制的标签是线2
+        else if (type == "2") {
+          // 根据标签code找设备信息
+          const equipInfo = gisStore?.relationMap?.[code];
+          if (equipInfo) {
+            showLineEquipMeterPositionDetail(popupTitDOMRef.value, popupContentDOMRef.value, equipInfo, pos);
+          }
         } else {
           hoverInfoLayer.setPosition(undefined);
         }
@@ -829,6 +837,26 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         <p>事件描述 : ${desc}</p>
       `;
       hoverInfoLayer.setPosition(pos);
+    };
+
+    // 显示线性设备米标位置
+    let meterPositionTimer: any = ref(null);
+    const showLineEquipMeterPositionDetail = async (title: HTMLElement, content: HTMLElement, equipInfo: any, pos: number[]) => {
+      let { code, name } = equipInfo;
+      if (meterPositionTimer.value) {
+        clearTimeout(meterPositionTimer.value);
+      }
+      meterPositionTimer.value = setTimeout(async () => {
+        let res: any = await getLineEquipMeterPosition(code);
+        // 接口成功&有位置信息才展示
+        if (res?.code == 200 && res?.data) {
+          title.innerHTML = `${name}`; // 标题
+          content.innerHTML = `<p>选中位置 : ${res?.data || ""}</p>`;
+          hoverInfoLayer.setPosition(pos);
+        }
+        clearTimeout(meterPositionTimer.value);
+        meterPositionTimer.value = null;
+      }, 1000); // 1秒后触发请求
     };
 
     /*************************************根据标签code获取关联信息***************************************************************/
