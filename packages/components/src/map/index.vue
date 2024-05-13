@@ -765,6 +765,12 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
 
+      // 清除线性设备获取米标未知
+      if (meterPositionTimer.value) {
+        clearTimeout(meterPositionTimer.value);
+        meterPositionTimer.value = null;
+      }
+
       if (hit) {
         const targetFeature = getSelectedFeature(map, pixel);
         let { extendsData, type, name, typeStats, code } = targetFeature?.getProperties();
@@ -799,9 +805,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         } else if (typeStats === "alarmPoint") {
           // 报警点
           showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
-        }
-        // 增加线性标签的鼠标经过逻辑（后端有返回值才显示且防抖处理）基础引擎绘制的标签是线2
-        else if (type == "2") {
+        } else if (type == "2") {
+          // 线性标签的鼠标经过逻辑（后端有返回值才显示且防抖处理）基础引擎绘制的标签是线时 type为2
           // 根据标签code找设备信息
           const equipInfo = gisStore?.relationMap?.[code];
           if (equipInfo) {
@@ -843,9 +848,6 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     let meterPositionTimer: any = ref(null);
     const showLineEquipMeterPositionDetail = async (title: HTMLElement, content: HTMLElement, equipInfo: any, pos: number[]) => {
       let { code, name } = equipInfo;
-      if (meterPositionTimer.value) {
-        clearTimeout(meterPositionTimer.value);
-      }
       meterPositionTimer.value = setTimeout(async () => {
         let res: any = await getLineEquipMeterPosition(code);
         // 接口成功&有位置信息才展示
