@@ -52,7 +52,7 @@
     </div>
 
     <!-- 轨迹回放列表(轨迹列表只能展示5条)-->
-    <Track-back-list></Track-back-list>
+    <Track-back-list ref="trackBackListRef"></Track-back-list>
 
     <!-- overLayer鼠标经过显示-->
     <div id="shipHoverInfo" class="popup" ref="popupDOMRef">
@@ -87,7 +87,12 @@ import { createStringXY } from "ol/coordinate";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
-import { getMapParamsDetail, getLabelList, getEquipAlarmList, getLineEquipMeterPosition } from "../api/visconfig";
+import {
+  getMapParamsDetail,
+  getLabelList,
+  getEquipAlarmList
+  // getLineEquipMeterPosition
+} from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find, cloneDeep } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
@@ -137,6 +142,7 @@ const emits = defineEmits([
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
+const trackBackListRef = ref();
 const currentLevel = ref(); // 当前视图层级
 const mousePositionContainer = ref(); // 鼠标移动显示坐标的容器
 const leftClickDialogPosition = ref("current"); // 左键弹窗位置
@@ -760,8 +766,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
 
     map.addOverlay(hoverInfoLayer);
     map.on("pointermove", function (event: any) {
-      const pos = event.coordinate;
-      const pixel = map.getEventPixel(event.originalEvent); // 坐标
+      const pos = event.coordinate; // 3857投影坐标
+      const pixel = map.getEventPixel(event.originalEvent); // 像素坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
 
@@ -810,7 +816,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           // 根据标签code找设备信息
           const equipInfo = gisStore?.relationMap?.[code];
           if (equipInfo) {
-            showLineEquipMeterPositionDetail(popupTitDOMRef.value, popupContentDOMRef.value, equipInfo, pos);
+            showLineEquipMeterPositionDetail(popupTitDOMRef.value, popupContentDOMRef.value, equipInfo, targetFeature, pos);
           }
         } else {
           hoverInfoLayer.setPosition(undefined);
@@ -846,19 +852,30 @@ const initMap = async (mapId: string | number, isId: boolean) => {
 
     // 显示线性设备米标位置
     let meterPositionTimer: any = ref(null);
-    const showLineEquipMeterPositionDetail = async (title: HTMLElement, content: HTMLElement, equipInfo: any, pos: number[]) => {
-      let { code, name } = equipInfo;
-      meterPositionTimer.value = setTimeout(async () => {
-        let res: any = await getLineEquipMeterPosition(code);
-        // 接口成功&有位置信息才展示
-        if (res?.code == 200 && res?.data) {
-          title.innerHTML = `${name}`; // 标题
-          content.innerHTML = `<p>选中位置 : ${res?.data || ""}</p>`;
-          hoverInfoLayer.setPosition(pos);
-        }
-        clearTimeout(meterPositionTimer.value);
-        meterPositionTimer.value = null;
-      }, 1000); // 1秒后触发请求
+    const showLineEquipMeterPositionDetail = async (
+      title: HTMLElement,
+      content: HTMLElement,
+      equipInfo: any,
+      targetFeature: any,
+      pos: number[]
+    ) => {
+      const { code, name } = equipInfo;
+      // 点到多线段最短距离的点 （pos到coordinates最短距离的点）
+      const lineGeometry = targetFeature?.getGeometry();
+      const nearestPoint = lineGeometry?.getClosestPoint(pos); // 获取最近的点(落在线上的点)
+      const [pointLon, pointLat] = toLonLat(nearestPoint);
+      // meterPositionTimer.value = setTimeout(async () => {
+      //   let res: any = await getLineEquipMeterPosition(code, pointLon, pointLat);
+      //   // 接口成功&有位置信息才展示
+      //   if (res?.code == 200 && res?.data) {
+      //     title.innerHTML = `${name}`; // 标题
+      //     content.innerHTML = `<p>选中位置 : ${res?.data || ""}</p>`;
+      //     hoverInfoLayer.setPosition(pos);
+      //   }
+      //   clearTimeout(meterPositionTimer.value);
+      //   meterPositionTimer.value = null;
+      // }, 500);
+      console.log(code, name, pointLon, pointLat);
     };
 
     /*************************************根据标签code获取关联信息***************************************************************/
@@ -1138,6 +1155,11 @@ const handlePopLink = (type: any, option: any) => {
   emits(type, option);
 };
 
+// 关闭轨迹回放列表
+const closeTrackBackList = () => {
+  trackBackListRef.value?.close();
+};
+
 // 监听实时标签的船首线
 const toolboxStore = useToolboxStore();
 watch(
@@ -1165,7 +1187,8 @@ defineExpose({
   clearSelectedFeature,
   createStyle,
   getGeometryCenter,
-  clearAllTimers
+  clearAllTimers,
+  closeTrackBackList
 });
 
 /*************************************监听外部树节点点击(监控在可视化配置的树)***************************************************************/

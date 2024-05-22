@@ -11,8 +11,8 @@ export function getEquipAlarmList(params: string | number, idId: boolean) {
 }
 
 // 获取线性设备的米标位置
-export function getLineEquipMeterPosition(code: string) {
-  return request.get(`/api/gis-service/equip/gisLabel/type/getByObjectType/${code}`);
+export function getLineEquipMeterPosition(code: string, lon: number, lat: number) {
+  return request.get(`/api/gis-service/positionConversion/${code}/${lon}/${lat}`);
 }
 
 // 标签
