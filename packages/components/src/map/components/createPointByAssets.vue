@@ -349,7 +349,7 @@ onMounted(() => {
     }
   }
   .layer-config-table {
-    width: 860px !important;
+    width: 1110px !important;
     height: calc(100% - 52px);
     overflow-y: auto !important;
   }
