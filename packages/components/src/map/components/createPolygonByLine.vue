@@ -547,6 +547,7 @@ const onDialogConfirm = (selection: Array<any>) => {
     }
   }
   .layer-config-table {
+    width: 860px !important;
     height: calc(100% - 60px);
     overflow-y: auto !important;
     .my-el-link {
