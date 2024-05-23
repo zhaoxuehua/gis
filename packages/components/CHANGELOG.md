@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.22
+
+### Patch Changes
+
+- 快速绘制样式调整
+
 ## 2.0.21
 
 ### Patch Changes
