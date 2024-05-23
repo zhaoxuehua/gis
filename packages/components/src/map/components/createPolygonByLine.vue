@@ -14,6 +14,9 @@
           :filter-node-method="filterNode"
           ref="treeRef"
         >
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-tree>
       </div>
     </div>
@@ -48,11 +51,9 @@
           v-loading="table.loading"
           highlight-current-row
           empty-text="暂无数据"
-          :row-style="{ height: 32 + 'px' }"
+          :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="table.onSelectionChange"
-          stripe
-          border
         >
           <el-table-column label="设备名称" prop="name"></el-table-column>
           <el-table-column label="设备编码" prop="code"></el-table-column>
@@ -82,6 +83,9 @@
               <el-link class="my-el-link" type="primary" :underline="false" @click="onRemove(scope.row)">删除</el-link>
             </template>
           </el-table-column>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-table>
       </div>
     </div>
@@ -401,7 +405,7 @@ const drawHandler = () => {
       ElMessage.success("绘制成功");
       fetchPolygonInfo(assetId);
     },
-    error => {
+    (error: any) => {
       console.warn(error);
       // ElMessage.error("绘制失败");
     }
@@ -416,7 +420,7 @@ const deleteHandler = () => {
       fetchPolygonInfo(assetId);
       ElMessage.success("删除成功");
     },
-    err => {
+    (err: any) => {
       console.warn(err);
       // ElMessage.error("删除失败");
     }
@@ -543,6 +547,7 @@ const onDialogConfirm = (selection: Array<any>) => {
     }
   }
   .layer-config-table {
+    width: 860px !important;
     height: calc(100% - 60px);
     overflow-y: auto !important;
     .my-el-link {

@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.21
+
+### Patch Changes
+
+- 轨迹列表的关闭方法外抛
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.21
+
 ## 2.0.20
 
 ### Patch Changes

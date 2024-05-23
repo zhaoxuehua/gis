@@ -14,6 +14,9 @@
           :filter-node-method="filterNode"
           ref="treeRef"
         >
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-tree>
       </div>
     </div>
@@ -43,11 +46,9 @@
           v-loading="table.loading"
           highlight-current-row
           empty-text="暂无数据"
-          :row-style="{ height: 32 + 'px' }"
+          :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="table.onSelectionChange"
-          stripe
-          border
         >
           <el-table-column type="selection" :selectable="selectable"></el-table-column>
           <el-table-column label="设备名称" prop="name"></el-table-column>
@@ -62,6 +63,9 @@
               {{ scope.row.gisLabelConfig ? scope.row.gisLabelConfig.name : "未配置" }}
             </template>
           </el-table-column>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
+          </template>
         </el-table>
         <div v-if="table.data?.length">
           <paginationCom
@@ -318,7 +322,7 @@ const drawHandler = () => {
         ElMessage.success("绘制成功");
         table.value.getTableData();
       },
-      error => {
+      (error: any) => {
         console.warn(error);
         // ElMessage.error("绘制失败");
       }
@@ -345,7 +349,7 @@ const deleteHandler = () => {
       ElMessage.success("删除成功");
       table.value.getTableData();
     },
-    error => {
+    (error: any) => {
       console.warn(error);
       // ElMessage.error("删除失败");
     }
@@ -446,6 +450,7 @@ const selectable = (row: any) => {
     }
   }
   .layer-config-table {
+    width: 860px !important;
     height: calc(100% - 52px);
     overflow-y: auto !important;
   }

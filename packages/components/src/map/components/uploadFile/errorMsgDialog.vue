@@ -14,8 +14,6 @@
       empty-text="暂无数据"
       :row-style="{ height: 40 + 'px' }"
       :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
-      stripe
-      border
     >
       <el-table-column
         :label="type == 'file' ? '错误行号' : '文件名称'"
@@ -23,6 +21,9 @@
         width="100"
       ></el-table-column>
       <el-table-column label="错误原因" prop="errorMsg" show-overflow-tooltip></el-table-column>
+      <template #empty>
+        <el-empty class="no-data" description="暂无数据" />
+      </template>
     </el-table>
   </el-dialog>
 </template>

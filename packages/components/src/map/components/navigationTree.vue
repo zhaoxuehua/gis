@@ -32,6 +32,7 @@
           :expand-on-click-node="false"
           :default-expanded-keys="state.expandedKeys"
           node-key="id"
+          highlight-current
         >
           <template #default="{ node, data }">
             <span class="custom-tree-node" :class="{ active: !!data.associationInfo }">
@@ -42,6 +43,9 @@
                 <Icon src="Delete" :size="14" v-if="data.associationInfo" @click.stop="onDelete(node, data)"></Icon>
               </span>
             </span>
+          </template>
+          <template #empty>
+            <el-empty class="no-data" description="暂无数据" />
           </template>
         </el-tree>
       </div>

@@ -10,6 +10,11 @@ export function getEquipAlarmList(params: string | number, idId: boolean) {
   return request.get(`/api/gis-service/labelAlarm?${idId ? "appId" : "appCode"}=${params}`);
 }
 
+// 获取线性设备的米标位置
+export function getLineEquipMeterPosition(code: string, lon: number, lat: number) {
+  return request.get(`/api/gis-service/positionConversion/${code}/${lon}/${lat}`);
+}
+
 // 标签
 // 获取标签列表
 export function getLabelList(queryString: string, params: object) {
