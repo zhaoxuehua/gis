@@ -209,6 +209,10 @@ watch(
     n == 0 && gisStore?.setTrackColor();
   }
 );
+
+defineExpose({
+  close
+});
 </script>
 
 <style lang="scss" scoped>

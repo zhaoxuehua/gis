@@ -450,6 +450,7 @@ const selectable = (row: any) => {
     }
   }
   .layer-config-table {
+    width: 860px !important;
     height: calc(100% - 52px);
     overflow-y: auto !important;
   }
