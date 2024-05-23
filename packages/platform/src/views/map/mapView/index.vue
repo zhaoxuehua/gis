@@ -33,7 +33,7 @@ onMounted(() => {
 .map-view {
   width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: 10px;
   background: #ffffff;
 }
 </style>
