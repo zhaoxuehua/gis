@@ -1,15 +1,14 @@
 <template>
   <div class="map-view">
-    <ag-map :config="config" v-if="config.id" ref="mapRef" @on-open-right-menu="onOpenRightMenu"> </ag-map>
+    <ag-map :config="config" v-if="config.id" @on-open-right-menu="onOpenRightMenu"> </ag-map>
   </div>
 </template>
 <script lang="ts" setup name="mapView">
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
 import { AgMap } from "@adm-gis-ui/components";
 import { useUserStore } from "@/stores/modules/user";
 const route = useRoute();
-const mapRef = ref<InstanceType<typeof AgMap>>();
 
 const userStore = useUserStore();
 
