@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.23
+
+### Patch Changes
+
+- 修复渲染多个地图问题
+
 ## 2.0.22
 
 ### Patch Changes
