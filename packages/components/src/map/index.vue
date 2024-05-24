@@ -1,7 +1,7 @@
 <!-- 地图组件 map -->
 <template>
   <div class="component-box">
-    <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
+    <div :id="props.config.elementId || 'map'" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
     <div ref="mousePositionContainer" title="鼠标位置" v-if="exportMap"></div>
     <div class="mapLevel" title="当前层级" v-if="exportMap">当前层级：{{ currentLevel }}</div>
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
@@ -490,7 +490,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
 
     // 实例化地图，类型为扩展后的VisualMap
     const map = new Map({
-      target: defaultOptions?.target || "map",
+      target: props.config.elementId || "map",
       controls: defaults({
         attribution: false,
         rotate: false,
