@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.24
+
+### Patch Changes
+
+- 米标位置
+
 ## 2.0.23
 
 ### Patch Changes
