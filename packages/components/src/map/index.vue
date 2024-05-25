@@ -87,12 +87,7 @@ import { createStringXY } from "ol/coordinate";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
-import {
-  getMapParamsDetail,
-  getLabelList,
-  getEquipAlarmList
-  // getLineEquipMeterPosition
-} from "../api/visconfig";
+import { getMapParamsDetail, getLabelList, getEquipAlarmList, getLineEquipMeterPosition } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find, cloneDeep } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
@@ -398,7 +393,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     }
 
     const defaultOptions = {
-      target: "map",
+      target: props.config.elementId || "map",
       center: {
         lon: originalData.defaultCenterPointLongitude, // 经度
         lat: originalData.defaultCenterPointLatitude // 纬度
@@ -490,7 +485,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
 
     // 实例化地图，类型为扩展后的VisualMap
     const map = new Map({
-      target: props.config.elementId || "map",
+      target: defaultOptions?.target,
       controls: defaults({
         attribution: false,
         rotate: false,
@@ -864,18 +859,17 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       const lineGeometry = targetFeature?.getGeometry();
       const nearestPoint = lineGeometry?.getClosestPoint(pos); // 获取最近的点(落在线上的点)
       const [pointLon, pointLat] = toLonLat(nearestPoint);
-      // meterPositionTimer.value = setTimeout(async () => {
-      //   let res: any = await getLineEquipMeterPosition(code, pointLon, pointLat);
-      //   // 接口成功&有位置信息才展示
-      //   if (res?.code == 200 && res?.data) {
-      //     title.innerHTML = `${name}`; // 标题
-      //     content.innerHTML = `<p>选中位置 : ${res?.data || ""}</p>`;
-      //     hoverInfoLayer.setPosition(pos);
-      //   }
-      //   clearTimeout(meterPositionTimer.value);
-      //   meterPositionTimer.value = null;
-      // }, 500);
-      console.log(code, name, pointLon, pointLat);
+      meterPositionTimer.value = setTimeout(async () => {
+        let res: any = await getLineEquipMeterPosition(code, pointLon, pointLat);
+        // 接口成功&有位置信息才展示
+        if (res?.code == 200 && res?.data) {
+          title.innerHTML = `${name}`; // 标题
+          content.innerHTML = `<p>选中位置 : ${res?.data || ""}</p>`;
+          hoverInfoLayer.setPosition(pos);
+        }
+        clearTimeout(meterPositionTimer.value);
+        meterPositionTimer.value = null;
+      }, 500);
     };
 
     /*************************************根据标签code获取关联信息***************************************************************/
