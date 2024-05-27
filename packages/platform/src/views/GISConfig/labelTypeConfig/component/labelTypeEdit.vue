@@ -737,6 +737,10 @@ const styleObjectList = ref<{
     {
       code: "aisBoat",
       name: "船"
+    },
+    {
+      code: "fishNetSounder",
+      name: "网位仪"
     }
   ]
 });
