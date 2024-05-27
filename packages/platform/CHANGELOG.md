@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.26
+
+### Patch Changes
+
+- 轨迹列表行高修改
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.26
+
 ## 2.0.25
 
 ### Patch Changes
