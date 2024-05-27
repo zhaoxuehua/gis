@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.27
+
+### Patch Changes
+
+- 轨迹列表样式修改
+
 ## 2.0.26
 
 ### Patch Changes
