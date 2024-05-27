@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.25
+
+### Patch Changes
+
+- 网位仪
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.25
+
 ## 2.0.24
 
 ### Patch Changes
