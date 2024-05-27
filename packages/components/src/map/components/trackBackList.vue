@@ -12,7 +12,7 @@
             class="track-table"
             highlight-current-row
             empty-text="暂无数据"
-            :row-style="{ height: 48 + 'px' }"
+            :row-style="{ height: 32 + 'px' }"
             :cell-style="{ padding: '0px' }"
           >
             <el-table-column :label="keywordConfig?.code || '编码'" width="100">
@@ -82,7 +82,7 @@
         :data="state.data"
         highlight-current-row
         empty-text="暂无数据"
-        :row-style="{ height: 32 + 'px' }"
+        :row-style="{ height: 48 + 'px' }"
         :cell-style="{ padding: '0px' }"
         max-height="360"
         class="track-scrollable-table"
