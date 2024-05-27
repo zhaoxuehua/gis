@@ -11,6 +11,7 @@ import { createdCanvasShip } from "./createdCanvasShip"; // 绘制船只
 import { drawCanvasPerson } from "./drawCanvasPerson";
 import { styleAct } from "./styleFunction.js";
 import { useGisStore } from "../../stores/modules/gis";
+import fishNetSounderImg from "../img/fishNetSounder.png";
 
 /****************************************实时数据****************************************************/
 
@@ -32,7 +33,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       return;
     }
     let {
-      styleObject = "aisBoat", // 内置样式对象
+      styleObject = "aisBoat", // 内置样式对象 船、人、网位仪
       dataType = "1", // 数据类型
       code: labelTypeCode, // 标签类型code
       dataContent = "AISDATA", // 实时查询时配置的监测属性(数据内容)
@@ -63,16 +64,27 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       let extendsData = targetFeature?.get("extendsData") || {};
       let selected = targetFeature.get("selected");
       const { angle } = extendsData; // 要素扩展字段
-      let { shipKey, canvasImg, height } = createLayerStyle(styleObject, extendsData);
+      let { shipKey, realTimeDataImg, height } = createLayerStyle(styleObject, extendsData);
       if (!realStyCash[shipKey]) {
-        realStyCash[shipKey] = new Style({
-          image: new Icon({
-            img: canvasImg,
-            imgSize: [canvasImg?.width, canvasImg?.height],
-            height: height,
-            offset: [0, true ? 4 : 8]
-          })
-        });
+        // 图片icon
+        if (styleObject == "fishNetSounder") {
+          realStyCash[shipKey] = new Style({
+            image: new Icon({
+              src: realTimeDataImg,
+              offset: [0, 4]
+            })
+          });
+        } else {
+          // 使用的canvas;
+          realStyCash[shipKey] = new Style({
+            image: new Icon({
+              img: realTimeDataImg,
+              imgSize: [realTimeDataImg?.width, realTimeDataImg?.height],
+              height: height,
+              offset: [0, true ? 4 : 8]
+            })
+          });
+        }
       }
       // 角度
       if (angle) {
@@ -177,16 +189,19 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 export function createLayerStyle(styleObject: string, extendsData: any = {}) {
   const { color, showHeadline } = extendsData; // 要素扩展字段
   let shipKey;
-  let canvasImg: any;
+  let realTimeDataImg: any;
   let height = 44;
   if (styleObject == "aisBoat") {
     shipKey = showHeadline + color?.join();
-    canvasImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
+    realTimeDataImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
   } else if (styleObject == "person") {
     shipKey = color?.join();
-    canvasImg = drawCanvasPerson(color) as HTMLCanvasElement;
+    realTimeDataImg = drawCanvasPerson(color) as HTMLCanvasElement;
+  } else if (styleObject == "fishNetSounder") {
+    shipKey = color?.join();
+    realTimeDataImg = fishNetSounderImg; // 图片icon
   }
-  return { shipKey, canvasImg, height };
+  return { shipKey, realTimeDataImg, height };
 }
 
 // 创建要素
