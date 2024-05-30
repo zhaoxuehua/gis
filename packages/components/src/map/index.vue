@@ -1179,9 +1179,7 @@ const controlShow = computed(() => {
   );
   // 编辑标签弹窗
   const editLabelShow = gisStore.isShowEditLabel;
-  // 轨迹列表弹窗
-  const trackBackListShow = gisStore.isShowTrackBackList;
-  return controlShow || editLabelShow || trackBackListShow;
+  return controlShow || editLabelShow;
 });
 watch(
   () => controlShow.value,
