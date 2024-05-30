@@ -23,7 +23,8 @@ export const useGisStore = defineStore({
     simulateAlarmTimer: null, // 报警要素样式切换定时器
     mapCase: {}, // 地图实例
     trackColor: trackColor, // 轨迹回放的颜色
-    mouseRightClickCoordinate: "" // 鼠标右击时坐标信息  经度,纬度
+    mouseRightClickCoordinate: "", // 鼠标右击时坐标信息  经度,纬度
+    isShowTrackBackList: false
   }),
   actions: {
     // 导航树及关联关系
@@ -84,6 +85,9 @@ export const useGisStore = defineStore({
     },
     setIsShowEditLabel(isShowEditLabel: boolean) {
       this.isShowEditLabel = isShowEditLabel;
+    },
+    setIsShowTrackBackList(isShow: boolean) {
+      this.isShowTrackBackList = isShow;
     },
     setSimulateAlarmTimer(timer: any) {
       this.simulateAlarmTimer = timer;

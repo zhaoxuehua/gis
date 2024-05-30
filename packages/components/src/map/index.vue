@@ -132,7 +132,8 @@ const emits = defineEmits([
   "getInitMapExportData",
   "geClickPublishData",
   "scada",
-  "view"
+  "view",
+  "isShowChange"
 ]);
 
 const exportMap = ref<VisualMap>();
@@ -239,8 +240,7 @@ const state = reactive({
       isShow: false,
       visible: false
     }
-  ],
-  publishParams: {} as any
+  ]
 });
 
 const getLeftData = computed(() => {
@@ -895,10 +895,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       popupData.relationMap = null;
       // 移除选中状态
       clearSelectedFeature(map);
-      // 更新弹窗展示隐藏状态，需要带上之前发布过的关于地图信息的参数，用来区分可视化里事件配置中的触发区域，主要是弹窗分类：纯标签，告警标签，关联设备标签
-      emits("geClickPublishData", {
-        ...state.publishParams,
-        popupShow: false
+      emits("isShowChange", {
+        type: "popup",
+        value: false
       });
     };
     // 地图标签元素默认浮窗
@@ -917,6 +916,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           overlay.setPosition(center);
         });
       }
+      // 更新展示弹窗的值
+      emits("isShowChange", {
+        type: "popup",
+        value: true
+      });
     };
 
     /*************************************地图鼠标点击事件***************************************************************/
@@ -1013,18 +1017,9 @@ const initMap = async (mapId: string | number, isId: boolean) => {
                 : relationObj?.equipTypeCode;
             }
           }
-          // 更新展示弹窗的值
-          state.publishParams.popupShow = true;
         }
-      } else {
-        // 更新展示弹窗的值
-        state.publishParams.popupShow = false;
       }
-      state.publishParams = {
-        ...state.publishParams,
-        ...publishParams
-      };
-      emits("geClickPublishData", state.publishParams);
+      emits("geClickPublishData", publishParams);
     });
 
     /***************************************************地图右键（目前只有监控写了定制化逻辑）*****************************************************/
@@ -1179,14 +1174,21 @@ watch(
 );
 
 const controlShow = computed(() => {
-  return [...state.leftBoxData, ...state.rightBoxData.filter(item => item.label !== "编辑")].some(item => item.isShow);
+  const controlShow = [...state.leftBoxData, ...state.rightBoxData.filter(item => item.label !== "编辑")].some(
+    item => item.isShow
+  );
+  // 编辑标签弹窗
+  const editLabelShow = gisStore.isShowEditLabel;
+  // 轨迹列表弹窗
+  const trackBackListShow = gisStore.isShowTrackBackList;
+  return controlShow || editLabelShow || trackBackListShow;
 });
 watch(
   () => controlShow.value,
   val => {
-    // 这里只发布关于控件的，其余关于地图的不发布
-    emits("geClickPublishData", {
-      controllerShow: !!val
+    emits("isShowChange", {
+      type: "controller",
+      value: !!val
     });
   }
 );

@@ -205,13 +205,15 @@ watch(
   () => tableData.value.length,
   n => {
     isShowHide.value = n !== 0;
+    gisStore?.setIsShowTrackBackList(isShowHide.value);
     n == 0 && showHideLayer(true);
     n == 0 && gisStore?.setTrackColor();
   }
 );
 
 defineExpose({
-  close
+  close,
+  isShowHide: isShowHide.value
 });
 </script>
 
