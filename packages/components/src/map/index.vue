@@ -239,7 +239,8 @@ const state = reactive({
       isShow: false,
       visible: false
     }
-  ]
+  ],
+  publishParams: {} as any
 });
 
 const getLeftData = computed(() => {
@@ -894,6 +895,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       popupData.relationMap = null;
       // 移除选中状态
       clearSelectedFeature(map);
+      // 更新弹窗展示隐藏状态，需要带上之前发布过的关于地图信息的参数，用来区分可视化里事件配置中的触发区域，主要是弹窗分类：纯标签，告警标签，关联设备标签
+      emits("geClickPublishData", {
+        ...state.publishParams,
+        popupShow: false
+      });
     };
     // 地图标签元素默认浮窗
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }, trackPointInfo?: any) => {
@@ -1007,9 +1013,18 @@ const initMap = async (mapId: string | number, isId: boolean) => {
                 : relationObj?.equipTypeCode;
             }
           }
+          // 更新展示弹窗的值
+          state.publishParams.popupShow = true;
         }
+      } else {
+        // 更新展示弹窗的值
+        state.publishParams.popupShow = false;
       }
-      emits("geClickPublishData", publishParams);
+      state.publishParams = {
+        ...state.publishParams,
+        ...publishParams
+      };
+      emits("geClickPublishData", state.publishParams);
     });
 
     /***************************************************地图右键（目前只有监控写了定制化逻辑）*****************************************************/
@@ -1160,6 +1175,19 @@ watch(
   () => toolboxStore.data,
   () => {
     initRealtimeData(exportMap.value, gisStore?.realtimeDataList);
+  }
+);
+
+const controlShow = computed(() => {
+  return [...state.leftBoxData, ...state.rightBoxData.filter(item => item.label !== "编辑")].some(item => item.isShow);
+});
+watch(
+  () => controlShow.value,
+  val => {
+    // 这里只发布关于控件的，其余关于地图的不发布
+    emits("geClickPublishData", {
+      controllerShow: !!val
+    });
   }
 );
 
