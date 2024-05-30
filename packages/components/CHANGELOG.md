@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.28
+
+### Patch Changes
+
+- 左键、控件及编辑标签发布参数
+
 ## 2.0.27
 
 ### Patch Changes
