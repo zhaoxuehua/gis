@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.29
+
+### Patch Changes
+
+- 实时数据颜色选中修稿
+
 ## 2.0.28
 
 ### Patch Changes

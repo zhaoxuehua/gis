@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.29
+
+### Patch Changes
+
+- 实时数据颜色选中修稿
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.29
+
 ## 2.0.28
 
 ### Patch Changes
