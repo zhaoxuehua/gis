@@ -40,7 +40,7 @@ type searchShipDataType = searchShipType[];
 interface shipColorParams {
   monitorTime: number;
   colorIndex?: number | undefined;
-  status: string;
+  status: string | boolean;
   styleObject?: string;
   isAttention?: boolean;
   isWhiteList?: boolean;

@@ -1,5 +1,37 @@
 # adm-gis-platform
 
+## 2.0.29
+
+### Patch Changes
+
+- 实时数据颜色选中修稿
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.29
+
+## 2.0.28
+
+### Patch Changes
+
+- 左键、控件及编辑标签发布参数
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.28
+
+## 2.0.27
+
+### Patch Changes
+
+- 轨迹列表样式修改
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.27
+
+## 2.0.26
+
+### Patch Changes
+
+- 轨迹列表行高修改
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.26
+
 ## 2.0.25
 
 ### Patch Changes

@@ -113,6 +113,7 @@ import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
 import Popup from "./components/popup/index.vue";
 import TrackBackList from "./components/trackBackList.vue";
+// import { judgeClickPointIsPolygonBoundary } from "./hooks/judgeIncludePolygonFun";
 
 defineOptions({ name: "AgMap" });
 
@@ -132,7 +133,8 @@ const emits = defineEmits([
   "getInitMapExportData",
   "geClickPublishData",
   "scada",
-  "view"
+  "view",
+  "isShowChange"
 ]);
 
 const exportMap = ref<VisualMap>();
@@ -894,6 +896,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       popupData.relationMap = null;
       // 移除选中状态
       clearSelectedFeature(map);
+      emits("isShowChange", {
+        type: "popup",
+        value: false
+      });
     };
     // 地图标签元素默认浮窗
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }, trackPointInfo?: any) => {
@@ -911,6 +917,11 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           overlay.setPosition(center);
         });
       }
+      // 更新展示弹窗的值
+      emits("isShowChange", {
+        type: "popup",
+        value: true
+      });
     };
 
     /*************************************地图鼠标点击事件***************************************************************/
@@ -929,17 +940,28 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         hitTolerance: 5
       });
 
+      let hitCoordinate = map?.getCoordinateFromPixel(pixel); // 点击要素处的经纬度3857
       let publishParams: any = {
-        coordinate: toLonLat(map?.getCoordinateFromPixel(pixel)) // 点击像素处的经纬度（投影坐标3857=>4326）
+        coordinate: toLonLat(hitCoordinate) // 点击像素处的经纬度（投影坐标3857=>4326）
       };
       // 功能：（1）对选择的要素做弹框弹出 （2）选中样式 （3）编辑要素样式弹框（基础引擎绘制标签）
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
+        let type = currentSelectFeature?.get("type");
+
+        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
+        // if (type == "3") {
+        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+        //   if (!isOnBoundary) {
+        //     return;
+        //   }
+        // }
+
         let featureCode = currentSelectFeature?.get("code");
         let featureName = currentSelectFeature?.get("name");
         let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
         let typeStats = currentSelectFeature?.get("typeStats");
-        let type = currentSelectFeature?.get("type");
+
         publishParams.labelCode = featureCode;
         if (typeStats == "alarmPoint") {
           // 告警标签获取到的featureCode是设备code(需要根据该设备code找对应的标签code)
@@ -1017,14 +1039,24 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
       let pixel = map?.getEventPixel(evt);
+      let hitCoordinate = map?.getCoordinateFromPixel(pixel); // 点击要素处的经纬度3857
       // 获取鼠标位置的经纬度在工具箱展示
-      let coordinate = toLonLat(map?.getCoordinateFromPixel(pixel));
+      let coordinate = toLonLat(hitCoordinate); // 4326
       let coordinateStr = coordinate.map((item: any) => item?.toFixed(6))?.join(",");
       gisStore?.setMouseRightClickCoordinate(coordinateStr);
 
       // 右键业务功能（定制化实现）
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
+        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
+        // let type = currentSelectFeature?.get("type");
+        // if (type == "3") {
+        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+        //   if (!isOnBoundary) {
+        //     return;
+        //   }
+        // }
+
         let featureCode = currentSelectFeature?.get("code");
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
@@ -1032,6 +1064,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           let { featureLabelCode } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
         }
+        console.log(featureCode, "右击标签code");
         emits("onOpenRightMenu", {
           featureCode,
           relationMap: gisStore?.relationMap,
@@ -1160,6 +1193,24 @@ watch(
   () => toolboxStore.data,
   () => {
     initRealtimeData(exportMap.value, gisStore?.realtimeDataList);
+  }
+);
+
+const controlShow = computed(() => {
+  const controlShow = [...state.leftBoxData, ...state.rightBoxData.filter(item => item.label !== "编辑")].some(
+    item => item.isShow
+  );
+  // 编辑标签弹窗
+  const editLabelShow = gisStore.isShowEditLabel;
+  return controlShow || editLabelShow;
+});
+watch(
+  () => controlShow.value,
+  val => {
+    emits("isShowChange", {
+      type: "controller",
+      value: !!val
+    });
   }
 );
 
