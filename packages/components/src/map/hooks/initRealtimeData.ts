@@ -93,6 +93,16 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       return selected ? [realStyCash[shipKey]].concat(styleAct.selectAct) : [realStyCash[shipKey]];
     });
 
+    // 辅助函数( 找出AISDATA-alarm属性开头的,只要有一个属性是true,则返回true)
+    function checkAlarm(obj: any): boolean {
+      for (let key in obj) {
+        if (key.startsWith("AISDATA-alarm") && obj[key] === true) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     /************************************************接口: 实时数据*********************************************/
     async function getShipListDataFn() {
       let shipFeatureArr: Feature[] = [];
@@ -109,9 +119,12 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 
         Object.entries(data).forEach(([key, item]) => {
           const aisLocation = (item as any)?.[dataContent]; // 监测属性
-          const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）eg、AISDATA-alarm
+          // const status = (item as any)?.[`${dataContent}-alarm`]; // 告警（布尔值）eg、AISDATA-alarm
           const name = (item as any)?.name || ""; // 名称（船名、人的终端名称）
           const person = (item as any)?.person || ""; // 联系人
+
+          // 找出AISDATA-alarm属性开头的,只要有一个属性是true,认为是报警
+          const status = checkAlarm(item);
 
           if (aisLocation) {
             const monitorTime = aisLocation.monitorTime;

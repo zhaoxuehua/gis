@@ -113,7 +113,7 @@ import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
 import Popup from "./components/popup/index.vue";
 import TrackBackList from "./components/trackBackList.vue";
-import { judgeClickPointIsPolygonBoundary } from "./hooks/judgeIncludePolygonFun";
+// import { judgeClickPointIsPolygonBoundary } from "./hooks/judgeIncludePolygonFun";
 
 defineOptions({ name: "AgMap" });
 
@@ -950,12 +950,12 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         let type = currentSelectFeature?.get("type");
 
         // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
-        if (type == "3") {
-          const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
-          if (!isOnBoundary) {
-            return;
-          }
-        }
+        // if (type == "3") {
+        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+        //   if (!isOnBoundary) {
+        //     return;
+        //   }
+        // }
 
         let featureCode = currentSelectFeature?.get("code");
         let featureName = currentSelectFeature?.get("name");
@@ -1049,13 +1049,13 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
         // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
-        let type = currentSelectFeature?.get("type");
-        if (type == "3") {
-          const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
-          if (!isOnBoundary) {
-            return;
-          }
-        }
+        // let type = currentSelectFeature?.get("type");
+        // if (type == "3") {
+        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+        //   if (!isOnBoundary) {
+        //     return;
+        //   }
+        // }
 
         let featureCode = currentSelectFeature?.get("code");
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
