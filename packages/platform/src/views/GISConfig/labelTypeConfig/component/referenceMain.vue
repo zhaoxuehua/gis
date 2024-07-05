@@ -39,13 +39,11 @@
                 v-loading="equipTypeList.loading"
                 highlight-current-row
                 empty-text="暂无数据"
-                :row-style="{ height: 32 + 'px' }"
+                :row-style="{ height: 48 + 'px' }"
                 :cell-style="{ padding: '0px' }"
                 @selection-change="equipTypeList.onSelectionChange"
                 max-height="355"
                 ref="equipTypeTableRef"
-                stripe
-                border
               >
                 <el-table-column type="selection"></el-table-column>
                 <el-table-column label="序号" type="index" width="60"></el-table-column>
@@ -58,6 +56,9 @@
                   prop="name"
                 ></el-table-column>
                 <el-table-column label="创建时间" prop="createdOn"></el-table-column>
+                <template #empty>
+                  <el-empty class="no-data" description="暂无数据" />
+                </template>
               </el-table>
             </el-tab-pane>
             <el-tab-pane :label="isLogical == 1 || isLogical == 2 ? '设备属性' : '对象属性'" name="equipAttribute">

@@ -20,7 +20,7 @@
         <!-- 是关联设备配置了左键弹窗属性 -->
         <div v-if="state.isRelationBody && state.hasConfigAttr" class="relation-content">
           <!-- 静态属性 -->
-          <ul class="static-data" v-if="attrData.staticData.length">
+          <ul class="map-static-data" v-if="attrData.staticData.length">
             <li v-for="item in attrData.staticData" :key="item.code" class="list-item">
               <span class="label">{{ item.name + "：" }}</span>
               <el-tooltip
@@ -141,7 +141,8 @@ const getDOMElement = () => {
   return popupRef.value;
 };
 
-const { configInfo, staticAttr, linkData, monitorSeqAttr, monitorLineAttr, monitorJSONbodyMap, getBindAttr } = useJSONBody();
+const { configInfo, staticAttr, linkData, monitorSeqAttr, monitorLineAttr, monitorJSONbodyMap, lineExampleData, getBindAttr } =
+  useJSONBody();
 
 // 左键配置信息
 const attrData: any = reactive({
@@ -151,7 +152,8 @@ const attrData: any = reactive({
   monitorJSONbodyData: [], // 监测结构体数据
   monitorJSONbodyMap: {},
   linkData: [], // 链接按钮后端数据
-  hasFocusBtn: false // 关注（取消关注）
+  hasFocusBtn: false, // 关注（取消关注）
+  lineExampleData: [] // 线性数据为空时默认的数据
 });
 
 // 左键选择的设备信息（即relationMap标签关联的信息）
@@ -223,6 +225,7 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   attrData.monitorJSONbodyData = [];
   attrData.monitorJSONbodyMap = {};
   attrData.linkData = [];
+  attrData.lineExampleData = [];
 
   if (!Object.keys(relationMap || {}).length) {
     state.isRelationBody = false;
@@ -262,6 +265,8 @@ const getLabelDialogConfigInfo = async (relationMap: any) => {
   }
   attrData.monitorLineAttr = monitorLineAttr.value;
   attrData.monitorJSONbodyMap = monitorJSONbodyMap.value;
+  attrData.lineExampleData = lineExampleData.value;
+
   // 获取静态属性数据 监测散点/结构体数据
   const res: any = await getDataFromAttr(
     String(equipInfo.value.code),
@@ -299,8 +304,9 @@ const getMonitorLine = async () => {
   if (lineRes.code === 200) {
     let data = lineRes.data;
     // let data = chartData.data;
+    data.curves?.length == 0 && (data.curves = attrData.lineExampleData);
     const countCharts = data.curves.reduce((pre: any, cur: any) => {
-      pre[cur.yaxis] = pre[cur.yaxis] ? pre[cur.yaxis].concat(cur) : [cur];
+      pre[cur.yaxis || " "] = pre[cur.yaxis || " "] ? pre[cur.yaxis || " "].concat(cur) : [cur];
       return pre;
     }, {});
     state.countCharts = countCharts;
@@ -313,7 +319,7 @@ const getMonitorLine = async () => {
           color: countCharts[key].map((item: any) => item.color),
           data: countCharts[key].map((item: any) => {
             return {
-              name: item.time + " " + item.name,
+              name: (item.time || "") + " " + item.name,
               data: item.values
             };
           })

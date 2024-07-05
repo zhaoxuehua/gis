@@ -155,5 +155,8 @@ onMounted(() => {
     font-weight: bold;
     color: red;
   }
+  .table-main {
+    padding-bottom: 0;
+  }
 }
 </style>

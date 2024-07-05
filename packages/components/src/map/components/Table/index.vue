@@ -11,12 +11,10 @@
       </div>
       <el-table
         ref="tableRef"
-        border
-        stripe
         highlight-current-row
         :data="props.data"
         :row-key="props.rowKey"
-        :row-style="{ height: 32 + 'px' }"
+        :row-style="{ height: 48 + 'px' }"
         :cell-style="{ padding: '0px' }"
         v-bind="{ ...$attrs, class: '', style: {} }"
         @selection-change="handleSelectionChange"
@@ -55,12 +53,7 @@
         </template>
         <!-- 无数据 -->
         <template #empty>
-          <div class="table-empty">
-            <slot name="empty">
-              <img src="@/assets/images/notData.png" alt="notData" />
-              <div>暂无数据</div>
-            </slot>
-          </div>
+          <el-empty class="no-data" description="暂无数据" />
         </template>
       </el-table>
       <el-pagination

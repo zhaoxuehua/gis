@@ -92,12 +92,10 @@
         v-loading="table.loading"
         highlight-current-row
         empty-text="暂无数据"
-        :row-style="{ height: 32 + 'px' }"
+        :row-style="{ height: 48 + 'px' }"
         :cell-style="{ padding: '0px' }"
         @sort-change="sortChange"
         @selection-change="table.onSelectionChange"
-        stripe
-        border
       >
         <el-table-column type="selection"></el-table-column>
         <el-table-column label="序号" type="index" min-width="60"></el-table-column>
@@ -123,6 +121,9 @@
 					</el-button> -->
           </template>
         </el-table-column>
+        <template #empty>
+          <el-empty class="no-data" description="暂无数据" />
+        </template>
       </el-table>
       <div class="pagination-container">
         <Pagination

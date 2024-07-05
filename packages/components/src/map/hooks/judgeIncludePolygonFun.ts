@@ -86,3 +86,31 @@ export function judgeIncludePolygon(polygon: any, geometry: any, type: string) {
   }
   return isInclude;
 }
+
+// 判断点击处是在面的边上还是面的内部polygon面要素   pointCoordinate点经纬度[]
+export function judgeClickPointIsPolygonBoundary(polygonFeature: any, pointCoordinate: any) {
+  let isOnBoundary: boolean = false; // 在边上
+  let isOutSide: boolean = false; // 在外部
+
+  const polygonGeometry = polygonFeature?.getGeometry();
+  const polygonCoordinates = polygonGeometry?.getCoordinates();
+
+  // 边上的判断
+  const closestPoint = polygonGeometry?.getClosestPoint(pointCoordinate);
+  const distance = Math.sqrt((closestPoint?.[0] - pointCoordinate?.[0]) ** 2 + (closestPoint?.[1] - pointCoordinate?.[1]) ** 2);
+  if (distance <= 5) {
+    isOnBoundary = true;
+  }
+
+  // 外部的判断
+  const polygonTurf: any = turfPolygon(polygonCoordinates);
+  if (!booleanPointInPolygon(pointCoordinate, polygonTurf)) {
+    isOutSide = true;
+  }
+  if (isOnBoundary || isOutSide) {
+    console.log("点击处在面的边上或外部");
+  } else {
+    console.log("点击处在面的内部");
+  }
+  return isOutSide || isOnBoundary;
+}

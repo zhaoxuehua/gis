@@ -38,18 +38,19 @@ export const styleAct = {
 
 // 报警样式（报警点、线、面）
 export const styleAlarm = {
-  pointAlarmSty: warnFault("rgba(255,0,0,1)"), // 报警点
+  // 报警点
+  pointAlarmSty: warnFault("rgba(255,0,0,1)"),
+  // 报警线的动画样式1 2
   lineAlarmSty1: new Style({
     stroke: new Stroke({
-      color: "rgba(255,0,0,0.7)",
+      color: "rgba(255,0,0,1)",
       width: 2
     }),
     zIndex: 10
   }),
-  // 报警线的动画样式1 2
   lineAlarmSty2: new Style({
     stroke: new Stroke({
-      color: "rgba(255,255,255,0)",
+      color: "rgba(255,255,255,0.1)",
       width: 2
     }),
     zIndex: 10
@@ -445,6 +446,9 @@ export function warnFault(color: string) {
   return [point, border1, border2];
 }
 
+// 点类型报警样式缓存(根据颜色绘制)
+const pointAlarmStyMap: any = {};
+
 // 报警点图层样式
 export function alarmLayerStyle(feature: any) {
   let targetFeature = feature;
@@ -456,13 +460,17 @@ export function alarmLayerStyle(feature: any) {
     // 点类型报警
     const max = targetFeature.get("max");
     const selected = targetFeature.get("selected");
+    const color = targetFeature.get("color"); // 颜色
     let alarmImg: any;
-    if (selected) {
-      alarmImg = styleAlarm.pointAlarmSty?.slice(0, max).concat(styleAct.selectAct);
-    } else {
-      alarmImg = styleAlarm.pointAlarmSty?.slice(0, max);
-    }
 
+    if (!pointAlarmStyMap[color]) {
+      pointAlarmStyMap[color] = warnFault(color);
+    }
+    if (selected) {
+      alarmImg = pointAlarmStyMap[color]?.slice(0, max).concat(styleAct.selectAct);
+    } else {
+      alarmImg = pointAlarmStyMap[color]?.slice(0, max); // 返回3个样式（通过控制数组样式个数）
+    }
     return alarmImg;
   } else {
     // 其他类型报警

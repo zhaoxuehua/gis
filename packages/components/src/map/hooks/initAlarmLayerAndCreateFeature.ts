@@ -6,7 +6,6 @@ import { createGeometry } from "./createGeometry.js";
 import type { VisualMap } from "../type";
 
 // 告警
-
 export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data: any = []) {
   let gisStore = useGisStore();
   if (!map || !data?.length) {
@@ -21,45 +20,62 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   const relationMapKeyIsEquipCode = gisStore?.relationMapKeyIsEquipCode; // 设备code与标签code关联map
   let labelInfoMap = map?.get("labelInfoMap") || {};
   let alarmFeatures: any = []; // 报警图层要素
-  let alarmPointInfo: any = []; // 报警中点报警要素信息
+  let alarmPointFeatureInfoArr: any = []; // 报警中点报警要素信息（用于labelOnSelect中报警点要素选中逻辑）
+
   data?.forEach((item: { [key: string]: any }) => {
-    let { equip, equipName, lon, lat } = item;
+    let { equip, equipName, lon, lat, mid } = item;
     // 如果有经纬度则说明是点，直接绘制报警点，没有则在abelInfoMap中匹配去标签进行绘制新的报警标签
     if (lon && lat) {
       const alarmPointFeature = new Feature({
         name: equipName,
+        code: equip,
+        typeStats: "alarmPoint",
+        type: "1",
+        max: 1,
+        color: item.eventSubTypeColor || "red",
+        extendsData: item,
         geometry: new Point(fromLonLat([lon, lat]))
       });
-      alarmPointFeature.set("code", equip); // 设备编码
-      alarmPointFeature.set("typeStats", "alarmPoint");
-      alarmPointFeature.set("type", "1"); // 数据类型
-      alarmPointFeature.set("max", 1);
-      alarmPointFeature.setId(equip);
+      alarmPointFeature.setId(mid);
       alarmFeatures.push(alarmPointFeature);
-      alarmPointInfo.push({
+      alarmPointFeatureInfoArr.push({
         name: equipName,
         code: equip,
-        lon: lon,
-        lat: lat,
-        layerCode: "alarmLayer", // 所属图层
-        dataType: "1"
+        lon,
+        lat,
+        layerCode: "alarmLayer",
+        dataType: "1",
+        id: mid
       });
     } else {
-      // 点、文本 线、面、圆、矩形、环(匹配基础引擎标签）
+      // 报警类型点（点、文本）、 线、面、圆、矩形、环(匹配基础引擎标签）
       const matchedKey = relationMapKeyIsEquipCode?.[equip]; // 根据设备code找标签code
       if (matchedKey) {
         const labelInfo = labelInfoMap[matchedKey];
         if (labelInfo) {
+          const type = labelInfo?.labelData?.style?.type;
           // 绘制要素
           const labelFeature = new Feature({
             name: equipName, // 设备名称
+            code: equip,
+            typeStats: "alarmPoint",
+            type,
+            color: item.eventSubTypeColor || "red",
+            extendsData: item,
             geometry: createGeometry(labelInfo?.labelData)
           });
-          labelFeature.set("code", equip); // 设备编码
-          labelFeature.set("typeStats", "alarmPoint");
-          labelFeature.set("type", labelInfo?.labelData?.style?.type);
-          if (["1", "6"].includes(labelInfo?.labelData?.style?.type)) {
+          if (["1", "6"].includes(type)) {
             labelFeature.set("max", 1);
+            labelFeature.setId(mid);
+            alarmPointFeatureInfoArr.push({
+              name: equipName,
+              code: equip,
+              lon,
+              lat,
+              layerCode: "alarmLayer",
+              dataType: type,
+              id: mid
+            });
           } else {
             labelFeature.set("visible", true);
           }
@@ -68,8 +84,9 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
       }
     }
   });
+
   // 存储是点报警的信息
-  map.set("alarmPointInfo", alarmPointInfo); // 基础引擎定位、搜索、左键弹框等处使用
+  map.set("alarmPointFeatureInfoArr", alarmPointFeatureInfoArr);
 
   // 先清空数据源
   layer?.getSource()?.clear();

@@ -44,8 +44,6 @@
         empty-text="暂无数据"
         :row-style="{ height: 40 + 'px' }"
         :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
-        stripe
-        border
         max-height="500"
       >
         <el-table-column
@@ -66,6 +64,9 @@
             <el-button type="primary" link @click="table.onDelete(scope.$index)"> 删除 </el-button>
           </template>
         </el-table-column>
+        <template #empty>
+          <el-empty class="no-data" description="暂无数据" />
+        </template>
       </el-table>
       <div>
         <paginationCom
@@ -149,6 +150,7 @@ const resetFun = () => {
   table.value.tableData = [];
   state.pageNumber = 1;
   state.pageSize = 20;
+  table.value.total = 0;
   state.isTableDataChange = false;
 };
 
@@ -179,9 +181,9 @@ const completeTableDataCode = (tableHeaders: any[], tableData: any[]) => {
 };
 
 // 跟新列表的数据、总条数、当前页及条数
-const changeTableData = (data: any, isUpdatePage = true) => {
+const changeTableData = (data: any, isUpdatePageSize?: boolean) => {
+  isUpdatePageSize && (state.pageSize = data?.pageSize);
   state.pageNumber = data?.currentPage;
-  isUpdatePage && (state.pageSize = data?.pageSize);
   table.value.total = data?.totalNum;
   let containAllCodeData = completeTableDataCode(table.value?.tableColumns, data?.items || []); // table数据字段补全
   table.value.tableData = containAllCodeData || [];
@@ -211,7 +213,7 @@ const getPagination = async (obj: any) => {
       formData.append("pageNum", state.pageNumber);
       await getTableDataByChangePageNumber(formData).then((res: any) => {
         if (res?.code == 200) {
-          changeTableData(res?.data || {}, false);
+          changeTableData(res?.data || {});
         }
       });
     }
@@ -251,14 +253,26 @@ const table: any = ref({
     });
     const isCurrentDataChange = state.isTableDataChange; // 存储表格是否变更过
 
-    await editFileExcelTableData(formData).then((res: any) => {
+    await editFileExcelTableData(formData).then(async (res: any) => {
       if (res?.code == 200) {
         table.value.total = table.value.total - 1 || 0;
         table.value.tableData?.splice(index, 1); // 将删除项移除
         table.value.originTableData = JSON.parse(JSON.stringify(table.value.tableData || []));
-
         isCurrentDataChange && (state.disabledConfirmBtn = true); // 删除后如果之前表格有变更则需要重新点击校验后再导入
         ElMessage.success(`删除成功`);
+        if (table.value.tableData?.length == 0) {
+          // 若当页删除完则请求重新排序
+          let formData1 = createFormDataParams({
+            sessionId: localStorage.getItem("sessionId") || "",
+            fileName: state.fileName,
+            pageSize: state.pageSize
+          });
+          await getTableDataByChangePageSize(formData1).then((res: any) => {
+            if (res?.code == 200) {
+              changeTableData(res?.data || {});
+            }
+          });
+        }
       }
     });
   }
@@ -324,7 +338,7 @@ const uploadFile = async (content: any) => {
     .then(([tableColumns, tableData]: [any, any]) => {
       state.progressCount = 100;
       table.value.tableColumns = [["rowNum", "行号"]]?.concat(tableColumns?.data || []); // 表头
-      changeTableData(tableData?.data || {});
+      changeTableData(tableData?.data || {}, true);
       closeLoadingProgress(state);
       state.disabledCheckBtn = false;
     })

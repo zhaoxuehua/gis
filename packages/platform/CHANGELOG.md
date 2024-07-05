@@ -1,5 +1,149 @@
 # adm-gis-platform
 
+## 2.0.28
+
+### Patch Changes
+
+- 左键、控件及编辑标签发布参数
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.28
+
+## 2.0.27
+
+### Patch Changes
+
+- 轨迹列表样式修改
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.27
+
+## 2.0.26
+
+### Patch Changes
+
+- 轨迹列表行高修改
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.26
+
+## 2.0.25
+
+### Patch Changes
+
+- 网位仪
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.25
+
+## 2.0.24
+
+### Patch Changes
+
+- 米标位置
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.24
+
+## 2.0.23
+
+### Patch Changes
+
+- 修复渲染多个地图问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.23
+
+## 2.0.22
+
+### Patch Changes
+
+- 快速绘制样式调整
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.22
+
+## 2.0.21
+
+### Patch Changes
+
+- 轨迹列表的关闭方法外抛
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.21
+
+## 2.0.20
+
+### Patch Changes
+
+- 修复左键线性数据为空时问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.20
+
+## 2.0.19
+
+### Patch Changes
+
+- 修复线性数据没有单位时 undefined 问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.19
+
+## 2.0.18
+
+### Patch Changes
+
+- 修复告警唯一标识的问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.18
+
+## 2.0.17
+
+### Patch Changes
+
+- 修复鼠标经过问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.17
+
+## 2.0.16
+
+### Patch Changes
+
+- 修复轨迹回放问题及翻页问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.16
+
+## 2.0.15
+
+### Patch Changes
+
+- 告警标签及增加地图发布参数
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.15
+
+## 2.0.14
+
+### Patch Changes
+
+- 报警
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.14
+
+## 2.0.13
+
+### Patch Changes
+
+- 左击发布参数
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.13
+
+## 2.0.12
+
+### Patch Changes
+
+- 地图点击发布参数
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.12
+
+## 2.0.11
+
+### Patch Changes
+
+- 双击表格定位报警点逻辑添加
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.11
+
 ## 2.0.10
 
 ### Patch Changes

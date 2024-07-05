@@ -283,12 +283,16 @@ export function transformLabelType(originalData: LabelType) {
 }
 
 const clearSelectFeatureTimer = ref<number>();
-// 标签树、导航树选中label
+// 选中label(地图点击、导航树、标签树、外部树节点、外部表格)
 /******************************************
+ * 参数
  * map:地图实例
  * featureCode标签code
  * isFeatureClick 地图上点击的要素(地图上的点击还是导航树、标签书等的)
- * isRealTimeData：是都实时数据（船、人等）
+ * isRealTimeData：是都实时数据（船、人等,非基础数据）
+ * isAlarmPoint：是否报警点选中（就是给要素一个选中框逻辑）
+ * 功能
+ * 1、点位位置功能 2、选中功能（点的是聚焦框 线面改变颜色）
  * ************************************************/
 export function labelOnSelect(
   map: VisualMap,
@@ -303,9 +307,8 @@ export function labelOnSelect(
 
   let labelInfo: any;
   if (isAlarmPoint) {
-    let labelInfoMap = map?.get("alarmPointInfo") || [];
-    labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {};
-    console.log(labelInfo, "labelInfo");
+    let labelInfoMap = map?.get("alarmPointFeatureInfoArr") || [];
+    labelInfo = labelInfoMap.filter((item: any) => item.id == featureCode)?.[0];
   } else if (isRealTimeData) {
     let labelInfoMap = map?.get("trackInfoMap") || [];
     labelInfo = labelInfoMap.filter((item: any) => item.code == featureCode)?.[0] || {};
@@ -313,30 +316,31 @@ export function labelOnSelect(
     let labelInfoMap = map?.get("labelInfoMap") || {};
     labelInfo = labelInfoMap[featureCode];
   }
+  // 基础引擎绘制标签找不到直接返回
   if (!labelInfo) {
     return;
   }
-  // 点击的不是要绘制节点
+  // 实时数据标签找不到提示
   if (Object.keys(labelInfo).length == 0) {
     ElMessage.warning("当前目标不在地图上!");
     return;
   }
   let layer: any = null;
-  if (isAlarmPoint) {
+  let center: any = null;
+  if (isAlarmPoint || isRealTimeData) {
     layer = map?.get("layerMap")[labelInfo.layerCode];
-  } else if (!isRealTimeData) {
-    layer = map?.get("layerMap")[labelInfo.refLayer?.code];
+    center = fromLonLat([labelInfo.lon, labelInfo.lat]);
   } else {
-    layer = map?.get("layerMap")[labelInfo.layerCode];
+    layer = map?.get("layerMap")[labelInfo.refLayer?.code];
+    const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
+    center = getGeometryCenter(labelData);
   }
 
-  console.log(layer, 222);
-
-  const minZoom = Math.ceil(layer?.getMinZoom()); // 图层最小层级
-  const maxZoom = Math.floor(layer?.getMaxZoom()); // 图层最大层级
+  const minZoom = Math.ceil(layer?.getMinZoom());
+  const maxZoom = Math.floor(layer?.getMaxZoom());
 
   let zoom = minZoom;
-  // 视图缩放策略（点（点文本）取值最大值  线（线、环）平均值  其他均值）  兼容外部对象(外部对象目前没存数据类型)
+  // 视图缩放策略（点（点文本）取值最大图层值  线（线、环）取图层平均值  其他最小图层值）
   let dataType = labelInfo?.labelType?.dataType || labelInfo?.dataType;
   if (["1", "6"].includes(dataType)) {
     zoom = maxZoom;
@@ -345,18 +349,10 @@ export function labelOnSelect(
     zoom = Math.ceil((maxZoom + minZoom) / 2);
   }
 
-  let center: any = null;
-  if (isAlarmPoint) {
-    center = fromLonLat([labelInfo.lon, labelInfo.lat]);
-  } else if (!isRealTimeData) {
-    const labelData = isObject(labelInfo.labelData) ? labelInfo.labelData : JSON.parse(labelInfo.labelData);
-    center = getGeometryCenter(labelData);
+  if (isFeatureClick) {
+    SelectFeatureAndPopData();
   } else {
-    center = fromLonLat([labelInfo.lon, labelInfo.lat]);
-  }
-
-  // 对标签、导航树要素定位
-  if (!isFeatureClick) {
+    // 对标签、导航树、外部树、表格等需要对要素定位（不是地图上直接点击需要定位到对应层级及中心点）
     map.getView().animate(
       { zoom: zoom },
       { center: center },
@@ -369,8 +365,6 @@ export function labelOnSelect(
         }, 200);
       }
     );
-  } else {
-    SelectFeatureAndPopData();
   }
 
   // 选中及弹框
@@ -383,8 +377,7 @@ export function labelOnSelect(
       clusterDataSource?.getFeatures()?.forEach(function (clusterFeature: any) {
         clusterFeature.get("features").forEach(function (originalFeature: any) {
           if (originalFeature.get("code") === featureCode) {
-            // 分是否外部对象(实时数据绘制与基础引擎标签)
-            originalFeature.set("selected", true); // 非聚合图层的可以这样实现
+            originalFeature.set("selected", true);
             originalFeature.changed();
             map.set("featureSelect", originalFeature);
           }
@@ -393,8 +386,9 @@ export function labelOnSelect(
     } else {
       let source = layer.getSource();
       const selectFeature = source?.getFeatureById(featureCode);
+
       if (selectFeature) {
-        selectFeature.set("selected", true); // 非聚合图层的可以这样实现
+        selectFeature.set("selected", true);
         selectFeature.changed();
         map.set("featureSelect", selectFeature);
       } else {
@@ -402,8 +396,7 @@ export function labelOnSelect(
       }
     }
     let featureName = labelInfo?.name;
-    // 地图上直接点击要素不需要走弹框弹出（因为地图上有的要素需要选中状态有的不需要所以直接根据需要调用弹框展示及要素显示）
-    !isFeatureClick && map.popupInfo({ featureCode, featureName, center });
+    !isFeatureClick && !isAlarmPoint && map.popupInfo({ featureCode, featureName, center }); // 地图上直接点击的及定位报警标签时不需要走弹框弹出
     clearSelectFeatureTimer.value = window.setTimeout(function () {
       // 3秒后清空选中状态
       clearSelectedFeature(map);

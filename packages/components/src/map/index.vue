@@ -1,7 +1,7 @@
 <!-- 地图组件 map -->
 <template>
   <div class="component-box">
-    <div id="map" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
+    <div :id="props.config.elementId || 'map'" class="visual-map" @contextmenu.stop @click.stop ref="mapRef"></div>
     <div ref="mousePositionContainer" title="鼠标位置" v-if="exportMap"></div>
     <div class="mapLevel" title="当前层级" v-if="exportMap">当前层级：{{ currentLevel }}</div>
     <div v-if="realtimeDataCountList && realtimeDataCountList?.length">
@@ -52,7 +52,7 @@
     </div>
 
     <!-- 轨迹回放列表(轨迹列表只能展示5条)-->
-    <Track-back-list></Track-back-list>
+    <Track-back-list ref="trackBackListRef"></Track-back-list>
 
     <!-- overLayer鼠标经过显示-->
     <div id="shipHoverInfo" class="popup" ref="popupDOMRef">
@@ -87,7 +87,7 @@ import { createStringXY } from "ol/coordinate";
 import type { Coordinate } from "ol/coordinate";
 import { getCenter } from "ol/extent";
 import type { VisualMap, LabelType, LabelInfoData } from "./type";
-import { getMapParamsDetail, getLabelList, getEquipAlarmList } from "../api/visconfig";
+import { getMapParamsDetail, getLabelList, getEquipAlarmList, getLineEquipMeterPosition } from "../api/visconfig";
 import { handleParam } from "@/utils/common.js";
 import { find, cloneDeep } from "lodash";
 import { useGisStore } from "../stores/modules/gis";
@@ -113,6 +113,7 @@ import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
 import Popup from "./components/popup/index.vue";
 import TrackBackList from "./components/trackBackList.vue";
+// import { judgeClickPointIsPolygonBoundary } from "./hooks/judgeIncludePolygonFun";
 
 defineOptions({ name: "AgMap" });
 
@@ -130,12 +131,15 @@ const emits = defineEmits([
   "getClickBoxSelection",
   "getCustomSearchContent",
   "getInitMapExportData",
+  "geClickPublishData",
   "scada",
-  "view"
+  "view",
+  "isShowChange"
 ]);
 
 const exportMap = ref<VisualMap>();
 const mapRef = ref();
+const trackBackListRef = ref();
 const currentLevel = ref(); // 当前视图层级
 const mousePositionContainer = ref(); // 鼠标移动显示坐标的容器
 const leftClickDialogPosition = ref("current"); // 左键弹窗位置
@@ -391,7 +395,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     }
 
     const defaultOptions = {
-      target: "map",
+      target: props.config.elementId || "map",
       center: {
         lon: originalData.defaultCenterPointLongitude, // 经度
         lat: originalData.defaultCenterPointLatitude // 纬度
@@ -483,7 +487,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
 
     // 实例化地图，类型为扩展后的VisualMap
     const map = new Map({
-      target: defaultOptions?.target || "map",
+      target: defaultOptions?.target,
       controls: defaults({
         attribution: false,
         rotate: false,
@@ -734,7 +738,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     alarmLayer?.set("name", "报警图层");
 
     map.addLayer(alarmLayer);
-    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap, alarmLayer }); // 存储所有的图层信息
+
+    layerMap["alarmLayer"] = alarmLayer;
+    map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息(项目中使用方式：根据图层code在layerMap中找对应的图层信息)
+
     // 实时请求报警数据并绘制
     const updateAlarmData = async () => {
       try {
@@ -754,62 +761,128 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       autoPan: true,
       offset: [20, 0]
     });
+
     map.addOverlay(hoverInfoLayer);
     map.on("pointermove", function (event: any) {
-      const pixel = map.getEventPixel(event.originalEvent); // 坐标
+      const pos = event.coordinate; // 3857投影坐标
+      const pixel = map.getEventPixel(event.originalEvent); // 像素坐标
       const hit = map.hasFeatureAtPixel(pixel); // 该坐标系下是不是有物标
       map.getTargetElement().style.cursor = hit ? "pointer" : "";
-      if (hit) {
-        const pos = event.coordinate;
-        map.forEachFeatureAtPixel(pixel, function (feature: Feature) {
-          let targetFeature = null;
-          if (Array.isArray(feature.get("features"))) {
-            targetFeature = feature.get("features")[0];
-          } else {
-            targetFeature = feature;
-          }
 
-          let { extendsData, type, name } = targetFeature.getProperties();
-          popupTitDOMRef.value.style.height = "40px";
-          if (type == "trackPoint" || type == "trackShip") {
-            const { detailInfo, titleInfo } = unref(extendsData);
-            const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
-            popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
-            popupContentDOMRef.value.innerHTML = infoStr;
-            hoverInfoLayer.setPosition(pos);
-          } else if (extendsData?.type == "realTimeTag") {
-            // 实时标签
-            const { code, sog, monitorTime, person } = unref(extendsData);
-            popupTitDOMRef.value.innerHTML = name || ""; // 标题
-            // 根据关键词配置拼接code person monitorTime sog
-            let contentStr = "";
-            let keywordConfig = gisStore?.keywordConfig;
-            if (keywordConfig?.code) {
-              contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
-            }
-            if (keywordConfig?.monitorTime) {
-              contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
-            }
-            if (keywordConfig?.speed) {
-              contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
-            }
-            if (keywordConfig?.person) {
-              contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
-            }
-            popupContentDOMRef.value.innerHTML = contentStr;
-            hoverInfoLayer.setPosition(pos);
-          } else {
-            hoverInfoLayer.setPosition(undefined);
+      // 清除线性设备获取米标未知
+      if (meterPositionTimer.value) {
+        clearTimeout(meterPositionTimer.value);
+        meterPositionTimer.value = null;
+      }
+
+      if (hit) {
+        const targetFeature = getSelectedFeature(map, pixel);
+        let { extendsData, type, name, typeStats, code } = targetFeature?.getProperties();
+        popupTitDOMRef.value.style.height = "40px";
+        if (type == "trackPoint" || type == "trackShip") {
+          const { detailInfo, titleInfo } = unref(extendsData);
+          const infoStr = (detailInfo as [[string, any]])?.map(val => `<p>${val[0]}: ${val[1]}</p>`)?.join("") || "";
+          popupTitDOMRef.value.innerHTML = titleInfo?.name || "";
+          popupContentDOMRef.value.innerHTML = infoStr;
+          hoverInfoLayer.setPosition(pos);
+        } else if (extendsData?.type == "realTimeTag") {
+          // 实时标签
+          const { code, sog, monitorTime, person } = unref(extendsData);
+          popupTitDOMRef.value.innerHTML = name || ""; // 标题
+          // 根据关键词配置拼接code person monitorTime sog
+          let contentStr = "";
+          let keywordConfig = gisStore?.keywordConfig;
+          if (keywordConfig?.code) {
+            contentStr += `<p>${keywordConfig?.code} : ${code}</p>`;
           }
-        });
+          if (keywordConfig?.monitorTime) {
+            contentStr += `<p>${keywordConfig?.monitorTime} : ${monitorTime}</p>`;
+          }
+          if (keywordConfig?.speed) {
+            contentStr += `<p>${keywordConfig?.speed} : ${sog?.toFixed(1)}节</p>`;
+          }
+          if (keywordConfig?.person) {
+            contentStr += `<p>${keywordConfig?.person} : ${person}</p>`;
+          }
+          popupContentDOMRef.value.innerHTML = contentStr;
+          hoverInfoLayer.setPosition(pos);
+        } else if (typeStats === "alarmPoint") {
+          // 报警点
+          showAlarmPointDetail(popupTitDOMRef.value, popupContentDOMRef.value, extendsData, pos);
+        } else if (type == "2") {
+          // 线性标签的鼠标经过逻辑（后端有返回值才显示且防抖处理）基础引擎绘制的标签是线时 type为2
+          // 根据标签code找设备信息
+          const equipInfo = gisStore?.relationMap?.[code];
+          if (equipInfo) {
+            showLineEquipMeterPositionDetail(popupTitDOMRef.value, popupContentDOMRef.value, equipInfo, targetFeature, pos);
+          }
+        } else {
+          hoverInfoLayer.setPosition(undefined);
+        }
       } else {
         hoverInfoLayer.setPosition(undefined);
       }
     });
 
-    /***********************地图点击弹框及（搜索、标签树、导航树、地图 点击对应弹框）*****************************/
-    // 地图点击弹框
-    // 弹窗图层  当前点击位置
+    // 显示报警点详情
+    // eventSubTypeColor 不存在红色，存在使用自身颜色
+    const showAlarmPointDetail = (title: HTMLElement, content: HTMLElement, extendsData: any, pos: number[]) => {
+      const {
+        equipName = "",
+        monitorTime = "",
+        eventLevelName = "",
+        eventTypeName = "",
+        eventSubTypeName = "",
+        eventName = "",
+        desc = ""
+      } = extendsData || {};
+      title.innerHTML = `告警设备:${equipName}`; // 标题
+      content.innerHTML = `
+        <p>告警时间 : ${monitorTime}</p>
+        <p>告警等级 : ${eventLevelName}</p>
+        <p>事件类型 : ${eventTypeName}</p>
+        <p>事件子类型 : ${eventSubTypeName}</p>
+        <p>事件名称 : ${eventName}</p>
+        <p>事件描述 : ${desc}</p>
+      `;
+      hoverInfoLayer.setPosition(pos);
+    };
+
+    // 显示线性设备米标位置
+    let meterPositionTimer: any = ref(null);
+    const showLineEquipMeterPositionDetail = async (
+      title: HTMLElement,
+      content: HTMLElement,
+      equipInfo: any,
+      targetFeature: any,
+      pos: number[]
+    ) => {
+      const { code, name } = equipInfo;
+      // 点到多线段最短距离的点 （pos到coordinates最短距离的点）
+      const lineGeometry = targetFeature?.getGeometry();
+      const nearestPoint = lineGeometry?.getClosestPoint(pos); // 获取最近的点(落在线上的点)
+      const [pointLon, pointLat] = toLonLat(nearestPoint);
+      meterPositionTimer.value = setTimeout(async () => {
+        let res: any = await getLineEquipMeterPosition(code, pointLon, pointLat);
+        // 接口成功&有位置信息才展示
+        if (res?.code == 200 && res?.data) {
+          title.innerHTML = `${name}`; // 标题
+          content.innerHTML = `<p>选中位置 : ${res?.data || ""}</p>`;
+          hoverInfoLayer.setPosition(pos);
+        }
+        clearTimeout(meterPositionTimer.value);
+        meterPositionTimer.value = null;
+      }, 500);
+    };
+
+    /*************************************根据标签code获取关联信息***************************************************************/
+    const getRelationObj = (featureCode: string) => {
+      // 获取标签关联的设备信息|| 实时数据（船、人通过对象中isRealTimeData区分是否实时数据）
+      const currentRealData = (map.get("trackInfoMap") || [])?.filter((item: any) => item.code == featureCode)?.[0];
+      return gisStore?.relationMap?.[featureCode] || currentRealData;
+    };
+
+    /***********************地图点击弹框（搜索、标签树、导航树、地图 点击对应弹框）***********************************************/
     const overlay = new Overlay({
       element: popupRef.value?.getDOMElement(), // 弹框组件
       autoPan: true
@@ -824,6 +897,10 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       popupData.relationMap = null;
       // 移除选中状态
       clearSelectedFeature(map);
+      emits("isShowChange", {
+        type: "popup",
+        value: false
+      });
     };
     // 地图标签元素默认浮窗
     map.popupInfo = async (options: { featureCode: string; featureName: string; center: Coordinate }, trackPointInfo?: any) => {
@@ -832,18 +909,20 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (gisStore?.isEdit) {
         return;
       }
-      // 获取标签关联的设备信息|| 实时数据（船、人通过isRealTimeData区分）
-      const trackInfoMap = map.get("trackInfoMap") || [];
-      const currentRealData = trackInfoMap?.filter((item: any) => item.code == featureCode)?.[0];
       popupData.featureCode = featureCode;
       popupData.featureName = featureName;
-      popupData.relationMap = trackPointInfo || gisStore?.relationMap[featureCode] || currentRealData; // 轨迹圆圈数据|绘制标签关联信息|实时数据信息
+      popupData.relationMap = trackPointInfo || getRelationObj(featureCode); // 轨迹圆圈数据|绘制标签关联信息|实时数据信息
       if (leftClickDialogPosition.value === "current") {
         // 解决首次点击overlay没有完全移动到可是区域的问题
         requestAnimationFrame(() => {
           overlay.setPosition(center);
         });
       }
+      // 更新展示弹窗的值
+      emits("isShowChange", {
+        type: "popup",
+        value: true
+      });
     };
 
     /*************************************地图鼠标点击事件***************************************************************/
@@ -860,25 +939,43 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       let pixel = map.getEventPixel(evt.originalEvent);
       let hit = map.hasFeatureAtPixel(pixel, {
         hitTolerance: 5
-      }); // 当前点击处是否有要素
+      });
+
+      let hitCoordinate = map?.getCoordinateFromPixel(pixel); // 点击要素处的经纬度3857
+      let publishParams: any = {
+        coordinate: toLonLat(hitCoordinate) // 点击像素处的经纬度（投影坐标3857=>4326）
+      };
+      // 功能：（1）对选择的要素做弹框弹出 （2）选中样式 （3）编辑要素样式弹框（基础引擎绘制标签）
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
-        // 对选择的要素做弹框弹出及选中样式、编辑弹框
+        let type = currentSelectFeature?.get("type");
+
+        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
+        // if (type == "3") {
+        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+        //   if (!isOnBoundary) {
+        //     return;
+        //   }
+        // }
+
         let featureCode = currentSelectFeature?.get("code");
         let featureName = currentSelectFeature?.get("name");
         let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
-        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
-        let type = currentSelectFeature?.get("type");
+
+        publishParams.labelCode = featureCode;
         if (typeStats == "alarmPoint") {
-          // 告警标签获取到的featureCode是设备code需要自己找对应的标签code
+          // 告警标签获取到的featureCode是设备code(需要根据该设备code找对应的标签code)
           let { featureLabelCode, featureLabelType } = getFeatureCodeByEquipCode(featureCode, map);
-          featureCode = featureLabelCode || featureCode;
+          featureCode = featureLabelCode || featureCode; // 告警标签则取对应的设备（弹框显示对应的设备，如果是实时数据设备code与告警的标签code相同）
           labelTypeCode = featureLabelType;
+          publishParams.event = currentSelectFeature?.get("extendsData")?.event || "";
+          publishParams.mid = currentSelectFeature?.get("extendsData")?.mid || "";
         }
         if (featureCode) {
           let center = getCenter(currentSelectFeature.getGeometry().getExtent());
-          // 轨迹
+          let isAlarmPoint = typeStats == "alarmPoint" && ["1", "6"].includes(type); // 是否告警标签中的点告警标签
+          // 轨迹点点击只有左键弹框
           if (type == "trackPoint") {
             let objectTypeCode = currentSelectFeature?.get("objectTypeCode");
             let trackPointTime = currentSelectFeature?.get("trackPointTime");
@@ -893,45 +990,74 @@ const initMap = async (mapId: string | number, isId: boolean) => {
             };
             map.popupInfo({ featureCode, featureName, center }, trackPointInfo);
           } else {
-            // 绘制标签或实时数据标签
-            const currentRealData = (map.get("trackInfoMap") || [])?.filter((item: any) => item.code === featureCode)?.[0]; // 获取实时数据（判断点击的是实时数据还是绘制数据）=
+            let relationObj = getRelationObj(featureCode); // 绘制标签关联信息|实时数据信息
             map.popupInfo({ featureCode, featureName, center });
             // 以下是选中+编辑要素逻辑
-            // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树） 将选中用定时器是因为编辑弹框会让选中消失
+            // 在编辑状态下且挂载在标签树的才可以操作编辑标签的功能（例如船是不可以挂载标签树，基础引擎绘制的才可以编辑） 将选中用定时器是因为编辑弹框会让选中消失
             if (
               labelTypeCode &&
               labelTypeMap[labelTypeCode]?.isHang &&
               gisStore?.isEdit &&
               map?.get("labelInfoMap")?.[featureCode]
             ) {
-              // 应用场景下基础引擎绘制标签存在则可编辑
               editLabelRef.value?.onOpen(featureCode);
               timer.value = setTimeout(() => {
-                labelOnSelect(exportMap.value, featureCode, true);
+                labelOnSelect(
+                  exportMap.value,
+                  isAlarmPoint ? currentSelectFeature?.getId() : featureCode, // 告警点是根据经纬度作为唯一id匹配
+                  true,
+                  false,
+                  isAlarmPoint
+                );
                 clearTimeout(timer);
                 timer.value = null;
               }, 200);
             } else {
-              labelOnSelect(exportMap.value, featureCode, true, currentRealData?.isRealTimeData); // 选中（还需要判断是否实时数据的选中）
+              labelOnSelect(
+                exportMap.value,
+                isAlarmPoint ? currentSelectFeature?.getId() : featureCode, // 告警点是根据经纬度作为唯一id匹配
+                true,
+                relationObj?.isRealTimeData,
+                isAlarmPoint
+              );
+            }
+            // 存储关联设备信息
+            if (relationObj) {
+              publishParams.equipCode = relationObj?.code;
+              publishParams.equipId = relationObj?.isRealTimeData ? relationObj?.code : relationObj?.id;
+              publishParams.equipTypeCode = relationObj?.isRealTimeData
+                ? relationObj?.realObjectTypeCode
+                : relationObj?.equipTypeCode;
             }
           }
         }
       }
+      emits("geClickPublishData", publishParams);
     });
 
-    /***************************************************地图右键（目前只有监控可用）*****************************************************/
+    /***************************************************地图右键（目前只有监控写了定制化逻辑）*****************************************************/
     // 右键功能
     mapRef.value.oncontextmenu = async (evt: any) => {
       evt.preventDefault();
       let pixel = map?.getEventPixel(evt);
+      let hitCoordinate = map?.getCoordinateFromPixel(pixel); // 点击要素处的经纬度3857
       // 获取鼠标位置的经纬度在工具箱展示
-      let coordinate = toLonLat(map?.getCoordinateFromPixel(pixel));
+      let coordinate = toLonLat(hitCoordinate); // 4326
       let coordinateStr = coordinate.map((item: any) => item?.toFixed(6))?.join(",");
       gisStore?.setMouseRightClickCoordinate(coordinateStr);
 
       // 右键业务功能（定制化实现）
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
+        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
+        // let type = currentSelectFeature?.get("type");
+        // if (type == "3") {
+        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+        //   if (!isOnBoundary) {
+        //     return;
+        //   }
+        // }
+
         let featureCode = currentSelectFeature?.get("code");
         // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
@@ -939,6 +1065,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
           let { featureLabelCode } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;
         }
+        console.log(featureCode, "右击标签code");
         emits("onOpenRightMenu", {
           featureCode,
           relationMap: gisStore?.relationMap,
@@ -1056,12 +1183,35 @@ const handlePopLink = (type: any, option: any) => {
   emits(type, option);
 };
 
+// 关闭轨迹回放列表
+const closeTrackBackList = () => {
+  trackBackListRef.value?.close();
+};
+
 // 监听实时标签的船首线
 const toolboxStore = useToolboxStore();
 watch(
   () => toolboxStore.data,
   () => {
     initRealtimeData(exportMap.value, gisStore?.realtimeDataList);
+  }
+);
+
+const controlShow = computed(() => {
+  const controlShow = [...state.leftBoxData, ...state.rightBoxData.filter(item => item.label !== "编辑")].some(
+    item => item.isShow
+  );
+  // 编辑标签弹窗
+  const editLabelShow = gisStore.isShowEditLabel;
+  return controlShow || editLabelShow;
+});
+watch(
+  () => controlShow.value,
+  val => {
+    emits("isShowChange", {
+      type: "controller",
+      value: !!val
+    });
   }
 );
 
@@ -1083,7 +1233,8 @@ defineExpose({
   clearSelectedFeature,
   createStyle,
   getGeometryCenter,
-  clearAllTimers
+  clearAllTimers,
+  closeTrackBackList
 });
 
 /*************************************监听外部树节点点击(监控在可视化配置的树)***************************************************************/
@@ -1112,7 +1263,35 @@ watch(
 );
 
 /*************************************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***********************************************/
+/*
+  01：node有经纬度,将mid作为ID获取报警点要素
+      I: 找到告警要素高亮
+      II: 找不到要素,将经纬度作为偏移坐标
+
+  02: rowData 没有经纬度，则高亮设备关联的标签
+*/
 const outsideTableRowDataSelect = (node: any) => {
+  const { lat, lon } = node;
+  lat && lon && lat != 0 && lon != 0 ? hasLatLngFn(node) : hasNoLatLngFn(node);
+};
+
+// 有经纬度
+const hasLatLngFn = (node: any) => {
+  const alarmLayer = exportMap.value.get("layerMap")["alarmLayer"];
+  const alarmSource = alarmLayer.getSource();
+  const alarmFeatureId = node?.mid;
+  const alarmFeature = alarmSource?.getFeatures()?.find((val: any) => val.getId() === alarmFeatureId);
+  if (alarmFeature) {
+    labelOnSelect(exportMap.value, alarmFeatureId, false, false, true);
+  } else {
+    // 要素不存在
+    let center = fromLonLat([node.lon, node.lat]);
+    exportMap.value.getView().animate({ center: center });
+  }
+};
+
+// 没有经纬度
+const hasNoLatLngFn = (node: any) => {
   const { equip } = node; // 设备code或实时数据code
   const currentRealData = (exportMap.value?.get("trackInfoMap") || [])?.filter((item: any) => item.code == equip)?.[0];
   let isRealTimeData = !!currentRealData?.isRealTimeData; // 判断是否实时数据
@@ -1121,16 +1300,13 @@ const outsideTableRowDataSelect = (node: any) => {
     labelOnSelect(exportMap.value, featureCode, false, isRealTimeData);
   }
 };
+
 watch(
   () => props.outsideTableRowData,
   node => {
-    if (node) {
-      outsideTableRowDataSelect(node);
-    }
+    node && outsideTableRowDataSelect(node);
   },
-  {
-    deep: true
-  }
+  {}
 );
 </script>
 
