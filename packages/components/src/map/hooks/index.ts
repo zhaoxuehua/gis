@@ -376,7 +376,7 @@ export function labelOnSelect(
       // 当聚合图层不在首次视图层级时，首次获取不到聚合要素为clusterDataSource?.getFeatures()=[]
       clusterDataSource?.getFeatures()?.forEach(function (clusterFeature: any) {
         clusterFeature.get("features").forEach(function (originalFeature: any) {
-          if (originalFeature.get("code") === featureCode) {
+          if (originalFeature.get("code") === featureCode || originalFeature?.getId() == featureCode) {
             originalFeature.set("selected", true);
             originalFeature.changed();
             map.set("featureSelect", originalFeature);
