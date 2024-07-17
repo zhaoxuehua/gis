@@ -738,7 +738,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     alarmOtherLayer.set("name", "报警线面图层");
 
     let clusterSource = new Cluster({
-      distance: 30,
+      distance: 25,
       source: new VectorSource()
     });
     let alarmPointLayer: any = new VectorLayer({
@@ -751,7 +751,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     alarmPointLayer.set("code", "alarmPointLayer");
     alarmPointLayer.set("name", "报警点图层");
     alarmPointLayer.set("isTagAgg", true);
-    alarmPointLayer.set("tagAggDistance", 30);
+    alarmPointLayer.set("tagAggDistance", 25);
 
     map.addLayer(alarmOtherLayer);
     map.addLayer(alarmPointLayer);
