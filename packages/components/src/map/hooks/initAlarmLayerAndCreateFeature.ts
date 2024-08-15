@@ -6,11 +6,13 @@ import { createGeometry } from "./createGeometry.js";
 import type { VisualMap } from "../type";
 
 // 告警
-export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data: any = []) {
+export function initAlarmLayerAndCreateFeature(map: VisualMap, alarmOtherLayer: any, alarmPointLayer: any, data: any = []) {
   let gisStore = useGisStore();
   if (!map || !data?.length) {
     // 空数据时需要清空图层数据源及样式定时器，与有数据分开是因为减少中间空白
-    layer?.getSource()?.clear();
+    alarmOtherLayer?.getSource()?.clear();
+    alarmPointLayer?.getSource()?.getSource()?.clear();
+
     if (gisStore?.simulateAlarmTimer) {
       clearInterval(gisStore?.simulateAlarmTimer);
       gisStore?.setSimulateAlarmTimer(null);
@@ -19,7 +21,9 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
 
   const relationMapKeyIsEquipCode = gisStore?.relationMapKeyIsEquipCode; // 设备code与标签code关联map
   let labelInfoMap = map?.get("labelInfoMap") || {};
-  let alarmFeatures: any = []; // 报警图层要素
+  let pointAlarmFeatures: any = []; // 报警点要素
+  let otherAlarmFeatures: any = []; // 报警线、面要素
+
   let alarmPointFeatureInfoArr: any = []; // 报警中点报警要素信息（用于labelOnSelect中报警点要素选中逻辑）
 
   data?.forEach((item: { [key: string]: any }) => {
@@ -37,13 +41,13 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
         geometry: new Point(fromLonLat([lon, lat]))
       });
       alarmPointFeature.setId(mid);
-      alarmFeatures.push(alarmPointFeature);
+      pointAlarmFeatures.push(alarmPointFeature);
       alarmPointFeatureInfoArr.push({
         name: equipName,
         code: equip,
         lon,
         lat,
-        layerCode: "alarmLayer",
+        layerCode: "alarmPointLayer",
         dataType: "1",
         id: mid
       });
@@ -72,14 +76,15 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
               code: equip,
               lon,
               lat,
-              layerCode: "alarmLayer",
+              layerCode: "alarmPointLayer",
               dataType: type,
               id: mid
             });
+            pointAlarmFeatures.push(labelFeature);
           } else {
             labelFeature.set("visible", true);
+            otherAlarmFeatures.push(labelFeature);
           }
-          alarmFeatures.push(labelFeature);
         }
       }
     }
@@ -88,27 +93,34 @@ export function initAlarmLayerAndCreateFeature(map: VisualMap, layer: any, data:
   // 存储是点报警的信息
   map.set("alarmPointFeatureInfoArr", alarmPointFeatureInfoArr);
 
-  // 先清空数据源
-  layer?.getSource()?.clear();
-  layer?.getSource()?.addFeatures(alarmFeatures);
+  // 清空报警标签
+  alarmOtherLayer?.getSource()?.clear();
+  alarmPointLayer?.getSource()?.getSource()?.clear();
+
+  // 添加报警标签
+  alarmPointLayer?.getSource()?.getSource()?.addFeatures(pointAlarmFeatures);
+  alarmOtherLayer?.getSource()?.addFeatures(otherAlarmFeatures);
+
   if (gisStore?.simulateAlarmTimer) {
     clearInterval(gisStore?.simulateAlarmTimer);
     gisStore.simulateAlarmTimer = null;
   }
 
+  // 样式动态变更
   gisStore.simulateAlarmTimer = setInterval(() => {
-    layer?.getSource().forEachFeature((feature: any) => {
-      let type = feature.get("type");
-      if (type == "1" || type == "6") {
+    alarmOtherLayer?.getSource().forEachFeature((feature: any) => {
+      // 线面报警要素
+      let visible = feature.get("visible");
+      feature.set("visible", !visible);
+    });
+    alarmPointLayer
+      ?.getSource()
+      ?.getSource()
+      .forEachFeature((feature: any) => {
         // 点报警要素
         let max = feature.get("max") || 1;
         max = max < 3 ? max + 1 : 1;
         feature.set("max", max);
-      } else {
-        // 线面报警要素
-        let visible = feature.get("visible");
-        feature.set("visible", !visible);
-      }
-    });
+      });
   }, 800);
 }

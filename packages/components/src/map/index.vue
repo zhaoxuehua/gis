@@ -726,19 +726,38 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       initRealtimeData(map, gisStore?.realtimeDataList);
     }
     /*******************************************告警标签（点线面）**********************************************/
-    // 绘制报警图层信息
-    let alarmLayer: any = new VectorLayer({
+    // 告警标签有点图层（聚合）  线面图层
+    let alarmOtherLayer: any = new VectorLayer({
       source: new VectorSource(),
       zIndex: 9999,
       minZoom: defaultOptions?.minZoom,
       maxZoom: defaultOptions?.maxZoom,
       style: (feature: FeatureLike) => alarmLayerStyle(feature)
     });
-    alarmLayer.set("code", "alarmLayer");
-    alarmLayer.set("name", "报警图层");
-    map.addLayer(alarmLayer);
+    alarmOtherLayer.set("code", "alarmOtherLayer");
+    alarmOtherLayer.set("name", "报警线面图层");
 
-    layerMap["alarmLayer"] = alarmLayer;
+    let clusterSource = new Cluster({
+      distance: 25,
+      source: new VectorSource()
+    });
+    let alarmPointLayer: any = new VectorLayer({
+      source: clusterSource,
+      zIndex: 9999,
+      minZoom: defaultOptions?.minZoom,
+      maxZoom: defaultOptions?.maxZoom,
+      style: (feature: FeatureLike) => alarmLayerStyle(feature)
+    });
+    alarmPointLayer.set("code", "alarmPointLayer");
+    alarmPointLayer.set("name", "报警点图层");
+    alarmPointLayer.set("isTagAgg", true);
+    alarmPointLayer.set("tagAggDistance", 25);
+
+    map.addLayer(alarmOtherLayer);
+    map.addLayer(alarmPointLayer);
+    layerMap["alarmOtherLayer"] = alarmOtherLayer;
+    layerMap["alarmPointLayer"] = alarmPointLayer;
+
     map.set("layerMap", { normalMap, sateMap, overlayMap, ...layerMap }); // 存储所有的图层信息(项目中使用方式：根据图层code在layerMap中找对应的图层信息)
 
     // 实时请求报警数据并绘制
@@ -746,7 +765,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       try {
         const alarmRes: any = await getEquipAlarmList(mapId, isId);
         if (alarmRes?.code === 200) {
-          initAlarmLayerAndCreateFeature(map, alarmLayer, alarmRes.data || []);
+          initAlarmLayerAndCreateFeature(map, alarmOtherLayer, alarmPointLayer, alarmRes.data || []);
         }
       } catch (error) {}
     };
@@ -1276,10 +1295,11 @@ const outsideTableRowDataSelect = (node: any) => {
 
 // 有经纬度
 const hasLatLngFn = (node: any) => {
-  const alarmLayer = exportMap.value.get("layerMap")["alarmLayer"];
-  const alarmSource = alarmLayer.getSource();
+  // 注意：报警点的图层是聚合图层
+  const alarmPointLayer = exportMap.value.get("layerMap")["alarmPointLayer"];
+  const alarmPointSource = alarmPointLayer?.getSource()?.getSource(); // 原始数据源
   const alarmFeatureId = node?.mid;
-  const alarmFeature = alarmSource?.getFeatures()?.find((val: any) => val.getId() === alarmFeatureId);
+  const alarmFeature = alarmPointSource?.getFeatureById(alarmFeatureId);
   if (alarmFeature) {
     labelOnSelect(exportMap.value, alarmFeatureId, false, false, true);
   } else {

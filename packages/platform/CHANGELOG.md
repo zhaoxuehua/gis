@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.30
+
+### Patch Changes
+
+- 告警标签点式标签增加聚合逻辑
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.30
+
 ## 2.0.29
 
 ### Patch Changes

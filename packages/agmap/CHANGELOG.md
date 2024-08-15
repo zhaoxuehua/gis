@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.30
+
+### Patch Changes
+
+- 告警标签点式标签增加聚合逻辑
+
 ## 2.0.29
 
 ### Patch Changes

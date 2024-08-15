@@ -450,11 +450,15 @@ export function warnFault(color: string) {
 const pointAlarmStyMap: any = {};
 
 // 报警点图层样式
-export function alarmLayerStyle(feature: any) {
-  let targetFeature = feature;
-  if (Array.isArray(feature?.get("features"))) {
-    targetFeature = feature.get("features")[0];
-  }
+export function alarmLayerStyle(features: any) {
+  // let targetFeature = feature;
+  // if (Array.isArray(feature?.get("features"))) {
+  //   targetFeature = feature.get("features")[0];
+  // }
+
+  let len = features.get("features")?.length;
+  let targetFeature = len ? features?.getProperties()?.features[0] : features; // 聚合要素取值第0项
+
   const type = targetFeature.get("type");
   if (type == "1" || type == "6") {
     // 点类型报警
