@@ -178,6 +178,11 @@ export const GIS_MAPPARAMS_DETAIL = [
     name: "keywordConfig",
     slot: true
   },
+  {
+    label: "面选中方式",
+    name: "polygonSelectMode",
+    slot: true
+  },
 
   {
     label: "是否可编辑",

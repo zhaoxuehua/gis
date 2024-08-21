@@ -164,6 +164,9 @@
             : ""
         }}
       </template>
+      <template #polygonSelectMode="scope">
+        {{ scope.row.polygonSelectMode == "edge" ? "边" : "面" }}
+      </template>
       <template #isEdit="scope">
         {{ scope.row.isEdit ? "是" : "否" }}
       </template>
