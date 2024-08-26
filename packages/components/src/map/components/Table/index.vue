@@ -58,6 +58,7 @@
         </template>
       </el-table>
       <el-pagination
+        :background="true"
         v-if="Object.keys(props.pagination).length"
         v-bind="pagination"
         v-model:current-page="pagination.currentPage"
