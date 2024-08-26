@@ -164,6 +164,7 @@ const resetFun = () => {
   state.pageNumber = 1;
   state.pageSize = 20;
   table.value.total = 0;
+  state.pageCount = 0;
   state.isTableDataChange = false;
 };
 
