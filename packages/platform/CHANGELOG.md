@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.32
+
+### Patch Changes
+
+- table 表头增加 border 及翻页增加背景色
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.32
+
 ## 2.0.31
 
 ### Patch Changes
