@@ -21,6 +21,7 @@
         @sort-change="handleSortChange"
         @cell-click="handleCellClick"
         @current-change="handleTableCurrentChange"
+        border
       >
         <template v-for="col in props.columns" :key="col.prop">
           <!-- 多选,序号,展开 -->

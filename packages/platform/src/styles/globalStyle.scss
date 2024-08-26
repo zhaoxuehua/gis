@@ -54,30 +54,6 @@
   .config-table {
     height: calc(100% - 94px);
   }
-  .el-table {
-    // 表头
-    --el-table-header-bg-color: #f5f7fa;
-    --el-table-header-text-color: #606266;
-    --el-table-text-color: #606266;
-
-    font-size: 14px;
-    border: var(--el-table-border);
-    border-bottom: 0;
-    .el-table__inner-wrapper {
-      height: 100%;
-    }
-    .el-table__body .el-table__row {
-      .el-table__cell {
-        height: 32px;
-        padding: 0;
-      }
-    }
-    .el-table__header-wrapper th,
-    .el-table .el-table__fixed-header-wrapper th {
-      height: 48px;
-      padding: 0;
-    }
-  }
 }
 .pagination-container {
   position: relative;

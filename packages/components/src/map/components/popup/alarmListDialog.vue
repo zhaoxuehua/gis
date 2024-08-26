@@ -22,6 +22,7 @@
         :cell-style="{ padding: '0px' }"
         @selection-change="table.onSelectionChange"
         height="360"
+        border
       >
         <el-table-column type="selection"></el-table-column>
         <el-table-column label="事件编码" prop="eventCode">

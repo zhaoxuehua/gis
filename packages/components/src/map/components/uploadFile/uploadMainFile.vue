@@ -45,6 +45,7 @@
         :row-style="{ height: 40 + 'px' }"
         :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
         max-height="500"
+        border
       >
         <el-table-column
           v-for="(column, index) in table?.tableColumns"

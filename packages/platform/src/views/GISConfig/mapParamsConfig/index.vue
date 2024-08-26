@@ -52,6 +52,7 @@
         :cell-style="{ padding: '0px' }"
         @sort-change="sortChange"
         @selection-change="table.onSelectionChange"
+        border
       >
         <el-table-column type="selection"></el-table-column>
         <el-table-column label="序号" type="index" min-width="60"></el-table-column>

@@ -43,7 +43,15 @@
 
       <div class="dialog-title">处理记录</div>
 
-      <el-table :data="table.data" v-loading="table.loading" highlight-current-row height="200px">
+      <el-table
+        :data="table.data"
+        v-loading="table.loading"
+        highlight-current-row
+        height="200px"
+        :row-style="{ height: 40 + 'px' }"
+        :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
+        border
+      >
         <el-table-column label="处理时间" prop="processTime"></el-table-column>
         <el-table-column label="处理方式" prop="eventHandleTypeName"></el-table-column>
         <el-table-column label="事件性质" prop="eventNatureName"></el-table-column>

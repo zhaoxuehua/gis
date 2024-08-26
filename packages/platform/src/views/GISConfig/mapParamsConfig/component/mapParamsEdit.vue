@@ -408,6 +408,8 @@ const openDialog = (row?: { [key: string]: any }) => {
     form.value.displayControlIds = row.displayControlIds ? row.displayControlIds.split(",") : [];
     // 图例
     form.value.displayLegendIds = row.displayLegendIds ? row.displayLegendIds.split(",").map((id: string) => Number(id)) : [];
+    // 面选中方式（没有值默认面选中为了兼容之前的数据）
+    form.value.polygonSelectMode = row?.polygonSelectMode || "polygon";
   } else {
     state.dialogType = 0;
     form.value = { ...defaultParam };
