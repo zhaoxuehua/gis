@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.31
+
+### Patch Changes
+
+- 导入修复翻页总数与 pageCount 对不上的问题
+
 ## 2.0.30
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.31
+
+### Patch Changes
+
+- 导入修复翻页总数与 pageCount 对不上的问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.31
+
 ## 2.0.30
 
 ### Patch Changes
