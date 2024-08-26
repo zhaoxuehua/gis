@@ -68,15 +68,7 @@
           <el-empty class="no-data" description="暂无数据" />
         </template>
       </el-table>
-      <div>
-        <!-- <paginationCom
-          :total="table.total"
-          v-model:page="state.pageNumber"
-          v-model:limit="state.pageSize"
-          @pagination="getPagination"
-        >
-        </paginationCom> -->
-
+      <div v-if="table.total">
         <el-pagination
           :background="true"
           v-model:current-page="state.pageNumber"
@@ -118,7 +110,6 @@ import {
   // useExportExcel,
   exportSuccessTipMap
 } from "./uploadFun";
-// import paginationCom from "../paginationCom.vue";
 
 const config: any = {
   dialogTitle: "导入",
@@ -148,7 +139,7 @@ const state: any = reactive({
   isProcessing: false, // 是否上传、校验、导入过程中
   pageNumber: 1,
   pageSize: 20,
-  pageCount: 0,
+  pageCount: 1,
   isTableDataChange: false
 });
 
@@ -164,7 +155,7 @@ const resetFun = () => {
   state.pageNumber = 1;
   state.pageSize = 20;
   table.value.total = 0;
-  state.pageCount = 0;
+  state.pageCount = 1;
   state.isTableDataChange = false;
 };
 
