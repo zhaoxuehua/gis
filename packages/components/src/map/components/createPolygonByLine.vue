@@ -54,6 +54,7 @@
           :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
           @selection-change="table.onSelectionChange"
+          border
         >
           <el-table-column label="设备名称" prop="name"></el-table-column>
           <el-table-column label="设备编码" prop="code"></el-table-column>

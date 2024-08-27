@@ -45,6 +45,7 @@
         :row-style="{ height: 40 + 'px' }"
         :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
         max-height="500"
+        border
       >
         <el-table-column
           v-for="(column, index) in table?.tableColumns"
@@ -68,14 +69,18 @@
           <el-empty class="no-data" description="暂无数据" />
         </template>
       </el-table>
-      <div>
-        <paginationCom
+      <div v-if="table.total">
+        <el-pagination
+          :background="true"
+          v-model:current-page="state.pageNumber"
+          v-model:page-size="state.pageSize"
+          :page-sizes="[10, 20, 30, 50, 100]"
+          layout="total, prev, pager, next, sizes, jumper"
           :total="table.total"
-          v-model:page="state.pageNumber"
-          v-model:limit="state.pageSize"
-          @pagination="getPagination"
-        >
-        </paginationCom>
+          :page-count="state.pageCount"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
       </div>
     </div>
   </el-dialog>
@@ -106,7 +111,6 @@ import {
   // useExportExcel,
   exportSuccessTipMap
 } from "./uploadFun";
-import paginationCom from "../paginationCom.vue";
 
 const config: any = {
   dialogTitle: "导入",
@@ -136,6 +140,7 @@ const state: any = reactive({
   isProcessing: false, // 是否上传、校验、导入过程中
   pageNumber: 1,
   pageSize: 20,
+  pageCount: 1,
   isTableDataChange: false
 });
 
@@ -151,6 +156,7 @@ const resetFun = () => {
   state.pageNumber = 1;
   state.pageSize = 20;
   table.value.total = 0;
+  state.pageCount = 1;
   state.isTableDataChange = false;
 };
 
@@ -181,13 +187,21 @@ const completeTableDataCode = (tableHeaders: any[], tableData: any[]) => {
 };
 
 // 跟新列表的数据、总条数、当前页及条数
-const changeTableData = (data: any, isUpdatePageSize?: boolean) => {
+const changeTableData = (data: any, isUpdatePageSize?: boolean, isUpdatePageCount?: boolean) => {
   isUpdatePageSize && (state.pageSize = data?.pageSize);
   state.pageNumber = data?.currentPage;
   table.value.total = data?.totalNum;
+  isUpdatePageCount && (state.pageCount = data?.totalPage); // 首次导入及pageSize变化时更新
   let containAllCodeData = completeTableDataCode(table.value?.tableColumns, data?.items || []); // table数据字段补全
   table.value.tableData = containAllCodeData || [];
   table.value.originTableData = JSON.parse(JSON.stringify(containAllCodeData || []));
+};
+
+const handleSizeChange = (val: any) => {
+  getPagination({ page: 1, limit: val, isSizeChange: true });
+};
+const handleCurrentChange = (val: any) => {
+  getPagination({ page: val, limit: state.pageSize });
 };
 
 const getPagination = async (obj: any) => {
@@ -206,14 +220,14 @@ const getPagination = async (obj: any) => {
       formData.append("pageSize", state.pageSize);
       await getTableDataByChangePageSize(formData).then((res: any) => {
         if (res?.code == 200) {
-          changeTableData(res?.data || {});
+          changeTableData(res?.data || {}, false, true);
         }
       });
     } else {
       formData.append("pageNum", state.pageNumber);
       await getTableDataByChangePageNumber(formData).then((res: any) => {
         if (res?.code == 200) {
-          changeTableData(res?.data || {});
+          changeTableData(res?.data || {}, false, false);
         }
       });
     }
@@ -269,7 +283,7 @@ const table: any = ref({
           });
           await getTableDataByChangePageSize(formData1).then((res: any) => {
             if (res?.code == 200) {
-              changeTableData(res?.data || {});
+              changeTableData(res?.data || {}, false, true);
             }
           });
         }
@@ -338,7 +352,7 @@ const uploadFile = async (content: any) => {
     .then(([tableColumns, tableData]: [any, any]) => {
       state.progressCount = 100;
       table.value.tableColumns = [["rowNum", "行号"]]?.concat(tableColumns?.data || []); // 表头
-      changeTableData(tableData?.data || {}, true);
+      changeTableData(tableData?.data || {}, true, true); // 首次根据后端的分页数据展示页面
       closeLoadingProgress(state);
       state.disabledCheckBtn = false;
     })

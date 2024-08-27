@@ -113,6 +113,7 @@
           empty-text="暂无数据"
           :row-style="{ height: 48 + 'px' }"
           :cell-style="{ padding: '0px' }"
+          border
         >
           <el-table-column :label="keywordConfig?.code || '编码'" prop="code" :min-width="90"></el-table-column>
           <el-table-column :label="keywordConfig?.name || '名称'" prop="name" :min-width="110"></el-table-column>

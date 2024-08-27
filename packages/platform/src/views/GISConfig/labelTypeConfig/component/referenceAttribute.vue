@@ -23,6 +23,7 @@
           @selection-change="attributeList.onSelectionChange"
           ref="attributeTableRef"
           max-height="400"
+          border
         >
           <el-table-column type="selection"></el-table-column>
           <el-table-column label="序号" type="index" width="60"></el-table-column>

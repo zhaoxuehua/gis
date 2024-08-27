@@ -14,6 +14,7 @@
             empty-text="暂无数据"
             :row-style="{ height: 32 + 'px' }"
             :cell-style="{ padding: '0px' }"
+            border
           >
             <el-table-column :label="keywordConfig?.code || '编码'" width="100">
               <template #default="scope">
@@ -86,6 +87,7 @@
         :cell-style="{ padding: '0px' }"
         max-height="360"
         class="track-scrollable-table"
+        border
       >
         <template v-for="(item, index) in state.columns" :key="index">
           <el-table-column :label="`${Object.values(item)?.[0]}`" :prop="Object.keys(item)?.[0]" :min-width="150">

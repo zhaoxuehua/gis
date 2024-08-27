@@ -44,6 +44,7 @@
                 @selection-change="equipTypeList.onSelectionChange"
                 max-height="355"
                 ref="equipTypeTableRef"
+                border
               >
                 <el-table-column type="selection"></el-table-column>
                 <el-table-column label="序号" type="index" width="60"></el-table-column>

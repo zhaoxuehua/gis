@@ -44,6 +44,7 @@
       :cell-style="{ padding: '0px' }"
       @selection-change="table.onSelectionChange"
       max-height="360"
+      border
     >
       <el-table-column type="selection" :selectable="selectable"></el-table-column>
       <el-table-column label="设备编码" prop="code"> </el-table-column>

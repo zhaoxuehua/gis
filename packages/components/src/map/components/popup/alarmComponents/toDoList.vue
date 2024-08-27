@@ -46,6 +46,9 @@
         highlight-current-row
         @selection-change="table.onSelectionChange"
         height="300px"
+        :row-style="{ height: 40 + 'px' }"
+        :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
+        border
       >
         <el-table-column type="selection"></el-table-column>
 

@@ -1,6 +1,29 @@
+/* el-table 组件大小 */
+.el-table--small {
+  .el-table__header th {
+    height: 40px !important;
+    font-size: 14px !important;
+  }
+  .el-table__row {
+    height: 40px !important;
+    font-size: 13px !important;
+  }
+}
+.el-table--large {
+  .el-table__header th {
+    height: 50px !important;
+    font-size: 16px !important;
+  }
+  .el-table__row {
+    height: 50px !important;
+    font-size: 15px !important;
+  }
+}
 .el-table {
-  border: var(--el-table-border);
-  border-bottom: 0;
+  flex: 1;
+  .el-table__inner-wrapper {
+    height: 100% !important;
+  }
   .el-table__header-wrapper,
   .el-table__fixed-header-wrapper {
     th {
@@ -8,20 +31,19 @@
       font-size: 13px;
       color: #515a6e;
       word-break: break-word;
-      background-color: #f7f7fa;
+      background-color: #f7f7fa !important;
     }
   }
-  .el-button--default:hover,
-  .el-button--default:focus {
-    background-color: transparent;
-    border: 1px solid transparent;
-  }
-  .el-button span {
-    font-size: 12px;
-  }
-  .el-scrollbar__view {
-    height: 90%;
-  }
+}
+
+// 表格无内边框但要保留表格列可拖拽
+.el-table--border .el-table__cell {
+  border-right: 0 !important;
+}
+
+// 表格头保留有内边框
+.el-table--border th.el-table__cell {
+  border-right: var(--el-table-border) !important;
 }
 
 // 树的样式

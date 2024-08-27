@@ -113,7 +113,7 @@ import RightActionBox from "./components/rightActionBox.vue";
 import EditLabel from "./components/editLabel.vue";
 import Popup from "./components/popup/index.vue";
 import TrackBackList from "./components/trackBackList.vue";
-// import { judgeClickPointIsPolygonBoundary } from "./hooks/judgeIncludePolygonFun";
+import { judgeClickPointIsPolygonBoundary } from "./hooks/judgeIncludePolygonFun";
 
 defineOptions({ name: "AgMap" });
 
@@ -423,7 +423,8 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       scaleLineUnit: originalData?.scaleLineUnit, // 距离单位（该配置对比例尺及测距生效）
       showOverlay: controls.includes("showOverlay"), // 路网叠加层 showOverlay
       controlIds: originalData.displayControlIds, // 控件 string
-      displayLegend: originalData.displayLegend // 图例[]
+      displayLegend: originalData.displayLegend, // 图例[]
+      polygonSelectMode: originalData.polygonSelectMode // 面选中方式
     };
     leftClickDialogPosition.value = originalData?.leftClickDialogPosition || "current";
     gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}]
@@ -967,19 +968,18 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       if (hit) {
         let currentSelectFeature = getSelectedFeature(map, pixel);
         let type = currentSelectFeature?.get("type");
-
-        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
-        // if (type == "3") {
-        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
-        //   if (!isOnBoundary) {
-        //     return;
-        //   }
-        // }
-
         let featureCode = currentSelectFeature?.get("code");
         let featureName = currentSelectFeature?.get("name");
         let labelTypeCode = currentSelectFeature?.get("labelTypeCode");
         let typeStats = currentSelectFeature?.get("typeStats");
+
+        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的（告警的面选中方式不影响，只影响地图查看要素的点击）
+        if (type == "3" && typeStats != "alarmPoint" && defaultOptions?.polygonSelectMode == "edge") {
+          const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+          if (!isOnBoundary) {
+            return;
+          }
+        }
 
         publishParams.labelCode = featureCode;
         if (typeStats == "alarmPoint") {
@@ -1067,18 +1067,18 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       // 右键业务功能（定制化实现）
       let currentSelectFeature = getSelectedFeature(map, pixel);
       if (currentSelectFeature) {
-        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的
-        // let type = currentSelectFeature?.get("type");
-        // if (type == "3") {
-        //   const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
-        //   if (!isOnBoundary) {
-        //     return;
-        //   }
-        // }
-
         let featureCode = currentSelectFeature?.get("code");
-        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         let typeStats = currentSelectFeature?.get("typeStats");
+        // 如果type==3是面且配置了面选中方式是线=>则判断是否是点击线上的点触发的(告警的面选中方式不影响)
+        let type = currentSelectFeature?.get("type");
+        if (type == "3" && typeStats != "alarmPoint" && defaultOptions?.polygonSelectMode == "edge") {
+          const isOnBoundary = judgeClickPointIsPolygonBoundary(currentSelectFeature, hitCoordinate);
+          if (!isOnBoundary) {
+            return;
+          }
+        }
+
+        // 处理如果是告警标签则取对应的设备（弹框显示对应的设备 针对的就是基础引擎标签）
         if (typeStats == "alarmPoint") {
           let { featureLabelCode } = getFeatureCodeByEquipCode(featureCode, map);
           featureCode = featureLabelCode || featureCode;

@@ -14,6 +14,7 @@
       empty-text="暂无数据"
       :row-style="{ height: 40 + 'px' }"
       :cell-style="{ padding: '0px', whiteSpace: 'nowrap' }"
+      border
     >
       <el-table-column
         :label="type == 'file' ? '错误行号' : '文件名称'"

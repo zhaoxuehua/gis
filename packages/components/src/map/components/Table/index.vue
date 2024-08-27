@@ -21,6 +21,7 @@
         @sort-change="handleSortChange"
         @cell-click="handleCellClick"
         @current-change="handleTableCurrentChange"
+        border
       >
         <template v-for="col in props.columns" :key="col.prop">
           <!-- 多选,序号,展开 -->
@@ -57,6 +58,7 @@
         </template>
       </el-table>
       <el-pagination
+        :background="true"
         v-if="Object.keys(props.pagination).length"
         v-bind="pagination"
         v-model:current-page="pagination.currentPage"

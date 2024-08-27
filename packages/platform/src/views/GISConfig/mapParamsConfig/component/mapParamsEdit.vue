@@ -152,12 +152,7 @@
         </el-form-item>
         <el-form-item label="距离单位" prop="scaleLineUnit">
           <el-select v-model="form.scaleLineUnit" clearable placeholder="请选择..." filterable>
-            <el-option
-              v-for="(item, index) in scaleLineUnitList.data"
-              :key="index"
-              :label="item.name"
-              :value="item.code"
-            ></el-option>
+            <el-option v-for="item in scaleLineUnitList.data" :key="item.code" :label="item.name" :value="item.code"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="左键弹窗位置" prop="leftClickDialogPosition">
@@ -185,18 +180,23 @@
         </el-form-item>
         <el-form-item label="设备树" prop="customTreeCode" v-if="form.customTreeType == 'EquipCustomTree'">
           <el-select v-model="form.customTreeCode" clearable placeholder="请选择..." filterable>
-            <el-option
-              v-for="(item, index) in customTreeCodeList.data"
-              :key="index"
-              :label="item.name"
-              :value="item.code"
-            ></el-option>
+            <el-option v-for="item in customTreeCodeList.data" :key="item.code" :label="item.name" :value="item.code"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="关键词显示配置" prop="keywordConfig" style="width: 450px">
           <el-button class="reference-button" circle @click="keywordConfigClick">
             <Icon src="EditPen"></Icon>
           </el-button>
+        </el-form-item>
+        <el-form-item label="面选中方式" prop="polygonSelectMode">
+          <el-select v-model="form.polygonSelectMode" placeholder="请选择..." filterable>
+            <el-option
+              v-for="item in polygonSelectModeOption.data"
+              :key="item.code"
+              :label="item.name"
+              :value="item.code"
+            ></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="是否可编辑" prop="isEdit" style="width: 450px">
           <el-checkbox v-model="form.isEdit"></el-checkbox>
@@ -279,6 +279,7 @@ interface MapParamsForm {
   keywordConfig?: any;
   isEdit: boolean;
   leftClickDialogPosition: string;
+  polygonSelectMode: string;
 }
 const emit = defineEmits(["successAdd"]);
 const layerLevelVerification = (rule: any, value: any, callback: Function) => {
@@ -345,6 +346,7 @@ const state = reactive({
     displayLayerIds: [{ required: true, message: "请选择显示图层", trigger: ["blur", "change"] }],
     scaleLineUnit: [{ required: true, message: "请选择距离单位", trigger: ["blur", "change"] }],
     leftClickDialogPosition: [{ required: true, message: "请选择左键弹窗位置", trigger: ["blur", "change"] }],
+    polygonSelectMode: [{ required: true, message: "请选择面选中方式", trigger: ["blur", "change"] }],
     customTreeType: [{ required: true, message: "请选择导航树", trigger: ["blur", "change"] }],
     customTreeCode: [{ required: true, message: "请选择设备树", trigger: ["blur", "change"] }],
     normalUrl: [{ max: 500, message: "离线电子地图长度不能大于500", trigger: ["blur", "change"] }],
@@ -383,7 +385,8 @@ const defaultParam = {
   externalCustomTree: {}, // 自定义树配置
   keywordConfig: {}, // 关键词配置
   isEdit: false, // 是否可编辑
-  leftClickDialogPosition: "current" // 左键弹窗位置 当前
+  leftClickDialogPosition: "current", // 左键弹窗位置 当前
+  polygonSelectMode: "polygon"
 };
 
 let form = ref<MapParamsForm>(defaultParam);
@@ -405,6 +408,8 @@ const openDialog = (row?: { [key: string]: any }) => {
     form.value.displayControlIds = row.displayControlIds ? row.displayControlIds.split(",") : [];
     // 图例
     form.value.displayLegendIds = row.displayLegendIds ? row.displayLegendIds.split(",").map((id: string) => Number(id)) : [];
+    // 面选中方式（没有值默认面选中为了兼容之前的数据）
+    form.value.polygonSelectMode = row?.polygonSelectMode || "polygon";
   } else {
     state.dialogType = 0;
     form.value = { ...defaultParam };
@@ -752,6 +757,25 @@ const leftClickDialogPositionList = ref<{
     {
       code: "right-bottom",
       name: "右下角"
+    }
+  ]
+});
+
+// 面选中当时Option
+const polygonSelectModeOption = ref<{
+  data: Array<{
+    code: string;
+    name: string;
+  }>;
+}>({
+  data: [
+    {
+      code: "polygon",
+      name: "面"
+    },
+    {
+      code: "edge",
+      name: "边"
     }
   ]
 });
