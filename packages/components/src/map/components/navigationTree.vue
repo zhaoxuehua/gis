@@ -56,7 +56,6 @@
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { saveAs } from "file-saver";
 import { useGisStore } from "../../stores/modules/gis";
 import { getLabelInfoByEquipId, addAssociation } from "../../api/gis.js";
 import { cloneDeep } from "lodash";
@@ -65,11 +64,7 @@ import type { VisualMap, NavigationTreeNodeData, LabelType } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
-import {
-  fileNameMap
-  // useExportExcel
-} from "./uploadFile/uploadFun";
-import { tableDataExport } from "../../api/gis";
+import { onExportExcel } from "./uploadFile/uploadFun";
 
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
   map: () => null,
@@ -97,27 +92,7 @@ const onExport = async () => {
   const formData = new FormData();
   formData.append("sceneCode", "gisTree");
   formData.append("queryStr", JSON.stringify({ appId: gisStore?.mapIdentificationConfig?.mapParams }));
-  try {
-    const res: any = await tableDataExport(formData);
-    const reader: any = new FileReader();
-    reader.onload = function () {
-      try {
-        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
-        if (resData?.code) {
-          if (resData.code !== 200) {
-            ElMessage.error(resData.msg || "接口异常");
-          }
-        } else {
-          saveAs(new Blob([res]), fileNameMap["gisTreeExport"]);
-        }
-      } catch (error) {
-        saveAs(new Blob([res]), fileNameMap["gisTreeExport"]);
-      }
-    };
-    reader.readAsText(res);
-  } catch (error) {
-    console.log(error);
-  }
+  onExportExcel(formData, "gisTreeExport");
 };
 
 // 关闭导航树

@@ -227,22 +227,17 @@
 
 <script lang="ts" setup name="LabelTypeConfig">
 import { onMounted, ref } from "vue";
-import { saveAs } from "file-saver";
 import { MENU_BTNS_AUTH } from "@/components/auth/menuBtns";
 import DetailDialog from "@/components/detailDialog/index.vue";
 import UploadMainFileDialog from "../../../../../components/src/map/components/uploadFile/uploadMainFile.vue";
-import {
-  fileNameMap
-  // useExportExcel
-} from "../../../../../components/src/map/components/uploadFile/uploadFun";
+import { onExportExcel } from "../../../../../components/src/map/components/uploadFile/uploadFun";
 
 import {
   getLabelTypeList,
   deleteLabelTypeCheck,
   deleteLabelType,
   getLabelTypeDetail,
-  getLegendConfigList,
-  tableDataExport
+  getLegendConfigList
 } from "@/api/visconfig.js";
 import { getBindAttributeMonitor } from "@/api/device.js";
 import { handleParam } from "@/utils/common.js";
@@ -435,27 +430,7 @@ const onExport = async () => {
   const formData = new FormData();
   formData.append("sceneCode", "gisLabelType");
   formData.append("queryStr", JSON.stringify({ gisLabelConfigVO: { name: query.value.params.name || "" } }));
-  try {
-    const res: any = await tableDataExport(formData);
-    const reader: any = new FileReader();
-    reader.onload = function () {
-      try {
-        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
-        if (resData?.code) {
-          if (resData.code !== 200) {
-            ElMessage.error(resData.msg || "接口异常");
-          }
-        } else {
-          saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
-        }
-      } catch (error) {
-        saveAs(new Blob([res]), `${fileNameMap["gisLabelTypeExport"]}`);
-      }
-    };
-    reader.readAsText(res);
-  } catch (error) {
-    console.log(error);
-  }
+  onExportExcel(formData, "gisLabelTypeExport");
 };
 
 const onDelete = async () => {
