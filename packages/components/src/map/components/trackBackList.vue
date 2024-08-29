@@ -78,7 +78,10 @@
     </div>
 
     <!-- 轨迹列表详情 -->
-    <el-dialog v-model="state.dialogVisible" title="轨迹详情" width="800px" append-to-body>
+    <el-dialog v-model="state.dialogVisible" title="轨迹详情" width="800px">
+      <div class="export-btn">
+        <el-button type="primary" @click="onExport">导出</el-button>
+      </div>
       <el-table
         :data="state.data"
         highlight-current-row
@@ -121,6 +124,7 @@ import { ref, watch, computed, reactive } from "vue";
 import moment from "moment";
 import Icon from "./Icon.vue";
 import paginationCom from "./paginationCom.vue";
+import { utils as XLSXUtils, writeFile as writeFileXLSX } from "xlsx";
 
 // ⤵ store
 import { useTrackListStore } from "../../stores/modules/trackList";
@@ -150,7 +154,8 @@ const state = reactive({
   total: 0,
   columns: [],
   pageNumber: 1,
-  pageSize: 10
+  pageSize: 10,
+  row: null as any
 });
 
 const getPagination = (obj: any) => {
@@ -163,6 +168,7 @@ const getPagination = (obj: any) => {
 
 // 详情
 const onDetail = (row: { [key: string]: any }) => {
+  state.row = row;
   state.dialogVisible = true;
   state.pageSize = 10;
   state.pageNumber = 1;
@@ -200,6 +206,22 @@ const deleteRow = (row: { [key: string]: any }, index: number) => {
   delTrackData(row.code);
   tableData.value.splice(index, 1);
   gisStore?.updateTrackColor(row.color, "add");
+};
+
+// 轨迹详情导出
+const onExport = () => {
+  let worksheet;
+  let workbook = XLSXUtils.book_new();
+  let columns = state.columns.map(item => Object.values(item)[0]);
+  let columnsKeys = state.columns.map(item => Object.keys(item)[0]);
+  let data = state.allData.map(item => {
+    return columnsKeys.map(key => {
+      return key === "position" ? moment(item[key]).format("YYYY-MM-DD HH:mm:ss") : item[key];
+    });
+  });
+  worksheet = XLSXUtils.aoa_to_sheet([columns, ...data]);
+  XLSXUtils.book_append_sheet(workbook, worksheet, `${state.row?.name || ""}轨迹详情`);
+  writeFileXLSX(workbook, `${state.row?.name || ""}轨迹详情.xlsx`);
 };
 
 // 监测数据个数据（控制列表的显示隐藏及隐藏实时数据图层）
@@ -269,5 +291,9 @@ defineExpose({
     overflow-x: auto;
     white-space: nowrap;
   }
+}
+:deep(.export-btn) {
+  margin-bottom: 10px;
+  text-align: right;
 }
 </style>
