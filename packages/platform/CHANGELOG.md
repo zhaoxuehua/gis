@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.33
+
+### Patch Changes
+
+- 轨迹详情增加导出按钮
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.33
+
 ## 2.0.32
 
 ### Patch Changes
