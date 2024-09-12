@@ -427,7 +427,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       polygonSelectMode: originalData.polygonSelectMode // 面选中方式
     };
     leftClickDialogPosition.value = originalData?.leftClickDialogPosition || "current";
-    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}]
+    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}] 后端根据来源筛选出来的
     gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
     gisStore?.setRealtimeDataCountList(cloneDeep(originalData?.realtimeDataList || [])); // 实时请求统计
 

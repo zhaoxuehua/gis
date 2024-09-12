@@ -33,13 +33,17 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       return;
     }
     let {
-      styleObject = "aisBoat", // 内置样式对象 船、人、网位仪
+      selectStyle, // 样式(自定义样式customStyle 内置样式builtInStyle)
+      styleObject = "aisBoat", // 内置样式对象（船、人、网位仪）样式是内置样式时才有
       dataType = "1", // 数据类型
       code: labelTypeCode, // 标签类型code
       dataContent = "AISDATA", // 实时查询时配置的监测属性(数据内容)
       id: labelTypeId, // 标签类型id
       layerConfigVO // 图层信息
     } = realLabelType?.data; // 标签类型信息
+
+    console.log(selectStyle);
+
     let layerConfigCode = layerConfigVO?.code || "seaMap"; // 图层编码
 
     // 图层信息
