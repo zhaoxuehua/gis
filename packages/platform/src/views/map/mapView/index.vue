@@ -39,6 +39,7 @@ onMounted(() => {
   config.id = route.query?.id as string | number | null;
 });
 </script>
+
 <style lang="scss" scoped>
 .map-view {
   width: 100%;
