@@ -24,6 +24,17 @@ const onOpenRightMenu = async (option: { [key: string]: any }) => {
   }
 };
 
+// 测试外部表格双击功能  props增加 :outsideTableRowData="outsideTableRowData"
+// const outsideTableRowData = ref();
+// setTimeout(() => {
+//   outsideTableRowData.value = {
+//     mid: "111111111",
+//     equip: "3",
+//     lon: 119.314005,
+//     lat: 25.160107
+//   };
+// }, 9000);
+
 onMounted(() => {
   config.id = route.query?.id as string | number | null;
 });
