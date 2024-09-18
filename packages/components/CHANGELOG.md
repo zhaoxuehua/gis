@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.34
+
+### Patch Changes
+
+- pnpm changeset version
+
 ## 2.0.33
 
 ### Patch Changes

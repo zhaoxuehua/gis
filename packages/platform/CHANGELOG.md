@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.34
+
+### Patch Changes
+
+- pnpm changeset version
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.34
+
 ## 2.0.33
 
 ### Patch Changes
