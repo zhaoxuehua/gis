@@ -322,7 +322,8 @@ const getMonitorLine = async () => {
               name: (item.time || "") + " " + item.name,
               data: item.values
             };
-          })
+          }),
+          ymax: data?.ymax
         });
       });
     });
