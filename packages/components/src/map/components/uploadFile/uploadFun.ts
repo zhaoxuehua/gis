@@ -1,6 +1,8 @@
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import { read, utils, writeFileXLSX } from "xlsx";
+import { saveAs } from "file-saver";
+import { tableDataExport } from "../../../api/gis";
 
 // 处理excel二进制字符串
 const useExportExcel = (excelData: string, fileName: string) => {
@@ -107,6 +109,31 @@ const exportSuccessTipMap: { [key: string]: string } = {
   gisLabelType: "标签类型配置表格"
 };
 
+// 导出
+const onExportExcel = async (params: any, exportFileName: string) => {
+  try {
+    const res: any = await tableDataExport(params);
+    const reader: any = new FileReader();
+    reader.onload = function () {
+      try {
+        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
+        if (resData?.code) {
+          if (resData.code !== 200) {
+            ElMessage.error(resData.msg || "接口异常");
+          }
+        } else {
+          saveAs(new Blob([res]), `${fileNameMap[exportFileName]}`);
+        }
+      } catch (error) {
+        saveAs(new Blob([res]), `${fileNameMap[exportFileName]}`);
+      }
+    };
+    reader.readAsText(res);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export {
   clearTimer,
   showProgressFun,
@@ -116,5 +143,6 @@ export {
   downloadFun,
   fileNameMap,
   useExportExcel,
-  exportSuccessTipMap
+  exportSuccessTipMap,
+  onExportExcel
 };

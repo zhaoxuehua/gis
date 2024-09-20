@@ -1,5 +1,23 @@
 # @adm-gis-ui/agmap
 
+## 2.0.35
+
+### Patch Changes
+
+- gis 左键折线图 ymax 适配
+
+## 2.0.34
+
+### Patch Changes
+
+- pnpm changeset version
+
+## 2.0.33
+
+### Patch Changes
+
+- 轨迹详情增加导出按钮
+
 ## 2.0.32
 
 ### Patch Changes

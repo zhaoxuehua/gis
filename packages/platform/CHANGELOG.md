@@ -1,5 +1,29 @@
 # adm-gis-platform
 
+## 2.0.35
+
+### Patch Changes
+
+- gis 左键折线图 ymax 适配
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.35
+
+## 2.0.34
+
+### Patch Changes
+
+- pnpm changeset version
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.34
+
+## 2.0.33
+
+### Patch Changes
+
+- 轨迹详情增加导出按钮
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.33
+
 ## 2.0.32
 
 ### Patch Changes

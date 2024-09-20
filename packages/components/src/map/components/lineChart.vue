@@ -49,7 +49,8 @@ const initOption = (chartData?: any) => {
           ? `${chartData?.yAxisName}(${chartData?.yAxisUnit})`
           : chartData?.yAxisName || chartData?.yAxisUnit || "",
       type: "value",
-      boundaryGap: [0, "100%"]
+      // boundaryGap: [0, "100%"]
+      max: chartData?.ymax ? chartData?.ymax : undefined
     },
     dataZoom: [
       {

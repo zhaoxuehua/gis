@@ -55,17 +55,12 @@
 <script lang="ts" setup>
 import { computed, reactive, watch, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { saveAs } from "file-saver";
 import { useGisStore } from "../../stores/modules/gis";
 import type { VisualMap } from "../type";
 import { removeLabel, createLabel, labelOnSelect } from "../hooks/index";
 import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
-import {
-  fileNameMap
-  // useExportExcel
-} from "./uploadFile/uploadFun";
-import { tableDataExport } from "../../api/gis";
+import { onExportExcel } from "./uploadFile/uploadFun";
 
 const gisStore = useGisStore();
 const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
@@ -93,27 +88,7 @@ const onExport = async () => {
   const formData = new FormData();
   formData.append("sceneCode", "gisLabel");
   formData.append("queryStr", JSON.stringify({ gisLabelInfoVo: { appId: gisStore?.mapIdentificationConfig?.mapParams } }));
-  try {
-    const res: any = await tableDataExport(formData);
-    const reader: any = new FileReader();
-    reader.onload = function () {
-      try {
-        const resData = JSON.parse(reader?.result); // 尝试将 Blob 数据转换后的内容解析为对象
-        if (resData?.code) {
-          if (resData.code !== 200) {
-            ElMessage.error(resData.msg || "接口异常");
-          }
-        } else {
-          saveAs(new Blob([res]), `${fileNameMap["gisLabelExport"]}`);
-        }
-      } catch (error) {
-        saveAs(new Blob([res]), `${fileNameMap["gisLabelExport"]}`);
-      }
-    };
-    reader.readAsText(res);
-  } catch (error) {
-    console.log(error);
-  }
+  onExportExcel(formData, "gisLabelExport");
 };
 
 // 关闭标签树

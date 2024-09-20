@@ -33,13 +33,16 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       return;
     }
     let {
-      styleObject = "aisBoat", // 内置样式对象 船、人、网位仪
+      selectStyle, // 样式(自定义样式customStyle 内置样式builtInStyle)
+      styleObject, // 内置样式对象（船、人、网位仪）样式是内置样式时才有
+      labelTypeImagePath, // 标签类型图片（自定义样式使用）
       dataType = "1", // 数据类型
       code: labelTypeCode, // 标签类型code
-      dataContent = "AISDATA", // 实时查询时配置的监测属性(数据内容)
+      dataContent, // 实时查询时配置的数据内容(监测属性例如AISDATA)
       id: labelTypeId, // 标签类型id
       layerConfigVO // 图层信息
     } = realLabelType?.data; // 标签类型信息
+
     let layerConfigCode = layerConfigVO?.code || "seaMap"; // 图层编码
 
     // 图层信息
@@ -64,24 +67,37 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       let extendsData = targetFeature?.get("extendsData") || {};
       let selected = targetFeature.get("selected");
       const { angle } = extendsData; // 要素扩展字段
-      let { shipKey, realTimeDataImg, height } = createLayerStyle(styleObject, extendsData);
+      let { shipKey, realTimeDataImg, height } = createLayerStyle(selectStyle, styleObject, extendsData);
+
       if (!realStyCash[shipKey]) {
-        // 图片icon
-        if (styleObject == "fishNetSounder") {
-          realStyCash[shipKey] = new Style({
-            image: new Icon({
-              src: realTimeDataImg,
-              offset: [0, 4]
-            })
-          });
+        // 1、内置样式
+        if (selectStyle == "builtInStyle") {
+          if (styleObject == "fishNetSounder") {
+            // 1.1内置样式图片icon(有些icon ui不好绘制)
+            realStyCash[shipKey] = new Style({
+              image: new Icon({
+                src: realTimeDataImg,
+                offset: [0, 4]
+              })
+            });
+          } else {
+            // 1.2内置样式使用的canvas;
+            realStyCash[shipKey] = new Style({
+              image: new Icon({
+                img: realTimeDataImg,
+                imgSize: [realTimeDataImg?.width, realTimeDataImg?.height],
+                height: height,
+                offset: [0, true ? 4 : 8]
+              })
+            });
+          }
         } else {
-          // 使用的canvas;
+          // 2、自定义样式（图片取标签类型配置的）labelTypeImagePath
+          let srcImg = labelTypeImagePath ? labelTypeImagePath.split(",") : []; // 标签类型中配置的标签类型图片
           realStyCash[shipKey] = new Style({
             image: new Icon({
-              img: realTimeDataImg,
-              imgSize: [realTimeDataImg?.width, realTimeDataImg?.height],
-              height: height,
-              offset: [0, true ? 4 : 8]
+              src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${srcImg?.[0]}`,
+              offset: [0, 4]
             })
           });
         }
@@ -198,22 +214,29 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
   });
 }
 
-// 图层样式（根据不同的内置样式对象返回不同的值）
-export function createLayerStyle(styleObject: string, extendsData: any = {}) {
+// 图层样式（1、自定义样式  2、内置样式根据不同的内置样式对象返回不同的值）
+export function createLayerStyle(selectStyle: string, styleObject: string, extendsData: any = {}) {
   const { color, showHeadline } = extendsData; // 要素扩展字段
   let shipKey;
   let realTimeDataImg: any;
   let height = 44;
-  if (styleObject == "aisBoat") {
-    shipKey = showHeadline + color?.join();
-    realTimeDataImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
-  } else if (styleObject == "person") {
+  // 1、内置样式
+  if (selectStyle == "builtInStyle") {
+    if (styleObject == "aisBoat") {
+      shipKey = showHeadline + color?.join();
+      realTimeDataImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
+    } else if (styleObject == "person") {
+      shipKey = color?.join();
+      realTimeDataImg = drawCanvasPerson(color) as HTMLCanvasElement;
+    } else if (styleObject == "fishNetSounder") {
+      shipKey = color?.join();
+      realTimeDataImg = fishNetSounderImg; // 图片icon
+    }
+  } else {
+    // 2、自定义样式
     shipKey = color?.join();
-    realTimeDataImg = drawCanvasPerson(color) as HTMLCanvasElement;
-  } else if (styleObject == "fishNetSounder") {
-    shipKey = color?.join();
-    realTimeDataImg = fishNetSounderImg; // 图片icon
   }
+
   return { shipKey, realTimeDataImg, height };
 }
 

@@ -427,7 +427,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
       polygonSelectMode: originalData.polygonSelectMode // 面选中方式
     };
     leftClickDialogPosition.value = originalData?.leftClickDialogPosition || "current";
-    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}]
+    gisStore?.setRealtimeDataList(originalData?.realtimeDataList || []); // 实时请求列表数据[{code:'aisBoat',name:'船舶',id:17},{code: "TERMINAL", name: "终端", id: 869}] 后端根据来源筛选出来的
     gisStore?.setKeywordConfig(originalData?.keywordConfig); // 关键词配置
     gisStore?.setRealtimeDataCountList(cloneDeep(originalData?.realtimeDataList || [])); // 实时请求统计
 
@@ -547,7 +547,7 @@ const initMap = async (mapId: string | number, isId: boolean) => {
         isTagAgg: item?.isTagAgg,
         isTrackDraw: item?.isTrackDraw,
         trackAggDistance: item.trackAggDistance || 0, // 聚合图层上轨迹聚合距离
-        style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value) // 后期优化将实时数据的图层样式过滤（实时数据的style重新写了）
+        style: (feature: FeatureLike) => layerStyle(feature, isDynamicLine.value, imgIndex.value) // 后期优化将实时数据的图层样式过滤（实时数据的图层style重新写了）
       };
 
       // 分为聚合图层还是非聚合图层(聚合图层针对点)
@@ -1282,42 +1282,54 @@ watch(
 
 /*************************************监听外部事件表格双击节点进行定位选中(监控在可视化配置的事件表格)***********************************************/
 /*
-  01：node有经纬度,将mid作为ID获取报警点要素
+  01：node有经纬度,将mid作为ID获取报警点要素(点式告警都是已mid做为唯一标识绘制的)
       I: 找到告警要素高亮
-      II: 找不到要素,将经纬度作为偏移坐标
+      II: 找不到告警要素
+          （1）找对应的设备
+          （2）找不到设备：将经纬度作为偏移坐标
 
-  02: rowData 没有经纬度，则高亮设备关联的标签
+  02: rowData 没有经纬度，则高亮设备关联的标签（找不到时没有任何操作）
 */
 const outsideTableRowDataSelect = (node: any) => {
   const { lat, lon } = node;
-  lat && lon && lat != 0 && lon != 0 ? hasLatLngFn(node) : hasNoLatLngFn(node);
+  lat && lon && lat != 0 && lon != 0 ? findAlarmFeatureFn(node) : findEquipFeatureFn(node, false);
 };
 
-// 有经纬度
-const hasLatLngFn = (node: any) => {
+// 根据经纬度找告警点式要素
+const findAlarmFeatureFn = (node: any) => {
   // 注意：报警点的图层是聚合图层
   const alarmPointLayer = exportMap.value.get("layerMap")["alarmPointLayer"];
   const alarmPointSource = alarmPointLayer?.getSource()?.getSource(); // 原始数据源
   const alarmFeatureId = node?.mid;
-  const alarmFeature = alarmPointSource?.getFeatureById(alarmFeatureId);
+  const alarmFeature = alarmFeatureId ? alarmPointSource?.getFeatureById(alarmFeatureId) : null;
   if (alarmFeature) {
     labelOnSelect(exportMap.value, alarmFeatureId, false, false, true);
   } else {
-    // 要素不存在
-    let center = fromLonLat([node.lon, node.lat]);
-    exportMap.value.getView().animate({ center: center });
+    // 点式告警要素不存在
+    // 找对应的设备
+    findEquipFeatureFn(node, true);
   }
 };
 
-// 没有经纬度
-const hasNoLatLngFn = (node: any) => {
+// 找设备code
+const findEquipFeatureFn = (node: any, hasLatLon?: boolean) => {
   const { equip } = node; // 设备code或实时数据code
   const currentRealData = (exportMap.value?.get("trackInfoMap") || [])?.filter((item: any) => item.code == equip)?.[0];
   let isRealTimeData = !!currentRealData?.isRealTimeData; // 判断是否实时数据
   let featureCode = isRealTimeData ? equip : gisStore?.relationMapKeyIsEquipCode?.[equip]; // 实时数据设备code同标签code 或 根据设备code找标签code进行定位选中功能
   if (featureCode) {
     labelOnSelect(exportMap.value, featureCode, false, isRealTimeData);
+  } else {
+    if (hasLatLon) {
+      goToLonLatFn(node);
+    }
   }
+};
+
+// 将经纬度作为偏移坐标（定位到地图经纬度所在位置）
+const goToLonLatFn = (node: any) => {
+  let center = fromLonLat([node.lon, node.lat]);
+  exportMap.value.getView().animate({ center: center });
 };
 
 watch(
