@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.35
+
+### Patch Changes
+
+- gis 左键折线图 ymax 适配
+
 ## 2.0.34
 
 ### Patch Changes

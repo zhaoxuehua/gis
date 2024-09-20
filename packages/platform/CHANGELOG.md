@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.35
+
+### Patch Changes
+
+- gis 左键折线图 ymax 适配
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.35
+
 ## 2.0.34
 
 ### Patch Changes
