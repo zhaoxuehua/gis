@@ -1244,7 +1244,6 @@ defineExpose({
   getTrackDataByIdFn,
   showHideTrackData,
   delTrackData,
-
   createLabel,
   removeLabel,
   getFeature,
