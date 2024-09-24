@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.36
+
+### Patch Changes
+
+- 实时自定义样式显示比例的添加
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.36
+
 ## 2.0.35
 
 ### Patch Changes
