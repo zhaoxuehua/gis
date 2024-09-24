@@ -36,6 +36,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       selectStyle, // 样式(自定义样式customStyle 内置样式builtInStyle)
       styleObject, // 内置样式对象（船、人、网位仪）样式是内置样式时才有
       labelTypeImagePath, // 标签类型图片（自定义样式使用）
+      displayScale = 1, // 显示比例
       dataType = "1", // 数据类型
       code: labelTypeCode, // 标签类型code
       dataContent, // 实时查询时配置的数据内容(监测属性例如AISDATA)
@@ -96,7 +97,8 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
           let srcImg = labelTypeImagePath ? labelTypeImagePath.split(",") : []; // 标签类型中配置的标签类型图片
           realStyCash[shipKey] = new Style({
             image: new Icon({
-              src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${srcImg?.[0]}`
+              src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${srcImg?.[0]}`,
+              scale: displayScale || 1
               // offset: [0, 4]
             })
           });
