@@ -76,8 +76,8 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
             // 1.1内置样式图片icon(有些icon ui不好绘制)
             realStyCash[shipKey] = new Style({
               image: new Icon({
-                src: realTimeDataImg,
-                offset: [0, 4]
+                src: realTimeDataImg
+                // offset: [0, 4]
               })
             });
           } else {
@@ -96,8 +96,8 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
           let srcImg = labelTypeImagePath ? labelTypeImagePath.split(",") : []; // 标签类型中配置的标签类型图片
           realStyCash[shipKey] = new Style({
             image: new Icon({
-              src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${srcImg?.[0]}`,
-              offset: [0, 4]
+              src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${srcImg?.[0]}`
+              // offset: [0, 4]
             })
           });
         }
