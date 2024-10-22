@@ -55,7 +55,8 @@ const featureTypeGroup = computed(() => {
 // 标签类型
 const labelTypeList: any = computed(() => {
   let labelTypeMap = map.value?.get("labelTypeMap") || {};
-  return Object.values(labelTypeMap);
+  // 过滤掉实时查询的标签类型（实时查询的不受控制）
+  return Object.values(labelTypeMap)?.filter((item: any) => item?.dataSource != "dynamicQuery");
 });
 
 // 地图图层
