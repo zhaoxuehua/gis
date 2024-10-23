@@ -1,6 +1,6 @@
 <template>
   <div class="map-view">
-    <ag-map :config="config" v-if="config.id" @on-open-right-menu="onOpenRightMenu"> </ag-map>
+    <ag-map :config="config" v-if="config.id" @on-open-right-menu="onOpenRightMenu" @video="onVideoClick"> </ag-map>
   </div>
 </template>
 <script lang="ts" setup name="mapView">
@@ -34,6 +34,11 @@ const onOpenRightMenu = async (option: { [key: string]: any }) => {
 //     lat: 25.160107
 //   };
 // }, 9000);
+
+// 视频模块
+const onVideoClick = (info: any) => {
+  console.log(info, "视频gis参数");
+};
 
 onMounted(() => {
   config.id = route.query?.id as string | number | null;

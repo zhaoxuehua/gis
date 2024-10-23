@@ -44,6 +44,7 @@
         :ref="setPopupRef"
         @scada="handlePopLink"
         @view="handlePopLink"
+        @video="handlePopLink"
       >
         <template #customContent v-if="customContent">
           <component :is="customContent"></component>
@@ -134,6 +135,7 @@ const emits = defineEmits([
   "geClickPublishData",
   "scada",
   "view",
+  "video",
   "isShowChange"
 ]);
 
