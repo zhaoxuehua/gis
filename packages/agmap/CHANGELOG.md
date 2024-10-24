@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.37
+
+### Patch Changes
+
+- 视频及标签筛选去除实时查询标签
+
 ## 2.0.36
 
 ### Patch Changes
