@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.38
+
+### Patch Changes
+
+- 修复树选中样式问题
+
 ## 2.0.37
 
 ### Patch Changes
