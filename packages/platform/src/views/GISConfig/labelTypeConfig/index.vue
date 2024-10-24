@@ -497,6 +497,7 @@ const displayReferenceInfo = (form: { [key: string]: any }) => {
     return "";
   }
 };
+
 // 图例
 const displayLabelLegendImage = (row: { [key: string]: any }) => {
   let legendObj: any = legendConfigList.value?.find((item: any) => {
