@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.39
+
+### Patch Changes
+
+- 表头样式变更
+
 ## 2.0.38
 
 ### Patch Changes
