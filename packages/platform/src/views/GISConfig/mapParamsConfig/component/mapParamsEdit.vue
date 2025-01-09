@@ -23,7 +23,8 @@
             <el-radio label="outline" size="large">离线地图</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="离线电子地图" prop="normalUrl">
+        <!-- 离线底图模块 -->
+        <el-form-item label="离线电子地图" prop="normalUrl" v-if="form.mapLoadMode == 'outline'">
           <el-input placeholder="请输入..." v-model="form.normalUrl" clearable style="width: 240px" />
           <el-upload
             :before-upload="file => beforeUpload(file, 'normalUrl')"
@@ -36,7 +37,7 @@
             <Icon src="WarningFilled" :size="20" color="#e6a23c"></Icon>
           </el-tooltip>
         </el-form-item>
-        <el-form-item label="离线卫星地图" prop="sateUrl">
+        <el-form-item label="离线卫星地图" prop="sateUrl" v-if="form.mapLoadMode == 'outline'">
           <el-input placeholder="请输入..." v-model="form.sateUrl" clearable style="width: 240px" />
           <el-upload
             :before-upload="file => beforeUpload(file, 'sateUrl')"
@@ -46,7 +47,7 @@
             <el-button type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
-        <el-form-item label="离线路网叠加层" prop="overlayUrl">
+        <el-form-item label="离线路网叠加层" prop="overlayUrl" v-if="form.mapLoadMode == 'outline'">
           <el-input placeholder="请输入..." v-model="form.overlayUrl" clearable style="width: 240px" />
           <el-upload
             :before-upload="file => beforeUpload(file, 'overlayUrl')"
@@ -56,6 +57,17 @@
             <el-button type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
+
+        <!-- 在线底图模块 -->
+        <!-- https://gac-geo.googlecnapps.cn/maps/vt?lyrs=m&x={x}&y={y}&z={z} -->
+        <el-form-item label="在线电子地图" prop="normalUrl" v-if="form.mapLoadMode == 'online'">
+          <el-input placeholder="请输入..." v-model="form.normalUrl" clearable />
+        </el-form-item>
+        <!-- https://gac-geo.googlecnapps.cn/maps/vt?lyrs=s,m&gl=CN&x={x}&y={y}&z={z} -->
+        <el-form-item label="在线卫星地图" prop="sateUrl" v-if="form.mapLoadMode == 'online'">
+          <el-input placeholder="请输入..." v-model="form.sateUrl" clearable />
+        </el-form-item>
+
         <el-form-item label="默认显示模式" prop="displayMode" style="width: 450px">
           <el-radio-group v-model="form.displayMode">
             <el-radio :label="1" size="large">电子地图</el-radio>

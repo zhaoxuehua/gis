@@ -68,7 +68,7 @@ export const GIS_LABEL_DETAIL = [
   }
 ];
 
-//应用场景配置详情
+//应用场景配置详情(离线)
 export const GIS_MAPPARAMS_DETAIL = [
   {
     label: "场景编码",
@@ -94,6 +94,127 @@ export const GIS_MAPPARAMS_DETAIL = [
   {
     label: "离线路网叠加层",
     name: "overlayUrl"
+  },
+  {
+    label: "默认显示模式",
+    name: "displayMode",
+    slot: true
+  },
+  {
+    label: "默认展示层级",
+    name: "defaultDisplayLevel"
+  },
+  {
+    label: "最低层级",
+    name: "minLevel"
+  },
+  {
+    label: "最高层级",
+    name: "maxLevel"
+  },
+  {
+    label: "中心点纬度",
+    name: "defaultCenterPointLatitude"
+  },
+  {
+    label: "中心点经度",
+    name: "defaultCenterPointLongitude"
+  },
+  {
+    label: "显示标签类型",
+    name: "displayLabelInfoIds",
+    slot: true
+  },
+  {
+    label: "搜索标签类型",
+    name: "displaySearchIds",
+    slot: true
+  },
+
+  {
+    label: "显示图层",
+    name: "displayLayerIds",
+    slot: true
+  },
+  {
+    label: "显示控件",
+    name: "displayControlIds",
+    slot: true
+  },
+  {
+    label: "显示图例",
+    name: "displayLegend",
+    slot: true
+  },
+  {
+    label: "距离单位",
+    name: "scaleLineUnit",
+    slot: true
+  },
+  {
+    label: "左键弹窗位置",
+    name: "leftClickDialogPosition",
+    slot: true
+  },
+  {
+    label: "导航树",
+    name: "customTreeType",
+    slot: true
+  },
+  {
+    label: "设备树",
+    name: "customTreeCode",
+    slot: true,
+    optional: true
+  },
+  {
+    label: "自定义配置",
+    name: "externalCustomTree",
+    slot: true,
+    optional: true
+  },
+  {
+    label: "关键词显示配置",
+    name: "keywordConfig",
+    slot: true
+  },
+  {
+    label: "面选中方式",
+    name: "polygonSelectMode",
+    slot: true
+  },
+
+  {
+    label: "是否可编辑",
+    name: "isEdit",
+    slot: true
+  }
+];
+
+// 应用场景配置详情(在线)
+export const GIS_MAPPARAMS_DETAIL_ONLINE = [
+  {
+    label: "场景编码",
+    name: "appCode"
+  },
+  {
+    label: "场景名称",
+    name: "appName"
+  },
+  {
+    label: "地图加载方式",
+    name: "mapLoadMode",
+    slot: true
+  },
+  {
+    label: "在线电子地图",
+    name: "normalUrl",
+    slot: true
+  },
+  {
+    label: "在线卫星地图",
+    name: "sateUrl",
+    slot: true
   },
   {
     label: "默认显示模式",
