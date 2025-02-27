@@ -1,5 +1,45 @@
 # adm-gis-platform
 
+## 2.0.40
+
+### Patch Changes
+
+- 在线底图
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.40
+
+## 2.0.39
+
+### Patch Changes
+
+- 表头样式变更
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.39
+
+## 2.0.38
+
+### Patch Changes
+
+- 修复树选中样式问题
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.38
+
+## 2.0.37
+
+### Patch Changes
+
+- 视频及标签筛选去除实时查询标签
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.37
+
+## 2.0.36
+
+### Patch Changes
+
+- 实时自定义样式显示比例的添加
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.36
+
 ## 2.0.35
 
 ### Patch Changes

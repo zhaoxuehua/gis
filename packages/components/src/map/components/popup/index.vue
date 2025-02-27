@@ -127,7 +127,7 @@ const props = withDefaults(defineProps<{ map: VisualMap | null; data: { [key: st
   map: () => null
 });
 
-const emits = defineEmits(["onClose", "scada", "view", "track"]);
+const emits = defineEmits(["onClose", "scada", "view", "track", "video"]);
 const popupRef = ref<InstanceType<typeof HTMLElement>>();
 
 const onClosePopup = () => {
@@ -351,6 +351,23 @@ const onAction = (actionType: number) => {
   } else if (actionType === 7) {
     // 7 告警
     alarmListRef?.value?.openDialog({ equipCode: equipInfo.value?.code });
+  } else if (actionType === 8) {
+    // 8 视频
+    const params: any = {
+      equipCode: equipInfo.value.code
+    };
+    let coordinates: any = [];
+    // 实时对象增加的是类型code，别的是类型id
+    if (equipInfo.value?.isRealTimeData) {
+      params.objectTypeCode = equipInfo.value?.realObjectTypeCode;
+      let obj = props.map.get("trackInfoMap")?.find((item: any) => item.code == props?.data?.featureCode);
+      coordinates = [obj?.lon, obj?.lat];
+    } else {
+      params.objectTypeId = equipInfo.value.equipType; // 类型id
+      coordinates = props.map.get("labelInfoMap")?.[props?.data?.featureCode]?.labelData?.coordinates;
+    }
+    params.coordinates = coordinates;
+    emits("video", "video", params);
   } else {
     let option = {
       ...equipInfo.value,

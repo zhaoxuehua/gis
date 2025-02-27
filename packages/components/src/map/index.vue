@@ -44,6 +44,7 @@
         :ref="setPopupRef"
         @scada="handlePopLink"
         @view="handlePopLink"
+        @video="handlePopLink"
       >
         <template #customContent v-if="customContent">
           <component :is="customContent"></component>
@@ -134,6 +135,7 @@ const emits = defineEmits([
   "geClickPublishData",
   "scada",
   "view",
+  "video",
   "isShowChange"
 ]);
 
@@ -461,20 +463,14 @@ const initMap = async (mapId: string | number, isId: boolean) => {
     const normalMap = new TileLayer({
       visible: defaultOptions?.defaultMapType === 1,
       source: new XYZ({
-        url:
-          defaultOptions?.mapLoadMode == "outline"
-            ? defaultOptions?.normalUrl
-            : "https://gac-geo.googlecnapps.cn/maps/vt?lyrs=m&x={x}&y={y}&z={z}"
+        url: defaultOptions?.normalUrl
       })
     });
     // 卫星影像图层
     const sateMap = new TileLayer({
       visible: defaultOptions?.defaultMapType === 2,
       source: new XYZ({
-        url:
-          defaultOptions?.mapLoadMode == "outline"
-            ? defaultOptions?.sateUrl
-            : "https://gac-geo.googlecnapps.cn/maps/vt?lyrs=s,m&gl=CN&x={x}&y={y}&z={z}"
+        url: defaultOptions?.sateUrl
       })
     });
 

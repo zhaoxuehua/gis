@@ -14,6 +14,7 @@
           @node-click="handleNodeClick"
           :filter-node-method="filterNode"
           ref="treeRef"
+          highlight-current
         >
           <template #empty>
             <el-empty class="no-data" description="暂无数据" />

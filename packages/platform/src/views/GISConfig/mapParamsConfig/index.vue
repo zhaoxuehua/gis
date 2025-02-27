@@ -112,10 +112,11 @@
 
     <MapParamsEdit ref="mapParamsEditRef" @success-add="query.onQuery"></MapParamsEdit>
 
-    <DetailDialog ref="detailDialogRef" :constant="'GIS_MAPPARAMS_DETAIL'" :title="'应用场景详情'" :width="900">
+    <DetailDialog ref="detailDialogRef" :constant="displayContent" :title="'应用场景详情'" :width="900">
       <template #mapLoadMode="scope">
         {{ scope.row.mapLoadMode == "online" ? "在线地图" : "离线地图" }}
       </template>
+
       <template #displayMode="scope">
         {{ scope.row.displayMode == 1 ? "电子地图" : "卫星影像" }}
       </template>
@@ -222,6 +223,7 @@ const query = ref({
   }
 });
 
+const displayContent = ref("GIS_MAPPARAMS_DETAIL");
 const table = ref<TableList>({
   loading: false,
   total: 0,
@@ -246,6 +248,11 @@ const table = ref<TableList>({
       const res: { [key: string]: any } = await getMapParamsDetail(row.id);
       if (res.code === 200 && res.data) {
         const data = JSON.parse(JSON.stringify(res.data));
+        if (data.mapLoadMode == "online") {
+          displayContent.value = "GIS_MAPPARAMS_DETAIL_ONLINE";
+        } else {
+          displayContent.value = "GIS_MAPPARAMS_DETAIL";
+        }
         detailDialogRef.value?.openDialog(data);
       } else {
         ElMessage.error("接口异常");
