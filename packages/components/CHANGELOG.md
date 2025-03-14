@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.42
+
+### Patch Changes
+
+- token
+
 ## 2.0.41
 
 ### Patch Changes
