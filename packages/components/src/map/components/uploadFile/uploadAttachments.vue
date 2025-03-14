@@ -115,7 +115,9 @@ const uploadFile = async (content: any) => {
   resetFun();
   showProgressFun(state);
   let formData = createFormDataParams({
-    sessionId: localStorage.getItem("sessionId") || "",
+    sessionId: localStorage.getItem("agioe_sso_token")
+      ? localStorage.getItem("agioe_sso_token")
+      : localStorage.getItem("sessionId") || "",
     excelFile: content.file
   });
   try {
@@ -158,7 +160,9 @@ const confirmImportFun = async () => {
     }
   ).then(async () => {
     const formData = createFormDataParams({
-      sessionId: localStorage.getItem("sessionId") || "",
+      sessionId: localStorage.getItem("agioe_sso_token")
+        ? localStorage.getItem("agioe_sso_token")
+        : localStorage.getItem("sessionId") || "",
       fileName: state.fileName
     });
     showProgressFun(state);
@@ -194,7 +198,9 @@ const onStop = () => {
     dangerouslyUseHTMLString: true
   }).then(async () => {
     const formData = createFormDataParams({
-      sessionId: localStorage.getItem("sessionId") || "",
+      sessionId: localStorage.getItem("agioe_sso_token")
+        ? localStorage.getItem("agioe_sso_token")
+        : localStorage.getItem("sessionId") || "",
       fileName: state.fileName
     });
     try {

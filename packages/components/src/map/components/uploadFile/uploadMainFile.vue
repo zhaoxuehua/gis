@@ -213,7 +213,9 @@ const getPagination = async (obj: any) => {
 
   const fetchData = async () => {
     let formData = createFormDataParams({
-      sessionId: localStorage.getItem("sessionId") || "",
+      sessionId: localStorage.getItem("agioe_sso_token")
+        ? localStorage.getItem("agioe_sso_token")
+        : localStorage.getItem("sessionId") || "",
       fileName: state.fileName
     });
     if (obj?.isSizeChange) {
@@ -236,7 +238,9 @@ const getPagination = async (obj: any) => {
   // 判断数据有无变化有的话更新接口，更新成功再翻页
   if (state.isTableDataChange) {
     let formData = createFormDataParams({
-      sessionId: localStorage.getItem("sessionId") || "",
+      sessionId: localStorage.getItem("agioe_sso_token")
+        ? localStorage.getItem("agioe_sso_token")
+        : localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
       pageIndex: oldPageNumber,
       data: JSON.stringify(table.value?.tableData)
@@ -260,7 +264,9 @@ const table: any = ref({
     const updatedTableData = table.value.tableData.filter((item: any, i: number) => i !== index); // 过滤删除项
 
     const formData = createFormDataParams({
-      sessionId: localStorage.getItem("sessionId") || "",
+      sessionId: localStorage.getItem("agioe_sso_token")
+        ? localStorage.getItem("agioe_sso_token")
+        : localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
       pageIndex: state.pageNumber,
       data: JSON.stringify(updatedTableData)
@@ -277,7 +283,9 @@ const table: any = ref({
         if (table.value.tableData?.length == 0) {
           // 若当页删除完则请求重新排序
           let formData1 = createFormDataParams({
-            sessionId: localStorage.getItem("sessionId") || "",
+            sessionId: localStorage.getItem("agioe_sso_token")
+              ? localStorage.getItem("agioe_sso_token")
+              : localStorage.getItem("sessionId") || "",
             fileName: state.fileName,
             pageSize: state.pageSize
           });
@@ -340,7 +348,9 @@ const beforeUpload = (file: any) => {
 const uploadFile = async (content: any) => {
   let formDataTableColumn = createFormDataParams();
   let formDataTableData = createFormDataParams({
-    sessionId: localStorage.getItem("sessionId") || "",
+    sessionId: localStorage.getItem("agioe_sso_token")
+      ? localStorage.getItem("agioe_sso_token")
+      : localStorage.getItem("sessionId") || "",
     excelFile: content.file
   });
 
@@ -365,7 +375,9 @@ const uploadFile = async (content: any) => {
 const checkFileFun = async () => {
   try {
     let formData = createFormDataParams({
-      sessionId: localStorage.getItem("sessionId") || "",
+      sessionId: localStorage.getItem("agioe_sso_token")
+        ? localStorage.getItem("agioe_sso_token")
+        : localStorage.getItem("sessionId") || "",
       fileName: state.fileName
     });
 
@@ -398,7 +410,9 @@ const onCheckFile = async () => {
   // 判断数据有无变化有的话更新接口，更新成功再校验
   if (state.isTableDataChange) {
     const formData = createFormDataParams({
-      sessionId: localStorage.getItem("sessionId") || "",
+      sessionId: localStorage.getItem("agioe_sso_token")
+        ? localStorage.getItem("agioe_sso_token")
+        : localStorage.getItem("sessionId") || "",
       fileName: state.fileName,
       pageIndex: state.pageNumber,
       data: JSON.stringify(table.value?.tableData)
@@ -424,7 +438,9 @@ const openErrorMsg = () => {
 // 导入
 const confirmImportFun = async () => {
   const formData = createFormDataParams({
-    sessionId: localStorage.getItem("sessionId") || "",
+    sessionId: localStorage.getItem("agioe_sso_token")
+      ? localStorage.getItem("agioe_sso_token")
+      : localStorage.getItem("sessionId") || "",
     fileName: state.fileName
   });
   showProgressFun(state);
@@ -451,7 +467,9 @@ const onStop = () => {
   })
     .then(async () => {
       const formData = createFormDataParams({
-        sessionId: localStorage.getItem("sessionId") || "",
+        sessionId: localStorage.getItem("agioe_sso_token")
+          ? localStorage.getItem("agioe_sso_token")
+          : localStorage.getItem("sessionId") || "",
         fileName: state.fileName
       });
       try {
