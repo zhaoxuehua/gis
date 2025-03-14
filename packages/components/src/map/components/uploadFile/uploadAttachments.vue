@@ -109,15 +109,19 @@ const beforeUpload = (file: any) => {
   });
 };
 
+const currentSessionId = () => {
+  return localStorage.getItem("agioe_sso_token")
+    ? localStorage.getItem("agioe_sso_token")
+    : localStorage.getItem("sessionId") || "";
+};
+
 // 后端返回校验信息
 const uploadFile = async (content: any) => {
   // 需要将确认导入禁用
   resetFun();
   showProgressFun(state);
   let formData = createFormDataParams({
-    sessionId: localStorage.getItem("agioe_sso_token")
-      ? localStorage.getItem("agioe_sso_token")
-      : localStorage.getItem("sessionId") || "",
+    sessionId: currentSessionId(),
     excelFile: content.file
   });
   try {
@@ -160,9 +164,7 @@ const confirmImportFun = async () => {
     }
   ).then(async () => {
     const formData = createFormDataParams({
-      sessionId: localStorage.getItem("agioe_sso_token")
-        ? localStorage.getItem("agioe_sso_token")
-        : localStorage.getItem("sessionId") || "",
+      sessionId: currentSessionId(),
       fileName: state.fileName
     });
     showProgressFun(state);
@@ -198,9 +200,7 @@ const onStop = () => {
     dangerouslyUseHTMLString: true
   }).then(async () => {
     const formData = createFormDataParams({
-      sessionId: localStorage.getItem("agioe_sso_token")
-        ? localStorage.getItem("agioe_sso_token")
-        : localStorage.getItem("sessionId") || "",
+      sessionId: currentSessionId(),
       fileName: state.fileName
     });
     try {
