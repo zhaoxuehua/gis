@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.41
+
+### Patch Changes
+
+- map 兼容 token
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.41
+
 ## 2.0.40
 
 ### Patch Changes

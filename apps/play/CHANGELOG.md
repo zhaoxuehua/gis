@@ -5,6 +5,13 @@
 ### Patch Changes
 
 - Updated dependencies
+  - @adm-gis-ui/components@2.0.41
+
+## null
+
+### Patch Changes
+
+- Updated dependencies
   - @adm-gis-ui/components@2.0.40
 
 ## null
