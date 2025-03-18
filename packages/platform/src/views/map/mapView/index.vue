@@ -14,6 +14,7 @@ const userStore = useUserStore();
 
 let config: { [key: string]: any } = reactive({
   sessionId: userStore.token
+  // agioe_sso_token: "w1vxihaU28Rubs3Ld"
 });
 
 const onOpenRightMenu = async (option: { [key: string]: any }) => {
