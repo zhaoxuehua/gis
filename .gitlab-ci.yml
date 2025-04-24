@@ -1,22 +1,252 @@
 variables:
-  #  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-  GIT_DEPTH: "1" # Tells git to fetch all the branches of the project, required by the analysis task
-sonarqube-check:
-  image:
-    name: sonarsource/sonar-scanner-cli:latest
-    entrypoint: [""]
+  GIT_STRATEGY: clone
+  IMAGE_NAME: agioe-gis-ui # 镜像名， agioe/xxxx
+  SONAR_HOST_URL: "http://10.233.33.140:9000"  # SonarQube 服务器地址
+  SONAR_TOKEN: "sqa_2f4728446b9185fc64079880748af90ea29d31c1"
+
+stages:
+  - lint
+  - build
+  - image-push
+  - deploy
+
+# 前端构建脚本
+.front-build-template:
+  image: 192.168.15.94:9093/agioe/node:18.20.4
+  before_script:
+    - apt-get update
+    - apt-get install -y python3 git make g++
+    # 解决编译时内存溢出问题
+    - export NODE_OPTIONS="--max_old_space_size=10240"
+    # 配置内网镜像源
+    - npm config set registry http://192.168.15.94:8081/repository/npm-public/
+    - export npm_config_disturl=http://192.168.15.94:8081/repository/npmmirror-binary/node/
+    - npm install -g pnpm@9.15.9
   script:
-    - sonar-scanner -Dsonar.projectKey=$CI_PROJECT_NAME
-      -Dsonar.branch.name=$CI_COMMIT_REF_NAME
-      -Dsonar.host.url=http://10.233.33.140:9000
-      -Dsonar.login=sqa_2f4728446b9185fc64079880748af90ea29d31c1
-      -Dsonar.projectName=$CI_PROJECT_NAME
-      -Dsonar.projectVersion=$CI_COMMIT_REF_NAME
-      -Dsonar.projectDescription=$CI_PROJECT_TITLE
-      -Dsonar.qualitygate.wait=true
+    - SHELL=bash pnpm setup
+    - pnpm i --frozen-lockfile
+    - pnpm run build
+  after_script:
+    - mv apps/play/dist dist
+    - echo $CI_COMMIT_REF_NAME $CI_COMMIT_SHA > dist/VERSION.txt
+  allow_failure: false
+  artifacts:
+    paths:
+      - dist # 前端构建生成产物
+
+# develop 分支触发
+.develop-trigger-template:
   only:
-    - merge_requests
-    - release # or the name of your main branch
-    - master
+    - develop
+
+# 以 release 名字开头的分支打 uat 开头标签时触发
+.release-tag-trigger-template:
+  only:
+    refs:
+      - /^release.*$/
+      - tags
+    variables:
+      - $CI_COMMIT_TAG =~ /^uat-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/
+
+# 以 project 名字开头的分支打 project 开头标签时触发
+.project-tag-trigger-template:
+  only:
+    refs:
+      - /^project-.*$/
+      - tags
+    variables:
+      - $CI_COMMIT_TAG =~ /^project-[a-zA-Z]+-[0-9]{12}$$/
+
+# Docker 仓库推送验证
+.docker-repo-auth-template:
+  before_script:
+    - echo ${HARBOR_PASSWORD} | docker login ${HARBOR_REPOSITORY} --username $HARBOR_USERNAME --password-stdin
+    - export BUILDX_NO_DEFAULT_ATTESTATIONS=1 # 解决 docker buildx 出现的 unknown/unknown 镜像问题
+  after_script:
+    - docker logout ${HARBOR_REPOSITORY}
+
+# 前端工程构建
+# 前端生成的都是静态文件，所有构建统一使用一个任务，不区分镜像架构
+
+# 基线开发流程
+# 在 develop 分支，手动点击构建就会生成对应 develop 标签的镜像
+# develop 分支通过 jenkins 部署到 k8s，不使用 gitlab-ci
+
+# Build_Front_In_Develop:
+#   stage: build
+#   extends:
+#     - .develop-trigger-template
+#     - .front-build-template
+#   when: manual # 手动触发，节省资源
+#   tags:
+#     - docker
+
+# Deploy_Develop_Image:
+#   stage: image-push
+#   extends:
+#     - .develop-trigger-template
+#     - .docker-repo-auth-template
+#   script:
+#     - docker buildx build
+#         -f CICD/Dockerfile
+#         --label GITLAB_URL=$CI_PROJECT_URL
+#         --label COMMIT_SHA=$CI_COMMIT_SHA
+#         --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+#         --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+#         --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+#         --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+#         -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:develop
+#         --push .
+#   dependencies:
+#     - Build_Front_In_Develop #依赖于该任务编译后的 artifacts
+#   tags:
+#     - shell
+
+# 基线转测版本
+# 在名称以 release 开头的分支上，打一个如下格式 uat-[数字].[数字].[数字].[数字] 的tag，
+# 就会触发 sonar 代码检测，代码检测成功后，会打一个对应 uat 标签的镜像标签
+Sonar_Check:
+  stage: lint
+  extends:
+    - .release-tag-trigger-template
+  image:
+    name: 192.168.15.94:9093/sonarsource/sonar-scanner-cli:10.0.3.1430_5.0.1
+    entrypoint: ['']
+  script:
+    - sonar-scanner
+        -Dsonar.projectKey=$CI_PROJECT_NAME
+        -Dsonar.branch.name=$CI_COMMIT_REF_NAME
+        -Dsonar.host.url=$SONAR_HOST_URL
+        -Dsonar.login=$SONAR_TOKEN
+        -Dsonar.projectName=$CI_PROJECT_NAME
+        -Dsonar.projectVersion=$CI_COMMIT_REF_NAME
+        -Dsonar.projectDescription=$CI_PROJECT_TITLE
+        -Dsonar.qualitygate.wait=true
   tags:
     - gitlab-docker
+
+Build_Front_In_Uat:
+  stage: build
+  extends:
+    - .release-tag-trigger-template
+    - .front-build-template
+  tags:
+    - docker
+
+Deploy_Uat_Image:
+  stage: image-push
+  extends:
+    - .release-tag-trigger-template
+    - .docker-repo-auth-template
+  script:
+    - |
+      set -x
+      # 获取 SonarQube 质量门禁状态和详细信息
+      quality_gate_info=$(curl -s -u "$SONAR_TOKEN:" "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$CI_PROJECT_NAME&branch=$CI_COMMIT_TAG")
+      status=$(echo "$quality_gate_info" | jq -r '.projectStatus.status')
+      # 如果质量门禁未通过，则退出
+      if [ "$status" != "OK" ]; then
+        echo "代码质量检测未通过"
+        exit 1
+      fi
+    - docker buildx build --platform linux/amd64
+        -f CICD/Dockerfile
+        --label GITLAB_URL=$CI_PROJECT_URL
+        --label COMMIT_SHA=$CI_COMMIT_SHA
+        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}
+        --push .
+  dependencies:
+    - Build_Front_In_Uat #依赖于该任务编译后的 artifacts
+  tags:
+    - shell
+
+Deploy_Uat_Arm64_Image:
+  stage: image-push
+  extends:
+    - .release-tag-trigger-template
+    - .docker-repo-auth-template
+  script:
+    - |
+      set -x
+      # 获取 SonarQube 质量门禁状态和详细信息
+      quality_gate_info=$(curl -s -u "$SONAR_TOKEN:" "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$CI_PROJECT_NAME&branch=$CI_COMMIT_TAG")
+      status=$(echo "$quality_gate_info" | jq -r '.projectStatus.status')
+      # 如果质量门禁未通过，则退出
+      if [ "$status" != "OK" ]; then
+        echo "代码质量检测未通过"
+        exit 1
+      fi
+    - docker buildx build --platform linux/arm64
+        -f CICD/Dockerfile
+        --label GITLAB_URL=$CI_PROJECT_URL
+        --label COMMIT_SHA=$CI_COMMIT_SHA
+        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}-arm64
+        --push .
+  dependencies:
+    - Build_Front_In_Uat #依赖于该任务编译后的 artifacts
+  when: manual
+  tags:
+    - shell
+
+# 项目定制版本版本
+# 在名称以 project- 开头的分支上，如 project-chonqqing，打一个如下格式的 project-[字符]-[数字] 的 tag，如 project-chonqqing-202504101856
+# 其中 字符部分为项目英文/拼音代号，如 chongqing，数字部分为12位时间，到分钟，如 202504101856
+# 就会打一个对应代码 tag 的镜像标签
+Build_Front_In_Project:
+  stage: build
+  extends:
+    - .project-tag-trigger-template
+    - .front-build-template
+  tags:
+    - docker
+
+Deploy_Project_Image:
+  stage: image-push
+  extends:
+    - .project-tag-trigger-template
+    - .docker-repo-auth-template
+  script:
+    - docker buildx build --platform linux/amd64
+        -f CICD/Dockerfile
+        --label GITLAB_URL=$CI_PROJECT_URL
+        --label COMMIT_SHA=$CI_COMMIT_SHA
+        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}
+        --push .
+  dependencies:
+    - Build_Front_In_Project #依赖于该任务编译后的 artifacts
+  tags:
+    - shell
+
+Deploy_Project_Arm64_Image:
+  stage: image-push
+  extends:
+    - .docker-repo-auth-template
+    - .project-tag-trigger-template
+  script:
+    - docker buildx build --platform linux/arm64
+        -f CICD/Dockerfile
+        --label GITLAB_URL=$CI_PROJECT_URL
+        --label COMMIT_SHA=$CI_COMMIT_SHA
+        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}-arm64
+        --push .
+  dependencies:
+    - Build_Front_In_Project #依赖于该任务编译后的 artifacts
+  when: manual
+  tags:
+    - shell
