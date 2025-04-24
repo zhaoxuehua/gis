@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.44
+
+### Patch Changes
+
+- token 不传兼容
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.44
+
 ## 2.0.43
 
 ### Patch Changes

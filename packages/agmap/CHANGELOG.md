@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.44
+
+### Patch Changes
+
+- token 不传兼容
+
 ## 2.0.43
 
 ### Patch Changes
