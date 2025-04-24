@@ -68,7 +68,7 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
       let extendsData = targetFeature?.get("extendsData") || {};
       let selected = targetFeature.get("selected");
       const { angle } = extendsData; // 要素扩展字段
-      let { shipKey, realTimeDataImg, height } = createLayerStyle(selectStyle, styleObject, extendsData);
+      let { shipKey, realTimeDataImg, height } = createLayerStyle(selectStyle, styleObject, extendsData, labelTypeCode);
 
       if (!realStyCash[shipKey]) {
         // 1、内置样式
@@ -147,51 +147,55 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
           if (aisLocation) {
             const monitorTime = aisLocation.monitorTime;
             const valStr = aisLocation.value;
-            let valInfo = JSON.parse(valStr);
-            if (typeof valInfo == "string") {
-              valInfo = JSON.parse(valInfo);
+            try {
+              let valInfo = JSON.parse(valStr);
+              if (typeof valInfo == "string") {
+                valInfo = JSON.parse(valInfo);
+              }
+              if (valInfo.category === "基站") {
+                return;
+              }
+
+              const colorArr: any = realFeatureColor({
+                monitorTime,
+                status,
+                isWhiteList: (item as any)?.isWhiteList,
+                isAttention: (item as any)?.isAttention,
+                timeoutRange: timeoutRange
+              });
+
+              const shipInfo = {
+                lat: valInfo.lat,
+                lon: valInfo.lon,
+                angle: valInfo.cog,
+                sog: valInfo.sog,
+                monitorTime: monitorTime,
+                color: colorArr,
+                person,
+                code: key,
+                name: name,
+                showHeadline: Boolean(shipHeadLine),
+                type: dataType
+              };
+              const shipFeature = createdRealDataFeature(shipInfo, dataType, labelTypeCode);
+              shipFeatureArr.push(shipFeature);
+
+              // 基础引擎搜索（定位）、左键使用
+              realDataInfoCash?.[equipTypeCode].push({
+                lat: valInfo.lat,
+                lon: valInfo.lon,
+                code: key,
+                name: name,
+                isRealTimeData: true, // 是否实时标签
+                dataType: dataType,
+                equipType: equipTypeId, // 设备类型id
+                labelTypeId: labelTypeId, // 标签类型id
+                layerCode: layerConfigCode, // 图层code
+                realObjectTypeCode: equipTypeCode // 实时数据对象code
+              });
+            } catch {
+              console.log("存在脏数据");
             }
-            if (valInfo.category === "基站") {
-              return;
-            }
-
-            const colorArr: any = realFeatureColor({
-              monitorTime,
-              status,
-              isWhiteList: (item as any)?.isWhiteList,
-              isAttention: (item as any)?.isAttention,
-              timeoutRange: timeoutRange
-            });
-
-            const shipInfo = {
-              lat: valInfo.lat,
-              lon: valInfo.lon,
-              angle: valInfo.cog,
-              sog: valInfo.sog,
-              monitorTime: monitorTime,
-              color: colorArr,
-              person,
-              code: key,
-              name: name,
-              showHeadline: Boolean(shipHeadLine),
-              type: dataType
-            };
-            const shipFeature = createdRealDataFeature(shipInfo, dataType, labelTypeCode);
-            shipFeatureArr.push(shipFeature);
-
-            // 基础引擎搜索（定位）、左键使用
-            realDataInfoCash?.[equipTypeCode].push({
-              lat: valInfo.lat,
-              lon: valInfo.lon,
-              code: key,
-              name: name,
-              isRealTimeData: true, // 是否实时标签
-              dataType: dataType,
-              equipType: equipTypeId, // 设备类型id
-              labelTypeId: labelTypeId, // 标签类型id
-              layerCode: layerConfigCode, // 图层code
-              realObjectTypeCode: equipTypeCode // 实时数据对象code
-            });
           }
         });
 
@@ -217,26 +221,26 @@ export function initRealtimeData(map: VisualMap, realtimeDataList: any[]) {
 }
 
 // 图层样式（1、自定义样式  2、内置样式根据不同的内置样式对象返回不同的值）
-export function createLayerStyle(selectStyle: string, styleObject: string, extendsData: any = {}) {
+export function createLayerStyle(selectStyle: string, styleObject: string, extendsData: any = {}, labelTypeCode: any) {
   const { color, showHeadline } = extendsData; // 要素扩展字段
-  let shipKey;
+  let shipKey: any;
   let realTimeDataImg: any;
   let height = 44;
   // 1、内置样式
   if (selectStyle == "builtInStyle") {
     if (styleObject == "aisBoat") {
-      shipKey = showHeadline + color?.join();
+      shipKey = `${labelTypeCode}-${showHeadline}${color?.join()}`;
       realTimeDataImg = createdCanvasShip(showHeadline, color) as HTMLCanvasElement;
     } else if (styleObject == "person") {
-      shipKey = color?.join();
+      shipKey = `${labelTypeCode}-${color?.join()}`;
       realTimeDataImg = drawCanvasPerson(color) as HTMLCanvasElement;
     } else if (styleObject == "fishNetSounder") {
-      shipKey = color?.join();
+      shipKey = `${labelTypeCode}-${color?.join()}`;
       realTimeDataImg = fishNetSounderImg; // 图片icon
     }
   } else {
     // 2、自定义样式
-    shipKey = color?.join();
+    shipKey = `${labelTypeCode}-${color?.join()}`;
   }
 
   return { shipKey, realTimeDataImg, height };

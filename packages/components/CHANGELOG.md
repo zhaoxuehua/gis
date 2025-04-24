@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.43
+
+### Patch Changes
+
+- 修复实时数据样式缓存问题
+
 ## 2.0.42
 
 ### Patch Changes
