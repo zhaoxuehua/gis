@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.45
+
+### Patch Changes
+
+- 固定 elementplus 版本
+
 ## 2.0.44
 
 ### Patch Changes
