@@ -1138,7 +1138,12 @@ onMounted(() => {
   // 存储sessionId
   localStorage.setItem("sessionId", props?.config?.sessionId);
   // 存储agioe_sso_token
-  localStorage.setItem("agioe_sso_token", props?.config?.agioe_sso_token);
+  if (props?.config?.agioe_sso_token) {
+    localStorage.setItem("agioe_sso_token", props?.config?.agioe_sso_token);
+  } else {
+    localStorage.setItem("agioe_sso_token", "");
+  }
+
   // 拼接控件扩展 是数组[]
   if (props?.config?.leftControl) {
     if (props?.config?.leftControlIndex || props?.config?.leftControlIndex == 0) {
