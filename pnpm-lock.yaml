@@ -78,6 +78,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.21)
+      element-plus:
+        specifier: 2.3.4
+        version: 2.3.4(vue@3.3.4)
       eslint:
         specifier: ^8.36.0
         version: 8.36.0
@@ -259,7 +262,7 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(echarts@5.4.1)
       element-plus:
-        specifier: ^2.3.4
+        specifier: 2.3.4
         version: 2.3.4(vue@3.3.4)
       js-md5:
         specifier: ^0.7.3
@@ -386,7 +389,7 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(echarts@5.4.1)
       element-plus:
-        specifier: ^2.3.4
+        specifier: 2.3.4
         version: 2.3.4(vue@3.3.4)
       js-md5:
         specifier: ^0.7.3
@@ -12081,4 +12084,30 @@ snapshots:
       escalade: 3.1.1
       get-caller-file: 2.0.5
       require-directory: 2.1.1
-      st
+      string-width: 4.2.3
+      y18n: 5.0.8
+      yargs-parser: 20.2.9
+
+  yargs@17.7.2:
+    dependencies:
+      cliui: 8.0.1
+      escalade: 3.1.1
+      get-caller-file: 2.0.5
+      require-directory: 2.1.1
+      string-width: 4.2.3
+      y18n: 5.0.8
+      yargs-parser: 21.1.1
+
+  yocto-queue@0.1.0: {}
+
+  z-schema@5.0.5:
+    dependencies:
+      lodash.get: 4.4.2
+      lodash.isequal: 4.5.0
+      validator: 13.9.0
+    optionalDependencies:
+      commander: 9.5.0
+
+  zrender@5.4.1:
+    dependencies:
+      tslib: 2.3.0
