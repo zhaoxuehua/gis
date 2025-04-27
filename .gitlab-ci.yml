@@ -55,7 +55,7 @@ stages:
       - /^project-.*$/
       - tags
     variables:
-      - $CI_COMMIT_TAG =~ /^project-[a-zA-Z]+-[0-9]{12}$$/
+      - $CI_COMMIT_TAG =~ /^project-[a-zA-Z]+-(\d+\.\d+\.\d+)(\.\d+)?-\d{12}$/
 
 # Docker 仓库推送验证
 .docker-repo-auth-template:
@@ -197,8 +197,8 @@ Deploy_Uat_Arm64_Image:
     - shell
 
 # 项目定制版本版本
-# 在名称以 project- 开头的分支上，如 project-chonqqing，打一个如下格式的 project-[字符]-[数字] 的 tag，如 project-chonqqing-202504101856
-# 其中 字符部分为项目英文/拼音代号，如 chongqing，数字部分为12位时间，到分钟，如 202504101856
+# 在名称以 project- 开头的分支上，如 project-chonqqing，打一个如下格式的 project-[定制代号]-[基线分叉版本]-[定制版本发布时间] 的 tag，如 project-chonqqing-1.2.0-202504101856
+# 其中 定制代号部分为项目英文/拼音代号，如 chongqing，基线分叉版本为3位或4位发布版本，定制版本发布时间部分为12位时间，到分钟，如 202504101856
 # 就会打一个对应代码 tag 的镜像标签
 Build_Front_In_Project:
   stage: build
