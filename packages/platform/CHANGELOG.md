@@ -1,5 +1,13 @@
 # adm-gis-platform
 
+## 2.0.45
+
+### Patch Changes
+
+- 固定 elementplus 版本
+- Updated dependencies
+  - @adm-gis-ui/components@2.0.45
+
 ## 2.0.44
 
 ### Patch Changes
