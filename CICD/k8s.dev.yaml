@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kubesphere
+    component: $DEPLOY_NAME
+    tier: frontend
+  name: $DEPLOY_NAME
+  namespace: $NAMESPACE
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubesphere
+      component: $DEPLOY_NAME
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: kubesphere
+        component: $DEPLOY_NAME
+        tier: frontend
+    spec:
+      containers:
+        - env:
+            - name: build-number
+              value: '$CI_JOB_ID'
+          image: $DOCKER_IMAGE
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            timeoutSeconds: 5
+            failureThreshold: 10
+            periodSeconds: 10
+          imagePullPolicy: Always
+          name: ks-sample
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 100Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

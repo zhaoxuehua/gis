@@ -70,37 +70,50 @@ stages:
 
 # 基线开发流程
 # 在 develop 分支，手动点击构建就会生成对应 develop 标签的镜像
-# develop 分支通过 jenkins 部署到 k8s，不使用 gitlab-ci
 
-# Build_Front_In_Develop:
-#   stage: build
-#   extends:
-#     - .develop-trigger-template
-#     - .front-build-template
-#   when: manual # 手动触发，节省资源
-#   tags:
-#     - docker
+Build_Front_In_Develop:
+  stage: build
+  extends:
+    - .develop-trigger-template
+    - .front-build-template
+  when: manual # 手动触发，节省资源
+  tags:
+    - docker
 
-# Deploy_Develop_Image:
-#   stage: image-push
-#   extends:
-#     - .develop-trigger-template
-#     - .docker-repo-auth-template
-#   script:
-#     - docker buildx build
-#         -f CICD/Dockerfile
-#         --label GITLAB_URL=$CI_PROJECT_URL
-#         --label COMMIT_SHA=$CI_COMMIT_SHA
-#         --label CI_PROJECT_PATH=$CI_PROJECT_PATH
-#         --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
-#         --label CI_COMMIT_TAG=$CI_COMMIT_TAG
-#         --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
-#         -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:develop
-#         --push .
-#   dependencies:
-#     - Build_Front_In_Develop #依赖于该任务编译后的 artifacts
-#   tags:
-#     - shell
+Deploy_Develop_Image:
+  stage: image-push
+  extends:
+    - .develop-trigger-template
+    - .docker-repo-auth-template
+  script:
+    - docker buildx build
+        -f CICD/Dockerfile
+        --label GITLAB_URL=$CI_PROJECT_URL
+        --label COMMIT_SHA=$CI_COMMIT_SHA
+        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:develop
+        --push .
+  dependencies:
+    - Build_Front_In_Develop #依赖于该任务编译后的 artifacts
+  tags:
+    - shell
+
+Deploy_To_K8S_Develop:
+  stage: deploy
+  extends:
+    - .develop-trigger-template
+  variables:
+    NAMESPACE: 'zt-app-dev'
+    DEPLOY_NAME: '${IMAGE_NAME}-develop'
+    DOCKER_IMAGE: 'harbor.agioema.com/agioe/${IMAGE_NAME}:develop'
+  script:
+    - envsubst < CICD/k8s.dev.svc.yaml | kubectl apply -f -
+    - envsubst < CICD/k8s.dev.yaml | kubectl apply -f -
+  tags:
+    - shell
 
 # 基线转测版本
 # 在名称以 release 开头的分支上，打一个如下格式 uat-[数字].[数字].[数字].[数字] 的tag，
