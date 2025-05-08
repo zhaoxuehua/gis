@@ -263,3 +263,37 @@ Deploy_Project_Arm64_Image:
   when: manual
   tags:
     - shell
+
+# 发布 npm 包
+# tag 名称必须为 npm- 开头，如 npm-1.0.0，后面的版本号必须和发包的 package.json 中的 version 字段保持一致
+Public_Npm_Package:
+  stage: deploy
+  image: 192.168.15.94:9093/agioe/node:18.20.4
+  before_script:
+    - node -v
+    - npm -v
+    - echo $CI_COMMIT_TAG
+    # 解决编译时内存溢出问题
+    - export NODE_OPTIONS="--max_old_space_size=10240"
+    # 配置内网镜像源
+    - npm config set registry http://192.168.15.94:8081/repository/npm-public/
+    - export npm_config_disturl=http://192.168.15.94:8081/repository/npmmirror-binary/node/
+    - npm install -g pnpm@9.15.9
+  script:
+    # TAG 必须和 package.json 中的 version 匹配
+    - node CICD/tagCheck.js
+    - pnpm i --frozen-lockfile
+    - pnpm build
+    - rm .npmrc
+    # 设置上传仓库
+    - pnpm config set registry http://192.168.15.94:8081/repository/npm-releases/
+    # 配置上传仓库登录 TOKEN
+    - pnpm config set //192.168.15.94:8081/repository/npm-releases/:_authToken=${NPM_TOKEN}
+    - cd packages/agmap
+    - pnpm publish --no-git-checks
+  allow_failure: false
+  only:
+      refs:
+        - tags
+      variables:
+        - $CI_COMMIT_TAG =~ /^npm-.*$/
