@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: clone
   IMAGE_NAME: agioe-gis-ui # 镜像名， agioe/xxxx
-  SONAR_HOST_URL: "http://10.233.33.140:9000"  # SonarQube 服务器地址
+  SONAR_HOST_URL: "http://10.233.33.140:9000" # SonarQube 服务器地址
   SONAR_TOKEN: "sqa_2f4728446b9185fc64079880748af90ea29d31c1"
 
 stages:
@@ -39,11 +39,11 @@ stages:
   only:
     - develop
 
-# 以 release 名字开头的分支打 uat 开头标签时触发
+# 以 release 名字开头的分支打 uat 开头标签时触发 或hotfix-三位版本号触发
 .release-tag-trigger-template:
   only:
     refs:
-      - /^release.*$/
+      - /^release|hotfix-[0-9]+\.[0-9]+\.[0-9]+$/
       - tags
     variables:
       - $CI_COMMIT_TAG =~ /^uat-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/
@@ -87,15 +87,15 @@ Deploy_Develop_Image:
     - .docker-repo-auth-template
   script:
     - docker buildx build
-        -f CICD/Dockerfile
-        --label GITLAB_URL=$CI_PROJECT_URL
-        --label COMMIT_SHA=$CI_COMMIT_SHA
-        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
-        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
-        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
-        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
-        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:develop
-        --push .
+      -f CICD/Dockerfile
+      --label GITLAB_URL=$CI_PROJECT_URL
+      --label COMMIT_SHA=$CI_COMMIT_SHA
+      --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+      --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+      --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+      --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+      -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:develop
+      --push .
   dependencies:
     - Build_Front_In_Develop #依赖于该任务编译后的 artifacts
   tags:
@@ -106,9 +106,9 @@ Deploy_To_K8S_Develop:
   extends:
     - .develop-trigger-template
   variables:
-    NAMESPACE: 'zt-app-dev'
-    DEPLOY_NAME: '${IMAGE_NAME}-develop'
-    DOCKER_IMAGE: 'harbor.agioema.com/agioe/${IMAGE_NAME}:develop'
+    NAMESPACE: "zt-app-dev"
+    DEPLOY_NAME: "${IMAGE_NAME}-develop"
+    DOCKER_IMAGE: "harbor.agioema.com/agioe/${IMAGE_NAME}:develop"
   script:
     - envsubst < CICD/k8s.dev.svc.yaml | kubectl apply -f -
     - envsubst < CICD/k8s.dev.yaml | kubectl apply -f -
@@ -124,17 +124,17 @@ Sonar_Check:
     - .release-tag-trigger-template
   image:
     name: 192.168.15.94:9093/sonarsource/sonar-scanner-cli:10.0.3.1430_5.0.1
-    entrypoint: ['']
+    entrypoint: [""]
   script:
     - sonar-scanner
-        -Dsonar.projectKey=$CI_PROJECT_NAME
-        -Dsonar.branch.name=$CI_COMMIT_REF_NAME
-        -Dsonar.host.url=$SONAR_HOST_URL
-        -Dsonar.login=$SONAR_TOKEN
-        -Dsonar.projectName=$CI_PROJECT_NAME
-        -Dsonar.projectVersion=$CI_COMMIT_REF_NAME
-        -Dsonar.projectDescription=$CI_PROJECT_TITLE
-        -Dsonar.qualitygate.wait=true
+      -Dsonar.projectKey=$CI_PROJECT_NAME
+      -Dsonar.branch.name=$CI_COMMIT_REF_NAME
+      -Dsonar.host.url=$SONAR_HOST_URL
+      -Dsonar.login=$SONAR_TOKEN
+      -Dsonar.projectName=$CI_PROJECT_NAME
+      -Dsonar.projectVersion=$CI_COMMIT_REF_NAME
+      -Dsonar.projectDescription=$CI_PROJECT_TITLE
+      -Dsonar.qualitygate.wait=true
   tags:
     - gitlab-docker
 
@@ -163,15 +163,15 @@ Deploy_Uat_Image:
         exit 1
       fi
     - docker buildx build --platform linux/amd64
-        -f CICD/Dockerfile
-        --label GITLAB_URL=$CI_PROJECT_URL
-        --label COMMIT_SHA=$CI_COMMIT_SHA
-        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
-        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
-        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
-        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
-        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}
-        --push .
+      -f CICD/Dockerfile
+      --label GITLAB_URL=$CI_PROJECT_URL
+      --label COMMIT_SHA=$CI_COMMIT_SHA
+      --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+      --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+      --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+      --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+      -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}
+      --push .
   dependencies:
     - Build_Front_In_Uat #依赖于该任务编译后的 artifacts
   tags:
@@ -194,15 +194,15 @@ Deploy_Uat_Arm64_Image:
         exit 1
       fi
     - docker buildx build --platform linux/arm64
-        -f CICD/Dockerfile
-        --label GITLAB_URL=$CI_PROJECT_URL
-        --label COMMIT_SHA=$CI_COMMIT_SHA
-        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
-        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
-        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
-        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
-        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}-arm64
-        --push .
+      -f CICD/Dockerfile
+      --label GITLAB_URL=$CI_PROJECT_URL
+      --label COMMIT_SHA=$CI_COMMIT_SHA
+      --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+      --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+      --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+      --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+      -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}-arm64
+      --push .
   dependencies:
     - Build_Front_In_Uat #依赖于该任务编译后的 artifacts
   when: manual
@@ -228,15 +228,15 @@ Deploy_Project_Image:
     - .docker-repo-auth-template
   script:
     - docker buildx build --platform linux/amd64
-        -f CICD/Dockerfile
-        --label GITLAB_URL=$CI_PROJECT_URL
-        --label COMMIT_SHA=$CI_COMMIT_SHA
-        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
-        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
-        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
-        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
-        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}
-        --push .
+      -f CICD/Dockerfile
+      --label GITLAB_URL=$CI_PROJECT_URL
+      --label COMMIT_SHA=$CI_COMMIT_SHA
+      --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+      --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+      --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+      --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+      -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}
+      --push .
   dependencies:
     - Build_Front_In_Project #依赖于该任务编译后的 artifacts
   tags:
@@ -249,15 +249,15 @@ Deploy_Project_Arm64_Image:
     - .project-tag-trigger-template
   script:
     - docker buildx build --platform linux/arm64
-        -f CICD/Dockerfile
-        --label GITLAB_URL=$CI_PROJECT_URL
-        --label COMMIT_SHA=$CI_COMMIT_SHA
-        --label CI_PROJECT_PATH=$CI_PROJECT_PATH
-        --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
-        --label CI_COMMIT_TAG=$CI_COMMIT_TAG
-        --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
-        -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}-arm64
-        --push .
+      -f CICD/Dockerfile
+      --label GITLAB_URL=$CI_PROJECT_URL
+      --label COMMIT_SHA=$CI_COMMIT_SHA
+      --label CI_PROJECT_PATH=$CI_PROJECT_PATH
+      --label CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+      --label CI_COMMIT_TAG=$CI_COMMIT_TAG
+      --label CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+      -t ${HARBOR_REPOSITORY}/agioe/${IMAGE_NAME}:${CI_COMMIT_TAG}-arm64
+      --push .
   dependencies:
     - Build_Front_In_Project #依赖于该任务编译后的 artifacts
   when: manual
