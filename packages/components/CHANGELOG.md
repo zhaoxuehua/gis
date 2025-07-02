@@ -1,5 +1,11 @@
 # @adm-gis-ui/components
 
+## 2.0.46
+
+### Patch Changes
+
+- 导航树增加默认展开层级配置
+
 ## 2.0.45
 
 ### Patch Changes
