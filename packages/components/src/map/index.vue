@@ -163,6 +163,9 @@ const state = reactive({
       label: "导航树",
       isShow: false, // 控制显示隐藏
       visible: false, // 控制是否展示tab(有无该项)
+      props: {
+        defaultTreeExpandLevel: Number(props.config?.defaultTreeExpandLevel)
+      },
       component: shallowRef(defineAsyncComponent(() => import("./components/navigationTree.vue")))
     },
     {

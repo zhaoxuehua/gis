@@ -31,7 +31,7 @@
           ref="treeRef"
           :expand-on-click-node="false"
           :default-expanded-keys="state.expandedKeys"
-          node-key="id"
+          node-key="nodeCode"
           highlight-current
         >
           <template #default="{ node, data }">
@@ -66,9 +66,10 @@ import Icon from "./Icon.vue";
 import UploadMainFileDialog from "./uploadFile/uploadMainFile.vue";
 import { onExportExcel } from "./uploadFile/uploadFun";
 
-const props = withDefaults(defineProps<{ map: VisualMap | null; index: number }>(), {
+const props = withDefaults(defineProps<{ map: VisualMap | null; index: number; defaultTreeExpandLevel: number }>(), {
   map: () => null,
-  index: () => 0
+  index: () => 0,
+  defaultTreeExpandLevel: () => 0
 });
 const emits = defineEmits(["onEditLabel", "onClose"]);
 const gisStore = useGisStore();
@@ -229,10 +230,28 @@ const onAddHandler = (featureType: LabelType, node: NavigationTreeNodeData) => {
 const getParentNode = (node: { [key: string]: any }) => {
   // 找父节点塞数据
   const parentNode: { [key: string]: any } = node?.parent;
-  const parentNodeId: string | undefined = parentNode?.data?.id;
+  const parentNodeId: string | undefined = parentNode?.data?.nodeCode;
   if (parentNodeId) {
     state.expandedKeys = [parentNodeId];
   }
+};
+
+// 获取默认打开层级
+const getDefaultExpandKeys = () => {
+  if (!props.defaultTreeExpandLevel) return;
+  state.expandedKeys = [];
+  const loop = (list: any[], parentLevel: number) => {
+    list?.forEach(node => {
+      node.level = parentLevel + 1;
+      if (node.level < props.defaultTreeExpandLevel) {
+        state.expandedKeys.push(node.nodeCode);
+      }
+      if (node?.children?.length) {
+        loop(node.children, node.level);
+      }
+    });
+  };
+  loop(navTreeData.value, 0);
 };
 
 // 监听键盘ESC
@@ -251,6 +270,17 @@ watch(
   () => state.filterText,
   val => {
     treeRef.value.filter(val);
+  }
+);
+
+// 设置默认打开层级
+watch(
+  () => navTreeData.value,
+  () => {
+    getDefaultExpandKeys();
+  },
+  {
+    immediate: true
   }
 );
 

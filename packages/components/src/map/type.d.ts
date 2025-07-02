@@ -72,6 +72,7 @@ export type leftBoxData = {
   isShow?: boolean;
   visible?: boolean;
   component?: any;
+  props?: { [key: string]: string };
 };
 
 // 标签绘制

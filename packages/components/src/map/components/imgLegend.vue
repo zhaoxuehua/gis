@@ -33,12 +33,14 @@ const emits = defineEmits(["onClose"]);
 const infoList = computed(() => {
   let { displayLegend } = props?.map?.defaultOptions || {};
   if (displayLegend && displayLegend?.length) {
-    let imgList = displayLegend.map((item: { [key: string]: any }) => {
-      return {
-        name: item?.legendName,
-        src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${item.legendPath}`
-      };
-    });
+    let imgList = displayLegend
+      .filter((item: { [key: string]: any }) => item)
+      ?.map((item: { [key: string]: any }) => {
+        return {
+          name: item?.legendName,
+          src: `/api/gis-service/equip/gisLabel/type/getAllPathByFileName/${item.legendPath}`
+        };
+      });
     return imgList;
   } else {
     return [];
