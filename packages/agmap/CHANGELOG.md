@@ -1,5 +1,11 @@
 # @adm-gis-ui/agmap
 
+## 2.0.47
+
+### Patch Changes
+
+- 升包
+
 ## 2.0.45
 
 ### Patch Changes
