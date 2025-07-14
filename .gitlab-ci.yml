@@ -27,7 +27,7 @@ stages:
     - pnpm i --frozen-lockfile
     - pnpm run build
   after_script:
-    - mv apps/play/dist dist
+    - mv packages/platform/dist dist
     - echo $CI_COMMIT_REF_NAME $CI_COMMIT_SHA > dist/VERSION.txt
   allow_failure: false
   artifacts:
